@@ -95,7 +95,7 @@ def issuer_default(mode):
     else :
         return jsonify("Profile DEFAULT client issue")
 
-    offer = ["ProofOfAsset", "EmployeeCredential"]
+    offer = ["EmailPass"]
 
     headers = {
         'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ def issuer_gaiax(mode):
     else :
         return jsonify("Profile GAIA-X client issue")
 
-    offer = ["EmployeeCredential", "ProofOfAsset"]
+    offer = "EmployeeCredential"
     headers = {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret
@@ -170,7 +170,7 @@ def issuer_hedera(mode):
     else :
         return jsonify("Profile HEDERA client issue")
 
-    offer = "EmployeeCredential"
+    offer = ["EmployeeCredential", "VerifiableId"]
     headers = {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret

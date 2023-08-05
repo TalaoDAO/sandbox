@@ -86,7 +86,11 @@ def oidc(issuer_id, mode) :
     # Credential supported section
     cs = list()
     for vc in issuer_profile['credential_supported']:
-        file_path = './verifiable_credentials/' + vc + '.jsonld'
+        try :
+            file_path = './verifiable_credentials/' + vc + '.jsonld'
+        except :
+            logging.warning('Credentila not found  %s', vc)
+            return
         credential = json.load(open(file_path))
         cs.append({
             'format': issuer_profile['issuer_vc_type'],
@@ -234,6 +238,9 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
             credential_type = [credential_type]
 
         if profile == 'GAIA-X' :
+            if len(credential_type)== 1 :
+                credential_type = credential_type[0]
+
             url_data  = { 
                 'issuer' : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
                 'credential_type'  : credential_type,
@@ -527,6 +534,11 @@ async def ebsi_issuer_credential(issuer_id, red) :
     except :
         try :
             credential_type = result['types']
+            if isinstance(credential_type, list) :
+                for type in credential_type :
+                    if type != "VerifiableCredential" :
+                        credential_type = type
+                        break 
         except :
             return Response(**manage_error("invalid_request", "Invalid request format")) 
     
