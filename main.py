@@ -42,7 +42,7 @@ from routes import web_display_VP
 
 # Framework Flask and Session setup
 app = Flask(__name__)
-app.jinja_env.globals['Version'] = "0.2.2"
+app.jinja_env.globals['Version'] = "0.2.5"
 app.jinja_env.globals['Created'] = time.ctime(os.path.getctime('main.py'))
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_COOKIE_NAME'] = 'talao'
