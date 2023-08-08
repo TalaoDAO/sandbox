@@ -227,6 +227,7 @@ def wallet_authorize(red, mode) :
             logging.info('response_type = code : successfull redirect to client with code = %s', request.args.get('code'))
             code = request.args['code']  
             if  session.get('state') :
+                logging.info('State sent back =%s', session['state'] )
                 resp = {'code' : code,  'state' : session['state']}
             else :
                 resp = {'code' : code}
@@ -329,7 +330,10 @@ def wallet_authorize(red, mode) :
         return manage_error_request('unsupported_response_type')
 
     session['response_type'] = request.args['response_type']
+    
     session['state'] = request.args.get('state')
+    logging.info('state received : %s', request.args.get('state'))
+    
     session['response_mode'] = request.args.get('response_mode')
 
     # creation grant (code) and redirect to  presentationRequest (wallet protocol)

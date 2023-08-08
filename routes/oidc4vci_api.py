@@ -554,7 +554,7 @@ async def ebsi_issuer_credential(issuer_id, red) :
     
     #TEST 
     if issuer_id in ['cejjvswuep', 'vijlmybjib'] :
-        return Response(**manage_error("invalid_request", "Invalid request format", red, stream_id=stream_id)) 
+        return Response(**manage_error('invalid_request', 'Invalid request format', red, stream_id=stream_id)) 
     
     """
     if proof_type != 'jwt' : 
@@ -569,11 +569,11 @@ async def ebsi_issuer_credential(issuer_id, red) :
             credential_type = result['types']
             if isinstance(credential_type, list) :
                 for type in credential_type :
-                    if type != "VerifiableCredential" :
+                    if type != 'VerifiableCredential' :
                         credential_type = type
                         break 
         except :
-            return Response(**manage_error("invalid_request", "Invalid request format", red, stream_id=stream_id)) 
+            return Response(**manage_error('invalid_request', 'Invalid request format', red, stream_id=stream_id)) 
     
     logging.info('credential type requested = %s', credential_type)
     
@@ -585,20 +585,20 @@ async def ebsi_issuer_credential(issuer_id, red) :
                 logging.info('credential is supported')
                 break
         if not credential_is_supported : 
-            return Response(**manage_error("unsupported_credential_type", "The credential type is not supported", red, stream_id=stream_id)) 
+            return Response(**manage_error('unsupported_credential_type', 'The credential type is not supported', red, stream_id=stream_id)) 
 
     # check proof format requested
-    logging.info("proof format requested = %s", proof_format)
+    logging.info('proof format requested = %s', proof_format)
     if proof_format not in ['jwt_vc','jwt_vc_json', 'jwt_vc_json-ld', 'ldp_vc'] :#TODO
-        return Response(**manage_error("unsupported_credential_format", "The proof format requested is not supported", red, stream_id=stream_id)) 
+        return Response(**manage_error('unsupported_credential_format', 'The proof format requested is not supported', red, stream_id=stream_id)) 
 
     # Check proof  of key ownership received (OPTIONAL check)
-    logging.info("proof of key ownership received = %s", proof)
+    logging.info('proof of key ownership received = %s', proof)
     try :
         oidc4vc.verif_token(proof, access_token_data['c_nonce'])
         logging.info('proof of ownership is validated')
     except Exception as e :
-        logging.warning("proof of ownership error = %s", str(e))
+        logging.warning('proof of ownership error = %s', str(e))
 
     proof_payload=oidc4vc.get_payload_from_token(proof)
     issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
@@ -612,7 +612,7 @@ async def ebsi_issuer_credential(issuer_id, red) :
         credential = access_token_data['vc'][credential_type]
     except :
         # send event to front to go forward callback and send credential to wallet
-        return Response(**manage_error("unsupported_credential_type", "The credential type is not offered", red, stream_id=stream_id)) 
+        return Response(**manage_error('unsupported_credential_type', 'The credential type is not offered', red, stream_id=stream_id)) 
 
     credential['id']= 'urn:uuid:' + str(uuid.uuid1())
     credential['credentialSubject']['id'] = proof_payload.get('iss')
@@ -620,8 +620,8 @@ async def ebsi_issuer_credential(issuer_id, red) :
     credential['issued'] = datetime.now().replace(microsecond=0).isoformat() + 'Z'
     credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + 'Z'
     credential['validFrom'] = datetime.now().replace(microsecond=0).isoformat() + 'Z'
-    credential['expirationDate'] =  (datetime.now() + timedelta(days= 365)).isoformat() + "Z"
-    credential['validUntil'] =  (datetime.now() + timedelta(days= 365)).isoformat() + "Z"
+    credential['expirationDate'] =  (datetime.now() + timedelta(days= 365)).isoformat() + 'Z'
+    credential['validUntil'] =  (datetime.now() + timedelta(days= 365)).isoformat() + 'Z'
     
     issuer_key =  issuer_data['jwk'] 
     issuer_vm = issuer_data['verification_method'] 
@@ -630,8 +630,8 @@ async def ebsi_issuer_credential(issuer_id, red) :
         credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm , issuer_key, access_token_data['c_nonce'])
     else : #  proof_format == 'ldp_vc' :
         didkit_options = {
-                "proofPurpose": "assertionMethod",
-                "verificationMethod": issuer_vm
+                'proofPurpose': 'assertionMethod',
+                'verificationMethod': issuer_vm
         }
         credential_signed =  await didkit.issue_credential(
                 json.dumps(credential),

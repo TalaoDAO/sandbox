@@ -43,15 +43,10 @@ def issuer_ebsiv2(mode):
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/zxhaokccsi"
         client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
     
-    elif  mode.server == "http://192.168.0.20:3000/"  :        # Houdan
-        api_endpoint = "http://192.168.0.20:3000/sandbox/ebsi/issuer/api/zxhaokccsi"
+    else : 
+        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/zxhaokccsi"
         client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
-    
-    elif  mode.server == "http://192.168.0.65:3000/"  :        # Paris
-        api_endpoint = "http://192.168.0.65:3000/sandbox/ebsi/issuer/api/zxhaokccsi"
-        client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
-    else :
-        return jsonify("Profile EBSIV2 client issue")
+   
 
     vc = 'VerifiableDiploma'
     with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f :
