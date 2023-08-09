@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<!-- wallet_test.html -->
+<html>
+
+<head>
+    {% include 'head.html' %}
+</head>
+
+<body id="page-top" >
+    <div id="wrapper">
+        <div class="d-flex flex-column" id="content-wrapper">
+            <div id="content" >
+                {% include 'saas_nav_bar.html' %}
+                <div class="container-fluid my-5">
+
+                
+        
+                    <div class="text-center">
+                        <h4>Wallet Tests for OIDC4VP SIOPV2 compliance</h4>
+                    </div>
+                    <div class="row my-5">
+                        
+                       
+
+                        <div class="col mt-4">
+                            <div id="id_qrcode" class="text-center">
+                                <a href="/sandbox/verifier/ebsiv2">
+                                <br>#1 Profile EBSIV2 standard id_token and vp_token, request passed as value</strong></a>
+                            </div>
+                        </div>
+
+                        <div class="col mt-4">
+                            <div id="id_qrcode" class="text-center">
+                                <a href="/sandbox/verifier/ebsiv2_2">
+                                <br>#2 Profile EBSIV2 standard id_token and vp_token, request passed as uri</strong></a>
+                            </div>
+                        </div>
+                       
+                        <div class="col mt-4">
+                            <div id="id_qrcode" class="text-center">
+                                <a href="/sandbox/verifier/default">
+                                <br>#3 Profile DEFAULT id_token only</strong></a>
+                            </div>
+                        </div>
+                        
+                    </div>
+
+
+
+
+          
+
+                </div>
+            </div>
+        </div>
+    </div>
+                                {% include 'user_footer.html' %}
+
+    <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='in_progress_button.js') }}"></script>
+    <script src="{{ url_for('static', filename='encryption.js') }}"></script>
+
+    <script>
+        function goBack() {
+          window.history.back();
+        }
+    </script>
+
+</body>
+
+</html>
