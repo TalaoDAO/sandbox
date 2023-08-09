@@ -90,7 +90,7 @@ profile = {
             "oidc4vci_prefix" : "openid-credential-offer-hedera://" ,
             "presentation_prefix" : "openid-hedera://",
             "cryptographic_binding_methods_supported" : ('DID'),
-            'credential_supported' :  ['EmployeeCredential', 'VerifiableId', 'EmailPass'],
+            'credential_supported' :  ['EmployeeCredential', 'VerifiableId', 'EmailPass', 'AgeOver18'],
             "grant_types_supported": [
                 "authorization_code",
                 "urn:ietf:params:oauth:grant-type:pre-authorized_code"

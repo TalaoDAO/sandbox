@@ -33,8 +33,16 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/saas4ssi/ebsi/verifier',  view_func=saas_ebsi_verifier, methods = ['GET', 'POST'])
     app.add_url_rule('/sandbox/saas4ssi/ebsi/issuer',  view_func=saas_ebsi_issuer, methods = ['GET', 'POST'])
 
+    app.add_url_rule('/sandbox/issuer/oidc/test',  view_func=issuer_oidc_test, methods = ['GET', 'POST'])
+
    
     return
+
+
+
+def issuer_oidc_test() :
+    return render_template('issuer_oidc/wallet_test.html')
+
 
 
 def default_webhook() :

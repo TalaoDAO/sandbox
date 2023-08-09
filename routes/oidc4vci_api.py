@@ -21,6 +21,7 @@ import oidc4vc
 from oidc4vc_constante import type_2_schema
 from profile import profile
 
+
 logging.basicConfig(level=logging.INFO)
 
 API_LIFE = 5000
@@ -40,7 +41,6 @@ def init_app(app,red, mode) :
     
     # OIDC4VCI protocol with wallet
     app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/.well-known/openid-configuration', view_func=ebsi_issuer_openid_configuration, methods=['GET'], defaults={'mode' : mode})
-    # new config endpoint https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-credential-issuer-metadata-
     app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/.well-known/openid-credential-issuer', view_func=ebsi_issuer_openid_configuration, methods=['GET'], defaults={'mode' : mode})
 
     app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/authorize',  view_func=ebsi_issuer_authorize, methods = ['GET', 'POST'], defaults={'red' :red})
@@ -255,12 +255,13 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
             url_data  = { 
                 "issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
                 "credential_type"  : credential_type,
-        }
+            }
         else :
             url_data  = { 
                 "credential_issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
                 "credentials"  : credential_type
             }
+
     
     #  https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-pre-authorized-code-flow
     # TODO PIN code not supported
@@ -305,17 +306,13 @@ def ebsi_issuer_landing_page(issuer_id, stream_id, red, mode) :
     url_data, code_data = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_vc_type, issuer_data['profile'], vc, mode)
     code_data['stream_id'] = stream_id  # to manage the followup screen
     red.setex(pre_authorized_code, GRANT_LIFE, json.dumps(code_data))
-    if issuer_data['profile']  not in ['EBSI-V2'] :
-        url = data_profile['oidc4vci_prefix'] + '?' + urlencode({"credential_offer" : json.loads(json.dumps(url_data))})
-        url=url.replace("%27", "%22").replace(("+"), "")
+    if issuer_data['profile']  not in ['EBSI-V2', 'GAIA-X'] :
+        url = data_profile['oidc4vci_prefix'] + "?" + urlencode( {'credential_offer' : json.dumps(url_data)})
         json_url  = {"credential_offer" : json.loads(json.dumps(url_data))}
     else :
         url = data_profile['oidc4vci_prefix'] + '?' + urlencode(url_data)
         json_url = url_data
 
-    # correct openid-credential-offer://credential_offer={"credential_issuer":"https://credential-issuer.example.com","credentials":[{"format":"jwt_vc_json","types":["VerifiableCredential","UniversityDegreeCredential"]}],"issuer_state":"eyJhbGciOiJSU0Et...FYUaBy"}
-
-    # openid-credential-offer://?credential_offer={"credential_issuer":"http://192.168.88.32:3000/sandbox/ebsi/issuer/npwsshblrm","credentials":["EmailPass"],"grants":{"urn:ietf:params:oauth:grant-type:pre-authorized_code":{"pre-authorized_code":"4953105c-36c1-11ee-b7a3-299494bdab61","user_pin_required":False}}}
     openid_configuration  = json.dumps(oidc(issuer_id, mode), indent=4)
     deeplink_talao = mode.deeplink_talao + 'app/download/ebsi?' + urlencode({'uri' : url })
     deeplink_altme = mode.deeplink_altme + 'app/download/ebsi?' + urlencode({'uri' : url})
@@ -440,7 +437,6 @@ def ebsi_issuer_authorize(issuer_id, red) :
     # TODO dynamic credential request register Altme wallet
     # https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-dynamic-credential-request
     # https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#name-cross-device-self-issued-ope
-    
 
     resp = {'code' : code}
     if request.args.get('state') :
