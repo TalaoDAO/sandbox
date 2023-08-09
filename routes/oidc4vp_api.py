@@ -383,14 +383,15 @@ def client_metadata(stream_id, red) :
 
 def ebsi_login_qrcode(red, mode):
     stream_id = str(uuid.uuid1())
-    try :
-        client_id = json.loads(red.get(request.args['code']).decode())['client_id']
-        verifier_data = json.loads(read_ebsi_verifier(client_id))
-        verifier_profile = profile[verifier_data['profile']]
+    #try :
+    client_id = json.loads(red.get(request.args['code']).decode())['client_id']
+    verifier_data = json.loads(read_ebsi_verifier(client_id))
+    verifier_profile = profile[verifier_data['profile']]
+    """
     except :
         logging.error("session expired in login_qrcode")
         return render_template("ebsi/verifier_session_problem.html", message='Session expired')
-       
+    """
     presentation_definition = {
                 "id":"",
                 "input_descriptors":[],
@@ -546,20 +547,10 @@ def ebsi_login_qrcode(red, mode):
                             deeplink_talao=deeplink_talao,
                             deeplink_altme=deeplink_altme,
 							stream_id=stream_id,
-                            #application_name=verifier_data.get('application_name'),
-                            #qrcode_message=verifier_data.get('qrcode_message'),
-                            #mobile_message=verifier_data.get('mobile_message'),
-                            #landing_page_url= verifier_data['landing_page_url'],
                             title=verifier_data['title'],
-                            #terms_url= verifier_data.get('terms_url'),
-                            #privacy_url=verifier_data.get('privacy_url'),
-                            #company_name=verifier_data.get('company_name'),
                             page_title=verifier_data['page_title'],
                             page_subtitle=verifier_data['page_subtitle'],
                             page_description=verifier_data['page_description'],
-                            #page_background_color = verifier_data['page_background_color'],
-                            #page_text_color = verifier_data['page_text_color'],
-                            #qrcode_background_color = verifier_data['qrcode_background_color']
                             )
     
 
@@ -634,7 +625,10 @@ def ebsi_login_endpoint(stream_id, red):
             presentation_submission =request.form.get('presentation_submission')
             response_format = "ok"
             logging.info('id_token = %s', json.dumps(id_token, indent=4))
+            print("")
             logging.info('vp token = %s', json.dumps(vp_token, indent=4))
+            print("")
+            logging.info('presentation submission = %s', json.dumps(presentation_submission, indent=4))
         except :
             response_format = "invalid request format",
             status_code = 400

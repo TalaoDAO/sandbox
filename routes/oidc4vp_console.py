@@ -205,9 +205,7 @@ def ebsi_verifier_console(mode) :
                 application_name = session['client_data'].get('application_name', ""),
                 contact_name = session['client_data'].get('contact_name'),
                 contact_email = session['client_data'].get('contact_email'),
-                privacy_url = session['client_data'].get('privacy_url'),
                 landing_page_url = session['client_data'].get('landing_page_url'),
-                terms_url = session['client_data'].get('terms_url'),
                 issuer = mode.server + "sandbox/ebsi",
                 client_id= session['client_data']['client_id'],
                 client_secret= session['client_data']['client_secret'],
@@ -217,9 +215,6 @@ def ebsi_verifier_console(mode) :
                 note = session['client_data']['note'],
                 page_subtitle = session['client_data']['page_subtitle'],
                 page_description = session['client_data']['page_description'],
-                page_background_color = session['client_data']['page_background_color'],
-                page_text_color = session['client_data']['page_text_color'],
-                qrcode_background_color = session['client_data']['qrcode_background_color'],
                 authorization=mode.server + 'sandbox/ebsi/authorize',
                 logout=mode.server + 'sandbox/ebsi/logout',
                 userinfo=mode.server + 'sandbox/ebsi/userinfo',
@@ -254,17 +249,12 @@ def ebsi_verifier_console(mode) :
             session['client_data']['page_title'] = request.form['page_title']
             session['client_data']['page_subtitle'] = request.form['page_subtitle']
             session['client_data']['page_description'] = request.form['page_description']
-            session['client_data']['page_background_color'] = request.form['page_background_color']      
-            session['client_data']['page_text_color'] = request.form['page_text_color']  
-            session['client_data']['qrcode_background_color'] = request.form['qrcode_background_color'] 
             session['client_data']['contact_name'] = request.form['contact_name']
             session['client_data']['title'] = request.form['title'] 
             session['client_data']['verifier_landing_page_style'] = request.form['verifier_landing_page_style']
             session['client_data']['callback'] = request.form['callback']
             session['client_data']['contact_email'] = request.form['contact_email']
-            session['client_data']['privacy_url'] = request.form['privacy_url']
             session['client_data']['landing_page_url'] = request.form['landing_page_url']
-            session['client_data']['terms_url'] = request.form['terms_url']
             session['client_data']['client_id'] =  request.form['client_id']
             session['client_data']['client_secret'] = request.form['client_secret']
             session['client_data']['company_name'] = request.form['company_name']

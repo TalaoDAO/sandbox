@@ -9,18 +9,6 @@ from flask_qrcode import QRcode
 REDIRECT = True
 
 
-# Init Flask
-app = Flask(__name__)
-app.config.update(SECRET_KEY = "abcdefgh")
-qrcode = QRcode(app)
-
-"""
-Step 0 : configure an issuer with https://talao.co/sandbox/saas4ssi
-Copy the issuer page URL and provide your callback and webhook endpoint
-Configure your issuer page, text, color and if needed SSI data as keys, DID method, etc
-"""
-
-
 def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/issuer/ebsiv2',  view_func=issuer_ebsiv2, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/issuer/default',  view_func=issuer_default, methods = ['GET'], defaults={'mode' : mode})

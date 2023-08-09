@@ -37,6 +37,8 @@ from routes import oidc4vci_api, oidc4vci_console
 
 # for testing purpose
 from routes import test_issuer_oidc4vc
+from routes import test_verifier_oidc4vc
+
 from routes import  web_wallet_test
 from routes import web_display_VP
 
@@ -89,6 +91,8 @@ saas4ssi.init_app(app, red, mode)
 web_display_VP.init_app(app, red, mode)
 web_wallet_test.init_app(app, red, mode)
 test_issuer_oidc4vc.init_app(app, red, mode)
+test_verifier_oidc4vc.init_app(app, red, mode)
+
 
 @app.route('/sandbox/md_file', methods = ['GET'])
 def md_file() :
