@@ -253,13 +253,13 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                 credential_type = credential_type[0]
 
             url_data  = { 
-                'issuer' : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
-                'credential_type'  : credential_type,
+                "issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
+                "credential_type"  : credential_type,
         }
         else :
             url_data  = { 
-                'credential_issuer' : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
-                'credentials'  : credential_type
+                "credential_issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
+                "credentials"  : credential_type
             }
     
     #  https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-pre-authorized-code-flow
@@ -270,15 +270,15 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
     
     elif pre_authorized_code  :
         url_data['grants'] ={
-            'urn:ietf:params:oauth:grant-type:pre-authorized_code': {
-                'pre-authorized_code': pre_authorized_code,
-                'user_pin_required': False
+            "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
+                "pre-authorized_code": pre_authorized_code,
+                "user_pin_required": False
             }
         }
     
     elif not pre_authorized_code and profile not in  ['EBSI-V2', 'GAIA-X'] :
-        url_data['grants'] ={
-            'authorization_code': {}
+        url_data["grants"] ={
+            "authorization_code": {}
         }
     code_data = {
             'credential_type' : credential_type,
@@ -306,11 +306,16 @@ def ebsi_issuer_landing_page(issuer_id, stream_id, red, mode) :
     code_data['stream_id'] = stream_id  # to manage the followup screen
     red.setex(pre_authorized_code, GRANT_LIFE, json.dumps(code_data))
     if issuer_data['profile']  not in ['EBSI-V2'] :
-        url = data_profile['oidc4vci_prefix'] + '?' + urlencode({"credential_offer" : url_data})
-        json_url  = {"credential_offer" : url_data}
+        url = data_profile['oidc4vci_prefix'] + '?' + urlencode({"credential_offer" : json.loads(json.dumps(url_data))})
+        url=url.replace("%27", "%22").replace(("+"), "")
+        json_url  = {"credential_offer" : json.loads(json.dumps(url_data))}
     else :
         url = data_profile['oidc4vci_prefix'] + '?' + urlencode(url_data)
         json_url = url_data
+
+    # correct openid-credential-offer://credential_offer={"credential_issuer":"https://credential-issuer.example.com","credentials":[{"format":"jwt_vc_json","types":["VerifiableCredential","UniversityDegreeCredential"]}],"issuer_state":"eyJhbGciOiJSU0Et...FYUaBy"}
+
+    # openid-credential-offer://?credential_offer={"credential_issuer":"http://192.168.88.32:3000/sandbox/ebsi/issuer/npwsshblrm","credentials":["EmailPass"],"grants":{"urn:ietf:params:oauth:grant-type:pre-authorized_code":{"pre-authorized_code":"4953105c-36c1-11ee-b7a3-299494bdab61","user_pin_required":False}}}
     openid_configuration  = json.dumps(oidc(issuer_id, mode), indent=4)
     deeplink_talao = mode.deeplink_talao + 'app/download/ebsi?' + urlencode({'uri' : url })
     deeplink_altme = mode.deeplink_altme + 'app/download/ebsi?' + urlencode({'uri' : url})
