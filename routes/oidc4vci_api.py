@@ -306,9 +306,11 @@ def ebsi_issuer_landing_page(issuer_id, stream_id, red, mode) :
     code_data['stream_id'] = stream_id  # to manage the followup screen
     red.setex(pre_authorized_code, GRANT_LIFE, json.dumps(code_data))
     if issuer_data['profile']  not in ['EBSI-V2'] :
-        url = data_profile['oidc4vci_prefix'] + '?' + urlencode({"credential_offer" : json.dumps(url_data)})
+        url = data_profile['oidc4vci_prefix'] + '?' + urlencode({"credential_offer" : url_data})
+        json_url  = {"credential_offer" : url_data}
     else :
         url = data_profile['oidc4vci_prefix'] + '?' + urlencode(url_data)
+        json_url = url_data
     openid_configuration  = json.dumps(oidc(issuer_id, mode), indent=4)
     deeplink_talao = mode.deeplink_talao + 'app/download/ebsi?' + urlencode({'uri' : url })
     deeplink_altme = mode.deeplink_altme + 'app/download/ebsi?' + urlencode({'uri' : url})
@@ -317,7 +319,7 @@ def ebsi_issuer_landing_page(issuer_id, stream_id, red, mode) :
     return render_template(
         qrcode_page,
         openid_configuration = openid_configuration,
-        url_data = json.dumps(url_data,indent = 6),
+        url_data = json.dumps(json_url,indent = 6),
         url=url,
         deeplink_altme=deeplink_altme,
         deeplink_talao=deeplink_talao,
