@@ -14,7 +14,7 @@ def init_app(app,red, mode) :
 def verifier_default(mode):
     if request.method == 'GET' :
         if mode.myenv == 'aws':
-            client_id = ""
+            client_id = "rxbypnwhxc"
         else :
             client_id = "ybbiskyifx"
         url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
