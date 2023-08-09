@@ -1,10 +1,4 @@
-from flask import Flask, jsonify, render_template_string, redirect, request
-import flask
-from flask_session import Session
-from flask_pyoidc import OIDCAuthentication
-from flask_pyoidc.provider_configuration import ProviderConfiguration, ClientMetadata
-from flask_pyoidc.user_session import UserSession
-import redis
+from flask import jsonify,  redirect, request
 
 
 def init_app(app,red, mode) :
