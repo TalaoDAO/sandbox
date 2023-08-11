@@ -685,7 +685,7 @@ def ebsi_login_endpoint(stream_id, red):
 
     # check iss and sub
     if access == "ok" :
-        if did_wallet != vp_token_payload['iss'] or did_wallet != vp_token_payload['sub'] :
+        if kid.split('#')[0] != vp_token_payload['iss'] or kid.split('#')[0] != vp_token_payload['sub'] :
             vp_token_status = "iss or sub not set correctly"
         else :
             vp_token_status = "ok"
