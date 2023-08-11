@@ -3,6 +3,8 @@ from flask import jsonify,  redirect, request
 
 def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/verifier/default',  view_func=verifier_default, methods = ['GET'], defaults={'mode' : mode})
+    app.add_url_rule('/sandbox/verifier/default_2',  view_func=verifier_default_2, methods = ['GET'], defaults={'mode' : mode})
+
     app.add_url_rule('/sandbox/verifier/ebsiv2',  view_func=verifier_ebsiv2, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/verifier/ebsiv2_2',  view_func=verifier_ebsiv2_2, methods = ['GET'], defaults={'mode' : mode})
 
@@ -19,7 +21,17 @@ def verifier_default(mode):
             client_id = "ybbiskyifx"
         url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
-    
+
+
+def verifier_default_2(mode): # redirect uri missing
+    if request.method == 'GET' :
+        if mode.myenv == 'aws':
+            client_id = ""
+        else :
+            client_id = "paqqladucu"
+        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        return redirect (url)
+
 
 def verifier_ebsiv2(mode):
     if request.method == 'GET' :

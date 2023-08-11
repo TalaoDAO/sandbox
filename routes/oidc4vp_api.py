@@ -375,7 +375,7 @@ def client_metadata(stream_id, red) :
         'subject_syntax_types_supported': verifier_profile['subject_syntax_types_supported'], 
         'cryptographic_suites_supported' : verifier_profile['cryptographic_suites_supported'],
         'client_name': 'Talao-Altme Verifier',
-        'Profile' : verifier_data['profile'],
+        'profile' : verifier_data['profile'], # custom 
         "logo_uri": "https://altme.io/",
         "contacts": ["contact@talao.io"]
     }
@@ -497,6 +497,11 @@ def ebsi_login_qrcode(red, mode):
         "redirect_uri" : mode.server + "sandbox/ebsi/login/endpoint/" + stream_id,
         "nonce" : str(uuid.uuid1())
     }
+    # TEST :
+    if client_id in ['paqqladucu', 'qjcjyexfrx'] :
+        del authorization_request['redirect_uri']
+
+
     if verifier_data['profile'] == "EBSI-V2" :
         # previoous release of the OIDC4VC specifications
         # OIDC claims parameter https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter

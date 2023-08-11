@@ -54,13 +54,35 @@ profile = {
                 "urn:ietf:params:oauth:grant-type:pre-authorized_code"
             ],
             "cryptographic_suites_supported" : ['ES256K','ES256','ES384','ES512','RS256'],
-            "subject_syntax_types_supported" : ['did:key'],
+            "subject_syntax_types_supported" : ['did:key', 'did:pkh'],
             "schema_for_type" : False,
-            'service_documentation' : 'We use JSON-LD VC and VP and last release of the specs. \
+            "service_documentation" : 'We use JSON-LD VC and VP and last release of the specs. \
                 oidc4vci_draft : https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html \
                 siopv2_draft : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
-                oidc4vp_draft : https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  \
-                 '
+                oidc4vp_draft : https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  ',
+            "siopv2_wallet_metadata" : {
+                "response_types_supported": [
+                    "id_token",
+                ],
+                "scopes_supported": [
+                    "openid"
+                ],
+                "subject_types_supported": [
+                    "pairwise"
+                ],
+                "id_token_signing_alg_values_supported": [
+                    "ES256K",
+                ],
+                "request_object_signing_alg_values_supported": [
+                    "ES256K",
+                ],
+                "subject_syntax_types_supported": [
+                    "did:key"
+                ],
+                "id_token_types_supported": [
+                    "subject_signed_id_token"
+                ]
+            }
         },
          "GAIA-X" :
         {
@@ -96,7 +118,7 @@ profile = {
                 "urn:ietf:params:oauth:grant-type:pre-authorized_code"
             ],
             "cryptographic_suites_supported" : ['ES256K','ES256','ES384','ES512','RS256'],
-            "subject_syntax_types_supported" : ['did:key', 'did:pkh'],
+            "subject_syntax_types_supported" : ['did:key', 'did:pkh', 'did:web', 'did;hedera'],
             "schema_for_type" : False,
             'service_documentation' : 'WORK IN PROGRESS EON project. last release of the specs. \
                 oidc4vci_draft : https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html \

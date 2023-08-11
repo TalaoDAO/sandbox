@@ -643,6 +643,7 @@ async def ebsi_issuer_credential(issuer_id, red) :
                 )
         result = await didkit.verify_credential(credential_signed, '{}')   
         logging.info('signature check with didkit = %s', result)
+        credential_signed = json.loads(credential_signed)
     logging.info('credential signed sent to wallet = %s', credential_signed)
 
     # send event to front to go forward callback and send credential to wallet
@@ -650,8 +651,9 @@ async def ebsi_issuer_credential(issuer_id, red) :
     
     # Transfer VC
     payload = {
+        #'acceptance_token' : None,
         'format' : proof_format,
-        'credential' : credential_signed,
+        'credential' : credential_signed, # string or json depending on the format
         'c_nonce': str(uuid.uuid1()),
         'c_nonce_expires_in': C_NONCE_LIFE
     }
