@@ -669,12 +669,11 @@ def ebsi_login_endpoint(stream_id, red):
             status_code = 400
             access = "access_denied"
 
-    
+    jwk = id_token_header.get('jwk')
+    kid = id_token_header['kid']
     # check wallet DID
     if access == "ok" and verifier_data['profile'] == "EBSI-V2" :
-        id_token_header = oidc4vc.get_header_from_token(id_token)
-        jwk = id_token_header.get('jwk')
-        kid = id_token_header['kid']
+        id_token_header = oidc4vc.get_header_from_token(id_token)   
         did_wallet = oidc4vc.generate_np_ebsi_did(jwk)
         if did_wallet != kid.split('#')[0] :
             holder_did_status = "DID incorrect"
