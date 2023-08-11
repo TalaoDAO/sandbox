@@ -10,12 +10,12 @@ user = {
 
 
 oidc4vc_profile_list = {
-    'EBSI-V2' : 'EBSI V2',
-    'DEFAULT' : 'Default profile',
+    'EBSI-V2' : 'EBSI V2 compliance',
+    'DEFAULT' : 'DEFAULT',
     'GAIA-X' : 'GAIA-X projects',
-    'EBSI-V3' : 'EBSI V3',
+    'EBSI-V3' : 'EBSI V3 compliance',
     'JWT-VC' : 'JWT-VC presentation profile',
-    'HEDERA' : 'Hedera projects'
+    'HEDERA' : 'HEDERA projects'
 }
 
 

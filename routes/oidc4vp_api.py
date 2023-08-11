@@ -211,10 +211,8 @@ def ebsi_authorize(red, mode) :
 
     session['client_id'] = request.args['client_id']
 
-    verifier_data = json.loads(read_ebsi_verifier(request.args['client_id']))
-    if request.args['redirect_uri'] != verifier_data['callback'] :
-        logging.warning('redirect_uri of the request does not match the Callback URL')
-
+    #verifier_data = json.loads(read_ebsi_verifier(request.args['client_id']))
+   
     session['redirect_uri'] = request.args['redirect_uri']
     if request.args['response_type'] not in ["code", "id_token"] :
         logging.warning('unsupported response type %s', request.args['response_type'])
@@ -673,9 +671,9 @@ def ebsi_login_endpoint(stream_id, red):
 
     
     # check wallet DID
-    if access == "ok" :
+    if access == "ok" and verifier_data['profile'] == "EBSI-V2" :
         id_token_header = oidc4vc.get_header_from_token(id_token)
-        jwk = id_token_header['jwk']
+        jwk = id_token_header.get('jwk')
         kid = id_token_header['kid']
         did_wallet = oidc4vc.generate_np_ebsi_did(jwk)
         if did_wallet != kid.split('#')[0] :
@@ -689,8 +687,6 @@ def ebsi_login_endpoint(stream_id, red):
     if access == "ok" :
         if did_wallet != vp_token_payload['iss'] or did_wallet != vp_token_payload['sub'] :
             vp_token_status = "iss or sub not set correctly"
-            #status_code = 400
-            #access = "access_denied"
         else :
             vp_token_status = "ok"
     
