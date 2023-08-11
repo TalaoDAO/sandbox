@@ -26,7 +26,7 @@ def verifier_default(mode):
 def verifier_default_2(mode): # redirect uri missing
     if request.method == 'GET' :
         if mode.myenv == 'aws':
-            client_id = ""
+            client_id = "qjcjyexfrx"
         else :
             client_id = "paqqladucu"
         url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
