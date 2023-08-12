@@ -394,6 +394,7 @@ def ebsi_login_qrcode(red, mode):
         return render_template("ebsi/verifier_session_problem.html", message='Invalid configuration')
     
     # Manage presentation definition with a subset of PEX 2.0
+    presentation_definition = str()
     if 'vp_token' in response_type :    
         prez = pex.Presentation_Definition(verifier_data['application_name'], "Altme presentation definition subset of PEX v2.0")  
         for i in ["1", "2", "3", "4"] :
