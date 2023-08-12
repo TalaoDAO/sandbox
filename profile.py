@@ -89,7 +89,8 @@ profile = {
             "issuer_vc_type" : "ldp_vc",
             "verifier_vp_type" : "ldp_vp",
             "oidc4vci_prefix" : "openid-initiate-issuance://" ,
-            "presentation_prefix" : "openid-vc://",
+            "siopv2_prefix" : "openid://",
+            "oidc4vp_prefix" : "openid://",
             "cryptographic_binding_methods_supported" : ('DID'),
             'credential_supported' :  ['EmployeeCredential',  'VerifiableId', 'EmailPass'],
             "grant_types_supported": [
@@ -102,15 +103,38 @@ profile = {
             'service_documentation' : 'THIS PROFILE OF OIDC4VCI IS DEPRECATED. \
                 oidc4vci_draft : https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-credential-endpoint \
                 siopv2_draft : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
-                oidc4vp_draft : https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  \
-                 '
+                oidc4vp_draft : https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  ',
+            "siopv2_wallet_metadata" : {
+                "response_types_supported": [
+                    "id_token",
+                ],
+                "scopes_supported": [
+                    "openid"
+                ],
+                "subject_types_supported": [
+                    "pairwise"
+                ],
+                "id_token_signing_alg_values_supported": [
+                    "ES256K",
+                ],
+                "request_object_signing_alg_values_supported": [
+                    "ES256K",
+                ],
+                "subject_syntax_types_supported": [
+                    "did:key"
+                ],
+                "id_token_types_supported": [
+                    "subject_signed_id_token"
+                ]
+            }
         },
         "HEDERA" :
         {
             "issuer_vc_type" : "jwt_vc",
             "verifier_vp_type" : "jwt_vp",
             "oidc4vci_prefix" : "openid-credential-offer-hedera://" ,
-            "presentation_prefix" : "openid-hedera://",
+            "siopv2_prefix" : "openid-hedera://",
+            "oidc4vp_prefix" : "openid-hedera://",
             "cryptographic_binding_methods_supported" : ('DID'),
             'credential_supported' :  ['EmployeeCredential', 'VerifiableId', 'EmailPass', 'AgeOver18'],
             "grant_types_supported": [
@@ -124,7 +148,30 @@ profile = {
                 oidc4vci_draft : https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html \
                 siopv2_draft : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
                 oidc4vp_draft : https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  \
-                 Issuer and verifier for marjetplace and WCM'
+                 Issuer and verifier for marjetplace and WCM',
+            "siopv2_wallet_metadata" : {
+                "response_types_supported": [
+                    "id_token",
+                ],
+                "scopes_supported": [
+                    "openid"
+                ],
+                "subject_types_supported": [
+                    "pairwise"
+                ],
+                "id_token_signing_alg_values_supported": [
+                    "ES256K",
+                ],
+                "request_object_signing_alg_values_supported": [
+                    "ES256K",
+                ],
+                "subject_syntax_types_supported": [
+                    "did:key"
+                ],
+                "id_token_types_supported": [
+                    "subject_signed_id_token"
+                ]
+            }
         },
     
     "JWT-VC" :

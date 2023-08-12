@@ -22,15 +22,15 @@ oidc4vc_profile_list = {
 
 #OIDC4VC Verifier
 ebsi_verifier_credential_list = {
-    "DID" : "Authentication (id_token)",
+    #"DID" : "Authentication",
     "None" : "None",
-    'VerifiableId' :  'Verifiable ID (vp_token)',
-    'VerifiableDiploma' : 'EBSI Diploma (vp_token)',
-    'EmployeeCredential' : 'Employee Credential (vp_token)',
+    'VerifiableId' :  'Verifiable ID',
+    'VerifiableDiploma' : 'EBSI Diploma',
+    'EmployeeCredential' : 'Employee Credential',
     'ProofOfAsset' : 'Carbon credit projects',
-    'EmailPass' : 'Email proof (vp_token)',
-    'PhoneProof' : 'Phone proof (vp_token)',
-    'DeviceInfo' : 'Device information (vp_token)'
+    'EmailPass' : 'Email proof',
+    'PhoneProof' : 'Phone proof',
+    'DeviceInfo' : 'Device information'
 }
 
 
@@ -75,9 +75,19 @@ pre_authorized_code_list = {'none' : "None",
 client_data_pattern_ebsi = {
                 "profile" : "DEFAULT",
                 "pkce" : None,
+                "id_token" : 'on',
+                "vp_token" : None,
+                "group" : None,
                 "request_uri" : None,
                 "vc" : "DID",
+                "vc_1" : "DID",
                 "vc_2" : "DID",
+                "vc_3" : "DID",
+                "vc_4" : "DID",
+                "vc_5" : "DID",
+                "vc_6" : "DID",
+                "vc_7" : "DID",
+                "vc_8" : "DID",
                 "user" : "guest",
                 "client_id" :  "",
                 "client_secret" : "",
@@ -90,15 +100,20 @@ client_data_pattern_ebsi = {
                 "company_name" : "New company",
                 "application_name" : "Application name",
                 "reason" : "This purpose 1",
+                "reason_1" : "This is purpose 1 ",
                 "reason_2" : "This is purpose 2 ",
                 "reason_3" : "This is purpose 3 ",
-                "reason_4" : "This purpose 4",
+                "reason_4" : "This is purpose 4",
+                "reason_5" : "This is purpose 5",
+                "reason_6" : "This is purpose 6",
+                "reason_7" : "This is purpose 7",
+                "reason_8" : "This is purpose 8",
                 "credential_requested" : "DID",
                 "credential_requested_2" : "DID",
                 "credential_requested_3" : "DID",
                 "credential_requested_4" : "DID",
                 "landing_page_style" : "./ebsi/ebsi_issuer_qrcode_test.html",
-                "verifier_landing_page_style" : "./ebsi/ebsi_verifier_qrcode_2.html",
+                "verifier_landing_page_style" : "./ebsi/ebsi_verifier_qrcode_test.html",
                 "page_title" : "Page title",
                 "page_subtitle" : "Page subtitle",
                 "page_description" : "Add here a credential description as you would like to see it displayed on the landing page of your app.",
@@ -110,15 +125,4 @@ client_data_pattern_ebsi = {
                 "landing_page_url" : "https://talao.io",
                 "title" : "Get it !" # QR code title
                 }
-
-ebsi_verifier_claims = {
-    "vp_token":{
-        "presentation_definition": {
-            "id":"",
-            "input_descriptors":[],
-            "format":""
-        }
-    }
-}
-
 
