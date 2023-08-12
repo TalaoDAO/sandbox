@@ -63,9 +63,9 @@ def ebsi_verifier_console_select(mode) :
                     verifier = """<tr>
                         <td>""" + data_dict.get('application_name', "") + """</td>
                         <td>""" + data_dict['user'] + """</td>
-                        <td>""" + ebsi_verifier_credential_list.get(data_dict['vc_1'], "unknown") + """</td>
+                        <td>""" + ebsi_verifier_credential_list.get(data_dict.get('vc_1', 'Unknown'), "unknown") + """</td>
                         <td>""" + ebsi_verifier_credential_list.get(data_dict['vc_2'], "unknown") + """</td>
-                        <td>""" + data_dict['profile'] + """</td>
+                        <td>""" + data_dict.get('profile', 'Unknwon') + """</td>
                         <td>""" + id_token + """</td>
                         <td>""" + vp_token + """</td>
                         <td>""" + group + """</td>
