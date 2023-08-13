@@ -92,7 +92,7 @@ profile = {
             "siopv2_prefix" : "openid://",
             "oidc4vp_prefix" : "openid://",
             "cryptographic_binding_methods_supported" : ('DID'),
-            'credential_supported' :  ['EmployeeCredential',  'VerifiableId', 'EmailPass'],
+            'credential_supported' :  ['EmployeeCredential',  'VerifiableId',  'GreencypherPass', 'EmailPass'],
             "grant_types_supported": [
                 "authorization_code",
                 "urn:ietf:params:oauth:grant-type:pre-authorized_code"
@@ -136,7 +136,7 @@ profile = {
             "siopv2_prefix" : "openid-hedera://",
             "oidc4vp_prefix" : "openid-hedera://",
             "cryptographic_binding_methods_supported" : ('DID'),
-            'credential_supported' :  ['EmployeeCredential', 'VerifiableId', 'EmailPass', 'AgeOver18'],
+            'credential_supported' :  ['EmployeeCredential', 'VerifiableId', 'GreencypherPass', 'ListOfProjects', 'EmailPass', 'Over18'],
             "grant_types_supported": [
                 "authorization_code",
                 "urn:ietf:params:oauth:grant-type:pre-authorized_code"

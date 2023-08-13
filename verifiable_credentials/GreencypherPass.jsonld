@@ -1,0 +1,40 @@
+{
+    "@context": ["https://www.w3.org/2018/credentials/v1",
+        {
+            "GreencypherPass" : {
+                "@id": "urn:greencypherpass",
+                "@context": {
+                    "@version": 1.1,
+                    "@protected": true,
+                    "schema" : "https://schema.org/",
+                    "id": "@id",
+                    "type": "@type",
+                    "userId" : "schema:identifier",
+                    "firstName" : "schema:firstName",
+                    "lastName" : "schema:lastName",
+                    "accountType" : "schema:identifier",
+                    "email" : "schema:email",
+                    "workForLegalName" : "schema:legalName",
+                    "workForLeiCode" : "schema:leiCode",
+                    "photo": "schema:picture"
+                }
+              }
+        }
+    ],
+    "id": "urn:uuid:000de59f-e061-48be-a650-84d6bfd5777",
+    "type": ["VerifiableCredential", "GreencypherPass"],
+    "issuer": "did:web:acx.com",
+    "issuanceDate": "2023-02-12T15:42:10Z",
+    "expirationDate" : "2024-02-12T15:42:10Z", 
+    "credentialSubject" : {
+        "id": "did:key:zQ3shet9YZjrsB8upE8iXu6R4fEidY5kzUkNM7UMMkFB8uqZY",
+        "type" : "GreencypherPass", 
+        "userId" : "12",
+        "firstName" : "John",
+        "lastName" : "Doe",
+        "email" : "jonh.doe@gmail.com",
+        "accountType" : "Monitor",
+        "workForLeiCode" : "9845008D81F584B75D25",
+        "workForLegalName" : "TheCompany Ltd."
+    }
+}

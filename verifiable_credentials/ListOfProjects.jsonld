@@ -1,0 +1,35 @@
+{
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        
+        {
+            "ListOfProjects" : {
+                "@id" : "urn:listofprojects",
+                "@context" : {
+                    "@version": 1.1,
+                    "@protected": true,
+                    "id": "@id",
+                    "type": "@type",
+                    "schema" : "https://schema.org/",
+                    "companyId" : "schema:identifier",
+                    "leiCode": "schema:leiCode",
+                    "legalName": "schema:legalName",
+                    "projectList" : "schema:legalName"
+               }
+            }
+        }
+    ],
+    "type": ["VerifiableCredential","ListOfProjects"],
+    "id": "urn:uuid:8558cbd7-9923-44d9-b328-c41c7fa5a049",
+    "issuer": "did:web:acx.com",
+    "issuanceDate": "2023-07-20T15:36:41Z",
+    "expirationDate": "2024-10-18T17:36:19.882+02:00",
+    "credentialSubject": {
+        "type" : "ListOfProjects",
+        "id": "did:key:z6MkhtVRXQ5byNWwQYCNoH6ap3JQn5qF5AiMZFq3dvakxCRg",
+        "companyId" : "127",
+        "leiCode": "9845008D81F584B75D25",
+        "legalName": "TheCompany Ltd.",
+        "projectList" : ["LHGYF1236786876", "345KHFKYFU678756"]
+    }
+}
