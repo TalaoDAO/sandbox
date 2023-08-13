@@ -396,7 +396,7 @@ def ebsi_login_qrcode(red, mode):
     # Manage presentation definition with a subset of PEX 2.0
     presentation_definition = str()
     if 'vp_token' in response_type :    
-        prez = pex.Presentation_Definition(verifier_data['application_name'], "Altme presentation definition subset of PEX v2.0")  
+        prez = pex.Presentation_Definition(verifier_data['application_name'], "Talao-Altme presentation definition with a subset of PEX v2.0 syntax")  
         for i in ["1", "2", "3", "4"] :
             vc = 'vc_' + i
             reason = 'reason_' + i
@@ -404,7 +404,11 @@ def ebsi_login_qrcode(red, mode):
                 if verifier_data['profile'] == "EBSI-V2" :
                     prez.add_constraint("$.credentialSchema.id", type_2_schema[verifier_data[vc]], "Input descriptor for credential " + i , verifier_data[reason])
                 else :
-                    prez.add_constraint("$.credentialSubject.type",  verifier_data[vc], "Input descriptor for credential " + i, verifier_data[reason])
+                    prez.add_constraint("$.credentialSubject.type",
+                                        verifier_data[vc],
+                                        "Input descriptor for credential " + i,
+                                        verifier_data[reason],
+                                        id = verifier_data[vc].lower() + '_' + i)
         if verifier_data['group'] : 
             prez.add_group("Group A", "A")
             for i in ["5", "6", "7", "8"] :
@@ -413,7 +417,12 @@ def ebsi_login_qrcode(red, mode):
                     if verifier_data['profile'] == "EBSI-V2" :
                         prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[verifier_data[vc]], "Input descriptor for credential " + i, "", "A")
                     else :
-                        prez.add_constraint_with_group("$.credentialSubject.type",  verifier_data[vc], "Input descriptor for credential " + i, "", "A")
+                        prez.add_constraint_with_group("$.credentialSubject.type",
+                                                        verifier_data[vc],
+                                                        "Input descriptor for credential " + i,
+                                                        "",
+                                                        "A",
+                                                        id=verifier_data[vc].lower() + '_' + i)
         
         # add format depending on profile
         if profile[verifier_data['profile']].get("verifier_vp_type") == 'ldp_vp' :

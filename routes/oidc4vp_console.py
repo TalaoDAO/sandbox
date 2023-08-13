@@ -165,9 +165,17 @@ def ebsi_verifier_console(mode) :
                 reason = 'reason_' + i
                 if session['client_data'][vc] != 'None'   :
                     if session['client_data']['profile'] == "EBSI-V2" :
-                        prez.add_constraint("$.credentialSchema.id", type_2_schema[session['client_data'][vc]], "Input descriptor for credential " + i , session['client_data'][reason])
+                        prez.add_constraint("$.credentialSchema.id",
+                                            type_2_schema[session['client_data'][vc]],
+                                            "Input descriptor for credential " + i ,
+                                            session['client_data'][reason])
+                                            
                     else :
-                        prez.add_constraint("$.credentialSubject.type",  session['client_data'][vc], "Input descriptor for credential " + i, session['client_data'][reason])
+                        prez.add_constraint("$.credentialSubject.type",
+                                            session['client_data'][vc],
+                                            "Input descriptor for credential " + i,
+                                            session['client_data'][reason],
+                                            id= session['client_data'][vc].lower() + '_' + i)
             if session['client_data'].get('group') : 
                 prez.add_group("Group A", "A")
                 for i in ["5", "6", "7", "8"] :
@@ -176,7 +184,12 @@ def ebsi_verifier_console(mode) :
                         if session['client_data']['profile'] == "EBSI-V2" :
                             prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[session['client_data'][vc]], "Input descriptor for credential " + i, "", "A")
                         else :
-                            prez.add_constraint_with_group("$.credentialSubject.type",  session['client_data'][vc], "Input descriptor for credential " + i, "", "A")
+                            prez.add_constraint_with_group("$.credentialSubject.type",
+                                                            session['client_data'][vc],
+                                                            "Input descriptor for credential " + i,
+                                                            "",
+                                                            "A",
+                                                            id=session['client_data'][vc].lower() + '_' + i)
             
             if profile[session['client_data']['profile']]["verifier_vp_type"] == 'ldp_vp' :
                 prez.add_format_ldp_vp()

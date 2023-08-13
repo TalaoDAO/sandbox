@@ -5,18 +5,18 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/verifier/default',  view_func=verifier_default, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/verifier/default_2',  view_func=verifier_default_2, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/verifier/default_3',  view_func=verifier_default_3, methods = ['GET'], defaults={'mode' : mode})
+    app.add_url_rule('/sandbox/verifier/default_4',  view_func=verifier_default_4, methods = ['GET'], defaults={'mode' : mode})
 
     app.add_url_rule('/sandbox/verifier/ebsiv2',  view_func=verifier_ebsiv2, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/verifier/ebsiv2_2',  view_func=verifier_ebsiv2_2, methods = ['GET'], defaults={'mode' : mode})
 
 
-    app.add_url_rule('/sandbox/verifier/hedera',  view_func=verifier_hedera, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/verifier/hedera_2',  view_func=verifier_hedera_2, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/verifier/hedera_3',  view_func=verifier_hedera_3, methods = ['GET'], defaults={'mode' : mode})
 
-    app.add_url_rule('/sandbox/verifier/gaiax',  view_func=verifier_hedera, methods = ['GET'], defaults={'mode' : mode})
-    app.add_url_rule('/sandbox/verifier/gaiax_2',  view_func=verifier_hedera_2, methods = ['GET'], defaults={'mode' : mode})
-    app.add_url_rule('/sandbox/verifier/gaiax_3',  view_func=verifier_hedera_3, methods = ['GET'], defaults={'mode' : mode})
+    app.add_url_rule('/sandbox/verifier/gaiax',  view_func=verifier_gaiax, methods = ['GET'], defaults={'mode' : mode})
+    app.add_url_rule('/sandbox/verifier/gaiax_2',  view_func=verifier_gaiax_2, methods = ['GET'], defaults={'mode' : mode})
+    app.add_url_rule('/sandbox/verifier/gaiax_3',  view_func=verifier_gaiax_3, methods = ['GET'], defaults={'mode' : mode})
 
     app.add_url_rule('/sandbox/verifier/callback',  view_func=verifier_callback, methods = ['GET'])
    
@@ -71,7 +71,7 @@ def verifier_ebsiv2_2(mode): # Test 2
         url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
 
-def verifier_hedera(mode): # Test 6
+def verifier_default_4(mode): # Test 6
     if request.method == 'GET' :
         if mode.myenv == 'aws':
             client_id = "yxluhubhor"
@@ -104,7 +104,7 @@ def verifier_gaiax(mode): # Test 9
         if mode.myenv == 'aws':
             client_id = "xpkhvsemfd"
         else :
-            client_id = ""
+            client_id = "iddznwujyy"
         url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
     
@@ -113,7 +113,7 @@ def verifier_gaiax_2(mode): # Test 10
         if mode.myenv == 'aws':
             client_id = "zkzkwshdns"
         else :
-            client_id = ""
+            client_id = "ejqwxtjdlu"
         url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
     
