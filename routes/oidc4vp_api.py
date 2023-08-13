@@ -135,7 +135,8 @@ def ebsi_authorize(red, mode) :
         # authorization code flow -> redirect with code
         if code_data['response_type'] == 'code' :
             logging.info("response_type = code : successfull redirect to client with code = %s", code) 
-            resp = {'code' : code,  'state' : code_data['state']}  if  code_data('state') else {'code' : code}
+            resp = {'code' : code,  'state' : code_data.get('state')}  if  code_data.get('state') else {'code' : code}
+            logging.info('response to redirect_uri = %s', resp)
             return redirect(code_data['redirect_uri'] + '?' + urlencode(resp)) 
 
         # implicit flow -> redirect with id_token
@@ -186,11 +187,11 @@ def ebsi_authorize(red, mode) :
     # PKCE https://datatracker.ietf.org/doc/html/draft-ietf-oauth-spop-14
     try :
         data = {
-            'client_id' : request.args['client_id'],
-            'scope' : request.args.get('scope').split(),
+            'client_id' : request.args['client_id'], # required
+            'scope' : request.args['scope'].split(), # required
             'state' : request.args.get('state'),
-            'response_type' : request.args['response_type'],
-            'redirect_uri' : request.args['redirect_uri'],
+            'response_type' : request.args['response_type'], # required
+            'redirect_uri' : request.args['redirect_uri'], # required
             'nonce' : request.args.get('nonce'),
             'code_challenge' : request.args.get('code_challenge'),
             'code_challenge_method' : request.args.get('code_challenge_method'),
@@ -206,7 +207,7 @@ def ebsi_authorize(red, mode) :
             return jsonify('request malformed'), 400
 
     if not read_ebsi_verifier(request.args['client_id']) :
-        logging.warning('client_id not found ebsi client data base')
+        logging.warning('client_id not found in client data base')
         return manage_error_request("unauthorized_client")
    
     session['redirect_uri'] = request.args['redirect_uri']

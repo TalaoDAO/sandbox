@@ -506,11 +506,6 @@ def ebsi_issuer_token(issuer_id, red) :
         'issuer_id' : data['issuer_id']
     }
 
-    # TEST 
-    if data['issuer_id'] in  ['omjqeppxps', 'wzxtwpltvn'] :
-        return Response(**manage_error("invalid_grant", "Grant code expired", red))
-    
-
     red.setex(access_token, ACCESS_TOKEN_LIFE,json.dumps(token_endpoint_data))
 
     headers = {
@@ -554,10 +549,6 @@ async def ebsi_issuer_credential(issuer_id, red) :
         proof = result['proof']['jwt']
     except :
         return Response(**manage_error("invalid_request", "Invalid request format", red, stream_id=stream_id)) 
-    
-    #TEST 
-    if issuer_id in ['cejjvswuep', 'vijlmybjib'] :
-        return Response(**manage_error('invalid_request', 'Invalid request format', red, stream_id=stream_id)) 
     
     """
     if proof_type != 'jwt' : 

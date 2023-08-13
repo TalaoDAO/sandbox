@@ -78,7 +78,7 @@ def issuer_default(mode):
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/npwsshblrm"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
 
-    offer = ["EmailPass"]
+    offer = ["VerifiableId"]
 
     headers = {
         'Content-Type': 'application/json',
@@ -110,7 +110,7 @@ def issuer_default_2(mode):
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/omjqeppxps"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
 
-    offer = ["VerifiableId"]
+    offer = ["EmailPass"]
 
     headers = {
         'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ def issuer_default_3(mode):
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/omjqeppxps"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
 
-    offer = ["VerifiableId"]
+    offer = ["VerifiableId", "Phoneproof"]
 
     headers = {
         'Content-Type': 'application/json',

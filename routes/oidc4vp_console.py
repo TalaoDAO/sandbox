@@ -165,6 +165,9 @@ def ebsi_verifier_console(mode) :
                 reason = 'reason_' + i
                 if session['client_data'][vc] != 'None'   :
                     if session['client_data']['profile'] == "EBSI-V2" :
+                        if session['client_data'][vc] not in ['VerifiableId', 'VerifiableDiploma'] :
+                            flash("Supported VC for EBSI-V2 are only VerifiableId and VerifiableDiploma !", "warning")
+                            return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
                         prez.add_constraint("$.credentialSchema.id",
                                             type_2_schema[session['client_data'][vc]],
                                             "Input descriptor for credential " + i ,

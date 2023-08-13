@@ -294,7 +294,8 @@ def wallet_authorize(red, mode) :
             'nonce' : request.args.get('nonce'),
             'code_challenge' : request.args.get('code_challenge'),
             'code_challenge_method' : request.args.get('code_challenge_method'),
-            'expires' : datetime.timestamp(datetime.now()) + CODE_LIFE
+            'expires' : datetime.timestamp(datetime.now()) + CODE_LIFE,
+            'response_mode' : request.args.get('response_mode')
         }
     except :
         logging.warning('invalid request received in authorization server')
