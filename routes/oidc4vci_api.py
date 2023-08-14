@@ -198,7 +198,6 @@ def issuer_api_endpoint(issuer_id, red, mode) :
               return Response(**manage_error("Unauthorized", "Credential not supported", red, status=401))
         
     issuer_vc_type = issuer_profile['issuer_vc_type']
-    logging.info('VC from API = %s', vc)
    
     user_data = {
         'vc' : vc,
@@ -328,13 +327,12 @@ def ebsi_issuer_landing_page(issuer_id, stream_id, red, mode) :
     else :
         url_to_display = data_profile['oidc4vci_prefix'] + '?' + urlencode(url_data)
         json_url = url_data
-    
     # credential offer uri
-    if data_profile.get('credential_offer_uri') :
+    if issuer_data.get('credential_offer_uri') :
             id = str(uuid.uuid1())
             credential_offer_uri = mode.server + 'sandbox/ebsi/issuer/credential_offer_uri/' + id
             red.setex(id, GRANT_LIFE, url_to_display)
-            logging.info('credential offer uri =', credential_offer_uri)
+            logging.info('credential offer uri =%s', credential_offer_uri)
             url_to_display =  data_profile['oidc4vci_prefix'] + '?credential_offer_uri=' + credential_offer_uri
 
     openid_configuration  = json.dumps(oidc(issuer_id, mode), indent=4)
