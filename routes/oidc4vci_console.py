@@ -143,6 +143,7 @@ def ebsi_issuer_console(mode) :
         issuer_api_endpoint = mode.server + 'sandbox/ebsi/issuer/api/' + session['client_id']
         return render_template('issuer_oidc/issuer_console.html',
                 login_name=session['login_name'],
+                credential_offer_uri = "" if not session['client_data'].get('credential_offer_uri')  else "checked" ,
                 application_name=session['client_data'].get('application_name', 'Unknown'),
                 client_secret=session['client_data']['client_secret'],
                 user=session['client_data']['user'], 
@@ -169,6 +170,7 @@ def ebsi_issuer_console(mode) :
         else :
             session['client_data']['contact_name'] = request.form['contact_name']
             session['client_data']['user'] = request.form['user']
+            session['client_data']['credential_offer_uri'] = request.form.get('credential_offer_uri') 
             session['client_data']['callback'] = request.form['callback']
             session['client_data']['page_title'] = request.form['page_title']
             session['client_data']['page_subtitle'] = request.form['page_subtitle']

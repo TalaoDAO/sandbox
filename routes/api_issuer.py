@@ -218,7 +218,7 @@ def issuer_landing_page(issuer_id, red, mode) :
         elif issuer_data.get('credential_requested_3', 'DID') not in ["DID", "login", "secret", "totp"] :  
             credential_manifest = update_credential_manifest(issuer_data['reason_3'], issuer_data.get('credential_requested_3', 'DID'), credential_manifest)
 
-        if issuer_data.ge('credential_requested_4', 'DID') == "AllAddress" :
+        if issuer_data.get('credential_requested_4', 'DID') == "AllAddress" :
             credential_manifest = update_credential_manifest_all_address(issuer_data['reason'], credential_manifest)
         elif issuer_data.get('credential_requested_4', 'DID') not in ["DID", "login", "secret", "totp"] :  
             credential_manifest = update_credential_manifest(issuer_data['reason_4'], issuer_data.get('credential_requested_4', 'DID'), credential_manifest)

@@ -73,6 +73,11 @@ def alg(key) :
     raise Exception("Key type not supported")
 
 
+def resolve_wallet_did_ebsi_v3(did) -> str :
+    a = did.split('did:key:z')[1]
+    b = base58.b58decode(a.encode())
+    return b.split(b'\xd1\xd6\x03')[1].decode()
+
 
 def pub_key(key) :
     key = json.loads(key) if isinstance(key, str) else key

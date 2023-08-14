@@ -31,14 +31,34 @@ profile = {
             'cryptographic_binding_methods_supported' : ['DID'],
             'credential_supported' : ['VerifiableDiploma', 'VerifiableId'],
             "grant_types_supported": [
-                "authorization_code",
+                #"authorization_code",
                 "urn:ietf:params:oauth:grant-type:pre-authorized_code"
             ],
             'cryptographic_suites_supported' : ['ES256K','ES256','ES384','ES512','RS256'],
             'subject_syntax_types_supported' : ['did:key'],
             'schema_for_type' : False,
-            'service_documentation' : 'New environment for V3 compliance test'
-
+            'service_documentation' : 'New environment for V3 compliance test, use specific did:key'
+            'wallet_metadata' : {
+                "authorization_endpoint": "openid:",
+                "response_types_supported": ["vp_token", "id_token"],
+                "vp_formats_supported": {
+                    "jwt_vp": {
+                        "alg_values_supported": ["ES256"]
+                    },
+                    "jwt_vc": {
+                    "alg_values_supported": ["ES256"]
+                    }
+                },
+                "scopes_supported": ["openid"],
+                "subject_types_supported": ["public"],
+                "id_token_signing_alg_values_supported": ["ES256"],
+                "request_object_signing_alg_values_supported": ["ES256"],
+                "subject_syntax_types_supported": [
+                    "urn:ietf:params:oauth:jwk-thumbprint",
+                    "did:key:jwk_jcs-pub"
+                ],
+                "id_token_types_supported": ["subject_signed_id_token"]
+            }
         },
      "DEFAULT" :
         {
@@ -60,28 +80,14 @@ profile = {
                 oidc4vci_draft : https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html \
                 siopv2_draft : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
                 oidc4vp_draft : https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  ',
-            "siopv2_wallet_metadata" : {
-                "response_types_supported": [
-                    "id_token",
-                ],
-                "scopes_supported": [
-                    "openid"
-                ],
-                "subject_types_supported": [
-                    "pairwise"
-                ],
-                "id_token_signing_alg_values_supported": [
-                    "ES256K",
-                ],
-                "request_object_signing_alg_values_supported": [
-                    "ES256K",
-                ],
-                "subject_syntax_types_supported": [
-                    "did:key"
-                ],
-                "id_token_types_supported": [
-                    "subject_signed_id_token"
-                ]
+            "wallet_metadata" : {
+                "response_types_supported": ["vp_token", "id_token"],
+                "scopes_supported": [ "openid" ],
+                "subject_types_supported": [ "pairwise" ],
+                "id_token_signing_alg_values_supported": ["ES256K"],
+                "request_object_signing_alg_values_supported": [ "ES256K"],
+                "subject_syntax_types_supported": [ "did:key"],
+                "id_token_types_supported": ["subject_signed_id_token"]
             }
         },
          "GAIA-X" :
@@ -104,29 +110,6 @@ profile = {
                 oidc4vci_draft : https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-credential-endpoint \
                 siopv2_draft : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
                 oidc4vp_draft : https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  ',
-            "siopv2_wallet_metadata" : {
-                "response_types_supported": [
-                    "id_token",
-                ],
-                "scopes_supported": [
-                    "openid"
-                ],
-                "subject_types_supported": [
-                    "pairwise"
-                ],
-                "id_token_signing_alg_values_supported": [
-                    "ES256K",
-                ],
-                "request_object_signing_alg_values_supported": [
-                    "ES256K",
-                ],
-                "subject_syntax_types_supported": [
-                    "did:key"
-                ],
-                "id_token_types_supported": [
-                    "subject_signed_id_token"
-                ]
-            }
         },
         "HEDERA" :
         {
@@ -148,30 +131,7 @@ profile = {
                 oidc4vci_draft : https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html \
                 siopv2_draft : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
                 oidc4vp_draft : https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  \
-                 Issuer and verifier for marjetplace and WCM',
-            "siopv2_wallet_metadata" : {
-                "response_types_supported": [
-                    "id_token",
-                ],
-                "scopes_supported": [
-                    "openid"
-                ],
-                "subject_types_supported": [
-                    "pairwise"
-                ],
-                "id_token_signing_alg_values_supported": [
-                    "ES256K",
-                ],
-                "request_object_signing_alg_values_supported": [
-                    "ES256K",
-                ],
-                "subject_syntax_types_supported": [
-                    "did:key"
-                ],
-                "id_token_types_supported": [
-                    "subject_signed_id_token"
-                ]
-            }
+                 Issuer and verifier for marjetplace and WCM'
         },
     
     "JWT-VC" :

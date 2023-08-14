@@ -79,6 +79,7 @@ client_data_pattern_ebsi = {
                 "vp_token" : None,
                 "group" : None,
                 "request_uri" : None,
+                "credential_offer_uri" : None,
                 "vc" : "DID",
                 "vc_1" : "DID",
                 "vc_2" : "DID",

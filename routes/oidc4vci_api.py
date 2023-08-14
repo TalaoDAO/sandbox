@@ -44,8 +44,11 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/.well-known/openid-credential-issuer', view_func=ebsi_issuer_openid_configuration, methods=['GET'], defaults={'mode' : mode})
 
     app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/authorize',  view_func=ebsi_issuer_authorize, methods = ['GET', 'POST'], defaults={'red' :red})
-    app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/token',  view_func=ebsi_issuer_token, methods = ['GET', 'POST'], defaults={'red' :red})
-    app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/credential',  view_func=ebsi_issuer_credential, methods = ['GET', 'POST'], defaults={'red' :red})
+    app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/token',  view_func=ebsi_issuer_token, methods = ['POST'], defaults={'red' :red})
+    app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/credential',  view_func=ebsi_issuer_credential, methods = ['POST'], defaults={'red' :red})
+
+    app.add_url_rule('/sandbox/ebsi/issuer/credential_offer_uri/<id>',  view_func=ebsi_issuer_credential_offer_uri, methods = ['GET'], defaults={'red' :red})
+
     return
 
 
@@ -100,23 +103,36 @@ def oidc(issuer_id, mode) :
         try :
             file_path = './verifiable_credentials/' + vc + '.jsonld'
         except :
-            logging.warning('Credentila not found  %s', vc)
+            logging.warning('Credential not found  %s', vc)
             return
         credential = json.load(open(file_path))
-        cs.append({
-            'format': issuer_profile['issuer_vc_type'],
-            'types' : credential['type'],
-            #"@context" : credential['@context'],
-            'id': vc,
-            'display': [
-                {
-                    'name': issuer_data['company_name'],
-                    'locale': 'en-US',
+        if issuer_profile != 'EBSI-V3' :
+            cs.append({
+                'format': issuer_profile['issuer_vc_type'],
+                'types' : credential['type'],
+                'id': vc,
+                'display': [
+                    {
+                        'name': issuer_data['company_name'],
+                        'locale': 'en-US',
+                    }
+            ]   ,
+                'cryptographic_binding_methods_supported': issuer_profile['cryptographic_binding_methods_supported'],
+                'cryptographic_suites_supported': issuer_profile['cryptographic_suites_supported']
+                })
+        else :
+            # https://api-conformance.ebsi.eu/docs/ct/providers-and-wallets-metadata#credential-issuer-metadata
+            s.append({
+                'format': issuer_profile['issuer_vc_type'],
+                'types' : credential['type'],
+                'cryptographic_binding_methods_supported': issuer_profile['cryptographic_binding_methods_supported'],
+                'cryptographic_suites_supported': issuer_profile['cryptographic_suites_supported'],
+                 "trust_framework": {
+                    "name": "ebsi",
+                    "type": "Accreditation",
+                    "uri": "TIR link towards accreditation"
                 }
-            ],
-            'cryptographic_binding_methods_supported': issuer_profile['cryptographic_binding_methods_supported'],
-            'cryptographic_suites_supported': issuer_profile['cryptographic_suites_supported']
-            })
+                })
         
     # Credential manifest section
     #https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-server-metadata    
@@ -290,6 +306,15 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
     return url_data, code_data
 
 
+def ebsi_issuer_credential_offer_uri(id, red):
+    try :
+        url = red.get(id).decode()
+    except :
+        logging.warning("session expired")
+        return jsonify("Session expired"), 404
+    return jsonify(url)
+
+
 # initiate endpoint with QRcode for API in case of test
 def ebsi_issuer_landing_page(issuer_id, stream_id, red, mode) :
     try :
@@ -307,22 +332,30 @@ def ebsi_issuer_landing_page(issuer_id, stream_id, red, mode) :
     code_data['stream_id'] = stream_id  # to manage the followup screen
     red.setex(pre_authorized_code, GRANT_LIFE, json.dumps(code_data))
     if issuer_data['profile']  not in ['EBSI-V2', 'GAIA-X'] :
-        url = data_profile['oidc4vci_prefix'] + "?" + urlencode( {'credential_offer' : json.dumps(url_data)})
+        url_to_display = data_profile['oidc4vci_prefix'] + "?" + urlencode( {'credential_offer' : json.dumps(url_data)})
         json_url  = {"credential_offer" : json.loads(json.dumps(url_data))}
     else :
-        url = data_profile['oidc4vci_prefix'] + '?' + urlencode(url_data)
+        url_to_display = data_profile['oidc4vci_prefix'] + '?' + urlencode(url_data)
         json_url = url_data
+    
+    # credential offer uri
+    if data_profile.get('credential_offer_uri') :
+            id = str(uuid.uuid1())
+            credential_offer_uri = mode.server + 'sandbox/ebsi/issuer/credential_offer_uri/' + id
+            red.setex(id, GRANT_LIFE, url_to_display)
+            logging.info('credential offer uri =', credential_offer_uri)
+            url_to_display =  data_profile['oidc4vci_prefix'] + '?credential_offer_uri=' + credential_offer_uri
 
     openid_configuration  = json.dumps(oidc(issuer_id, mode), indent=4)
-    deeplink_talao = mode.deeplink_talao + 'app/download/ebsi?' + urlencode({'uri' : url })
-    deeplink_altme = mode.deeplink_altme + 'app/download/ebsi?' + urlencode({'uri' : url})
+    deeplink_talao = mode.deeplink_talao + 'app/download/ebsi?' + urlencode({'uri' : url_to_display })
+    deeplink_altme = mode.deeplink_altme + 'app/download/ebsi?' + urlencode({'uri' : url_to_display})
     qrcode_page = issuer_data.get('issuer_landing_page')
     logging.info("QR code page = %s", qrcode_page)
     return render_template(
         qrcode_page,
         openid_configuration = openid_configuration,
         url_data = json.dumps(json_url,indent = 6),
-        url=url,
+        url=url_to_display,
         deeplink_altme=deeplink_altme,
         deeplink_talao=deeplink_talao,
         stream_id=stream_id,
