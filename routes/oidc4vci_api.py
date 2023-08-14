@@ -106,33 +106,24 @@ def oidc(issuer_id, mode) :
             logging.warning('Credential not found  %s', vc)
             return
         credential = json.load(open(file_path))
+        oidc_data = {
+            'format': issuer_profile['issuer_vc_type'],
+            'types' : credential['type'],
+            'cryptographic_binding_methods_supported': issuer_profile['cryptographic_binding_methods_supported'],
+            'cryptographic_suites_supported': issuer_profile['cryptographic_suites_supported']
+        }
+        oidc_data['id'] = vc
         if issuer_profile != 'EBSI-V3' :
-            cs.append({
-                'format': issuer_profile['issuer_vc_type'],
-                'types' : credential['type'],
-                'id': vc,
-                'display': [
-                    {
-                        'name': issuer_data['company_name'],
-                        'locale': 'en-US',
-                    }
-            ]   ,
-                'cryptographic_binding_methods_supported': issuer_profile['cryptographic_binding_methods_supported'],
-                'cryptographic_suites_supported': issuer_profile['cryptographic_suites_supported']
-                })
+            pass
+            #oidc_data['id'] = vc
         else :
-            # https://api-conformance.ebsi.eu/docs/ct/providers-and-wallets-metadata#credential-issuer-metadata
-            s.append({
-                'format': issuer_profile['issuer_vc_type'],
-                'types' : credential['type'],
-                'cryptographic_binding_methods_supported': issuer_profile['cryptographic_binding_methods_supported'],
-                'cryptographic_suites_supported': issuer_profile['cryptographic_suites_supported'],
-                 "trust_framework": {
+            oidc_data["trust_framework"] = {
                     "name": "ebsi",
                     "type": "Accreditation",
                     "uri": "TIR link towards accreditation"
                 }
-                })
+            # https://api-conformance.ebsi.eu/docs/ct/providers-and-wallets-metadata#credential-issuer-metadata
+        cs.append(oidc_data)
         
     # Credential manifest section
     #https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-server-metadata    
