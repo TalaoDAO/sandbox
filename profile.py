@@ -37,7 +37,7 @@ profile = {
             'cryptographic_suites_supported' : ['ES256K','ES256','ES384','ES512','RS256'],
             'subject_syntax_types_supported' : ['did:key'],
             'schema_for_type' : False,
-            'service_documentation' : 'New environment for V3 compliance test, use specific did:key'
+            'service_documentation' : 'New environment for V3 compliance test, use specific did:key',
             'wallet_metadata' : {
                 "authorization_endpoint": "openid:",
                 "response_types_supported": ["vp_token", "id_token"],
