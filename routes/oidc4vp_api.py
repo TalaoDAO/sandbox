@@ -21,6 +21,7 @@ import oidc4vc
 from profile import profile
 from oidc4vc_constante import type_2_schema
 import pex
+import didkit
 
 logging.basicConfig(level=logging.INFO)
 
@@ -169,10 +170,10 @@ def ebsi_authorize(red, mode) :
         code = request.args['code']
         code_data = json.loads(red.get(code).decode())
         resp = {'error' : request.args['error']}
-        if session.get('state') :
+        if code_data.get('state') :
             resp['state'] = code_data['state']
+        redirect_uri = code_data['redirect_uri']
         red.delete(code)
-        redirect_uri = session['redirect_uri']
         session.clear()
         return redirect(redirect_uri + '?' + urlencode(resp)) 
     
@@ -442,10 +443,7 @@ def ebsi_login_qrcode(red, mode):
         "redirect_uri" : mode.server + "sandbox/ebsi/login/endpoint/" + stream_id,
         "nonce" : nonce
     }
-    # TEST :
-    if client_id in ['paqqladucu', 'qjcjyexfrx'] :
-        del authorization_request['redirect_uri']
-
+   
     if verifier_data['profile'] == "EBSI-V2" :
         # previoous release of the OIDC4VC specifications
         # OIDC claims parameter https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
@@ -525,7 +523,7 @@ def ebsi_request_uri(stream_id, red) :
 
 
 
-def ebsi_login_endpoint(stream_id, red):
+async def ebsi_login_endpoint(stream_id, red):
     logging.info("Enter wallet response endpoint")
     """
     https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#section-6.2
@@ -560,16 +558,21 @@ def ebsi_login_endpoint(stream_id, red):
         qrcode_status = "ok"
         data = json.loads(red.get(stream_id).decode())
 
-    # get id_token, vp_token and presenttaion_submission
+    # get id_token, vp_token and presentation_submission
     if access == "ok" :
-        print("request form = ", request.form)
         vp_token =request.form.get('vp_token')
         id_token = request.form.get('id_token')
         presentation_submission =request.form.get('presentation_submission')
         response_format = "ok"
         logging.info('id_token received = %s', id_token)
-        logging.info('vp token received = %s', vp_token)
-        logging.info('presentation submission received = %s', presentation_submission)
+        if vp_token and profile[verifier_data['profile']][ "verifier_vp_type"] == "ldp_vp" :
+            logging.info('vp token received = %s', json.dumps(json.loads(vp_token), indent=4))
+        else : 
+            logging.info('vp token received = %s', vp_token)
+        if presentation_submission :
+            logging.info('presentation submission received = %s', json.dumps(json.loads(presentation_submission), indent=4))
+        else : 
+            logging.info('presentation submission received = %s', None)
         if not id_token and not vp_token :
             response_format = "invalid request format",
             status_code = 400
@@ -586,6 +589,8 @@ def ebsi_login_endpoint(stream_id, red):
         if not presentation_submission :
             access = "access_denied"
             presentation_submission_status = "Not found"
+        else :
+            presentation_submission_status = "ok"
 
     # check id_token if exists
     if access == "ok"  and id_token :
@@ -619,14 +624,19 @@ def ebsi_login_endpoint(stream_id, red):
             id_token_status += " nonce does not match "
 
     if access == 'ok' and vp_token :
-        try :
-            oidc4vc.verif_token(vp_token, nonce)
-            vp_token_status = "ok"
-            vp_token_payload = oidc4vc.get_payload_from_token(vp_token)
-        except :
-            vp_token_status = "signature check failed"
-            status_code = 400
-            access = "access_denied"
+        if profile[verifier_data['profile']][ "verifier_vp_type"] == "jwt_vp" :
+            try :
+                oidc4vc.verif_token(vp_token, nonce)
+                vp_token_status = "ok"
+                vp_token_payload = oidc4vc.get_payload_from_token(vp_token)
+            except :
+                vp_token_status = "signature check failed"
+                status_code = 400
+                access = "access_denied"
+        else :
+            verifyResult = json.loads(await didkit.verify_presentation(vp_token, "{}" ))
+            vp_token_status = verifyResult
+
 
     # check wallet DID
     if access == "ok" and verifier_data['profile'] == "EBSI-V2" :
@@ -641,36 +651,37 @@ def ebsi_login_endpoint(stream_id, red):
     
     # verify issuers signatures
     if access == "ok" and vp_token : 
-        credential_list = vp_token_payload['vp']['verifiableCredential']
-        if isinstance(credential_list, str) :
-            credential_list = [credential_list]
-        test = True
-        for credential in credential_list :
-            # Check credential signature with Issuers public key received from EBSI
-            header = oidc4vc.get_header_from_token(credential)
-            issuer_vm = header['kid']
-            issuer_did = issuer_vm.split('#')[0]
-            logging.info('issuer did = %s', issuer_did)
-            pub_key = oidc4vc.get_lp_public_jwk(issuer_did,issuer_vm)
-            if not pub_key :
-                #test =  False
-                logging.warning('Issuer not registered')
-                issuer_status = 'Issuer not registered'
-                break
-            logging.info('EBSI issuer pub key = %s', pub_key)
-            try :
-                oidc4vc.verify_jwt_credential(credential, pub_key)
-                issuer_status = 'Issuer is registered and signature ok'
-            except :
-                #test = False
-                logging.warning('Signature check failed')
-                issuer_status = 'Issuer signature failed'
-                break
-        if test :
-            credential_status = "ok"
-        else :
-            access = "access_denied"
-            status_code = 400
+        if profile[verifier_data['profile']][ "verifier_vp_type"] == "jwt_vp" :
+            credential_list = vp_token_payload['vp']['verifiableCredential']
+            if isinstance(credential_list, str) :
+                credential_list = [credential_list]
+            test = True
+            for credential in credential_list :
+                # Check credential signature with Issuers public key received from EBSI
+                header = oidc4vc.get_header_from_token(credential)
+                issuer_vm = header['kid']
+                issuer_did = issuer_vm.split('#')[0]
+                logging.info('issuer did = %s', issuer_did)
+                pub_key = oidc4vc.get_lp_public_jwk(issuer_did,issuer_vm)
+                if not pub_key :
+                    #test =  False
+                    logging.warning('Issuer not registered')
+                    issuer_status = 'Issuer not registered'
+                    break
+                logging.info('EBSI issuer pub key = %s', pub_key)
+                try :
+                    oidc4vc.verify_jwt_credential(credential, pub_key)
+                    issuer_status = 'Issuer is registered and signature ok'
+                except :
+                    #test = False
+                    logging.warning('Signature check failed')
+                    issuer_status = 'Issuer signature failed'
+                    break
+            if test :
+                credential_status = "ok"
+            else :
+                access = "access_denied"
+                status_code = 400
 
     response = {
       "created": datetime.timestamp(datetime.now()),
