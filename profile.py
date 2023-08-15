@@ -29,7 +29,7 @@ profile = {
             "siopv2_prefix" : 'openid-vc://',
             "oidc4vp_prefix" : 'openid-vc://',
             'cryptographic_binding_methods_supported' : ['DID'],
-            'credential_supported' : ['VerifiableDiploma', 'VerifiableId'],
+            'credential_supported' : ['VerifiableDiploma', 'VerifiableId', 'GreencypherPass', 'ListOfProjects'],
             "grant_types_supported": [
                 #"authorization_code",
                 "urn:ietf:params:oauth:grant-type:pre-authorized_code"
@@ -73,9 +73,9 @@ profile = {
             "siopv2_prefix" : "openid-vc://",
             "oidc4vp_prefix" : "openid-vc://",
             "cryptographic_binding_methods_supported" : ('DID'),
-            'credential_supported' : ['EmployeeCredential',  'VerifiableId', 'EmailPass'],
+            'credential_supported' : ['EmployeeCredential',  'VerifiableId', 'EmailPass', 'PhoneProof', "GreencypherPass"],
             "grant_types_supported": [
-                "authorization_code",
+                #"authorization_code",
                 "urn:ietf:params:oauth:grant-type:pre-authorized_code"
             ],
             "cryptographic_suites_supported" : ['ES256K','ES256','ES384','ES512','RS256'],
@@ -105,7 +105,7 @@ profile = {
             "cryptographic_binding_methods_supported" : ('DID'),
             'credential_supported' :  ['EmployeeCredential',  'VerifiableId',  'GreencypherPass', 'EmailPass'],
             "grant_types_supported": [
-                "authorization_code",
+                #"authorization_code",
                 "urn:ietf:params:oauth:grant-type:pre-authorized_code"
             ],
             "cryptographic_suites_supported" : ['ES256K','ES256','ES384','ES512','RS256'],
@@ -124,9 +124,9 @@ profile = {
             "siopv2_prefix" : "openid-hedera://",
             "oidc4vp_prefix" : "openid-hedera://",
             "cryptographic_binding_methods_supported" : ('DID'),
-            'credential_supported' :  ['EmployeeCredential', 'VerifiableId', 'GreencypherPass', 'ListOfProjects', 'EmailPass', 'Over18'],
+            'credential_supported' :  ['EmployeeCredential', 'VerifiableId', 'GreencypherPass', 'ListOfProjects', 'PhoneProof', 'EmailPass', 'Over18'],
             "grant_types_supported": [
-                "authorization_code",
+                #"authorization_code",
                 "urn:ietf:params:oauth:grant-type:pre-authorized_code"
             ],
             "cryptographic_suites_supported" : ['ES256K','ES256','ES384','ES512','RS256'],

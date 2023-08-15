@@ -20,7 +20,7 @@ def init_app(app,red, mode) :
 
     app.add_url_rule('/sandbox/issuer/default',  view_func=issuer_default, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/issuer/default_2',  view_func=issuer_default_2, methods = ['GET'], defaults={'mode' : mode}) # test 
-    app.add_url_rule('/sandbox/issuer/default_30',  view_func=issuer_default_3, methods = ['GET'], defaults={'mode' : mode}) # test
+    app.add_url_rule('/sandbox/issuer/default_3',  view_func=issuer_default_3, methods = ['GET'], defaults={'mode' : mode}) # test 6
 
     app.add_url_rule('/sandbox/issuer/ebsiv3',  view_func=issuer_ebsiv3, methods = ['GET'], defaults={'mode' : mode}) # test 8
 
@@ -205,15 +205,15 @@ def issuer_default_2(mode):
     
 
 
-def issuer_default_3(mode):
+def issuer_default_3(mode): # Test 6 
     if mode.myenv == 'aws' :
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/cejjvswuep"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
     else :       
-        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/omjqeppxps"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/ooroomolyd"
+        client_secret = "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"
 
-    offer = ["VerifiableId", "Phoneproof"]
+    offer = ["VerifiableId", "PhoneProof"]
 
     headers = {
         'Content-Type': 'application/json',
@@ -341,6 +341,7 @@ def build_credential_offered(offer) :
             with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f :
                 credential = json.loads(f.read())
         except :
+            print("VC fopr offer not found")
             return
         credential['id'] = "urn:uuid:" + str(uuid.uuid4())
         credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"

@@ -378,29 +378,11 @@ def ebsi_issuer_landing_page(issuer_id, stream_id, red, mode) :
 
 def ebsi_issuer_authorize(issuer_id, red) :
     """
-    
     DEPRECATAED
-
-
-    https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-credential-authorization-re
-      
-    my_request = {
-        'scope' : 'openid',
-        'client_id' : 'https://wallet.com/callback',
-        'response_type' : 'code',
-        'authorization_details' : json.dumps([{'type':'openid_credential',
-                        'credential_type': credential_type,
-                        'format':'jwt_vc'}]),
-        'redirect_uri' :  ngrok + '/callback',
-        'state' : '1234', # wallet state
-        'op_state' : 'mlkmlkhm' #issuer state
-        }
 
     """
     def authorization_error_response(error, error_description, stream_id, red) :
         """
-        https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-authentication-error-respon
-        
         https://www.rfc-editor.org/rfc/rfc6749.html#page-26
         """
         # front channel follow up 
@@ -456,26 +438,17 @@ def ebsi_issuer_authorize(issuer_id, red) :
     if format not in ['jwt_vc', 'jwt_vc_json'] :
         return authorization_error_response("invalid_request", "unsupported format", op_state, red)
 
-    # TODO Manage login and get vc for this user
-    file_path = './verifiable_credentials/PhoneProof.jsonld'
-    vc_for_test = json.load(open(file_path))
-
     # Code creation
     code = str(uuid.uuid1())
     code_data = {
         'credential_type' : credential_type,
         'format' : format,
         'stream_id' : op_state,
-        'vc' : vc_for_test
-        # TODO PKCE
-        #'code_challenge' : request.args.get('code_challenge'), 
-        #'code_challenge_method' : request.args.get('code_challenge_method'),
+        'vc' : "vc_for_test",
+        'code_challenge' : request.args.get('code_challenge'), 
+        'code_challenge_method' : request.args.get('code_challenge_method'),
     }
     red.setex(code, GRANT_LIFE, json.dumps(code_data))    
-
-    # TODO dynamic credential request register Altme wallet
-    # https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-dynamic-credential-request
-    # https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#name-cross-device-self-issued-ope
 
     resp = {'code' : code}
     if request.args.get('state') :
@@ -487,37 +460,25 @@ def ebsi_issuer_authorize(issuer_id, red) :
 # token endpoint
 def ebsi_issuer_token(issuer_id, red) :
     """
+    https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-token-endpoint
     https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
-
-    https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-token-endpoint
     """
     logging.info("token endpoint request = %s", json.dumps(request.form))
-    try :
-        grant_type =  request.form['grant_type']
-    except :
+
+    grant_type =  request.form.GET('grant_type')
+    if not grant_type :
         return Response(**manage_error("invalid_request", "Request format is incorrect", red))
     
     if grant_type == 'urn:ietf:params:oauth:grant-type:pre-authorized_code' :
-        try :
-            code = request.form['pre-authorized_code']
-            user_pin = request.form.get('user_pin')
-            logging.info('user_pin = %s', user_pin)
-        except :
-            logging.warning('pre authorized code is missing')
-            return Response(**manage_error("invalid_grant", "Request format is incorrect", red))
+        code = request.form.GET('pre-authorized_code')   
+        user_pin = request.form.get('user_pin')
+        logging.info('user_pin = %s', user_pin)
     
     elif grant_type == 'authorization_code' :
-        try :
-            code = request.form['code']
-        except :
-            logging.warning('code from authorization server is missing')
-            return Response(**manage_error("invalid_request", "Request format is incorrect", red))
-    else : 
-        return Response(**manage_error("invalid_grant", "Grant type not supported", red))
+        code = request.form.GET('code')
     
-
-    if not code : # in case of wallet error
-        logging.warning('code is null')
+    if not code : 
+        logging.warning('code is missing')
         return Response(**manage_error("invalid_grant", "Request format is incorrect", red))
 
     try :
@@ -525,15 +486,15 @@ def ebsi_issuer_token(issuer_id, red) :
     except :
         return Response(**manage_error("invalid_grant", "Grant code expired", red))     
     
-    if data['user_pin_required'] :
-        if not user_pin :
+    if data.get('user_pin_required') and not user_pin :
             return Response(**manage_error("invalid_request", "User pin is missing", red))
-        elif data['user_pin'] != user_pin :
+    
+    if data.get('user_pin_required') and data.get('user_pin') != user_pin :
             return Response(**manage_error("invalid_grant", "User pin is incorrect", red))
 
     # token response
     access_token = str(uuid.uuid1())
-    # TODO add id_token ???
+
     endpoint_response = {
         'access_token' : access_token,
         'c_nonce' : str(uuid.uuid1()),
@@ -543,12 +504,12 @@ def ebsi_issuer_token(issuer_id, red) :
     token_endpoint_data = {
         'access_token' : access_token,
         'pre_authorized_code' : code,
-        'c_nonce' : endpoint_response['c_nonce'],
-        'format' : data['format'],
-        'credential_type' : data['credential_type'],
-        'vc' : data['vc'],
+        'c_nonce' : endpoint_response.get('c_nonce'),
+        'format' : data.get('format'),
+        'credential_type' : data.get('credential_type'),
+        'vc' : data.get('vc'),
         'stream_id' : data.get('stream_id'),
-        'issuer_id' : data['issuer_id']
+        'issuer_id' : data.get('issuer_id')
     }
 
     red.setex(access_token, ACCESS_TOKEN_LIFE,json.dumps(token_endpoint_data))
@@ -562,9 +523,7 @@ def ebsi_issuer_token(issuer_id, red) :
 # credential endpoint
 async def ebsi_issuer_credential(issuer_id, red) :
     """
-    https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-credential-endpoint
-    
-    https://api-conformance.ebsi.eu/docs/specs/credential-issuance-guidelines#credential-request
+    https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-credential-endpoint
     
     """
     logging.info("credential endpoint request")
@@ -595,10 +554,8 @@ async def ebsi_issuer_credential(issuer_id, red) :
     except :
         return Response(**manage_error("invalid_request", "Invalid request format", red, stream_id=stream_id)) 
     
-    """
     if proof_type != 'jwt' : 
-        return Response(**manage_error("unsupported_credential_type", "The credential type is not supported")) 
-    """
+        return Response(**manage_error("unsupported_credential_type", "The credential proof type is not supported =%s", proof_type)) 
 
     # get type of credential requested
     try :
@@ -642,7 +599,7 @@ async def ebsi_issuer_credential(issuer_id, red) :
     proof_payload=oidc4vc.get_payload_from_token(proof)
     issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
     
-    # fro EBSI ......
+    # for EBSI ......
     if credential_type in ['https://api-conformance.ebsi.eu/trusted-schemas-registry/v2/schemas/z22ZAMdQtNLwi51T2vdZXGGZaYyjrsuP1yzWyXZirCAHv'] :
         credential_type = 'VerifiableId' 
     elif  credential_type in ['https://api.preprod.ebsi.eu/trusted-schemas-registry/v1/schemas/0xbf78fc08a7a9f28f5479f58dea269d3657f54f13ca37d380cd4e92237fb691dd'] :

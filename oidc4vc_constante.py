@@ -30,7 +30,7 @@ ebsi_verifier_credential_list = {
     'ProofOfAsset' : 'Carbon credit projects',
     'EmailPass' : 'Email proof',
     'PhoneProof' : 'Phone proof',
-    'DeviceInfo' : 'Device information',
+    'WalletCredential' : 'Device information',
     "GreencypherPass" : "Pass GreenCypher",
     "ListOfProjects" : "ACX list of Projects",
     "Over18" : "Over18"
