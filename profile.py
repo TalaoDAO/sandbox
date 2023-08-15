@@ -36,6 +36,11 @@ profile = {
             ],
             'cryptographic_suites_supported' : ['ES256K','ES256','ES384','ES512','RS256'],
             'subject_syntax_types_supported' : ['did:key'],
+            'trust_framework': {
+                'name': 'ebsi',
+                'type': 'Accreditation',
+                'uri': 'TIR link towards accreditation'
+            },
             'schema_for_type' : False,
             'service_documentation' : 'New environment for V3 compliance test, use specific did:key',
             'wallet_metadata' : {

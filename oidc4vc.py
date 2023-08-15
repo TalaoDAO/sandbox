@@ -79,6 +79,32 @@ def resolve_wallet_did_ebsi_v3(did) -> str :
     return b.split(b'\xd1\xd6\x03')[1].decode()
 
 
+def generate_wallet_did_ebsiv3 (key) :
+    # json string, remove space, alphabetical ordered 
+    if isinstance(key, str) :
+        key = json.loads(pub_key)
+    if key["kty"] == "EC" :
+        jwk = {
+            "crv" : key["crv"], # seckp256k1 or P-256 
+            "kty" : "EC",
+            "x" : key["x"],
+            "y": key["y"]
+        }
+    elif key["kty"] == "OKP" :
+        jwk = {
+             "crv": "Ed25519", # pub_key["crv"], # Ed25519
+             "kty" : "OKP",
+             "x" : key["x"]
+        }  
+    else :
+        logging.error("Curve not supported")
+        return
+    data = json.dumps(jwk).replace(" ", "").encode()
+    prefix = b'\xd1\xd6\x03'
+    return "did:key:z" + base58.b58encode(prefix + data).decode()
+
+
+
 def pub_key(key) :
     key = json.loads(key) if isinstance(key, str) else key
     Key = jwk.JWK(**key) 

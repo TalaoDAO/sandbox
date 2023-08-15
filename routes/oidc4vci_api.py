@@ -97,6 +97,7 @@ def oidc(issuer_id, mode) :
     except :
         logging.warning('issuer_id not found for %s', issuer_id)
         return
+    
     # Credential supported section
     cs = list()
     for vc in issuer_profile['credential_supported']:
@@ -112,10 +113,8 @@ def oidc(issuer_id, mode) :
             'cryptographic_binding_methods_supported': issuer_profile['cryptographic_binding_methods_supported'],
             'cryptographic_suites_supported': issuer_profile['cryptographic_suites_supported']
         }
-        oidc_data['id'] = vc
-        if issuer_profile != 'EBSI-V3' :
-            pass
-            #oidc_data['id'] = vc
+        if issuer_data['profile'] != 'EBSI-V3' :
+            oidc_data['id'] = vc
         else :
             oidc_data["trust_framework"] = {
                     "name": "ebsi",
@@ -167,6 +166,7 @@ def issuer_api_endpoint(issuer_id, red, mode) :
         "issuer_state" : OPTIONAL, string, opaque to wallet
         "credential_type" : REQUIRED -> array or string name of the credential
         "user_pin_required" : false -> OPTIONAL, bool, False by default
+        "user_pin" : OPTIONAL
         "callback" : OPTIONAL, string, this the route for at the end of the flo
         "redirect" : True by default OPTIONAL, bool, allow to use a local template
         }
@@ -196,9 +196,11 @@ def issuer_api_endpoint(issuer_id, red, mode) :
         if _vc not in issuer_profile[ 'credential_supported'] :
               logging.warning("Credential not supported %s", _vc)
               return Response(**manage_error("Unauthorized", "Credential not supported", red, status=401))
-        
+    
+    if request.json.get('user_pin_required') and not request.json.get('user_pin') :
+        return Response(**manage_error("Unauthorized", "User pin is not set", red, status=401))
+
     issuer_vc_type = issuer_profile['issuer_vc_type']
-   
     user_data = {
         'vc' : vc,
         'issuer_vc_type' : issuer_vc_type,
@@ -207,6 +209,7 @@ def issuer_api_endpoint(issuer_id, red, mode) :
         'credential_type' : credential_type,
         'pre-authorized_code' : request.json.get('pre-authorized_code'),
         'user_pin_required' : request.json.get('user_pin_required'),
+        'user_pin' : request.json.get('user_pin'),
         'callback' : request.json.get('callback')
     }
     if redirect :
@@ -217,7 +220,15 @@ def issuer_api_endpoint(issuer_id, red, mode) :
         logging.info('initiate qrcode = %s', mode.server+ 'sandbox/ebsi/issuer/' + issuer_id +'/' + stream_id)
         return jsonify( response)
     
-    url_data, code_data = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_vc_type, profile, vc, mode)
+    url_data, code_data = build_credential_offer(issuer_id,
+                                                credential_type,
+                                                pre_authorized_code,
+                                                issuer_vc_type,
+                                                profile,
+                                                vc,
+                                                request.json.get('user_pin_required'),
+                                                request.json.get('user_pin'),
+                                                mode)
     if not url_data :
         return Response(**manage_error("Internal server error", "Server error", red, status=500))
 
@@ -231,59 +242,63 @@ def issuer_api_endpoint(issuer_id, red, mode) :
     return jsonify(response)
 
 
-def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_vc_type, profile, vc, mode) :
-    #see EBSI specs as OpenID OIDC4VC issuance for issuance has changed
-    #https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html
-    #openid://initiate_issuance
-    #?issuer=http%3A%2F%2F192.168.0.65%3A3000%2Fsandbox%2Febsi%2Fissuer%2Fhqplzbjrhg
-    #&credential_type=Pass
-    #&op_state=40fd65cf-98ba-11ed-957d-512a313adf23
-    #pre_authorized_code
-    #logging.info('Issuer openid-configuration = %s', mode.server + '/sandbox/ebsi/issuer/' + issuer_id + '/.well-known/openid-configuration' )
-       
-    # Option 1 https://api-conformance.ebsi.eu/docs/wallet-conformance/issue
-    logging.info('PROFILE = %s', profile)
+def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_vc_type, issuer_profile, vc, user_pin_required, user_pin, mode) :
    
-    if profile == 'EBSI-V2' :
+    if issuer_profile == 'EBSI-V2' :
         url_data  = { 
             'issuer' : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
             'credential_type'  : type_2_schema[credential_type],
         }
 
-    else :
+    elif issuer_profile == 'GAIA-X' :
         if isinstance(credential_type, str) :
             credential_type = [credential_type]
+        if len(credential_type)== 1 :
+            credential_type = credential_type[0]
+        url_data  = { 
+            "issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
+            "credential_type"  : credential_type,
+        }
 
-        if profile == 'GAIA-X' :
-            if len(credential_type)== 1 :
-                credential_type = credential_type[0]
-
-            url_data  = { 
-                "issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
-                "credential_type"  : credential_type,
-            }
-        else :
-            url_data  = { 
-                "credential_issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
-                "credentials"  : credential_type
-            }
-
+    # new OIDC4VCI standard with  credential as json object
+    elif issuer_profile == 'EBSI-V3' :
+        if isinstance(credential_type, str) :
+            credential_type = [credential_type]
+        url_data  = { 
+            "credential_issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
+            "credentials"  : []
+        }
+        for vc in credential_type :
+            credential = json.load(open('verifiable_credentials/' + vc + '.jsonld', 'r'))
+            url_data["credentials"].append({
+                'format': profile[issuer_profile]['issuer_vc_type'],
+                'types': credential['type'],
+                'trust_framework': profile[issuer_profile]['trust_framework']
+            })
     
+    else :
+        # new OIDC4VCI standard with credential as json string
+        if isinstance(credential_type, str) :
+            credential_type = [credential_type]
+        url_data  = { 
+            "credential_issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
+            "credentials"  : credential_type
+        }
+                
     #  https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-pre-authorized-code-flow
-    # TODO PIN code not supported
     if pre_authorized_code and profile in ['EBSI-V2', 'GAIA-X'] :
         url_data['pre-authorized_code'] = pre_authorized_code
-        url_data['user_pin_required']= False
+        url_data['user_pin_required']= user_pin_required
     
     elif pre_authorized_code  :
         url_data['grants'] ={
             "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
                 "pre-authorized_code": pre_authorized_code,
-                "user_pin_required": False
+                "user_pin_required": user_pin_required
             }
         }
     
-    elif not pre_authorized_code and profile not in  ['EBSI-V2', 'GAIA-X'] :
+    else :
         url_data["grants"] ={
             "authorization_code": {}
         }
@@ -291,7 +306,9 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
             'credential_type' : credential_type,
             'format' : issuer_vc_type,
             'vc' : vc,
-            'issuer_id' : issuer_id
+            'issuer_id' : issuer_id,
+            "user_pin_required": user_pin_required,
+            'user_pin' : user_pin
     }
     return url_data, code_data
 
@@ -314,11 +331,13 @@ def ebsi_issuer_landing_page(issuer_id, stream_id, red, mode) :
         return jsonify("Session expired"), 404
     credential_type = user_data['credential_type']
     pre_authorized_code = user_data['pre-authorized_code']
+    user_pin_required = user_data['user_pin_required']
+    user_pin = user_data['user_pin']
     issuer_vc_type = user_data['issuer_vc_type']
     vc = user_data['vc']
     issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
     data_profile = profile[issuer_data['profile']]
-    url_data, code_data = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_vc_type, issuer_data['profile'], vc, mode)
+    url_data, code_data = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_vc_type, issuer_data['profile'], vc, user_pin_required, user_pin, mode)
     code_data['stream_id'] = stream_id  # to manage the followup screen
     red.setex(pre_authorized_code, GRANT_LIFE, json.dumps(code_data))
     if issuer_data['profile']  not in ['EBSI-V2', 'GAIA-X'] :
@@ -353,9 +372,7 @@ def ebsi_issuer_landing_page(issuer_id, stream_id, red, mode) :
         page_subtitle=issuer_data['page_subtitle'],
         page_description=issuer_data['page_description'],
         title=issuer_data['title'],
-        landing_page_url=issuer_data['landing_page_url'],
-        privacy_url=issuer_data['privacy_url'],
-        qrcode_background_color = issuer_data['qrcode_background_color'],
+        landing_page_url=issuer_data['landing_page_url']
     )
 
 
@@ -508,6 +525,12 @@ def ebsi_issuer_token(issuer_id, red) :
     except :
         return Response(**manage_error("invalid_grant", "Grant code expired", red))     
     
+    if data['user_pin_required'] :
+        if not user_pin :
+            return Response(**manage_error("invalid_request", "User pin is missing", red))
+        elif data['user_pin'] != user_pin :
+            return Response(**manage_error("invalid_grant", "User pin is incorrect", red))
+
     # token response
     access_token = str(uuid.uuid1())
     # TODO add id_token ???

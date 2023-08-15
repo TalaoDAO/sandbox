@@ -562,13 +562,14 @@ def ebsi_login_endpoint(stream_id, red):
 
     # get id_token, vp_token and presenttaion_submission
     if access == "ok" :
+        print("request form = ", request.form)
         vp_token =request.form.get('vp_token')
         id_token = request.form.get('id_token')
         presentation_submission =request.form.get('presentation_submission')
         response_format = "ok"
-        logging.info('id_token received = %s', json.dumps(id_token, indent=4))
-        logging.info('vp token received = %s', json.dumps(vp_token, indent=4))
-        logging.info('presentation submission received = %s', json.dumps(presentation_submission, indent=4))
+        logging.info('id_token received = %s', id_token)
+        logging.info('vp token received = %s', vp_token)
+        logging.info('presentation submission received = %s', presentation_submission)
         if not id_token and not vp_token :
             response_format = "invalid request format",
             status_code = 400
