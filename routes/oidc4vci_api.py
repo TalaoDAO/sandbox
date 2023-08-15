@@ -465,12 +465,12 @@ def ebsi_issuer_token(issuer_id, red) :
     """
     logging.info("token endpoint request = %s", json.dumps(request.form))
 
-    grant_type =  request.form.GET('grant_type')
+    grant_type =  request.form.get('grant_type')
     if not grant_type :
         return Response(**manage_error("invalid_request", "Request format is incorrect", red))
     
     if grant_type == 'urn:ietf:params:oauth:grant-type:pre-authorized_code' :
-        code = request.form.GET('pre-authorized_code')   
+        code = request.form.get('pre-authorized_code')   
         user_pin = request.form.get('user_pin')
         logging.info('user_pin = %s', user_pin)
     
