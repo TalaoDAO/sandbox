@@ -58,6 +58,7 @@ def ebsi_verifier_console_select(mode) :
             id_token =  "Yes" if data_dict.get('id_token') == 'on' else 'No'
             vp_token =  "Yes" if data_dict.get('vp_token') == 'on' else 'No'
             group =  "Yes" if data_dict.get('group') == 'on' else 'No'
+            curve = json.loads(data_dict['jwk'])['crv']
             try :
                 if data_dict['user'] == "all" or session['login_name'] in [data_dict['user'], "admin"] :
                     verifier = """<tr>
@@ -69,6 +70,7 @@ def ebsi_verifier_console_select(mode) :
                         <td>""" + id_token + """</td>
                         <td>""" + vp_token + """</td>
                         <td>""" + group + """</td>
+                        <td>""" + curve + """</td>
                         <td><a href=/sandbox/ebsi/verifier/console?client_id=""" + data_dict['client_id'] + """>""" + data_dict['client_id'] + """</a></td>
                     </tr>"""
                     verifier_list += verifier

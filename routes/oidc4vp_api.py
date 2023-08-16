@@ -6,6 +6,7 @@ Customer can use any OpenId lib in its own framework to access an EBSI conforman
 
 """
 
+from inspect import istraceback
 from flask import jsonify, request, render_template, redirect
 from flask import session, Response, jsonify
 import json
@@ -539,8 +540,9 @@ async def ebsi_login_endpoint(stream_id, red):
     # prepare the verifier response to wallet
     status_code = 200
     response_format = "Unknown"
+    vc_type = "Unknown"
+    vp_type = "Unknown"
     presentation_submission_status = "Unknown"
-    holder_binding = "Unkwnown"
     qrcode_status = "Unknown"
     vp_token_status = "Unknown"
     id_token_status = "Unknown"
@@ -548,7 +550,6 @@ async def ebsi_login_endpoint(stream_id, red):
     issuer_status = "Unknown"
     aud_status = "unknown"
     nonce_status = "Unknown"
-    holder_did_status = "unbknown"
     access = "ok"
     vp_token_payload = {}
     id_token_payload = {}
@@ -646,6 +647,34 @@ async def ebsi_login_endpoint(stream_id, red):
 
     # check VC signature
 
+    # check types of vp
+    if access == 'ok' and vp_token :
+        if vp_token[:2] == "ey" :
+            vp_type = "jwt_vp"
+        elif json.loads(vp_token).get("@context") :
+            vp_type = "ldp_vp"
+    
+    # check types of vc
+    if access == 'ok' and vp_token :
+        vc_type = ""
+        if vp_type == "jwt_vp" :
+            for vc in oidc4vc.get_payload_from_token(vp_token)['vp'] :
+                if vp_token[:2] == "ey" :
+                    vc_type += " jwt_vc"
+                else :
+                    vc_type += " ldp_vc"
+        else :
+            vc_list = json.loads(vp_token)["verifiableCredential"]
+            if isinstance(vc_list, dict) :
+                vc_list = [vc_list]
+            for vc in vc_list :
+                try :
+                    vc[:2] == "ey" 
+                    vc_type += " jwt_vc"
+                except  :
+                    vc_type += " ldp_vc"
+
+
     # check holder binding
 
     # check nonce and aud in vp_token
@@ -681,7 +710,8 @@ async def ebsi_login_endpoint(stream_id, red):
     response = {
       "created": datetime.timestamp(datetime.now()),
       "qrcode_status" : qrcode_status,
-      "holder_did_status" : holder_did_status,
+      "vp type" : vp_type,
+      "vc type" : vc_type,
       "presentation_submission_status" : presentation_submission_status,
       "nonce_status" : nonce_status,
       "aud_status" : aud_status,

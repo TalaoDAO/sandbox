@@ -14,7 +14,7 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/verifier/hedera_2',  view_func=verifier_hedera_2, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/verifier/hedera_3',  view_func=verifier_hedera_3, methods = ['GET'], defaults={'mode' : mode})
 
-    app.add_url_rule('/sandbox/verifier/gaiax',  view_func=verifier_gaiax, methods = ['GET'], defaults={'mode' : mode})
+    app.add_url_rule('/sandbox/verifier/gaiax',  view_func=verifier_gaiax, methods = ['GET'], defaults={'mode' : mode}) # test 9
     app.add_url_rule('/sandbox/verifier/gaiax_2',  view_func=verifier_gaiax_2, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/verifier/gaiax_3',  view_func=verifier_gaiax_3, methods = ['GET'], defaults={'mode' : mode})
 
