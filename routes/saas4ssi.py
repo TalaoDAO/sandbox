@@ -47,7 +47,7 @@ def issuer_oidc_test() :
 
 
 def verifier_oidc_test() :
-    return render_template('ebsi/wallet_verifier_test.html')
+    return render_template('verifier_oidc/wallet_verifier_test.html')
 
 
 def default_webhook() :

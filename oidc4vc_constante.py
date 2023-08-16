@@ -61,9 +61,9 @@ landing_page_style_list = {
 
 # verifier
 ebsi_verifier_landing_page_style_list = {
-                    "./ebsi/ebsi_verifier_qrcode_2.html" : "Style 2",
-                    "./ebsi/ebsi_verifier_qrcode_test.html" : "Test",
-                    "./ebsi/diploma_verifier.html" : "Diplome Tezos Ebsi"
+                    "./verifier_oidc/verifier_qrcode_2.html" : "Style 2",
+                    "./verifier_oidc/verifier_qrcode_test.html" : "Test",
+                    "./verifier_oidc/diploma_verifier.html" : "Diplome Tezos Ebsi"
 
 }
 
@@ -99,7 +99,7 @@ client_data_pattern_ebsi = {
                 "jwk" : "",
                 "did": "did:web:app.altme.io:issuer",
                 "verification_method" : "did:web:app.altme.io:issuer#key-1",
-                "issuer_landing_page" : "./ebsi/ebsi_issuer_qrcode_test.html",     
+                "issuer_landing_page" : "./issuer_oidc/issuer_qrcode_test.html",     
                 "note" : "",
                 "company_name" : "New company",
                 "application_name" : "Application name",
@@ -116,8 +116,8 @@ client_data_pattern_ebsi = {
                 "credential_requested_2" : "DID",
                 "credential_requested_3" : "DID",
                 "credential_requested_4" : "DID",
-                "landing_page_style" : "./ebsi/ebsi_issuer_qrcode_test.html",
-                "verifier_landing_page_style" : "./ebsi/ebsi_verifier_qrcode_test.html",
+                "landing_page_style" : "./issuer_oidc/issuer_qrcode_test.html",
+                "verifier_landing_page_style" : "./issuer_oidc/verifier_qrcode_test.html",
                 "page_title" : "Page title",
                 "page_subtitle" : "Page subtitle",
                 "page_description" : "Add here a credential description as you would like to see it displayed on the landing page of your app.",

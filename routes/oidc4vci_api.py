@@ -154,21 +154,21 @@ def oidc(issuer_id, mode) :
 # Customer API
 def issuer_api_endpoint(issuer_id, red, mode) :
     """
-    This API returns the QRcode page URL to redirect user or the QR code content if the page is managed by application
+    This API returns the QRcode page URL to redirect user or the QR code by value if the template is managed by the application
 
     headers = {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer <client_secret>'
     }
     data = { 
-        "vc" : { "EmployeeCredendial" : {}, ....}, -> REQUIRED : object, VC as a json-ld not signed
-        "pre-authorized_code" : "lklkjlkjh",   -> OPTIONAL, string if no it will be an authorization flow
+        "vc" : REQUIRED -> { "EmployeeCredendial" : {}, ....}, json object, VC as a json-ld not signed
+        "pre-authorized_code" :  OPTIONAL, string if no it will be an authorization flow
         "issuer_state" : OPTIONAL, string, opaque to wallet
         "credential_type" : REQUIRED -> array or string name of the credential
-        "user_pin_required" : false -> OPTIONAL, bool, False by default
-        "user_pin" : OPTIONAL
+        "user_pin_required" : OPTIONAL bool, default is false 
+        "user_pin" : OPTIONAL, string, required if user_pin_required is True
         "callback" : OPTIONAL, string, this the route for at the end of the flo
-        "redirect" : True by default OPTIONAL, bool, allow to use a local template
+        "redirect" : OPTIONAL : bool, True by default OPTIONAL, if False allows to use a local template
         }
     resp = requests.post(token_endpoint, headers=headers, data = data)
     return resp.json()

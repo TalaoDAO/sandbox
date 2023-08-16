@@ -76,7 +76,7 @@ def ebsi_verifier_console_select(mode) :
                     verifier_list += verifier
             except :
                 pass
-        return render_template('ebsi/ebsi_verifier_select.html', verifier_list=verifier_list, login_name=session['login_name']) 
+        return render_template('verifier_oidc/verifier_select.html', verifier_list=verifier_list, login_name=session['login_name']) 
     else :
         if request.form['button'] == "new" :
             return redirect('/sandbox/ebsi/verifier/console?client_id=' + db_api.create_ebsi_verifier(mode, user=session['login_name']))
@@ -209,7 +209,7 @@ def ebsi_verifier_console(mode) :
 
         authorization_request = mode.server + 'sandbox/ebsi/authorize?client_id=' + session['client_data']['client_id'] + "&scope=openid&response_type=code&redirect_uri=" +  session['client_data']['callback'] 
         implicit_request = mode.server + 'sandbox/ebsi/authorize?client_id=' + session['client_data']['client_id'] + "&scope=openid&response_type=id_token&redirect_uri=" +  session['client_data']['callback']
-        return render_template('ebsi/ebsi_verifier_console.html',
+        return render_template('verifier_oidc/verifier_console.html',
                 authorization_request = authorization_request,
                 implicit_request = implicit_request,
                 title = session['client_data'].get('title'),
@@ -354,7 +354,7 @@ async def ebsi_verifier_advanced() :
         did_document = oidc4vc.did_resolve_lp(did)
         jwk = json.dumps(json.loads(session['client_data']['jwk']), indent=4)
       
-        return render_template('ebsi/ebsi_verifier_advanced.html',
+        return render_template('verifier_oidc/verifier_advanced.html',
                 client_id = session['client_data']['client_id'],
                 jwk = jwk,
                 verification_method = session['client_data'].get('verification_method', ""),
