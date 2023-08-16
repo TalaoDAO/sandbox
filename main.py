@@ -12,9 +12,7 @@ import sys
 import logging
 import environment
 from components import message
-
 logging.basicConfig(level=logging.INFO)
-logging.info("python version : %s", sys.version)
 
 # Environment variables set in gunicornconf.py  and transfered to environment.py
 mychain = os.getenv('MYCHAIN')
@@ -28,23 +26,23 @@ logging.info('end of init environment')
 # Redis init red = redis.StrictRedis()
 red= redis.Redis(host='localhost', port=6379, db=0)
 
-# Centralized  routes : modules in ./routes
+# Basic protocole
 from routes import verifier_console, issuer_console, api_verifier, api_issuer
-
 from routes import saas4ssi
+
+# OIDC4VC
 from routes import oidc4vp_api, oidc4vp_console
 from routes import oidc4vci_api, oidc4vci_console
 
 # for testing purpose
 from routes import test_issuer_oidc4vc
 from routes import test_verifier_oidc4vc
-
 from routes import  web_wallet_test
 from routes import web_display_VP
 
 # Framework Flask and Session setup
 app = Flask(__name__)
-app.jinja_env.globals['Version'] = "0.2.5"
+app.jinja_env.globals['Version'] = "0.3.0"
 app.jinja_env.globals['Created'] = time.ctime(os.path.getctime('main.py'))
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_COOKIE_NAME'] = 'talao'

@@ -475,7 +475,8 @@ def ebsi_login_qrcode(red, mode):
     data = { 
         "pattern": authorization_request,
         "code" : request.args['code'],
-        "client_id" : client_id }
+        "client_id" : client_id
+    }
     red.setex(stream_id, QRCODE_LIFE, json.dumps(data))
     url = prefix + '?' + urlencode(authorization_request_displayed)
     deeplink_talao = mode.deeplink_talao + 'app/download/ebsi?' + urlencode({'uri' : url})
@@ -539,11 +540,14 @@ async def ebsi_login_endpoint(stream_id, red):
     status_code = 200
     response_format = "Unknown"
     presentation_submission_status = "Unknown"
+    holder_binding = "Unkwnown"
     qrcode_status = "Unknown"
     vp_token_status = "Unknown"
     id_token_status = "Unknown"
     credential_status = "unknown"
     issuer_status = "Unknown"
+    aud_status = "unknown"
+    nonce_status = "Unknown"
     holder_did_status = "unbknown"
     access = "ok"
     vp_token_payload = {}
@@ -633,7 +637,6 @@ async def ebsi_login_endpoint(stream_id, red):
                 vp_token_status = "ok"
                 vp_token_payload = oidc4vc.get_payload_from_token(vp_token)
             except :
-                logging.warning("signature check failed")
                 vp_token_status = "signature check failed"
                 status_code = 400
                 access = "access_denied"
@@ -642,17 +645,46 @@ async def ebsi_login_endpoint(stream_id, red):
             vp_token_status = verifyResult
 
     # check VC signature
+
     # check holder binding
+
     # check nonce and aud in vp_token
+    if access == 'ok' and vp_token :
+        if profile[verifier_data['profile']][ "verifier_vp_type"] == "jwt_vp" :
+            if oidc4vc.get_payload_from_token(vp_token)['nonce'] == nonce :
+                nonce_status = "ok"
+            else :
+                nonce_status = "failed in vp_token"
+                status_code = 400
+                access = "access_denied"
+            if oidc4vc.get_payload_from_token(vp_token)['aud'] == verifier_data['did'] :
+                aud_status = "ok"
+            else :
+                aud_status = "failed in vp_token"
+                status_code = 400
+                access = "access_denied"
+        else :
+            if json.loads(vp_token)['proof'].get('challenge') == nonce :
+                nonce_status = "ok"
+            else :
+                nonce_status = "failed in vp_token"
+                status_code = 400
+                access = "access_denied"
+            if json.loads(vp_token)['proof'].get('domain') == verifier_data['did'] :
+                aud_status = "ok"
+            else :
+                aud_status = "failed in vp_token"
+                #status_code = 400
+                #access = "access_denied"
 
-
-    
 
     response = {
       "created": datetime.timestamp(datetime.now()),
       "qrcode_status" : qrcode_status,
       "holder_did_status" : holder_did_status,
       "presentation_submission_status" : presentation_submission_status,
+      "nonce_status" : nonce_status,
+      "aud_status" : aud_status,
       "response_format" : response_format,
       "id_token_status" : id_token_status,
       "vp_token_status" : vp_token_status,
