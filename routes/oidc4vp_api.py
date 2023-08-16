@@ -658,10 +658,12 @@ async def ebsi_login_endpoint(stream_id, red):
     if access == 'ok' and vp_token :
         vc_type = ""
         if vp_type == "jwt_vp" :
-            for vc in oidc4vc.get_payload_from_token(vp_token)['vp'] :
-                if vp_token[:2] == "ey" :
+            vc_list = oidc4vc.get_payload_from_token(vp_token)['vp']["verifiableCredential"]
+            for vc in vc_list :
+                try :
+                    vc[:2] == "ey" 
                     vc_type += " jwt_vc"
-                else :
+                except :
                     vc_type += " ldp_vc"
         else :
             vc_list = json.loads(vp_token)["verifiableCredential"]

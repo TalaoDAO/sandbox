@@ -4,7 +4,7 @@ NEW
 
 https://issuer.walt.id/issuer-api/default/oidc
 
-https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html
+EBSI V2 https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html
 
 support Authorization code flow and pre-authorized code flow of OIDC4VCI
 
@@ -245,10 +245,14 @@ def issuer_api_endpoint(issuer_id, red, mode) :
 def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_vc_type, issuer_profile, vc, user_pin_required, user_pin, mode) :
    
     if issuer_profile == 'EBSI-V2' :
+        #  https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-pre-authorized-code-flow
         url_data  = { 
             'issuer' : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
             'credential_type'  : type_2_schema[credential_type],
+            'user_pin_required' :user_pin_required
         }
+        if pre_authorized_code :
+            url_data['pre-authorized_code'] = pre_authorized_code
 
     elif issuer_profile == 'GAIA-X' :
         if isinstance(credential_type, str) :
@@ -258,8 +262,11 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
         url_data  = { 
             "issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
             "credential_type"  : credential_type,
+            'user_pin_required' :user_pin_required
         }
-
+        if pre_authorized_code :
+            url_data['pre-authorized_code'] = pre_authorized_code
+    
     # new OIDC4VCI standard with  credential as json object
     elif issuer_profile == 'EBSI-V3' :
         if isinstance(credential_type, str) :
@@ -268,6 +275,18 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
             "credential_issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
             "credentials"  : []
         }
+        if pre_authorized_code  :
+            url_data['grants'] ={
+                "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
+                    "pre-authorized_code": pre_authorized_code,
+                    "user_pin_required": user_pin_required
+                }
+            }
+        else :
+            url_data["grants"] ={
+                "authorization_code": {}
+            }
+
         for vc in credential_type :
             credential = json.load(open('verifiable_credentials/' + vc + '.jsonld', 'r'))
             url_data["credentials"].append({
@@ -284,24 +303,18 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
             "credential_issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
             "credentials"  : credential_type
         }
-                
-    #  https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-pre-authorized-code-flow
-    if pre_authorized_code and profile in ['EBSI-V2', 'GAIA-X'] :
-        url_data['pre-authorized_code'] = pre_authorized_code
-        url_data['user_pin_required']= user_pin_required
-    
-    elif pre_authorized_code  :
-        url_data['grants'] ={
-            "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
+        if pre_authorized_code  :
+            url_data['grants'] ={
+                "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
                 "pre-authorized_code": pre_authorized_code,
                 "user_pin_required": user_pin_required
+                }
             }
-        }
-    
-    else :
-        url_data["grants"] ={
-            "authorization_code": {}
-        }
+        else :
+            url_data["grants"] ={
+                "authorization_code": {}
+            }
+                
     code_data = {
             'credential_type' : credential_type,
             'format' : issuer_vc_type,
