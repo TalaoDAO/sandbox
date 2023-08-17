@@ -612,7 +612,7 @@ async def ebsi_issuer_credential(issuer_id, red) :
     proof_payload=oidc4vc.get_payload_from_token(proof)
     issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
     
-    # for EBSI ......
+    # for EBSI V2
     if credential_type in ['https://api-conformance.ebsi.eu/trusted-schemas-registry/v2/schemas/z22ZAMdQtNLwi51T2vdZXGGZaYyjrsuP1yzWyXZirCAHv'] :
         credential_type = 'VerifiableId' 
     elif  credential_type in ['https://api.preprod.ebsi.eu/trusted-schemas-registry/v1/schemas/0xbf78fc08a7a9f28f5479f58dea269d3657f54f13ca37d380cd4e92237fb691dd'] :
@@ -622,7 +622,7 @@ async def ebsi_issuer_credential(issuer_id, red) :
     except :
         # send event to front to go forward callback and send credential to wallet
         return Response(**manage_error('unsupported_credential_type', 'The credential type is not offered', red, stream_id=stream_id)) 
-
+    
     credential['id']= 'urn:uuid:' + str(uuid.uuid1())
     credential['credentialSubject']['id'] = proof_payload.get('iss')
     credential['issuer']= issuer_data['did']

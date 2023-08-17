@@ -570,10 +570,18 @@ async def ebsi_login_endpoint(stream_id, red):
         presentation_submission =request.form.get('presentation_submission')
         response_format = "ok"
         logging.info('id_token received = %s', id_token)
-        if vp_token and profile[verifier_data['profile']][ "verifier_vp_type"] == "ldp_vp" :
+        # check types of vp
+        if vp_token :
+            if vp_token[:2] == "ey" :
+                vp_type = "jwt_vp"
+            elif json.loads(vp_token).get("@context") :
+                vp_type = "ldp_vp"
+
+        if vp_token and vp_type == "ldp_vp" :
             logging.info('vp token received = %s', json.dumps(json.loads(vp_token), indent=4))
         else : 
             logging.info('vp token received = %s', vp_token)
+        
         if presentation_submission :
             logging.info('presentation submission received = %s', json.dumps(json.loads(presentation_submission), indent=4))
         else : 
@@ -582,6 +590,7 @@ async def ebsi_login_endpoint(stream_id, red):
             response_format = "invalid request format",
             status_code = 400
             access = "access_denied"
+    
     if not id_token :
          id_token_status = "Not received"
     if not vp_token :
@@ -647,12 +656,6 @@ async def ebsi_login_endpoint(stream_id, red):
 
     # check VC signature
 
-    # check types of vp
-    if access == 'ok' and vp_token :
-        if vp_token[:2] == "ey" :
-            vp_type = "jwt_vp"
-        elif json.loads(vp_token).get("@context") :
-            vp_type = "ldp_vp"
     
     # check types of vc
     if access == 'ok' and vp_token :

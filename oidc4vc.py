@@ -169,7 +169,7 @@ def sign_jwt_vp(vc, audience, holder_vm, holder_did, nonce, vp_id, holder_key) :
     payload = {
         "iat": iat,
         "jti" : vp_id,
-        "nbf" : iat -10,
+        "nbf" : iat,
         "aud" : audience,
         "exp": iat + 1000,
         "sub" : holder_did,
