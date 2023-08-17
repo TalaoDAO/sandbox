@@ -641,7 +641,7 @@ async def ebsi_login_endpoint(stream_id, red):
 
     # check vp_token signature
     if access == 'ok' and vp_token :
-        if profile[verifier_data['profile']][ "verifier_vp_type"] == "jwt_vp" :
+        if vp_type == "jwt_vp" :
             try :
                 oidc4vc.verif_token(vp_token, nonce)
                 vp_token_status = "ok"
