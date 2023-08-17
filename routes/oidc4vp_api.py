@@ -531,14 +531,19 @@ async def ebsi_login_endpoint(stream_id, red):
     https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#section-6.2
     
     """
+    access = "ok"
+    try :
+        qrcode_status = "ok"
+        data = json.loads(red.get(stream_id).decode())
+        client_id = data['client_id']
+        verifier_data = json.loads(read_ebsi_verifier(client_id))
+        #verifier_profile = profile[verifier_data['profile']]
+        logging.info('Profile = %s', verifier_data['profile'])
+    except :
+        qrcode_status = "QR code expired"
+        access = "access_denied"
 
-    client_id = json.loads(red.get(stream_id).decode())['client_id']
-    verifier_data = json.loads(read_ebsi_verifier(client_id))
-    verifier_profile = profile[verifier_data['profile']]
-    logging.info('Profile = %s', verifier_data['profile'])
-    
     # prepare the verifier response to wallet
-    status_code = 200
     response_format = "Unknown"
     vc_type = "Unknown"
     vp_type = "Unknown"
@@ -550,18 +555,8 @@ async def ebsi_login_endpoint(stream_id, red):
     issuer_status = "Unknown"
     aud_status = "unknown"
     nonce_status = "Unknown"
-    access = "ok"
     vp_token_payload = {}
     id_token_payload = {}
-       
-    # Check qrcode expiration
-    if not red.get(stream_id) :
-        qrcode_status = "QR code expired"
-        status_code = 400
-        access = "access_denied"
-    else :
-        qrcode_status = "ok"
-        data = json.loads(red.get(stream_id).decode())
 
     # get id_token, vp_token and presentation_submission
     if access == "ok" :
@@ -576,6 +571,9 @@ async def ebsi_login_endpoint(stream_id, red):
                 vp_type = "jwt_vp"
             elif json.loads(vp_token).get("@context") :
                 vp_type = "ldp_vp"
+            else :
+                vp_type = "Unknown"
+                logging.error("vp token type unknown %s $s", vp_token, type(vp_token))
 
         if vp_token and vp_type == "ldp_vp" :
             logging.info('vp token received = %s', json.dumps(json.loads(vp_token), indent=4))
@@ -585,29 +583,31 @@ async def ebsi_login_endpoint(stream_id, red):
         if presentation_submission :
             logging.info('presentation submission received = %s', json.dumps(json.loads(presentation_submission), indent=4))
         else : 
-            logging.info('presentation submission received = %s', None)
+            logging.info('presentation submission received = %s', "")
+
         if not id_token and not vp_token :
             response_format = "invalid request format",
-            status_code = 400
             access = "access_denied"
     
-    if not id_token :
-         id_token_status = "Not received"
-    if not vp_token :
-         vp_token_status = "Not received"
-    if not presentation_submission :
-         presentation_submission_status = "Not received"
+    if  access == "ok"  and not id_token :
+        id_token_status = "Not received"
+    
+    if  access == "ok"  and not vp_token :
+        vp_token_status = "Not received"
+    
+    if  access == "ok"  and not presentation_submission :
+        presentation_submission_status = "Not received"
          
     # check presentation submission
-    if vp_token and verifier_data['profile'] != "EBSI-V2" :
+    if  access == "ok"  and vp_token and verifier_data['profile'] != "EBSI-V2" :
         if not presentation_submission :
             presentation_submission_status = "Not found"
             access = "access_denied" 
-            status_code = 400
         else :
             presentation_submission_status = "ok"
 
-    nonce = data['pattern']['nonce']
+    if  access == "ok" :
+        nonce = data['pattern']['nonce']
 
     # check id_token signature
     if access == "ok"  and id_token :
@@ -616,8 +616,9 @@ async def ebsi_login_endpoint(stream_id, red):
             id_token_status = "ok"
         except :
             id_token_status = "signature check failed"
-            status_code = 400
             access = "access_denied" 
+    
+    if access == "ok"  and id_token :
         try :
             id_token_payload = oidc4vc.get_payload_from_token(id_token)
             id_token_header = oidc4vc.get_header_from_token(id_token)
@@ -628,15 +629,18 @@ async def ebsi_login_endpoint(stream_id, red):
             id_token_nonce = id_token_payload.get('nonce')
         except :
             id_token_status += "id_token invalid format "
-            status_code = 400
             access = "access_denied" 
-        if id_token_sub != id_token_iss :
-            id_token_status += " id token sub != iss"
-        if id_token_sub != id_token_kid.split("#")[0] :
-            id_token_status += " id token sub != kid "
-        if verifier_data['profile'] in ["EBSI-V2"] and not id_token_jwk :
-            id_token_status += " jwk is missing "
-        if nonce != id_token_nonce :
+
+    if access == "ok" and id_token_sub != id_token_iss :
+        id_token_status += " id token sub != iss"
+    
+    if  access == "ok" and id_token_sub != id_token_kid.split("#")[0] :
+        id_token_status += " id token sub != kid "
+        
+    if  access == "ok" and verifier_data['profile'] in ["EBSI-V2"] and not id_token_jwk :
+        id_token_status += " jwk is missing "
+        
+    if  access == "ok" and nonce != id_token_nonce :
             id_token_status += " nonce does not match "
 
     # check vp_token signature
@@ -648,7 +652,6 @@ async def ebsi_login_endpoint(stream_id, red):
                 vp_token_payload = oidc4vc.get_payload_from_token(vp_token)
             except :
                 vp_token_status = "signature check failed"
-                status_code = 400
                 access = "access_denied"
         else :
             verifyResult = json.loads(await didkit.verify_presentation(vp_token, "{}" ))
@@ -689,28 +692,28 @@ async def ebsi_login_endpoint(stream_id, red):
                 nonce_status = "ok"
             else :
                 nonce_status = "failed in vp_token"
-                status_code = 400
                 access = "access_denied"
             if oidc4vc.get_payload_from_token(vp_token)['aud'] == verifier_data['did'] :
                 aud_status = "ok"
             else :
                 aud_status = "failed in vp_token"
-                status_code = 400
                 access = "access_denied"
         else :
             if json.loads(vp_token)['proof'].get('challenge') == nonce :
                 nonce_status = "ok"
             else :
                 nonce_status = "failed in vp_token"
-                status_code = 400
                 access = "access_denied"
             if json.loads(vp_token)['proof'].get('domain') == verifier_data['did'] :
                 aud_status = "ok"
             else :
                 aud_status = "failed in vp_token"
-                #status_code = 400
                 #access = "access_denied"
 
+    if access == "access_denied" :
+        status_code = 400
+    else :
+        status_code = 200
 
     response = {
       "created": datetime.timestamp(datetime.now()),
