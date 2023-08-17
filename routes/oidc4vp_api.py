@@ -641,7 +641,8 @@ async def ebsi_login_endpoint(stream_id, red):
     if  access == "ok" and verifier_data['profile'] in ["EBSI-V2"] and not id_token_jwk :
         id_token_status += " jwk is missing "
         
-    if  access == "ok" and nonce != id_token_nonce :
+    if  access == "ok" and id_token :
+        if nonce != id_token_nonce :
             id_token_status += " nonce does not match "
 
     # check vp_token signature
