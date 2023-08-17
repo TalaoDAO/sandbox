@@ -532,6 +532,8 @@ async def ebsi_login_endpoint(stream_id, red):
     
     """
     access = "ok"
+    qrcode_status = "Unknown"
+
     try :
         qrcode_status = "ok"
         data = json.loads(red.get(stream_id).decode())
@@ -548,7 +550,6 @@ async def ebsi_login_endpoint(stream_id, red):
     vc_type = "Unknown"
     vp_type = "Unknown"
     presentation_submission_status = "Unknown"
-    qrcode_status = "Unknown"
     vp_token_status = "Unknown"
     id_token_status = "Unknown"
     credential_status = "unknown"
@@ -631,11 +632,11 @@ async def ebsi_login_endpoint(stream_id, red):
             id_token_status += "id_token invalid format "
             access = "access_denied" 
 
-    if access == "ok" and id_token_sub != id_token_iss :
-        id_token_status += " id token sub != iss"
-    
-    if  access == "ok" and id_token_sub != id_token_kid.split("#")[0] :
-        id_token_status += " id token sub != kid "
+    if access == "ok" and id_token :
+        if id_token_sub != id_token_iss :
+            id_token_status += " id token sub != iss"    
+        if id_token_sub != id_token_kid.split("#")[0] :
+            id_token_status += " id token sub != kid "
         
     if  access == "ok" and verifier_data['profile'] in ["EBSI-V2"] and not id_token_jwk :
         id_token_status += " jwk is missing "
