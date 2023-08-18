@@ -1,38 +1,39 @@
 profile = {
 
-    "EBSI-V2" :
+    'EBSI-V2' :
         {
-            "issuer_vc_type" : "jwt_vc", ## jwt_vc_json, jwt_vc_json-ld, ldp_vc
-            "verifier_vp_type" : "jwt_vp",
-            "oidc4vci_prefix" : "openid://initiate_issuance",
-            "siopv2_prefix" : 'openid://',
-            "oidc4vp_prefix" : 'openid://',
-            "cryptographic_binding_methods_supported" : ['DID'],
+            'issuer_vc_type' : 'jwt_vc', ## jwt_vc_json, jwt_vc_json-ld, ldp_vc
+            'verifier_vp_type' : 'jwt_vp',
+            'oidc4vci_prefix' : 'openid://initiate_issuance',
+            'siopv2_prefix' : 'openid://',
+            'oidc4vp_prefix' : 'openid://',
+            'cryptographic_binding_methods_supported' : ['DID'],
             'cryptographic_suites_supported' : ['ES256K','ES256','ES384','ES512','RS256'],
             'subject_syntax_types_supported' : ['did:ebsi'],
-            "grant_types_supported": [
-                "authorization_code",
-                "urn:ietf:params:oauth:grant-type:pre-authorized_code"
+            'grant_types_supported': [
+                'authorization_code',
+                'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
             'credential_supported' : ['VerifiableDiploma', 'VerifiableId'],
             'schema_for_type' : True,
+            'credential_manifest_support' : False,
             'service_documentation' : 'THIS PROFILE OF OIDC4VCI IS DEPRECATED. EBSI V2 COMPLIANCE. It is the profile of the EBSI V2 compliant test. DID for natural person is did:ebsi. \
                 The schema url is used as the VC type in the credential offer QR code. \
                 The prefix openid_initiate_issuance:// \
                 oidc4vci_draft : https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#abstract',
         }, 
-    "EBSI-V3" : # TODO completed
+    'EBSI-V3' : # TODO completed
         {
-            "issuer_vc_type" : "jwt_vc",
-            "verifier_vp_type" : "jwt_vp",
-            "oidc4vci_prefix" : "openid-credential-offer://",
-            "siopv2_prefix" : 'openid-vc://',
-            "oidc4vp_prefix" : 'openid-vc://',
+            'issuer_vc_type' : 'jwt_vc',
+            'verifier_vp_type' : 'jwt_vp',
+            'oidc4vci_prefix' : 'openid-credential-offer://',
+            'siopv2_prefix' : 'openid-vc://',
+            'oidc4vp_prefix' : 'openid-vc://',
             'cryptographic_binding_methods_supported' : ['DID'],
             'credential_supported' : ['VerifiableDiploma', 'VerifiableId', 'GreencypherPass', 'ListOfProjects'],
-            "grant_types_supported": [
-                #"authorization_code",
-                "urn:ietf:params:oauth:grant-type:pre-authorized_code"
+            'grant_types_supported': [
+                #'authorization_code',
+                'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
             'cryptographic_suites_supported' : ['ES256K','ES256','ES384','ES512','RS256'],
             'subject_syntax_types_supported' : ['did:key'],
@@ -42,96 +43,99 @@ profile = {
                 'uri': 'TIR link towards accreditation'
             },
             'schema_for_type' : False,
+            'credential_manifest_support' : False,
             'service_documentation' : 'New environment for V3 compliance test, use specific did:key',
             'wallet_metadata' : {
-                "authorization_endpoint": "openid:",
-                "response_types_supported": ["vp_token", "id_token"],
-                "vp_formats_supported": {
-                    "jwt_vp": {
-                        "alg_values_supported": ["ES256"]
+                'authorization_endpoint': 'openid:',
+                'response_types_supported': ['vp_token', 'id_token'],
+                'vp_formats_supported': {
+                    'jwt_vp': {
+                        'alg_values_supported': ['ES256']
                     },
-                    "jwt_vc": {
-                    "alg_values_supported": ["ES256"]
+                    'jwt_vc': {
+                    'alg_values_supported': ['ES256']
                     }
                 },
-                "scopes_supported": ["openid"],
-                "subject_types_supported": ["public"],
-                "id_token_signing_alg_values_supported": ["ES256"],
-                "request_object_signing_alg_values_supported": ["ES256"],
-                "subject_syntax_types_supported": [
-                    "urn:ietf:params:oauth:jwk-thumbprint",
-                    "did:key:jwk_jcs-pub"
+                'scopes_supported': ['openid'],
+                'subject_types_supported': ['public'],
+                'id_token_signing_alg_values_supported': ['ES256'],
+                'request_object_signing_alg_values_supported': ['ES256'],
+                'subject_syntax_types_supported': [
+                    'urn:ietf:params:oauth:jwk-thumbprint',
+                    'did:key:jwk_jcs-pub'
                 ],
-                "id_token_types_supported": ["subject_signed_id_token"]
+                'id_token_types_supported': ['subject_signed_id_token']
             }
         },
-     "DEFAULT" :
+     'DEFAULT' :
         {
-            "issuer_vc_type" : "ldp_vc",
-            "verifier_vp_type" : "ldp_vp",
-            "oidc4vci_prefix" : "openid-credential-offer://" ,
-            "siopv2_prefix" : "openid-vc://",
-            "oidc4vp_prefix" : "openid-vc://",
-            "cryptographic_binding_methods_supported" : ('DID'),
-            'credential_supported' : ['EmployeeCredential',  'VerifiableId', 'EmailPass', 'PhoneProof', "GreencypherPass"],
-            "grant_types_supported": [
-                #"authorization_code",
-                "urn:ietf:params:oauth:grant-type:pre-authorized_code"
+            'issuer_vc_type' : 'ldp_vc',
+            'verifier_vp_type' : 'ldp_vp',
+            'oidc4vci_prefix' : 'openid-credential-offer://' ,
+            'siopv2_prefix' : 'openid-vc://',
+            'oidc4vp_prefix' : 'openid-vc://',
+            'cryptographic_binding_methods_supported' : ('DID'),
+            'credential_supported' : ['EmployeeCredential',  'VerifiableId', 'EmailPass', 'PhoneProof', 'GreencypherPass'],
+            'grant_types_supported': [
+                #'authorization_code',
+                'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
-            "cryptographic_suites_supported" : ['ES256K','ES256','ES384','ES512','RS256'],
-            "subject_syntax_types_supported" : ['did:key', 'did:pkh'],
-            "schema_for_type" : False,
-            "service_documentation" : 'We use JSON-LD VC and VP and last release of the specs. \
+            'cryptographic_suites_supported' : ['ES256K','ES256','ES384','ES512','RS256'],
+            'subject_syntax_types_supported' : ['did:key', 'did:pkh'],
+            'schema_for_type' : False,
+            'credential_manifest_support' : True,
+            'service_documentation' : 'We use JSON-LD VC and VP and last release of the specs. \
                 oidc4vci_draft : https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html \
                 siopv2_draft : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
                 oidc4vp_draft : https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  ',
-            "wallet_metadata" : {
-                "response_types_supported": ["vp_token", "id_token"],
-                "scopes_supported": [ "openid" ],
-                "subject_types_supported": [ "pairwise" ],
-                "id_token_signing_alg_values_supported": ["ES256K"],
-                "request_object_signing_alg_values_supported": [ "ES256K"],
-                "subject_syntax_types_supported": [ "did:key"],
-                "id_token_types_supported": ["subject_signed_id_token"]
+            'wallet_metadata' : {
+                'response_types_supported': ['vp_token', 'id_token'],
+                'scopes_supported': [ 'openid' ],
+                'subject_types_supported': [ 'pairwise' ],
+                'id_token_signing_alg_values_supported': ['ES256K'],
+                'request_object_signing_alg_values_supported': [ 'ES256K'],
+                'subject_syntax_types_supported': [ 'did:key'],
+                'id_token_types_supported': ['subject_signed_id_token']
             }
         },
-         "GAIA-X" :
+         'GAIA-X' :
         {
-            "issuer_vc_type" : "ldp_vc",
-            "verifier_vp_type" : "ldp_vp",
-            "oidc4vci_prefix" : "openid-initiate-issuance://" ,
-            "siopv2_prefix" : "openid://",
-            "oidc4vp_prefix" : "openid://",
-            "cryptographic_binding_methods_supported" : ('DID'),
+            'issuer_vc_type' : 'ldp_vc',
+            'verifier_vp_type' : 'ldp_vp',
+            'oidc4vci_prefix' : 'openid-initiate-issuance://' ,
+            'siopv2_prefix' : 'openid://',
+            'oidc4vp_prefix' : 'openid://',
+            'cryptographic_binding_methods_supported' : ('DID'),
             'credential_supported' :  ['EmployeeCredential',  'VerifiableId',  'GreencypherPass', 'EmailPass'],
-            "grant_types_supported": [
-                #"authorization_code",
-                "urn:ietf:params:oauth:grant-type:pre-authorized_code"
+            'grant_types_supported': [
+                #'authorization_code',
+                'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
-            "cryptographic_suites_supported" : ['ES256K','ES256','ES384','ES512','RS256'],
-            "subject_syntax_types_supported" : ['did:key'],
-            "schema_for_type" : False,
+            'cryptographic_suites_supported' : ['ES256K','ES256','ES384','ES512','RS256'],
+            'subject_syntax_types_supported' : ['did:key'],
+            'schema_for_type' : False,
             'service_documentation' : 'THIS PROFILE OF OIDC4VCI IS DEPRECATED. \
                 oidc4vci_draft : https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-credential-endpoint \
                 siopv2_draft : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
                 oidc4vp_draft : https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  ',
         },
-        "HEDERA" :
+        'HEDERA' :
         {
-            "issuer_vc_type" : "jwt_vc",
-            "verifier_vp_type" : "jwt_vp",
-            "oidc4vci_prefix" : "openid-credential-offer-hedera://" ,
-            "siopv2_prefix" : "openid-hedera://",
-            "oidc4vp_prefix" : "openid-hedera://",
-            "cryptographic_binding_methods_supported" : ('DID'),
+            'issuer_vc_type' : 'jwt_vc',
+            'verifier_vp_type' : 'jwt_vp',
+            'oidc4vci_prefix' : 'openid-credential-offer-hedera://' ,
+            'siopv2_prefix' : 'openid-hedera://',
+            'oidc4vp_prefix' : 'openid-hedera://',
+            'cryptographic_binding_methods_supported' : ('DID'),
             'credential_supported' :  ['EmployeeCredential', 'VerifiableId', 'GreencypherPass', 'ListOfProjects', 'PhoneProof', 'EmailPass', 'Over18'],
-            "grant_types_supported": [
-                #"authorization_code",
-                "urn:ietf:params:oauth:grant-type:pre-authorized_code"
+            'grant_types_supported': [
+                #'authorization_code',
+                'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
-            "cryptographic_suites_supported" : ['ES256K','ES256','ES384','ES512','RS256'],
-            "subject_syntax_types_supported" : ['did:key', 'did:pkh', 'did:web', 'did;hedera'],
-            "schema_for_type" : False,
+            'cryptographic_suites_supported' : ['ES256K','ES256','ES384','ES512','RS256'],
+            'subject_syntax_types_supported' : ['did:key', 'did:pkh', 'did:web', 'did;hedera'],
+            'schema_for_type' : False,
+            'credential_manifest_support' : True,
             'service_documentation' : 'WORK IN PROGRESS EON project. last release of the specs. \
                 oidc4vci_draft : https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html \
                 siopv2_draft : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
@@ -139,15 +143,16 @@ profile = {
                  Issuer and verifier for marjetplace and WCM'
         },
     
-    "JWT-VC" :
+    'JWT-VC' :
         {
-            "verifier_vp_type" : "jwt_vp",
-            "siopv2_prefix" : 'openid-vc://',
+            'verifier_vp_type' : 'jwt_vp',
+            'siopv2_prefix' : 'openid-vc://',
             'cryptographic_binding_methods_supported' : ('DID'),
             'credential_supported' : ['EmployeeCredential', 'VerifiableId', 'EmailPass'],
             'cryptographic_suites_supported' : ['ES256K','ES256','ES384','ES512','RS256'],
             'subject_syntax_types_supported' : ['did:ion', 'did:web'],
             'schema_for_type' : False,
+            'credential_manifest_support' : True,
             'service_documentation' : 'https://identity.foundation/jwt-vc-presentation-profile/'
 
         },
