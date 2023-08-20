@@ -19,7 +19,10 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/issuer/gaia-x',  view_func=issuer_gaiax, methods = ['GET'], defaults={'mode' : mode})
 
     app.add_url_rule('/sandbox/issuer/default',  view_func=issuer_default, methods = ['GET'], defaults={'mode' : mode})
-    app.add_url_rule('/sandbox/issuer/default_2',  view_func=issuer_default_2, methods = ['GET'], defaults={'mode' : mode}) # test 
+    app.add_url_rule('/sandbox/issuer/default_2',  view_func=issuer_default_2, methods = ['GET'], defaults={'mode' : mode}) # test 5
+    app.add_url_rule('/sandbox/issuer/default_2/deferred',  view_func=issuer_default_2_deferred, methods = ['GET'], defaults={'mode' : mode}) # test 5
+
+
     app.add_url_rule('/sandbox/issuer/default_3',  view_func=issuer_default_3, methods = ['GET'], defaults={'mode' : mode}) # test 6
 
     app.add_url_rule('/sandbox/issuer/ebsiv3',  view_func=issuer_ebsiv3, methods = ['GET'], defaults={'mode' : mode}) # test 8
@@ -171,8 +174,8 @@ def issuer_default(mode):
     else :
         return jsonify(resp.json()['qrcode'])
 
-
-def issuer_default_2(mode):
+# test 5
+def issuer_default_2_deferred(mode):
     if mode.myenv == 'aws' :
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/wzxtwpltvn"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
@@ -187,8 +190,31 @@ def issuer_default_2(mode):
         'Authorization' : 'Bearer ' + client_secret
     }
     data = { 
-        "vc" : build_credential_offered(offer), 
-        "pre-authorized_code" : str(uuid.uuid1()),
+        "deferred_vc" : build_credential_offered(offer), 
+        "pre-authorized_code" : "546754",
+        }
+    resp = requests.post(api_endpoint, headers=headers, json = data)
+    print(resp.status_code)
+    return redirect('/sandbox/issuer/oidc/test')
+
+
+def issuer_default_2(mode): # Test 5 deferred
+    if mode.myenv == 'aws' :
+        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/wzxtwpltvn"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    else :       
+        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/omjqeppxps"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+
+    offer = ["EmailPass"]
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization' : 'Bearer ' + client_secret
+    }
+    data = { 
+        "vc" : {"EmailPass" : {}}, 
+        "pre-authorized_code" : "546754",
         "credential_type" : offer,
         "callback" : mode.server + '/sandbox/issuer/callback',
         "redirect" : REDIRECT
@@ -341,7 +367,7 @@ def build_credential_offered(offer) :
             with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f :
                 credential = json.loads(f.read())
         except :
-            print("VC fopr offer not found")
+            print("VC for offer not found")
             return
         credential['id'] = "urn:uuid:" + str(uuid.uuid4())
         credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"

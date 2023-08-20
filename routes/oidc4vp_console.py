@@ -159,8 +159,10 @@ def ebsi_verifier_console(mode) :
                     vc_select_8 +=  "<option value=" + key + ">" + value + "</option>"
         
         # presentation definition calculation
-        presentation_definition = str()
-        if session['client_data'].get('vp_token'):    
+        if session['client_data'].get('vp_token') :
+            presentation_definition = str()
+        
+        if session['client_data'].get('vp_token') and not session['client_data'].get('group') :    
             prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
             for i in ["1", "2", "3", "4"] :
                 vc = 'vc_' + i
@@ -181,31 +183,35 @@ def ebsi_verifier_console(mode) :
                                             "Input descriptor for credential " + i,
                                             session['client_data'][reason],
                                             id= session['client_data'][vc].lower() + '_' + i)
-            if session['client_data'].get('group') : 
-                prez.add_group("Group A", "A")
-                for i in ["5", "6", "7", "8"] :
-                    vc = 'vc_' + i
-                    if session['client_data'][vc] != 'None'   :
-                        if session['client_data']['profile'] == "EBSI-V2" :
-                            prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[session['client_data'][vc]], "Input descriptor for credential " + i, "", "A")
-                        else :
-                            prez.add_constraint_with_group("$.credentialSubject.type",
+        
+        if session['client_data'].get('vp_token') and session['client_data'].get('group') : 
+            prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
+            prez.add_group("Group A", "A")
+            for i in ["5", "6", "7", "8"] :
+                vc = 'vc_' + i
+                if session['client_data'][vc] != 'None'   :
+                    if session['client_data']['profile'] == "EBSI-V2" :
+                        prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[session['client_data'][vc]], "Input descriptor for credential " + i, "", "A")
+                    else :
+                        prez.add_constraint_with_group("$.credentialSubject.type",
                                                             session['client_data'][vc],
                                                             "Input descriptor for credential " + i,
                                                             "",
                                                             "A",
                                                             id=session['client_data'][vc].lower() + '_' + i)
             
-            if profile[session['client_data']['profile']]["verifier_vp_type"] == 'ldp_vp' :
+        if session['client_data'].get('vp_token') and profile[session['client_data']['profile']]["verifier_vp_type"] == 'ldp_vp' :
                 prez.add_format_ldp_vp()
                 prez.add_format_ldp_vc()
-            if profile[session['client_data']['profile']]["verifier_vp_type"] == 'jwt_vp' :
+        
+        if session['client_data'].get('vp_token') and profile[session['client_data']['profile']]["verifier_vp_type"] == 'jwt_vp' :
                 prez.add_format_jwt_vp()
                 prez.add_format_jwt_vc()
-            
+
+        if session['client_data'].get('vp_token') :
             presentation_definition = prez.get()
-
-
+        else :
+            presentation_definition = ""
 
         authorization_request = mode.server + 'sandbox/ebsi/authorize?client_id=' + session['client_data']['client_id'] + "&scope=openid&response_type=code&redirect_uri=" +  session['client_data']['callback'] 
         implicit_request = mode.server + 'sandbox/ebsi/authorize?client_id=' + session['client_data']['client_id'] + "&scope=openid&response_type=id_token&redirect_uri=" +  session['client_data']['callback']
@@ -269,18 +275,20 @@ def ebsi_verifier_console(mode) :
             if not request.form.get('id_token') and not request.form.get('vp_token')  :
                 flash("MUST add an id_token or a vp_token !", "warning")
                 return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
+            
             if request.form.get('vp_token') and not request.form.get('group') :
                 if request.form['vc_1'] == 'None' and request.form['vc_2'] == 'None' and request.form['vc_3'] == 'None' and request.form['vc_4'] == 'None' and not request.form.get('group') :
                     flash("MUST add a credential !", "warning")
                     return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
+            
             if request.form.get('group') and request.form.get('vp_token') :
                 nb = 0
                 for i in ["5", "6", "7", "8"] :
                     vc = 'vc_' + i  
                     if request.form.get(vc) != 'None' :
                         nb += 1
-                if nb < 2 :
-                    flash("MUST add at minimum 2 credentials to setup a Group !", "warning")
+                if nb < 1 :
+                    flash("MUST add at minimum 1 credential to setup a Group !", "warning")
                     return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
 
             session['client_data']['note'] = request.form['note']

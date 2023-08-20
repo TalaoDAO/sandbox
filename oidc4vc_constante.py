@@ -83,6 +83,7 @@ client_data_pattern_ebsi = {
                 "group" : None,
                 "request_uri" : None,
                 "credential_offer_uri" : None,
+                "deferred_flow" : None,
                 "vc" : "DID",
                 "vc_1" : "DID",
                 "vc_2" : "DID",

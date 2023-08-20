@@ -385,7 +385,7 @@ def ebsi_login_qrcode(red, mode):
         verifier_profile = profile[verifier_data['profile']]
     except :
         logging.error("session expired in login_qrcode")
-        return render_template("ebsi/verifier_session_problem.html", message='Session expired')
+        return render_template("verifier_oidc/verifier_session_problem.html", message='Session expired')
     
     if verifier_data.get('id_token') and not verifier_data.get('vp_token') :
         response_type = 'id_token'
@@ -394,11 +394,11 @@ def ebsi_login_qrcode(red, mode):
     elif verifier_data.get('vp_token') :
         response_type = 'vp_token'
     else :
-        return render_template("ebsi/verifier_session_problem.html", message='Invalid configuration')
+        return render_template("verifier_oidc/verifier_session_problem.html", message='Invalid configuration')
     
     # Manage presentation definition with a subset of PEX 2.0
-    presentation_definition = str()
-    if 'vp_token' in response_type :    
+    
+    if 'vp_token' in response_type and not verifier_data['group'] :    
         prez = pex.Presentation_Definition(verifier_data['application_name'], "Talao-Altme presentation definition with a subset of PEX v2.0 syntax")  
         for i in ["1", "2", "3", "4"] :
             vc = 'vc_' + i
@@ -412,30 +412,35 @@ def ebsi_login_qrcode(red, mode):
                                         "Input descriptor for credential " + i,
                                         verifier_data[reason],
                                         id = verifier_data[vc].lower() + '_' + i)
-        if verifier_data['group'] : 
-            prez.add_group("Group A", "A")
-            for i in ["5", "6", "7", "8"] :
-                vc = 'vc_' + i
-                if verifier_data[vc] != 'None'   :
-                    if verifier_data['profile'] == "EBSI-V2" :
-                        prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[verifier_data[vc]], "Input descriptor for credential " + i, "", "A")
-                    else :
-                        prez.add_constraint_with_group("$.credentialSubject.type",
+    
+    if 'vp_token' in response_type and verifier_data['group'] : 
+        prez = pex.Presentation_Definition(verifier_data['application_name'], "Talao-Altme presentation definition with a subset of PEX v2.0 syntax")  
+        prez.add_group("Group A", "A")
+        for i in ["5", "6", "7", "8"] :
+            vc = 'vc_' + i
+            if verifier_data[vc] != 'None'   :
+                if verifier_data['profile'] == "EBSI-V2" :
+                    prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[verifier_data[vc]], "Input descriptor for credential " + i, "", "A")
+                else :
+                    prez.add_constraint_with_group("$.credentialSubject.type",
                                                         verifier_data[vc],
                                                         "Input descriptor for credential " + i,
                                                         "",
                                                         "A",
                                                         id=verifier_data[vc].lower() + '_' + i)
         
-        # add format depending on profile
-        if profile[verifier_data['profile']].get("verifier_vp_type") == 'ldp_vp' :
+    # add format depending on profile
+    if 'vp_token' in response_type and profile[verifier_data['profile']].get("verifier_vp_type") == 'ldp_vp' :
                 prez.add_format_ldp_vp()
                 prez.add_format_ldp_vc()
-        if profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp' :
+    if 'vp_token' in response_type and profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp' :
                 prez.add_format_jwt_vp()
                 prez.add_format_jwt_vc()
-        
+
+    if 'vp_token' in response_type :
         presentation_definition = prez.get()
+    else :
+        presentation_definition = ""
 
     nonce = nonce if nonce else str(uuid.uuid1())
     authorization_request = { 
@@ -661,7 +666,6 @@ async def ebsi_login_endpoint(stream_id, red):
 
     # check VC signature
 
-    
     # check types of vc
     if access == 'ok' and vp_token :
         vc_type = ""
@@ -683,7 +687,6 @@ async def ebsi_login_endpoint(stream_id, red):
                     vc_type += " jwt_vc"
                 except  :
                     vc_type += " ldp_vc"
-
 
     # check holder binding
 

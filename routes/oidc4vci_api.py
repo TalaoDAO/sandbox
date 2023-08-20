@@ -28,6 +28,7 @@ API_LIFE = 5000
 ACCESS_TOKEN_LIFE = 1000
 GRANT_LIFE = 5000
 C_NONCE_LIFE = 5000
+ACCEPTANCE_TOKEN_LIFE = 28*24*60*60
 
 
 def init_app(app,red, mode) :
@@ -36,7 +37,7 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/ebsi/issuer_stream',  view_func=ebsi_issuer_stream, methods = ['GET', 'POST'], defaults={'red' :red})
     app.add_url_rule('/sandbox/ebsi/issuer_followup/<stream_id>',  view_func=ebsi_issuer_followup, methods = ['GET'], defaults={'red' :red})
 
-    # api 
+    # api for application
     app.add_url_rule('/sandbox/ebsi/issuer/api/<issuer_id>',  view_func=issuer_api_endpoint, methods = ['POST'], defaults={'red' :red, 'mode' : mode})
     
     # OIDC4VCI protocol with wallet
@@ -46,6 +47,7 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/authorize',  view_func=ebsi_issuer_authorize, methods = ['GET', 'POST'], defaults={'red' :red})
     app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/token',  view_func=ebsi_issuer_token, methods = ['POST'], defaults={'red' :red})
     app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/credential',  view_func=ebsi_issuer_credential, methods = ['POST'], defaults={'red' :red})
+    app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/deferred',  view_func=ebsi_issuer_deferred, methods = ['POST'], defaults={'red' :red})
 
     app.add_url_rule('/sandbox/ebsi/issuer/credential_offer_uri/<id>',  view_func=ebsi_issuer_credential_offer_uri, methods = ['GET'], defaults={'red' :red})
 
@@ -143,6 +145,7 @@ def oidc(issuer_id, mode) :
         'authorization_endpoint':  mode.server + 'sandbox/ebsi/issuer/' + issuer_id + '/authorize',
         'token_endpoint': mode.server + 'sandbox/ebsi/issuer/' + issuer_id + '/token',
         'credential_endpoint': mode.server + 'sandbox/ebsi/issuer/' + issuer_id + '/credential',
+        'credential_deferred_endpoint': mode.server + 'sandbox/ebsi/issuer/' + issuer_id + '/deferred',
         'pre-authorized_grant_anonymous_access_supported' : False,
         'subject_syntax_types_supported': issuer_profile['subject_syntax_types_supported'],
         'credential_supported' : cs,
@@ -161,13 +164,14 @@ def issuer_api_endpoint(issuer_id, red, mode) :
         'Authorization' : 'Bearer <client_secret>'
     }
     data = { 
-        "vc" : REQUIRED -> { "EmployeeCredendial" : {}, ....}, json object, VC as a json-ld not signed
+        "vc" : OPTIONAL -> { "EmployeeCredendial" : {}, ....}, json object, VC as a json-ld not signed
+        "deferred_vc" : OPTIONAL but REQUIRED in case of deferred flow
         "pre-authorized_code" :  OPTIONAL, string if no it will be an authorization flow
         "issuer_state" : OPTIONAL, string, opaque to wallet
         "credential_type" : REQUIRED -> array or string name of the credential
         "user_pin_required" : OPTIONAL bool, default is false 
         "user_pin" : OPTIONAL, string, required if user_pin_required is True
-        "callback" : OPTIONAL, string, this the route for at the end of the flo
+        "callback" : REQUIRED, string, this the route for at the end of the flow
         "redirect" : OPTIONAL : bool, True by default OPTIONAL, if False allows to use a local template
         }
     resp = requests.post(token_endpoint, headers=headers, data = data)
@@ -185,6 +189,14 @@ def issuer_api_endpoint(issuer_id, red, mode) :
     
     redirect = request.json.get('redirect', True)
     pre_authorized_code = request.json.get('credential_type')
+    
+    # For deferred flow only
+    deferred_vc = request.json.get('deferred_vc')
+    if deferred_vc :
+        user_data = {
+            'deferred_vc' : deferred_vc
+        }
+        red.setex(pre_authorized_code, ACCEPTANCE_TOKEN_LIFE, user_data)
 
     if client_secret != issuer_data['client_secret'] :
         return Response(**manage_error("Unauthorized", "Client secret is incorrect", red, status=401))
@@ -599,7 +611,7 @@ async def ebsi_issuer_credential(issuer_id, red) :
     # check proof format requested
     logging.info('proof format requested = %s', proof_format)
     if proof_format not in ['jwt_vc','jwt_vc_json', 'jwt_vc_json-ld', 'ldp_vc'] :#TODO
-        return Response(**manage_error('unsupported_credential_format', 'The proof format requested is not supported', red, stream_id=stream_id)) 
+        return Response(**manage_error('invalid_or_missing_proof', 'The proof is invalid', red, stream_id=stream_id)) 
 
     # Check proof  of key ownership received (OPTIONAL check)
     logging.info('proof of key ownership received = %s', proof)
@@ -608,9 +620,36 @@ async def ebsi_issuer_credential(issuer_id, red) :
         logging.info('proof of ownership is validated')
     except Exception as e :
         logging.warning('proof of ownership error = %s', str(e))
+        #return Response(**manage_error('invalid_or_missing_proof', 'The proof is invalid', red, stream_id=stream_id)) 
 
     proof_payload=oidc4vc.get_payload_from_token(proof)
-    issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
+
+    # deferred use case 
+    print('issuer data deferred = ',issuer_data.get('deferred_flow') )
+    if issuer_data.get('deferred_flow') :
+        acceptance_token = str(uuid.uuid1())
+        payload = {
+            'acceptance_token' : acceptance_token,
+            'c_nonce': str(uuid.uuid1()),
+            'c_nonce_expires_in': ACCEPTANCE_TOKEN_LIFE
+        }
+        acceptance_token_data = {
+            'issuer_id' : issuer_id,
+            'format' : proof_format,
+            'subjectId' : proof_payload.get('iss'),
+            'pre_authorized_code' : access_token_data['pre_authorized_code'],
+            'credential_type' : credential_type,
+            'c_nonce': str(uuid.uuid1()),
+            'c_nonce_expires_in': ACCEPTANCE_TOKEN_LIFE
+        }
+        red.setex(acceptance_token, ACCEPTANCE_TOKEN_LIFE,json.dumps(acceptance_token_data))
+        print('deferred = ', payload)
+        print('acceptance_token_data = ', acceptance_token_data)
+        headers = {
+            'Cache-Control' : 'no-store',
+            'Content-Type': 'application/json'}
+        return Response(response=json.dumps(payload), headers=headers)
+        
     
     # for EBSI V2
     if credential_type in ['https://api-conformance.ebsi.eu/trusted-schemas-registry/v2/schemas/z22ZAMdQtNLwi51T2vdZXGGZaYyjrsuP1yzWyXZirCAHv'] :
@@ -657,7 +696,6 @@ async def ebsi_issuer_credential(issuer_id, red) :
     
     # Transfer VC
     payload = {
-        #'acceptance_token' : None,
         'format' : proof_format,
         'credential' : credential_signed, # string or json depending on the format
         'c_nonce': str(uuid.uuid1()),
@@ -667,6 +705,70 @@ async def ebsi_issuer_credential(issuer_id, red) :
     # update nonce in access token for next VC request
     access_token_data['c_nonce'] = payload['c_nonce']
     red.setex(access_token, ACCESS_TOKEN_LIFE,json.dumps(access_token_data))
+
+    headers = {
+        'Cache-Control' : 'no-store',
+        'Content-Type': 'application/json'}
+    return Response(response=json.dumps(payload), headers=headers)
+
+
+async def ebsi_issuer_deferred(issuer_id, red):
+    """
+    """
+    logging.info("deferred endpoint request")
+    # Check access token
+    try :
+        acceptance_token = request.headers['Authorization'].split()[1]
+    except :
+        return Response(**manage_error("invalid_token", "Acceptance token not passed in request header", red))
+    try :
+        acceptance_token_data = json.loads(red.get(acceptance_token).decode())
+    except :
+        return Response(**manage_error("invalid_token", "Access token expired", red)) 
+        
+    issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
+
+    pre_authorized_code = acceptance_token_data['pre_authorized_code']
+    credential_type = acceptance_token_data['credential_type']
+    credential = red.get(pre_authorized_code).decode()['deferred_vc'][credential_type]
+
+    credential['id']= 'urn:uuid:' + str(uuid.uuid1())
+    credential['credentialSubject']['id'] = acceptance_token_data['subjectId']
+    credential['issuer']= issuer_data['did']
+    credential['issued'] = datetime.now().replace(microsecond=0).isoformat() + 'Z'
+    credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + 'Z'
+    credential['validFrom'] = datetime.now().replace(microsecond=0).isoformat() + 'Z'
+    credential['expirationDate'] =  (datetime.now() + timedelta(days= 365)).isoformat() + 'Z'
+    credential['validUntil'] =  (datetime.now() + timedelta(days= 365)).isoformat() + 'Z'
+    
+    issuer_key =  issuer_data['jwk'] 
+    issuer_vm = issuer_data['verification_method'] 
+
+    if acceptance_token_data['format'] in ['jwt_vc', 'jwt_vc_json', 'jwt_vc_json-ld'] :        
+        credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm , issuer_key, acceptance_token_data['c_nonce'])
+    else : #  proof_format == 'ldp_vc' :
+        didkit_options = {
+                'proofPurpose': 'assertionMethod',
+                'verificationMethod': issuer_vm
+        }
+        credential_signed =  await didkit.issue_credential(
+                json.dumps(credential),
+                didkit_options.__str__().replace("'", '"'),
+                issuer_key
+                )
+        result = await didkit.verify_credential(credential_signed, '{}')   
+        logging.info('signature check with didkit = %s', result)
+        credential_signed = json.loads(credential_signed)
+    
+    logging.info('credential signed sent to wallet = %s', credential_signed)
+    
+     # Transfer VC
+    payload = {
+        'format' : acceptance_token_data['format'],
+        'credential' : credential_signed, # string or json depending on the format
+        'c_nonce': str(uuid.uuid1()),
+        'c_nonce_expires_in': C_NONCE_LIFE
+    }
 
     headers = {
         'Cache-Control' : 'no-store',
