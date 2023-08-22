@@ -627,7 +627,6 @@ async def ebsi_issuer_credential(issuer_id, red) :
     proof_payload=oidc4vc.get_payload_from_token(proof)
 
     # deferred use case 
-    print('issuer data deferred = ',issuer_data.get('deferred_flow') )
     if issuer_data.get('deferred_flow') :
         acceptance_token = str(uuid.uuid1())
         payload = {
@@ -658,6 +657,8 @@ async def ebsi_issuer_credential(issuer_id, red) :
         credential_type = 'VerifiableId' 
     elif  credential_type in ['https://api.preprod.ebsi.eu/trusted-schemas-registry/v1/schemas/0xbf78fc08a7a9f28f5479f58dea269d3657f54f13ca37d380cd4e92237fb691dd'] :
         credential_type = 'VerifiableDiploma' 
+    
+    print("access token data ", access_token_data['vc'])
     try :
         credential = access_token_data['vc'][credential_type]
     except :
