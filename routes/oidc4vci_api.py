@@ -579,6 +579,8 @@ async def ebsi_issuer_credential(issuer_id, red) :
     except :
         return Response(**manage_error("invalid_request", "Invalid request format", red, stream_id=stream_id)) 
     
+    logging.info('credential request = %s', request.json)
+    
     if proof_type != 'jwt' : 
         return Response(**manage_error("unsupported_credential_type", "The credential proof type is not supported =%s", proof_type)) 
 
@@ -590,7 +592,7 @@ async def ebsi_issuer_credential(issuer_id, red) :
             credential_type = result['types']
             if isinstance(credential_type, list) :
                 for type in credential_type :
-                    if type != 'VerifiableCredential' :
+                    if type not in ['VerifiableCredential', 'VerifiableAttestation'] :
                         credential_type = type
                         break 
         except :
