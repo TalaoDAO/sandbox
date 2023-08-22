@@ -187,7 +187,7 @@ def issuer_api_endpoint(issuer_id, red, mode) :
     except :
         return Response(**manage_error("invalid_request", "Request format is incorrect", red))
     
-    print('vc = ', vc)
+    logging.info('vc recived from API = %s', vc)
     redirect = request.json.get('redirect', True)
     pre_authorized_code = request.json.get('credential_type')
     
@@ -658,7 +658,8 @@ async def ebsi_issuer_credential(issuer_id, red) :
     elif  credential_type in ['https://api.preprod.ebsi.eu/trusted-schemas-registry/v1/schemas/0xbf78fc08a7a9f28f5479f58dea269d3657f54f13ca37d380cd4e92237fb691dd'] :
         credential_type = 'VerifiableDiploma' 
     
-    print("access token data ", access_token_data['vc'])
+    logging.info("access token data for vc = %s", access_token_data['vc'])
+    logging.info("credential type = %s", credential_type)
     try :
         credential = access_token_data['vc'][credential_type]
     except :
