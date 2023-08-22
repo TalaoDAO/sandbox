@@ -187,6 +187,7 @@ def issuer_api_endpoint(issuer_id, red, mode) :
     except :
         return Response(**manage_error("invalid_request", "Request format is incorrect", red))
     
+    print('vc = ', vc)
     redirect = request.json.get('redirect', True)
     pre_authorized_code = request.json.get('credential_type')
     
@@ -644,7 +645,6 @@ async def ebsi_issuer_credential(issuer_id, red) :
             'c_nonce_expires_in': ACCEPTANCE_TOKEN_LIFE
         }
         red.setex(acceptance_token, ACCEPTANCE_TOKEN_LIFE,json.dumps(acceptance_token_data))
-        print('deferred = ', payload)
         print('acceptance_token_data = ', acceptance_token_data)
         headers = {
             'Cache-Control' : 'no-store',
