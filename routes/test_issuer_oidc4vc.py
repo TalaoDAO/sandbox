@@ -79,8 +79,8 @@ def issuer_ebsiv2(mode):
 # Test 8
 def issuer_ebsiv3(mode):
     if mode.myenv == 'aws' :
-        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/     "
-        client_secret = ""
+        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/zarbjrqrzj"
+        client_secret = "c755ade2-3b5a-11ee-b7f1-0a1628958560"
     else : 
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/nfwvbyacnw"
         client_secret = "4f64b6f5-3adf-11ee-a601-b33f6ebca22b"
