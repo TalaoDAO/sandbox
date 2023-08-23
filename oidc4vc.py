@@ -279,14 +279,14 @@ def resolve_did(did, vm) -> dict :
     try :
         r = requests.get(url, timeout=10)
     except :
-        logging.error('cannot access to Universal Resolver API')
+        logging.error('cannot access to Universal Resolver')
         return
     didDocument = r.json()
     for verificationMethod in didDocument['didDocument']['verificationMethod'] :
-      if vm == verificationMethod['id'] :
-        jwk = didDocument['didDocument']['verificationMethod'][0]['publicKeyJwk']
+      if vm == verificationMethod['id'] or '#' + vm.split('#')[1] == verificationMethod['id'] :
+        jwk = verificationMethod.get('publicKeyJwk')
         logging.info('wallet jwk = %s', jwk)
-        return didDocument['didDocument']['verificationMethod'][0]['publicKeyJwk']
+        return jwk
     return
 
 
@@ -540,3 +540,13 @@ print(my_key)
 print(did_ebsi(my_key))
 print(verification_method_ebsi(my_key))
 """
+
+
+
+# MAIN entry point for test
+if __name__ == '__main__':
+    # info release
+    logging.info('flask test serveur run with debug mode')
+    did = "did:ion:EiClkZMDxPKqC9c-umQfTkR8vvZ9JPhl_xLDI9Nfk38w5w"
+    vm = did + "#someKeyId"
+    resolve_did(did, vm)

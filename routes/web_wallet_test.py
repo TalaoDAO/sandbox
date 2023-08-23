@@ -176,6 +176,7 @@ def test_direct_offer(red, mode) :
             "expires" : (datetime.now() + OFFER_DELAY).replace(microsecond=0).isoformat() + "Z"
         }
     
+    print("VC filename = ", VC_filename)
     if VC_filename == "TezLoyaltyCard_1.jsonld" :
         filename = "./credential_manifest/loyaltycard_credential_manifest.json"
     
@@ -221,6 +222,9 @@ def test_direct_offer(red, mode) :
     
     elif VC_filename == "DefiCompliance.jsonld" :
         filename = "./credential_manifest/defi_credential_manifest.json"
+    
+    elif VC_filename == "StudentCard.jsonld" :
+        filename = "./credential_manifest/StudentCard_credential_manifest.json"
     
     else : 
         filename = None
