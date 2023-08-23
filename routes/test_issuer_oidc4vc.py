@@ -100,6 +100,7 @@ def issuer_ebsiv3(mode):
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
     if REDIRECT :
+        print("response = ", resp.json())
         try :
             qrcode =  resp.json()['redirect_uri']
         except :

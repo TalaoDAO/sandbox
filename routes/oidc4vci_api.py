@@ -136,11 +136,14 @@ def oidc(issuer_id, mode) :
         cm_to_add['issuer']['name'] = issuer_data['application_name']
         cm.append(cm_to_add)
     
+    if issuer_data['profile'] in ['EBSI-V3'] :
+        cm = []
+
     # https://www.rfc-editor.org/rfc/rfc8414.html#page-4
     openid_configuration = dict()
     if issuer_profile.get('service_documentation') :
         openid_configuration['service_documentation'] = issuer_profile['service_documentation']
-    openid_configuration .update({
+    openid_configuration.update({
         'credential_issuer': mode.server + 'sandbox/ebsi/issuer/' + issuer_id,
         'authorization_endpoint':  mode.server + 'sandbox/ebsi/issuer/' + issuer_id + '/authorize',
         'token_endpoint': mode.server + 'sandbox/ebsi/issuer/' + issuer_id + '/token',
@@ -168,7 +171,7 @@ def issuer_api_endpoint(issuer_id, red, mode) :
         "deferred_vc" : OPTIONAL but REQUIRED in case of deferred flow
         "pre-authorized_code" :  OPTIONAL, string if no it will be an authorization flow
         "issuer_state" : OPTIONAL, string, opaque to wallet
-        "credential_type" : REQUIRED -> array or string name of the credential
+        "credential_type" : REQUIRED -> array or string name of the credentials offered
         "user_pin_required" : OPTIONAL bool, default is false 
         "user_pin" : OPTIONAL, string, required if user_pin_required is True
         "callback" : REQUIRED, string, this the route for at the end of the flow
@@ -187,9 +190,9 @@ def issuer_api_endpoint(issuer_id, red, mode) :
     except :
         return Response(**manage_error("invalid_request", "Request format is incorrect", red))
     
-    logging.info('vc recived from API = %s', vc)
+    logging.info('vc received from API = %s', vc)
     redirect = request.json.get('redirect', True)
-    pre_authorized_code = request.json.get('credential_type')
+    pre_authorized_code = request.json.get('pre-authorized_code')
     
     # For deferred flow only
     deferred_vc = request.json.get('deferred_vc')
@@ -256,7 +259,6 @@ def issuer_api_endpoint(issuer_id, red, mode) :
 
 
 def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_vc_type, issuer_profile, vc, user_pin_required, user_pin, mode) :
-   
     if issuer_profile == 'EBSI-V2' :
         #  https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-pre-authorized-code-flow
         url_data  = { 
@@ -282,8 +284,6 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
     
     # new OIDC4VCI standard with  credential as json object
     elif issuer_profile == 'EBSI-V3' :
-        if isinstance(credential_type, str) :
-            credential_type = [credential_type]
         url_data  = { 
             "credential_issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
             "credentials"  : []
@@ -300,8 +300,8 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                 "authorization_code": {}
             }
 
-        for vc in credential_type :
-            credential = json.load(open('verifiable_credentials/' + vc + '.jsonld', 'r'))
+        for one_vc in credential_type :
+            credential = json.load(open('verifiable_credentials/' + one_vc + '.jsonld', 'r'))
             url_data["credentials"].append({
                 'format': profile[issuer_profile]['issuer_vc_type'],
                 'types': credential['type'],
@@ -527,7 +527,7 @@ def ebsi_issuer_token(issuer_id, red) :
         'token_type' : 'Bearer',
         'expires_in': ACCESS_TOKEN_LIFE
     }
-    token_endpoint_data = {
+    access_token_data = {
         'access_token' : access_token,
         'pre_authorized_code' : code,
         'c_nonce' : endpoint_response.get('c_nonce'),
@@ -538,7 +538,7 @@ def ebsi_issuer_token(issuer_id, red) :
         'issuer_id' : data.get('issuer_id')
     }
 
-    red.setex(access_token, ACCESS_TOKEN_LIFE,json.dumps(token_endpoint_data))
+    red.setex(access_token, ACCESS_TOKEN_LIFE,json.dumps(access_token_data))
 
     headers = {
         'Cache-Control' : 'no-store',
@@ -562,13 +562,11 @@ async def ebsi_issuer_credential(issuer_id, red) :
         access_token_data = json.loads(red.get(access_token).decode())
     except :
         return Response(**manage_error("invalid_token", "Access token expired", red)) 
-    
-    # to manage followuip screen
+        
+    # to manage followup screen
     stream_id = access_token_data.get('stream_id')
-    
     issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
     logging.info('Profile = %s', issuer_data['profile'])
-
     issuer_profile = profile[issuer_data['profile']]
     
     # Check request 
@@ -586,19 +584,38 @@ async def ebsi_issuer_credential(issuer_id, red) :
         return Response(**manage_error("unsupported_credential_type", "The credential proof type is not supported =%s", proof_type)) 
 
     # get type of credential requested
-    try :
-        credential_type = result['type']
-    except :
+    if issuer_data['profile'] == 'EBSI-V3' :
+        found = False
+        for vc_type in result['types'] :
+            if vc_type not in ['VerifiableCredential', 'VerifiableAttestation'] :
+                credential_type = vc_type
+                found = True
+                break
+        if not found :  
+            return Response(**manage_error('invalid_request', 'VC type not found', red, stream_id=stream_id)) 
+    else :
         try :
-            credential_type = result['types']
-            if isinstance(credential_type, list) :
-                for type in credential_type :
-                    if type not in ['VerifiableCredential', 'VerifiableAttestation'] :
-                        credential_type = type
-                        break 
+            credential_type = result['type']
         except :
             return Response(**manage_error('invalid_request', 'Invalid request format', red, stream_id=stream_id)) 
     
+    """
+    # Get credential type requested
+    if result.get("types") :
+        found = False
+        for vc_type in result['types'] :
+            if vc_type not in ['VerifiableCredential', 'VerifiableAttestation'] :
+                credential_type = vc_type
+                found = True
+                break
+        if not found :  
+            return Response(**manage_error('invalid_request', 'VC type not found', red, stream_id=stream_id)) 
+    elif result.get('type') :
+        credential_type = result['type']
+    else :
+        return Response(**manage_error('invalid_request', 'Invalid request format', red, stream_id=stream_id)) 
+    """
+
     logging.info('credential type requested = %s', credential_type)
     
     credential_is_supported = False
@@ -645,7 +662,6 @@ async def ebsi_issuer_credential(issuer_id, red) :
             'c_nonce_expires_in': ACCEPTANCE_TOKEN_LIFE
         }
         red.setex(acceptance_token, ACCEPTANCE_TOKEN_LIFE,json.dumps(acceptance_token_data))
-        print('acceptance_token_data = ', acceptance_token_data)
         headers = {
             'Cache-Control' : 'no-store',
             'Content-Type': 'application/json'}
@@ -658,7 +674,6 @@ async def ebsi_issuer_credential(issuer_id, red) :
     elif  credential_type in ['https://api.preprod.ebsi.eu/trusted-schemas-registry/v1/schemas/0xbf78fc08a7a9f28f5479f58dea269d3657f54f13ca37d380cd4e92237fb691dd'] :
         credential_type = 'VerifiableDiploma' 
     
-    logging.info("access token data for vc = %s", access_token_data['vc'])
     logging.info("credential type = %s", credential_type)
     try :
         credential = access_token_data['vc'][credential_type]

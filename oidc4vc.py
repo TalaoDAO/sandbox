@@ -10,8 +10,6 @@ from datetime import datetime
 import os
 import logging
 logging.basicConfig(level=logging.INFO)
-from multibase import decode
-import multicodec
 
 
 """
@@ -206,13 +204,11 @@ def verif_token(token, nonce) :
     issuer_key = jwk.JWK(**header['jwk']) 
   
   elif header.get('kid') :
-    vm = header['kid']
-    did = vm.split('#')[0]
-    if did[:7] == "did:key" :
-      logging.info("resolve with external resolver")
-      dict_key = resolve_did_key(did)
-      if not dict_key :
-         raise Exception("Cannot resolve public key")
+    did = header['kid'].split('#')[0]
+    logging.info("resolve with external resolver")
+    dict_key = resolve_did(did, vm=header['kid'])
+    if not dict_key :
+        raise Exception("Cannot get public key")
     issuer_key = jwk.JWK(**dict_key)
   else :
     raise Exception("Cannot resolve public key")
@@ -278,33 +274,20 @@ def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce) :
   return token.serialize()
 
 
-"""
-def resolve_did_key(did) :
-    encoded = did.split(':')[2].encode()
-    ed255_Multi = decode(encoded)
-    ed255_binary = multicodec.remove_prefix(ed255_Multi)
-    x = base64.urlsafe_b64encode(ed255_binary).decode()
-    for i in range(3) :
-        if x[-1:] == '=' :
-            x = x[:-1]
-    key = {
-            "crv":"Ed25519",
-            "kty":"OKP",
-            "x": x
-        }
-    return json.dumps(key)
-"""
-
-def resolve_did_key(did) -> dict :
+def resolve_did(did, vm) -> dict :
     url = 'https://dev.uniresolver.io/1.0/identifiers/' + did
     try :
-        r = requests.get(url)
+        r = requests.get(url, timeout=10)
     except :
         logging.error('cannot access to Universal Resolver API')
-        return 
-    jwk = r.json()['didDocument']['verificationMethod'][0]['publicKeyJwk']
-    return jwk
-
+        return
+    didDocument = r.json()
+    for verificationMethod in didDocument['didDocument']['verificationMethod'] :
+      if vm == verificationMethod['id'] :
+        jwk = didDocument['didDocument']['verificationMethod'][0]['publicKeyJwk']
+        logging.info('wallet jwk = %s', jwk)
+        return didDocument['didDocument']['verificationMethod'][0]['publicKeyJwk']
+    return
 
 
 def thumbprint(key) :
@@ -381,7 +364,7 @@ def did_resolve_lp(did) :
   else :
     url = 'https://dev.uniresolver.io/1.0/identifiers/' + did
   try :
-    r = requests.get(url)
+    r = requests.get(url, timeout=10)
   except :
     logging.error('cannot access to Universal Resolver API')
     return "{'error' : 'cannot access to Universal Resolver API'}"
