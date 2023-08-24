@@ -25,7 +25,9 @@ def init_app(app,red, mode) :
 
     app.add_url_rule('/sandbox/issuer/default_3',  view_func=issuer_default_3, methods = ['GET'], defaults={'mode' : mode}) # test 6
 
-    app.add_url_rule('/sandbox/issuer/ebsiv3',  view_func=issuer_ebsiv3, methods = ['GET'], defaults={'mode' : mode}) # test 8
+    app.add_url_rule('/sandbox/issuer/ebsiv3',  view_func=issuer_ebsiv3, methods = ['GET'], defaults={'mode' : mode}) # test 10
+    app.add_url_rule('/sandbox/issuer/ebsiv3_1',  view_func=issuer_ebsiv3_1, methods = ['GET'], defaults={'mode' : mode}) # test 8
+
 
     app.add_url_rule('/sandbox/issuer/callback',  view_func=issuer_callback, methods = ['GET'])
 
@@ -75,15 +77,47 @@ def issuer_ebsiv2(mode):
         return jsonify(resp.json()['qrcode'])
    
 
-
 # Test 8
-def issuer_ebsiv3(mode):
+def issuer_ebsiv3_1(mode):
     if mode.myenv == 'aws' :
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/zarbjrqrzj"
         client_secret = "c755ade2-3b5a-11ee-b7f1-0a1628958560"
     else : 
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/nfwvbyacnw"
         client_secret = "4f64b6f5-3adf-11ee-a601-b33f6ebca22b"
+    
+    offer = ['VerifiableDiploma']
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization' : 'Bearer ' + client_secret
+    }
+    data = { 
+        "vc" : build_credential_offered(offer), 
+        "pre-authorized_code" : str(uuid.uuid1()),
+        "credential_type" : offer,
+        "callback" : mode.server + '/sandbox/issuer/callback',
+        "redirect" : REDIRECT,
+        "user_pin_required" : False
+        }
+    resp = requests.post(api_endpoint, headers=headers, json = data)
+    if REDIRECT :
+        print("response = ", resp.json())
+        try :
+            qrcode =  resp.json()['redirect_uri']
+        except :
+            return jsonify("No qr code")
+        return redirect(qrcode) 
+    else :
+        return jsonify(resp.json()['qrcode'])
+
+# Test 10
+def issuer_ebsiv3(mode):
+    if mode.myenv == 'aws' :
+        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/pcbrwbvrsi"
+        client_secret = "0f4103ef-42c3-11ee-9015-0a1628958560"
+    else : 
+        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/kwcdgsspng"
+        client_secret = "6f1dd8a5-42c3-11ee-b096-b5bae73ba948"
     
     offer = ['VerifiableDiploma']
     headers = {
