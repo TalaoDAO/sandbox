@@ -523,7 +523,7 @@ def ebsi_login_qrcode(red, mode):
     deeplink_talao = mode.deeplink_talao + 'app/download/ebsi?' + urlencode({'uri' : url})
     deeplink_altme= mode.deeplink_altme + 'app/download/ebsi?' + urlencode({'uri' : url})
     qrcode_page = verifier_data.get('verifier_landing_page_style')
-    logging.info ('url = %s', authorization_request_displayed)
+    logging.info ('url = %s', authorization_request)
     return render_template(qrcode_page,
                             back_button = False,
 							url=url,
