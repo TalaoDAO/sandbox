@@ -186,7 +186,7 @@ def sign_jwt_vp(vc, audience, holder_vm, holder_did, nonce, vp_id, holder_key) :
     return token.serialize()
 
 
-def verif_token(token, nonce) :
+def verif_token(token, nonce, aud=None) :
   """
   For issuer 
   raise exception if problem
@@ -196,23 +196,21 @@ def verif_token(token, nonce) :
   payload = get_payload_from_token(token)
   if payload['nonce'] != nonce :
     raise Exception("Nonce is incorrect")
+  if aud and payload.get('aud') != aud :
+    raise Exception("Aud is incorrect")
   a =jwt.JWT.from_jose_token(token)
-  
   if header.get('jwk') :
     if isinstance (header['jwk'], str) :
       header['jwk'] = json.loads(header['jwk'])
     issuer_key = jwk.JWK(**header['jwk']) 
-  
   elif header.get('kid') :
-    did = header['kid'].split('#')[0]
     logging.info("resolve with external resolver")
-    dict_key = resolve_did(did, vm=header['kid'])
+    dict_key = resolve_did(header['kid'])
     if not dict_key :
         raise Exception("Cannot get public key")
     issuer_key = jwk.JWK(**dict_key)
   else :
     raise Exception("Cannot resolve public key")
-  
   a.validate(issuer_key)
   return
 
@@ -229,7 +227,6 @@ def verify_jwt_credential(token, pub_key) :
   issuer_key = jwk.JWK(**pub_key) 
   a.validate(issuer_key)
   return
-
 
 
 def get_payload_from_token(token) :
@@ -255,12 +252,11 @@ def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce) :
   """
   key = json.loads(key) if isinstance(key, str) else key
   signer_key = jwk.JWK(**key) 
-  signer_pub_key = signer_key.export(private_key=False, as_dict=True)
   header = {
     'typ' :'JWT',
     'alg': alg(key),
     'kid' : kid
-    #'jwk' : signer_pub_key # as isser cannot resolve did:key
+    #'jwk' : signer_key.export(private_key=False, as_dict=True)
   }
 
   payload = {
@@ -274,7 +270,8 @@ def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce) :
   return token.serialize()
 
 
-def resolve_did(did, vm) -> dict :
+def resolve_did(vm) -> dict :
+    did = vm.split('#')[0]
     url = 'https://dev.uniresolver.io/1.0/identifiers/' + did
     try :
         r = requests.get(url, timeout=10)
@@ -309,7 +306,7 @@ def generate_lp_ebsi_did() :
 
 def generate_np_ebsi_did(key) :
     """
-    for natural person / wallet
+    for natural person / wallet  EBSI V2
     """
     key = json.loads(key) if isinstance(key, str) else key
     return  'did:ebsi:z' + base58.b58encode(b'\x02' + bytes.fromhex(thumbprint(key))).decode()
@@ -342,8 +339,6 @@ def did_resolve_lp(did) :
       logging.error('cannot access to Universal Resolver API')
       return "{'error' : 'cannot access to EBSI registry'}"
     return r.json()
-  
-
   elif did.split(':')[1] == 'web' :
     url = 'https://' + did.split(':')[2] 
     i = 3
@@ -370,16 +365,6 @@ def did_resolve_lp(did) :
     return "{'error' : 'cannot access to Universal Resolver API'}"
   logging.info("DID Document = %s", r.json())
   return r.json().get('didDocument')
-
-
-def get_public_key_from_did_document(did, vm) :
-  did_doc = did_resolve_lp(did)
-  for key in did_doc['verificationMethod'] :
-    if key['id'] == vm :
-      logging.info('publicKeyJwk = %s', key['publicKeyJwk'])
-      return key['publicKeyJwk']
-  return 
-
 
 
 def get_lp_public_jwk(did, kid) :
@@ -549,4 +534,4 @@ if __name__ == '__main__':
     logging.info('flask test serveur run with debug mode')
     did = "did:ion:EiClkZMDxPKqC9c-umQfTkR8vvZ9JPhl_xLDI9Nfk38w5w"
     vm = did + "#someKeyId"
-    resolve_did(did, vm)
+    resolve_did(vm)

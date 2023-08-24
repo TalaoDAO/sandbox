@@ -163,15 +163,17 @@ class Presentation_Definition :
                 }
             )
 
-    def add_group(self, name, group, count=1):
-        self.pd["submission_requirements"]= [
+    def add_group(self, name, group, count=1, type="count"):
+        if not self.pd.get("submission_requirements") :
+            self.pd["submission_requirements"] = list()
+        self.pd["submission_requirements"].append(
                 {
                     "name": name,
                     "rule": "pick",
-                    "count": count,
+                    type : count,
                     "from": group
                 }       
-            ]
+        )
 
     def get(self):
         return self.pd
@@ -182,12 +184,13 @@ class Presentation_Definition :
 # MAIN entry point for test
 if __name__ == '__main__':
   
-    myprez = Presentation_Definition("test", "faire un test")  
-    myprez.add_constraint("$.credentialSubject.firstName", "", "", "", id="descriptor_1")
-    myprez.add_filter('descriptor_1', '$.credentialSubject.lastName', '')
+    myprez = Presentation_Definition("test", "This a test")  
+    #myprez.add_constraint("$.credentialSubject.firstName", "", "", "", id="descriptor_1")
+    #myprez.add_filter('descriptor_1', '$.credentialSubject.lastName', '')
     #myprez.add_constraint("$.credentialSubject.type", "VerifiableId", "", "")
-    #myprez.add_group("test avec group A", "A")
-    #myprez.add_constraint_with_group("$.credentialSubject.type", "PhonePass", "avec ID card", "Present and IOd Card", "A")
+    myprez.add_group("test with group A", "A", count=2, type="min" )
+    myprez.add_group("test with group B", "B")
+    myprez.add_constraint_with_group("$.credentialSubject.type", "PhonePass", "avec ID card", "Present and IOd Card", "A")
     #myprez.add_constraint_with_group("$.credentialSubject.type", "EmailPass", "avec Email pass", "Present a proof of email", "A")
     #myprez.add_format_ldp_vc()
     #myprez.add_format_ldp_vp()

@@ -468,15 +468,15 @@
                                 </div>
     
                                 </div>
+<hr>
 
-
-
+<!-- Group A-->
                             <div class="form-row">
                             <div class="form-row mb-3">
                               <div class="col">
                                 <div class="form-check">
                                   <input class="form-check-input" type="checkbox" {{group}} name="group" id="flexCheckDefault_1">
-                                  <label class="form-check-label" for="flexCheckDefault_1">Group : User picks 1 among several</label>
+                                  <label class="form-check-label" for="flexCheckDefault_1">Group A : User picks exactly 1 among several</label>
                                 </div>
                               </div> 
                             </div>
@@ -512,7 +512,49 @@
                                     </select></div>
                               </div>   
                               </div>
+<!-- Group B -->
+<hr>
+                        <div class="form-row">
+                            <div class="form-row mb-3">
+                              <div class="col">
+                                <div class="form-check">
+                                  <input class="form-check-input" type="checkbox" {{group_B}} name="group_B" id="flexCheckDefault_1">
+                                  <label class="form-check-label" for="flexCheckDefault_1">Group B : User picks min 1 among several</label>
+                                </div>
+                              </div> 
+                            </div>
+                          
+                          </div>
 
+                          <div class="form-row">
+                            <div class="col">
+                                <div class="form-group"><label><strong>Credential 9</strong></label><select name="vc_9" class="form-control">
+                                  {{vc_select_9|safe}}  
+                                  </select></div>
+                            </div>  
+                      
+                           
+                            <div class="col">
+                                <div class="form-group"><label><strong>Credential 10</strong></label><select name="vc_10" class="form-control">
+                                  {{vc_select_10|safe}}  
+                                  </select></div>
+                            </div>   
+                            </div>
+
+                            <div class="form-row">
+                              <div class="col">
+                                  <div class="form-group"><label><strong>Credential 11</strong></label><select name="vc_11" class="form-control">
+                                    {{vc_select_11|safe}}  
+                                    </select></div>
+                              </div>  
+                        
+                             
+                              <div class="col">
+                                  <div class="form-group"><label><strong>Credential 12</strong></label><select name="vc_12" class="form-control">
+                                    {{vc_select_12|safe}}  
+                                    </select></div>
+                              </div>   
+                              </div>
                               <div class="form-row">
                                   <div class="form-group"><label><strong>Presentation Definition (read only)</strong></label><textarea readonly rows="15" cols="150">{{presentation_definition}}</textarea>
                               </div>

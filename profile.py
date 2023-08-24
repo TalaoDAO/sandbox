@@ -111,9 +111,19 @@ profile = {
                 #'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
+             'wallet_metadata' : {
+                'response_types_supported': ['vp_token', 'id_token'],
+                'scopes_supported': [ 'openid' ],
+                'subject_types_supported': [ 'pairwise' ],
+                'id_token_signing_alg_values_supported': ['ES256K'],
+                'request_object_signing_alg_values_supported': [ 'ES256K'],
+                'subject_syntax_types_supported': [ 'did:key'],
+                'id_token_types_supported': ['subject_signed_id_token']
+            },
             'cryptographic_suites_supported' : ['ES256K','ES256','ES384','ES512','RS256'],
             'subject_syntax_types_supported' : ['did:key'],
             'schema_for_type' : False,
+            'credential_manifest_support' : True,
             'service_documentation' : 'THIS PROFILE OF OIDC4VCI IS DEPRECATED. \
                 oidc4vci_draft : https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-credential-endpoint \
                 siopv2_draft : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
@@ -136,6 +146,15 @@ profile = {
             'subject_syntax_types_supported' : ['did:key', 'did:pkh', 'did:web', 'did;hedera'],
             'schema_for_type' : False,
             'credential_manifest_support' : True,
+             'wallet_metadata' : {
+                'response_types_supported': ['vp_token', 'id_token'],
+                'scopes_supported': [ 'openid' ],
+                'subject_types_supported': [ 'pairwise' ],
+                'id_token_signing_alg_values_supported': ['ES256K'],
+                'request_object_signing_alg_values_supported': [ 'ES256K'],
+                'subject_syntax_types_supported': [ 'did:key'],
+                'id_token_types_supported': ['subject_signed_id_token']
+            },
             'service_documentation' : 'WORK IN PROGRESS EON project. last release of the specs. \
                 oidc4vci_draft : https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html \
                 siopv2_draft : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
@@ -152,7 +171,16 @@ profile = {
             'cryptographic_suites_supported' : ['ES256K','ES256','ES384','ES512','RS256'],
             'subject_syntax_types_supported' : ['did:ion', 'did:web'],
             'schema_for_type' : False,
-            'credential_manifest_support' : True,
+            'credential_manifest_support' : False,
+             'wallet_metadata' : {
+                'response_types_supported': ['vp_token', 'id_token'],
+                'scopes_supported': [ 'openid' ],
+                'subject_types_supported': [ 'pairwise' ],
+                'id_token_signing_alg_values_supported': ['ES256K'],
+                'request_object_signing_alg_values_supported': [ 'ES256K'],
+                'subject_syntax_types_supported': [ 'did:key'],
+                'id_token_types_supported': ['subject_signed_id_token']
+            },
             'service_documentation' : 'https://identity.foundation/jwt-vc-presentation-profile/'
 
         },

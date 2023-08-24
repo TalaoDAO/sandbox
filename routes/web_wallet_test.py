@@ -92,7 +92,6 @@ def init_app(app,red, mode) :
     return
 
 
-
 def sandbox() :
     global status
     return redirect("/sandbox/saas4ssi")
@@ -229,7 +228,7 @@ def test_direct_offer(red, mode) :
     else : 
         filename = None
         credential_manifest = "{}" 
-    logging.info('filename = %s', filename)
+    logging.info('filename = %s %s', filename, VC_filename)
     if filename :
         with open(filename, "r") as f:
             credential_manifest = f.read()
@@ -358,30 +357,21 @@ async def test_credentialOffer_endpoint(id, red):
         return jsonify('server error'), 500
     # wallet GET
     if request.method == 'GET':
-      
-        
         return Response(json.dumps(credentialOffer, separators=(':', ':')),
                         headers={ "Content-Type" : "application/json"},
                         status=200)
                         
     # wallet POST
-    
     else :
         credential =  json.loads(credentialOffer)['credentialPreview']
         red.delete(id)
       
         credential['credentialSubject']['id'] = request.form['subject_id']
-        presentation = json.loads(request.form['presentation'])
-    
-        # to keep the possibility to use an RSA key with did:web
 
         global did_selected
         if  credential["issuer"][:8] == "did:ebsi" :
             logging.info("ebsi signer")
             signed_credential = oidc4vc.lp_sign(credential, Secp256kr, credential["issuer"])
-            #filename = './signed_credentials/verifiablediploma' + '.jsonld'
-            #with open(filename, 'w') as outfile :
-            #    outfile.write(json.dumps(signed_credential, indent=4, ensure_ascii=False))
         else :
             if did_selected == 'did:web:talao.co#key-1' :
                 signed_credential = vc_signature.sign(credential, Secp256kr, "did:web:talao.co") 

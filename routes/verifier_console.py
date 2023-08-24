@@ -21,7 +21,7 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/op/console/preview',  view_func=preview, methods = ['GET', 'POST'], defaults={'mode' : mode, "red" : red})
     app.add_url_rule('/sandbox/op/console/activity',  view_func=activity, methods = ['GET', 'POST'])
 
-    app.add_url_rule('/sandbox/preview_presentation/<stream_id>',  view_func=preview_presentation_endpoint, methods = ['GET', 'POST'],  defaults={'red' : red})
+    app.add_url_rule('/sandbox/preview_presentation/<stream_id>',  view_func=preview_presentation_endpoint, methods = ['GET'],  defaults={'red' : red})
 
       # nav bar option
     app.add_url_rule('/sandbox/op/verifier/nav/logout',  view_func=verifier_nav_logout, methods = ['GET'])

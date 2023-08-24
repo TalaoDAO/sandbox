@@ -6,7 +6,6 @@ Customer can use any OpenId lib in its own framework to access an EBSI conforman
 
 """
 
-from inspect import istraceback
 from flask import jsonify, request, render_template, redirect
 from flask import session, Response, jsonify
 import json
@@ -509,8 +508,11 @@ def ebsi_request_uri(stream_id, red) :
     Request by uri
     https://www.rfc-editor.org/rfc/rfc9101.html
     """
-    payload = json.loads(red.get(stream_id).decode())['pattern']
-    client_id = json.loads(red.get(stream_id).decode())['client_id']
+    try :
+        payload = json.loads(red.get(stream_id).decode())['pattern']
+        client_id = json.loads(red.get(stream_id).decode())['client_id']
+    except :
+        return jsonify("Gone"), 410
     verifier_data = json.loads(read_ebsi_verifier(client_id))
     verifier_key = verifier_data['jwk']
     verifier_key = json.loads(verifier_key) if isinstance(verifier_key, str) else verifier_key

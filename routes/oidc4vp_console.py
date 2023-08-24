@@ -131,7 +131,7 @@ def ebsi_verifier_console(mode) :
                 else :
                     vc_select_4 +=  "<option value=" + key + ">" + value + "</option>"
 
-        # for group
+        # for group A
         vc_select_5 = str()
         for key, value in ebsi_verifier_credential_list.items() :
                 if key ==   session['client_data'].get('vc_5', 'DID') :
@@ -158,6 +158,33 @@ def ebsi_verifier_console(mode) :
                 else :
                     vc_select_8 +=  "<option value=" + key + ">" + value + "</option>"
         
+        # for group B
+        vc_select_9 = str()
+        for key, value in ebsi_verifier_credential_list.items() :
+                if key ==   session['client_data'].get('vc_9', 'DID') :
+                    vc_select_9 +=  "<option selected value=" + key + ">" + value + "</option>"
+                else :
+                    vc_select_9 +=  "<option value=" + key + ">" + value + "</option>"
+        
+        vc_select_10 = str()
+        for key, value in ebsi_verifier_credential_list.items() :
+                if key ==   session['client_data'].get('vc_10', "DID") :
+                    vc_select_10 +=  "<option selected value=" + key + ">" + value + "</option>"
+                else :
+                    vc_select_10 +=  "<option value=" + key + ">" + value + "</option>"
+        vc_select_11 = str()
+        for key, value in ebsi_verifier_credential_list.items() :
+                if key ==   session['client_data'].get('vc_11', "DID") :
+                    vc_select_11 +=  "<option selected value=" + key + ">" + value + "</option>"
+                else :
+                    vc_select_11 +=  "<option value=" + key + ">" + value + "</option>"
+        vc_select_12 = str()
+        for key, value in ebsi_verifier_credential_list.items() :
+                if key ==   session['client_data'].get('vc_12', "DID") :
+                    vc_select_12 +=  "<option selected value=" + key + ">" + value + "</option>"
+                else :
+                    vc_select_12 +=  "<option value=" + key + ">" + value + "</option>"
+
         # presentation definition calculation
         if session['client_data'].get('vp_token') :
             presentation_definition = str()
@@ -199,6 +226,25 @@ def ebsi_verifier_console(mode) :
                                                             "",
                                                             "A",
                                                             id=session['client_data'][vc].lower() + '_' + i)
+        
+        
+        if session['client_data'].get('vp_token') and session['client_data'].get('group_B') : 
+            if not prez :
+                print('not prez')
+                prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
+            prez.add_group("Group B", "B", type="min")
+            for i in ["9", "10", "11", "12"] :
+                vc = 'vc_' + i
+                if session['client_data'][vc] != 'None'   :
+                    if session['client_data']['profile'] == "EBSI-V2" :
+                        prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[session['client_data'][vc]], "Input descriptor for credential " + i, "", "B")
+                    else :
+                        prez.add_constraint_with_group("$.credentialSubject.type",
+                                                            session['client_data'][vc],
+                                                            "Input descriptor for credential " + i,
+                                                            "",
+                                                            "B",
+                                                            id=session['client_data'][vc].lower() + '_' + i)
             
         if session['client_data'].get('vp_token') and profile[session['client_data']['profile']]["verifier_vp_type"] == 'ldp_vp' :
                 prez.add_format_ldp_vp()
@@ -224,6 +270,7 @@ def ebsi_verifier_console(mode) :
                 id_token = "" if not session['client_data'].get('id_token')  else "checked" ,
                 vp_token = "" if not session['client_data'].get('vp_token')  else "checked" ,
                 group = "" if not session['client_data'].get('group') else "checked" ,
+                group_B = "" if not session['client_data'].get('group_B') else "checked" ,
                 request_uri = "" if not session['client_data'].get('request_uri') else "checked" ,
                 standalone = "" if not session['client_data'].get('standalone')  else "checked" ,
                 application_name = session['client_data'].get('application_name', ""),
@@ -257,6 +304,10 @@ def ebsi_verifier_console(mode) :
                 vc_select_6=vc_select_6,
                 vc_select_7=vc_select_7,
                 vc_select_8=vc_select_8,
+                vc_select_9=vc_select_9,
+                vc_select_10=vc_select_10,
+                vc_select_11=vc_select_11,
+                vc_select_12=vc_select_12,
                 login_name=session['login_name']
                 )
     if request.method == 'POST' :
@@ -270,33 +321,24 @@ def ebsi_verifier_console(mode) :
         elif request.form['button'] == "activity" :
             return redirect ('/sandbox/ebsi/verifier/console/activity')
       
-        elif request.form['button'] == "update" :
-            
+        elif request.form['button'] == "update" :    
             if not request.form.get('id_token') and not request.form.get('vp_token')  :
                 flash("MUST add an id_token or a vp_token !", "warning")
                 return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
+            if request.form.get('group_B') and not request.form.get('vp_token')  :
+                flash("MUST check vp_token box !", "warning")
+                return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
+            if request.form.get('group') and not request.form.get('vp_token')  :
+                flash("MUST check vp_token box !", "warning")
+                return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
             
-            if request.form.get('vp_token') and not request.form.get('group') :
-                if request.form['vc_1'] == 'None' and request.form['vc_2'] == 'None' and request.form['vc_3'] == 'None' and request.form['vc_4'] == 'None' and not request.form.get('group') :
-                    flash("MUST add a credential !", "warning")
-                    return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
-            
-            if request.form.get('group') and request.form.get('vp_token') :
-                nb = 0
-                for i in ["5", "6", "7", "8"] :
-                    vc = 'vc_' + i  
-                    if request.form.get(vc) != 'None' :
-                        nb += 1
-                if nb < 1 :
-                    flash("MUST add at minimum 1 credential to setup a Group !", "warning")
-                    return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
-
             session['client_data']['note'] = request.form['note']
             session['client_data']['standalone'] = request.form.get('standalone') 
             session['client_data']['pkce'] = request.form.get('pkce') 
             session['client_data']['id_token'] = request.form.get('id_token') 
             session['client_data']['vp_token'] = request.form.get('vp_token') 
             session['client_data']['group'] = request.form.get('group') 
+            session['client_data']['group_B'] = request.form.get('group_B') 
             session['client_data']['request_uri'] = request.form.get('request_uri') 
             session['client_data']['application_name'] = request.form['application_name']
             session['client_data']['page_title'] = request.form['page_title']
@@ -323,6 +365,10 @@ def ebsi_verifier_console(mode) :
             session['client_data']['vc_6'] = request.form['vc_6']
             session['client_data']['vc_7'] = request.form['vc_7']
             session['client_data']['vc_8'] = request.form['vc_8']
+            session['client_data']['vc_9'] = request.form['vc_9']
+            session['client_data']['vc_10'] = request.form['vc_10']
+            session['client_data']['vc_11'] = request.form['vc_11']
+            session['client_data']['vc_12'] = request.form['vc_12']
 
             session['client_data']['user'] = request.form['user_name']
             session['client_data']['qrcode_message'] = request.form['qrcode_message']
