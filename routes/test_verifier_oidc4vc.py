@@ -2,6 +2,8 @@ from flask import jsonify,  redirect, request
 
 
 def init_app(app,red, mode) :
+    app.add_url_rule('/sandbox/verifier/tezos-ebsi',  view_func=verifier_tezos_ebsi, methods = ['GET'], defaults={'mode' : mode})
+
     app.add_url_rule('/sandbox/verifier/default',  view_func=verifier_default, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/verifier/default_2',  view_func=verifier_default_2, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/verifier/default_3',  view_func=verifier_default_3, methods = ['GET'], defaults={'mode' : mode})
@@ -23,6 +25,16 @@ def init_app(app,red, mode) :
 
     app.add_url_rule('/sandbox/verifier/callback',  view_func=verifier_callback, methods = ['GET'])
    
+
+
+def verifier_tezos_ebsi(mode): # Tezos EBSI
+    if request.method == 'GET' :
+        if mode.myenv == 'aws':
+            client_id = "fofadhfrez"
+        else :
+            client_id = "rxukghiksb"
+        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&nonce=100&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        return redirect (url)
 
 
 def verifier_default(mode): # Test 3
