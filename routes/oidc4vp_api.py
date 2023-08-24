@@ -657,11 +657,14 @@ async def ebsi_login_endpoint(stream_id, red):
     # check id_token signature
     if access == "ok"  and id_token :
         try :
-            oidc4vc.verif_token(id_token, nonce)
+            if verifier_data['profile'] == "EBSI-V3" :
+                oidc4vc.verif_token(id_token, nonce, profile="EBSI-V3")
+            else :
+                oidc4vc.verif_token(id_token, nonce)
             id_token_status = "ok"
         except :
             id_token_status = "signature check failed"
-            #access = "access_denied" 
+            access = "access_denied" 
     
     if access == "ok"  and id_token :
         try :
@@ -693,7 +696,10 @@ async def ebsi_login_endpoint(stream_id, red):
     if access == 'ok' and vp_token :
         if vp_type == "jwt_vp" :
             try :
-                oidc4vc.verif_token(vp_token, nonce)
+                if verifier_data['profile'] == "EBSI-V3" :
+                    oidc4vc.verif_token(id_token, nonce, profile="EBSI-V3")
+                else :
+                    oidc4vc.verif_token(id_token, nonce)
                 vp_token_status = "ok"
                 vp_token_payload = oidc4vc.get_payload_from_token(vp_token)
             except :

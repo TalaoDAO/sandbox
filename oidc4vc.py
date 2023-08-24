@@ -186,7 +186,7 @@ def sign_jwt_vp(vc, audience, holder_vm, holder_did, nonce, vp_id, holder_key) :
     return token.serialize()
 
 
-def verif_token(token, nonce, aud=None) :
+def verif_token(token, nonce, profile=None, aud=None) :
   """
   For issuer 
   raise exception if problem
@@ -205,7 +205,7 @@ def verif_token(token, nonce, aud=None) :
     issuer_key = jwk.JWK(**header['jwk']) 
   elif header.get('kid') :
     logging.info("resolve with external resolver")
-    dict_key = resolve_did(header['kid'])
+    dict_key = resolve_did(header['kid'], profile)
     if not dict_key :
         raise Exception("Cannot get public key")
     issuer_key = jwk.JWK(**dict_key)
@@ -270,8 +270,11 @@ def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce) :
   return token.serialize()
 
 
-def resolve_did(vm) -> dict :
+def resolve_did(vm, profile) -> dict :
     did = vm.split('#')[0]
+    if profile == "EBSI-V3" :
+      return json.loads(resolve_wallet_did_ebsi_v3(did))
+    
     url = 'https://dev.uniresolver.io/1.0/identifiers/' + did
     try :
         r = requests.get(url, timeout=10)
@@ -330,7 +333,6 @@ def did_resolve_lp(did) :
   if not did :
     return "{'error' : 'No DID defined'}"
   
-
   elif did.split(':')[1] == 'ebsi' :
     url = 'https://api-pilot.ebsi.eu/did-registry/v3/identifiers/' + did
     try :
