@@ -356,6 +356,33 @@ qrcode ="openid://
     &conformance=36c751ad-7c32-4baa-ab5c-2a303aad548f"
 
 """
+def build_request_for_siopv2(key, kid, iss, aud, redirect_uri, nonce):
+    """
+  For wallets natural person as jwk is added in header
+  https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-proof-types
+  """
+    key = json.loads(key) if isinstance(key, str) else key
+    signer_key = jwk.JWK(**key) 
+    header = {
+        'typ' :'JWT',
+        'alg': oidc4vc.alg(key),
+        'kid' : kid
+    }
+    payload = {
+        'iss' : iss, 
+        'aud' : aud,
+        'scope' : "openid",
+        'redirect_uri' : redirect_uri,
+        'client_id' : iss,
+        "response_type": "id_token",
+        "response_mode": "post",
+        'exp': datetime.timestamp(datetime.now()) + 1000,
+        'nonce' : nonce
+    }  
+    token = jwt.JWT(header=header,claims=payload, algs=[oidc4vc.alg(key)])
+    token.make_signed_token(signer_key)
+    return token.serialize()
+
 
 def client_metadata_uri(stream_id, red):
     #https://openid.net/specs/openid-connect-registration-1_0.html
@@ -469,6 +496,15 @@ def ebsi_login_qrcode(red, mode):
         if 'vp_token' in response_type :
             authorization_request['presentation_definition'] = presentation_definition
             prefix = verifier_profile["oidc4vp_prefix"]
+        
+        if 'id_token' in response_type and not 'vp_token' in response_type :
+            authorization_request['request'] = build_request_for_siopv2(
+                verifier_data['jwk'],
+                verifier_data['verification_method'],
+                verifier_data['did'],
+                'https://self-issued.me/v2',
+                mode.server + "sandbox/ebsi/login/endpoint/" + stream_id,
+                nonce)
 
     if not verifier_data.get('request_uri')  :
         authorization_request_displayed = authorization_request

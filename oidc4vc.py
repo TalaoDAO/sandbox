@@ -253,7 +253,7 @@ def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce) :
   key = json.loads(key) if isinstance(key, str) else key
   signer_key = jwk.JWK(**key) 
   header = {
-    'typ' :'JWT',
+    'typ' :'openid4vci-proof+jwt',
     'alg': alg(key),
     'kid' : kid
     #'jwk' : signer_key.export(private_key=False, as_dict=True)

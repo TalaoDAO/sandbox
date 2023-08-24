@@ -135,9 +135,6 @@ def oidc(issuer_id, mode) :
         cm_to_add['issuer']['id'] = issuer_data.get('did' , 'Unknown')
         cm_to_add['issuer']['name'] = issuer_data['application_name']
         cm.append(cm_to_add)
-    
-    if issuer_data['profile'] in ['EBSI-V3'] :
-        cm = []
 
     # https://www.rfc-editor.org/rfc/rfc8414.html#page-4
     openid_configuration = dict()
@@ -148,12 +145,14 @@ def oidc(issuer_id, mode) :
         'authorization_endpoint':  mode.server + 'sandbox/ebsi/issuer/' + issuer_id + '/authorize',
         'token_endpoint': mode.server + 'sandbox/ebsi/issuer/' + issuer_id + '/token',
         'credential_endpoint': mode.server + 'sandbox/ebsi/issuer/' + issuer_id + '/credential',
-        'credential_deferred_endpoint': mode.server + 'sandbox/ebsi/issuer/' + issuer_id + '/deferred',
-        'pre-authorized_grant_anonymous_access_supported' : False,
+        'deferred_credential_endpoint': mode.server + 'sandbox/ebsi/issuer/' + issuer_id + '/deferred',
         'subject_syntax_types_supported': issuer_profile['subject_syntax_types_supported'],
-        'credential_supported' : cs,
-        'credential_manifests' : cm,
+        'credential_supported' : cs
     })
+    if issuer_data['profile'] in ['EBSI-V3'] :
+        openid_configuration['authorization_server']=  mode.server + 'sandbox/ebsi/issuer/' + issuer_id + '/authorize'
+    else :
+        openid_configuration['credential_manifests'] = cm
     return openid_configuration
 
 
