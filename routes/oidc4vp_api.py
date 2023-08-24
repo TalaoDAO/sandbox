@@ -661,7 +661,7 @@ async def ebsi_login_endpoint(stream_id, red):
             id_token_status = "ok"
         except :
             id_token_status = "signature check failed"
-            access = "access_denied" 
+            #access = "access_denied" 
     
     if access == "ok"  and id_token :
         try :
