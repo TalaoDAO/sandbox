@@ -776,8 +776,8 @@ async def ebsi_login_endpoint(stream_id, red):
       "response_format" : response_format,
       "id_token_status" : id_token_status,
       "vp_token_status" : vp_token_status,
-      "issuer_status" : issuer_status,
-      "credential_status" : credential_status,
+      #"issuer_status" : issuer_status,
+      #"credential_status" : credential_status,
       "access" : access,
       "status_code" : status_code    
     }
