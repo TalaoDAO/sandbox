@@ -251,10 +251,10 @@ async def ebsi_issuer_advanced() :
             except :
                 did_method = None
             issuer_profile = session['client_data'].get('profile', 'DEFAULT')
-            if issuer_profile in ["EBSI-V2", "EBSI-V3"] and did_method != 'ebsi' :
-                flash("This profile requires did:ebsi", "warning")
-                return redirect('/sandbox/ebsi/issuer/console/advanced')
-            elif issuer_profile == "JWTVC" and did_method not in ['web', 'ion'] :
+            #if issuer_profile in ["EBSI-V2", "EBSI-V3"] and did_method != 'ebsi' :
+            #    flash("This profile requires did:ebsi", "warning")
+            #    return redirect('/sandbox/ebsi/issuer/console/advanced')
+            if issuer_profile == "JWT-VC" and did_method not in ['web', 'ion'] :
                 flash("This profile requires did:web or did:ion", "warning")
                 return redirect('/sandbox/ebsi/issuer/console/advanced')
             else:

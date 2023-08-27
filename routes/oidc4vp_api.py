@@ -48,7 +48,7 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/ebsi/.well-known/openid-configuration', view_func=ebsi_openid_configuration, methods=['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/ebsi/jwks.json', view_func=ebsi_jwks, methods=['GET'])
     
-    # endpoints for siopv2/EBSI wallet
+    # endpoints for siopv2 wallet
     app.add_url_rule('/sandbox/ebsi/login',  view_func=ebsi_login_qrcode, methods = ['GET', 'POST'], defaults={'red' : red, 'mode' : mode})
     app.add_url_rule('/sandbox/ebsi/login/endpoint/<stream_id>',  view_func=ebsi_login_endpoint, methods = ['POST'],  defaults={'red' : red}) # redirect_uri for PODST
     app.add_url_rule('/sandbox/ebsi/login/request_uri/<stream_id>',  view_func=ebsi_request_uri, methods = ['GET'], defaults={'red' : red})
@@ -356,7 +356,7 @@ qrcode ="openid://
     &conformance=36c751ad-7c32-4baa-ab5c-2a303aad548f"
 
 """
-def build_request_for_siopv2(key, kid, iss, aud, redirect_uri, nonce):
+def build_jwt_request_for_siopv2(key, kid, iss, aud, redirect_uri, nonce):
     """
   For wallets natural person as jwk is added in header
   https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-proof-types
@@ -388,19 +388,31 @@ def client_metadata_uri(stream_id, red):
     #https://openid.net/specs/openid-connect-registration-1_0.html
     return jsonify(client_metadata(stream_id, red))
 
+
 def client_metadata(stream_id, red) :
-    client_id = json.loads(red.get(stream_id).decode())['client_id']
-    verifier_data = json.loads(read_ebsi_verifier(client_id))
-    verifier_profile = profile[verifier_data['profile']]
     client_metadata = {
-        'subject_syntax_types_supported': verifier_profile['subject_syntax_types_supported'], 
-        'cryptographic_suites_supported' : verifier_profile['cryptographic_suites_supported'],
+        'subject_syntax_types_supported': [
+            "did:key",
+            "did:ebsi",
+            "did:tz",
+            "did:ion",
+            "did:key",
+            "did:ethr",
+            "did:ala",
+            "did:sol",
+            "did:peer",
+            "did:polygonid",
+            "did:pkh",
+            "did:hedera",
+            "did:web"
+        ], 
+        'cryptographic_suites_supported' : ['ES256K','ES256','EdDSA','RS256'],
         'client_name': 'Talao-Altme Verifier',
-        'profile' : verifier_data['profile'], # custom 
         "logo_uri": "https://altme.io/",
         "contacts": ["contact@talao.io"]
     }
     return client_metadata
+
 
 def ebsi_login_qrcode(red, mode):
     stream_id = str(uuid.uuid1())
@@ -498,7 +510,7 @@ def ebsi_login_qrcode(red, mode):
             prefix = verifier_profile["oidc4vp_prefix"]
         
         if 'id_token' in response_type and not 'vp_token' in response_type :
-            authorization_request['request'] = build_request_for_siopv2(
+            authorization_request['request'] = build_jwt_request_for_siopv2(
                 verifier_data['jwk'],
                 verifier_data['verification_method'],
                 verifier_data['did'],
@@ -657,11 +669,7 @@ async def ebsi_login_endpoint(stream_id, red):
     # check id_token signature
     if access == "ok"  and id_token :
         try :
-            if verifier_data['profile'] == "EBSI-V3" :
-                oidc4vc.verif_token(id_token, nonce, profile="EBSI-V3")
-            else :
-                oidc4vc.verif_token(id_token, nonce)
-            id_token_status = "ok"
+            oidc4vc.verif_token(id_token, nonce)
         except :
             id_token_status = "signature check failed"
             access = "access_denied" 
@@ -696,10 +704,7 @@ async def ebsi_login_endpoint(stream_id, red):
     if access == 'ok' and vp_token :
         if vp_type == "jwt_vp" :
             try :
-                if verifier_data['profile'] == "EBSI-V3" :
-                    oidc4vc.verif_token(id_token, nonce, profile="EBSI-V3")
-                else :
-                    oidc4vc.verif_token(id_token, nonce)
+                oidc4vc.verif_token(vp_token, nonce)
                 vp_token_status = "ok"
                 vp_token_payload = oidc4vc.get_payload_from_token(vp_token)
             except :

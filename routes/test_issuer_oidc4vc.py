@@ -4,9 +4,20 @@ from datetime import datetime, timedelta
 import json
 import uuid
 import requests
+import oidc4vc
+import didkit
 
-REDIRECT = True
+key_wallet =  {"crv":"secp256k1",
+        "d":"lbuGEjEsYQ205boyekj8qdCwB2Uv7L2FwHUNleJj_Z0",
+        "kty":"EC",
+        "x":"AARiMrLNsRka9wMEoSgMnM7BwPug4x9IqLDwHVU-1A4",
+        "y":"vKMstC3TEN3rVW32COQX002btnU70v6P73PMGcUoZQs",
+    "alg" : 'ES256K'}
+    
 
+key = json.dumps(key_wallet)
+issuer_did = didkit.key_to_did("key", key)
+issuer_vm = issuer_did  + "#key-1"
 
 def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/issuer/ebsiv2',  view_func=issuer_ebsiv2, methods = ['GET'], defaults={'mode' : mode})
@@ -26,7 +37,7 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/issuer/default_3',  view_func=issuer_default_3, methods = ['GET'], defaults={'mode' : mode}) # test 6
 
     app.add_url_rule('/sandbox/issuer/ebsiv3',  view_func=issuer_ebsiv3, methods = ['GET'], defaults={'mode' : mode}) # test 10
-    app.add_url_rule('/sandbox/issuer/ebsiv3_1',  view_func=issuer_ebsiv3_1, methods = ['GET'], defaults={'mode' : mode}) # test 8
+    app.add_url_rule('/sandbox/issuer/ebsiv31',  view_func=issuer_ebsiv31, methods = ['GET'], defaults={'mode' : mode}) # test 8
 
 
     app.add_url_rule('/sandbox/issuer/callback',  view_func=issuer_callback, methods = ['GET'])
@@ -61,24 +72,22 @@ def issuer_ebsiv2(mode):
     }
     data = { 
         "vc" : {vc : credential}, 
-        "pre-authorized_code" : str(uuid.uuid1()),
+        "state" : str(uuid.uuid1()),
         "credential_type" : vc,
-        "callback" : mode.server + '/sandbox/issuer/callback',
-        "redirect" : REDIRECT
+        "pre-authorized_code" : True,
+        "callback" : mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
-    if REDIRECT :
-        try :
-            qrcode =  resp.json()['redirect_uri']
-        except :
-            return jsonify("No qr code")
-        return redirect(qrcode) 
-    else :
-        return jsonify(resp.json()['qrcode'])
-   
+    try :
+        qrcode =  resp.json()['redirect_uri']
+    except :
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+  
+
 
 # Test 8
-def issuer_ebsiv3_1(mode):
+def issuer_ebsiv31(mode):
     if mode.myenv == 'aws' :
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/zarbjrqrzj"
         client_secret = "c755ade2-3b5a-11ee-b7f1-0a1628958560"
@@ -91,24 +100,23 @@ def issuer_ebsiv3_1(mode):
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret
     }
+   
     data = { 
         "vc" : build_credential_offered(offer), 
-        "pre-authorized_code" : str(uuid.uuid1()),
+        "state" : str(uuid.uuid1()),
         "credential_type" : offer,
-        "callback" : mode.server + '/sandbox/issuer/callback',
-        "redirect" : REDIRECT,
-        "user_pin_required" : False
+        "pre-authorized_code" : True,
+        "callback" : mode.server + 'sandbox/issuer/callback',
+        "user_pin_required" : True,
+        "user_pin" : "1000"
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
-    if REDIRECT :
-        print("response = ", resp.json())
-        try :
-            qrcode =  resp.json()['redirect_uri']
-        except :
-            return jsonify("No qr code")
-        return redirect(qrcode) 
-    else :
-        return jsonify(resp.json()['qrcode'])
+    try :
+        qrcode =  resp.json()['redirect_uri']
+    except :
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+   
 
 # Test 10
 def issuer_ebsiv3(mode):
@@ -124,25 +132,24 @@ def issuer_ebsiv3(mode):
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret
     }
+   
     data = { 
         "vc" : build_credential_offered(offer), 
-        "pre-authorized_code" : str(uuid.uuid1()),
+        "state" : str(uuid.uuid1()),
         "credential_type" : offer,
-        "callback" : mode.server + '/sandbox/issuer/callback',
-        "redirect" : REDIRECT,
-        "user_pin_required" : False
+        "pre-authorized_code" : True,
+        "callback" : mode.server + 'sandbox/issuer/callback',
+        "user_pin_required" : True,
+        "user_pin" : "1000"
         }
+    
     resp = requests.post(api_endpoint, headers=headers, json = data)
-    if REDIRECT :
-        print("response = ", resp.json())
-        try :
-            qrcode =  resp.json()['redirect_uri']
-        except :
-            return jsonify("No qr code")
-        return redirect(qrcode) 
-    else :
-        return jsonify(resp.json()['qrcode'])
-   
+    try :
+        qrcode =  resp.json()['redirect_uri']
+    except :
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+  
 
 # test 9
 def issuer_hedera_3(mode):
@@ -160,22 +167,20 @@ def issuer_hedera_3(mode):
     }
     data = { 
         "vc" : build_credential_offered(offer), 
-        "pre-authorized_code" : str(uuid.uuid1()),
+        "state" : str(uuid.uuid1()),
         "credential_type" : offer,
-        "callback" : mode.server + '/sandbox/issuer/callback',
-        "redirect" : REDIRECT,
+        "pre-authorized_code" : True,
+        "callback" : mode.server + 'sandbox/issuer/callback',
         "user_pin_required" : True,
         "user_pin" : "1000"
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
-    if REDIRECT :
-        try :
-            qrcode =  resp.json()['redirect_uri']
-        except :
-            return jsonify("No qr code")
-        return redirect(qrcode) 
-    else :
-        return jsonify(resp.json()['qrcode'])
+    try :
+        qrcode =  resp.json()['redirect_uri']
+    except :
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+   
     
 
 def issuer_default(mode):
@@ -194,20 +199,18 @@ def issuer_default(mode):
     }
     data = { 
         "vc" : build_credential_offered(offer), 
-        "pre-authorized_code" : str(uuid.uuid1()),
+        "state" : str(uuid.uuid1()),
+        "pre-authorized_code" : True,
         "credential_type" : offer,
-        "callback" : mode.server + '/sandbox/issuer/callback',
-        "redirect" : REDIRECT
+        "callback" : mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
-    if REDIRECT :
-        try :
-            qrcode =  resp.json()['redirect_uri']
-        except :
-            return jsonify("No qr code")
-        return redirect(qrcode) 
-    else :
-        return jsonify(resp.json()['qrcode'])
+    try :
+        qrcode =  resp.json()['redirect_uri']
+    except :
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+ 
 
 # test 5
 def issuer_default_2_deferred(mode):
@@ -226,7 +229,8 @@ def issuer_default_2_deferred(mode):
     }
     data = { 
         "deferred_vc" : build_credential_offered(offer), 
-        "pre-authorized_code" : "546754",
+        "state" : "546754",
+        "pre-authorized_code" : True,
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
     print(resp.status_code)
@@ -249,20 +253,17 @@ def issuer_default_2(mode): # Test 5 deferred
     }
     data = { 
         "vc" : {"EmailPass" : {}}, 
-        "pre-authorized_code" : "546754",
+        "state" : "546754",
+        "pre-authorized_code" : True,
         "credential_type" : offer,
-        "callback" : mode.server + '/sandbox/issuer/callback',
-        "redirect" : REDIRECT
+        "callback" : mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
-    if REDIRECT :
-        try :
-            qrcode =  resp.json()['redirect_uri']
-        except :
-            return jsonify("No qr code")
-        return redirect(qrcode) 
-    else :
-        return jsonify(resp.json()['qrcode'])
+    try :
+        qrcode =  resp.json()['redirect_uri']
+    except :
+        return jsonify("No qr code")
+    return redirect(qrcode) 
     
 
 
@@ -282,20 +283,18 @@ def issuer_default_3(mode): # Test 6
     }
     data = { 
         "vc" : build_credential_offered(offer), 
-        "pre-authorized_code" : str(uuid.uuid1()),
+        "state" : str(uuid.uuid1()),
         "credential_type" : offer,
-        "callback" : mode.server + '/sandbox/issuer/callback',
-        "redirect" : REDIRECT
+        "pre-authorized_code" : True,
+        "callback" : mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
-    if REDIRECT :
-        try :
-            qrcode =  resp.json()['redirect_uri']
-        except :
-            return jsonify("No qr code")
-        return redirect(qrcode) 
-    else :
-        return jsonify(resp.json()['qrcode'])
+    try :
+        qrcode =  resp.json()['redirect_uri']
+    except :
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+  
 
 
 def issuer_gaiax(mode):
@@ -313,21 +312,18 @@ def issuer_gaiax(mode):
     }
     data = { 
         "vc" : build_credential_offered(offer), 
-        "pre-authorized_code" : str(uuid.uuid1()),
+        "state" : str(uuid.uuid1()),
         "credential_type" : offer,
-        "callback" : mode.server + '/sandbox/issuer/callback',
-        "redirect" : REDIRECT
+        "pre-authorized_code" : True,
+        "callback" : mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
-    if REDIRECT :
-        try :
-            qrcode =  resp.json()['redirect_uri']
-        except :
-            return jsonify("No qr code")
-        return redirect(qrcode) 
-    else :
-        return jsonify(resp.json()['qrcode'])
-
+    try :
+        qrcode =  resp.json()['redirect_uri']
+    except :
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+   
 
 def issuer_hedera(mode):
     if mode.myenv == 'aws' :
@@ -345,20 +341,18 @@ def issuer_hedera(mode):
     }
     data = { 
         "vc" : build_credential_offered(offer), 
-        "pre-authorized_code" : str(uuid.uuid1()),
+        "state" : str(uuid.uuid1()),
         "credential_type" : offer,
-        "callback" : mode.server + '/sandbox/issuer/callback',
-        "redirect" : REDIRECT
+        "pre-authorized_code" : True,
+        "callback" : mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
-    if REDIRECT :
-        try :
-            qrcode =  resp.json()['redirect_uri']
-        except :
-            return jsonify("No qr code")
-        return redirect(qrcode) 
-    else :
-        return jsonify(resp.json()['qrcode'])
+    try :
+        qrcode =  resp.json()['redirect_uri']
+    except :
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+   
    
 
 def issuer_hedera_2(mode):
@@ -377,21 +371,18 @@ def issuer_hedera_2(mode):
     }
     data = { 
         "vc" : build_credential_offered(offer), 
-        "pre-authorized_code" : str(uuid.uuid1()),
+        "state" : str(uuid.uuid1()),
         "credential_type" : offer,
+        "pre-authorized_code" : True,
         "callback" : mode.server + '/sandbox/issuer/callback',
-        "redirect" : REDIRECT
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
-    if REDIRECT :
-        try :
-            qrcode =  resp.json()['redirect_uri']
-        except :
-            return jsonify("No qr code")
-        return redirect(qrcode) 
-    else :
-        return jsonify(resp.json()['qrcode'])
-
+    try :
+        qrcode =  resp.json()['redirect_uri']
+    except :
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+  
 
 def build_credential_offered(offer) :
     credential_offered = dict()
@@ -411,6 +402,7 @@ def build_credential_offered(offer) :
         credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
         credential_offered[vc] = credential
     return credential_offered
+
 
 # Python Flask http server loop
 if __name__ == '__main__':

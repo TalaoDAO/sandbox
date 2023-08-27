@@ -74,7 +74,10 @@ def alg(key) :
 def resolve_wallet_did_ebsi_v3(did) -> str :
     a = did.split('did:key:z')[1]
     b = base58.b58decode(a.encode())
-    return b.split(b'\xd1\xd6\x03')[1].decode()
+    try :
+      return b.split(b'\xd1\xd6\x03')[1].decode()
+    except :
+      return
 
 
 def generate_wallet_did_ebsiv3 (key) :
@@ -100,7 +103,6 @@ def generate_wallet_did_ebsiv3 (key) :
     data = json.dumps(jwk).replace(" ", "").encode()
     prefix = b'\xd1\xd6\x03'
     return "did:key:z" + base58.b58encode(prefix + data).decode()
-
 
 
 def pub_key(key) :
@@ -186,7 +188,61 @@ def sign_jwt_vp(vc, audience, holder_vm, holder_did, nonce, vp_id, holder_key) :
     return token.serialize()
 
 
-def verif_token(token, nonce, profile=None, aud=None) :
+def build_pre_authorized_code(key, wallet_did, issuer_did, issuer_vm, nonce) :
+    key = json.loads(key) if isinstance(key, str) else key
+    key = jwk.JWK(**key) 
+    header = {
+        "typ" :"JWT",
+        "alg": alg(key),
+        "kid" : issuer_vm,
+    }
+    payload = {
+        "iat": round(datetime.timestamp(datetime.now())),
+        "client_id" : wallet_did,
+        "aud" : issuer_did,
+        "exp": round(datetime.timestamp(datetime.now())) + 1000,
+        "sub" : wallet_did,
+        "iss" : issuer_did,
+        "nonce": nonce
+    }
+    token = jwt.JWT(header=header,claims=payload, algs=[alg(key)])
+    token.make_signed_token(key)
+    return token.serialize()
+
+
+def resolve_did(vm) -> dict :
+    logging.info('vm = %s', vm)
+    did = vm.split('#')[0]
+    # try did for ebsi v3
+    jwk = resolve_wallet_did_ebsi_v3(did)
+    if jwk :
+      logging.info('wallet jwk EBSI-V3= %s', jwk)
+      return json.loads(jwk)
+    
+    elif did.split(':')[1] == "web" :
+      logging.info("did:web")
+      did_document = resolve_did_web(did)
+      for verificationMethod in did_document :
+        if vm == verificationMethod['id'] or '#' + vm.split('#')[1] == verificationMethod['id'] :
+          jwk = verificationMethod.get('publicKeyJwk')
+          logging.info('wallet jwk = %s', jwk)
+          return jwk
+    else :
+      url = 'https://dev.uniresolver.io/1.0/identifiers/' + did
+      try :
+          r = requests.get(url, timeout=8)
+      except :
+        logging.error('cannot access to Universal Resolver')
+        return
+      did_document = r.json()
+      for verificationMethod in did_document['didDocument']['verificationMethod'] :
+        if vm == verificationMethod['id'] or '#' + vm.split('#')[1] == verificationMethod['id'] :
+          jwk = verificationMethod.get('publicKeyJwk')
+          logging.info('wallet jwk = %s', jwk)
+          return jwk
+
+
+def verif_token(token, nonce, aud=None) :
   """
   For issuer 
   raise exception if problem
@@ -205,7 +261,7 @@ def verif_token(token, nonce, profile=None, aud=None) :
     issuer_key = jwk.JWK(**header['jwk']) 
   elif header.get('kid') :
     logging.info("resolve with external resolver")
-    dict_key = resolve_did(header['kid'], profile)
+    dict_key = resolve_did(header['kid'])
     if not dict_key :
         raise Exception("Cannot get public key")
     issuer_key = jwk.JWK(**dict_key)
@@ -270,26 +326,6 @@ def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce) :
   return token.serialize()
 
 
-def resolve_did(vm, profile) -> dict :
-    did = vm.split('#')[0]
-    if profile == "EBSI-V3" :
-      return json.loads(resolve_wallet_did_ebsi_v3(did))
-    
-    url = 'https://dev.uniresolver.io/1.0/identifiers/' + did
-    try :
-        r = requests.get(url, timeout=10)
-    except :
-        logging.error('cannot access to Universal Resolver')
-        return
-    didDocument = r.json()
-    for verificationMethod in didDocument['didDocument']['verificationMethod'] :
-      if vm == verificationMethod['id'] or '#' + vm.split('#')[1] == verificationMethod['id'] :
-        jwk = verificationMethod.get('publicKeyJwk')
-        logging.info('wallet jwk = %s', jwk)
-        return jwk
-    return
-
-
 def thumbprint(key) :
   key = json.loads(key) if isinstance(key, str) else key
   if key['crv'] == 'P-256K' :
@@ -306,14 +342,12 @@ def generate_lp_ebsi_did() :
     """
     return  'did:ebsi:z' + base58.b58encode(b'\x01' + os.urandom(16)).decode()
 
-
+"""
 def generate_np_ebsi_did(key) :
-    """
-    for natural person / wallet  EBSI V2
-    """
+    #for natural person / wallet  EBSI V2
     key = json.loads(key) if isinstance(key, str) else key
     return  'did:ebsi:z' + base58.b58encode(b'\x02' + bytes.fromhex(thumbprint(key))).decode()
-
+"""
 
 def verification_method(did, key) : # = kid
     key = json.loads(key) if isinstance(key, str) else key
@@ -322,42 +356,47 @@ def verification_method(did, key) : # = kid
     return did + '#' + thumb_print
 
 
-def did_resolve_lp(did) :
+def resolve_did_web(did) ->str :
   """
-  for legal person  did:ebsi and did:web
-  API v3   Get DID document with EBSI API
-  https://api-pilot.ebsi.eu/docs/apis/did-registry/latest#/operations/get-did-registry-v3-identifier
+  get DID dcomuent for the did:web
+  """
+  if did.split(':')[1] != 'web' :
+    return
+  url = 'https://' + did.split(':')[2] 
+  i = 3
+  try :
+    while did.split(':')[i] :
+      url = url + '/' +  did.split(':')[i]
+      i+= 1
+  except :
+    pass
+  url = url + '/did.json'
+  r = requests.get(url)
+  if 399 < r.status_code < 500 :
+    logging.warning('return API code = %s', r.status_code)
+    return "{'error' : 'did:web not found on server'}"
+  return r.json()
 
-  return DID Document
-  """
-  if not did :
-    return "{'error' : 'No DID defined'}"
-  
-  elif did.split(':')[1] == 'ebsi' :
+
+def did_resolve_lp(did) :
+  #for legal person  did:ebsi and did:web
+  #API v3   Get DID document with EBSI API
+  #https://api-pilot.ebsi.eu/docs/apis/did-registry/latest#/operations/get-did-registry-v3-identifier
+  if did.split(':')[1] == 'ebsi' :
     url = 'https://api-pilot.ebsi.eu/did-registry/v3/identifiers/' + did
     try :
       r = requests.get(url)
     except :
       logging.error('cannot access to Universal Resolver API')
       return "{'error' : 'cannot access to EBSI registry'}"
+    logging.info("DID Document = %s", r.json())
     return r.json()
+  
   elif did.split(':')[1] == 'web' :
-    url = 'https://' + did.split(':')[2] 
-    i = 3
-    try :
-      while did.split(':')[i] :
-        url = url + '/' +  did.split(':')[i]
-        i+= 1
-    except :
-      pass
-    url = url + '/did.json'
-    r = requests.get(url)
-    if 399 < r.status_code < 500 :
-      logging.warning('return API code = %s', r.status_code)
-      return "{'error' : 'did:web not found on server'}"
-    logging.info('did:web found on server')
-    return r.json()
-    
+    did_doc = resolve_did_web(did)
+    logging.info("DID Document = %s", did_doc)
+    return did_doc
+  
   else :
     url = 'https://dev.uniresolver.io/1.0/identifiers/' + did
   try :
@@ -369,10 +408,9 @@ def did_resolve_lp(did) :
   return r.json().get('didDocument')
 
 
+"""
 def get_lp_public_jwk(did, kid) :
-  """
-  support publikeyJWK only
-  """
+  #support publikeyJWK only
   did_document = did_resolve_lp(did)
   if not did_document :
     logging.warning('DID Document not found for %s', did)
@@ -385,7 +423,7 @@ def get_lp_public_jwk(did, kid) :
   except :
     logging.warning('DID document not founds')
   return  
-  
+"""  
 
 def get_issuer_registry_data(did) :
   """
@@ -408,14 +446,13 @@ def get_issuer_registry_data(did) :
     logging.error('registry data in invalid format')
     return
 
-
-
+"""
 def did_resolve(did, key) :
-  """
-  EBSIV2
-  did:ebsi for natural person
-  https://ec.europa.eu/digital-building-blocks/wikis/display/EBSIDOC/EBSI+DID+Method
-  """
+  
+  #EBSIV2
+  #did:ebsi for natural person
+  #https://ec.europa.eu/digital-building-blocks/wikis/display/EBSIDOC/EBSI+DID+Method
+  
   if not did or not key :
     return "{}" 
   key = json.loads(key) if isinstance(key, str) else key
@@ -444,8 +481,9 @@ def did_resolve(did, key) :
       ]
     }
   return json.dumps(did_document)
+"""
 
-
+"""
 # JSON-LD sign
 def sign_jsonld_vc(credential, key, did) :
   key = json.loads(key) if isinstance(key, str) else key
@@ -489,7 +527,7 @@ def sign_jsonld_vc(credential, key, did) :
     pass
   credential['proof'] = proof
   return json.dumps(credential)
-
+"""
 
 
 ########################## TEST VECTORS

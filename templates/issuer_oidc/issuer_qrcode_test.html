@@ -12,7 +12,6 @@
   </head>
   <body >
 
-    <font color="{{page_text_color}}">  
 
         <div id="content_desktop" class="d-none d-sm-block" style="background-color: {{page_background_color}} " >
          
@@ -28,7 +27,7 @@
           </div> 
 
           <div class="row d-flex justify-content-center ">    
-            <div class="col-2">
+            <div class="col-3">
 
               <div class="text-center border-radius: 20%">
                 <h2 hidden class="mt-2 p-2">{{title}}</h2>
@@ -119,24 +118,12 @@
           </div>
           
 
-
-
-
-
-   
-         
-        
-     
-
-
        
     <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
  
-      <script>      
-                function goBack() {  window.history.back();}
-      </script>
+    
       <script>
         var source = new EventSource('/sandbox/ebsi/issuer_stream');
         source.onmessage = function (event) {

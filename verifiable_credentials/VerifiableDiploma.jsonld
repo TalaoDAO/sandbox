@@ -55,14 +55,6 @@
     "id":"urn:uuid:6b1d8411-9ed5-4566-9c7f-4c24165ff236",
     "issued":"2022-04-27T12:25:07.424476323Z",
     "issuer":"did:ebsi:zdRvvKbXhVVBsXhatjuiBhs",
-    "proof":{
-        "created":"2022-04-27T12:25:07Z",
-        "creator":"did:ebsi:zdRvvKbXhVVBsXhatjuiBhs",
-        "domain":"https://api.preprod.ebsi.eu",
-        "jws":"eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJFUzI1NksifQ..mIBnM8XDQqSYKQNX_LvaJhmsbyCr5OZ5cU2Zk-ReqLpr4doFsgmoobkO5128tZy-8KimVjJkGw0wL1uBWnMLWQ",
-        "nonce":"3ea68dae-d07a-4daa-932b-fbb58f5c20c4",
-        "type":"EcdsaSecp256k1Signature2019"
-    },
     "validFrom":"2022-04-27T12:25:07.424481688Z",
     "issuanceDate":"2022-04-27T12:25:07.424481688Z",
     "type":["VerifiableCredential","VerifiableAttestation","VerifiableDiploma"]
