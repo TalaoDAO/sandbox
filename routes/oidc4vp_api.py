@@ -53,7 +53,8 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/ebsi/login/endpoint/<stream_id>',  view_func=ebsi_login_endpoint, methods = ['POST'],  defaults={'red' : red}) # redirect_uri for PODST
     app.add_url_rule('/sandbox/ebsi/login/request_uri/<stream_id>',  view_func=ebsi_request_uri, methods = ['GET'], defaults={'red' : red})
     app.add_url_rule('/sandbox/ebsi/login/client_metadata_uri/<stream_id>',  view_func=client_metadata_uri, methods = ['GET'], defaults={'red' : red})
-    app.add_url_rule('/sandbox/ebsi/login/followup',  view_func=ebsi_login_followup, methods = ['GET', 'POST'], defaults={'red' :red})
+    app.add_url_rule('/sandbox/ebsi/login/presentation_definition_uri/<id>',  view_func=presentation_definition_uri, methods = ['GET'], defaults={'red' : red})
+
     app.add_url_rule('/sandbox/ebsi/login/stream',  view_func=ebsi_login_stream, defaults={ 'red' : red})
     return
     
@@ -414,6 +415,11 @@ def client_metadata(stream_id, red) :
     return client_metadata
 
 
+def presentation_definition_uri(id, red) :
+    presentation_definition = json.loads(red.get(id).decode())
+    return jsonify(presentation_definition)
+
+                                        
 def ebsi_login_qrcode(red, mode):
     stream_id = str(uuid.uuid1())
     try :
@@ -476,7 +482,7 @@ def ebsi_login_qrcode(red, mode):
 
     if 'vp_token' in response_type and verifier_data.get('group_B') : 
             if not prez :
-                prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
+                prez = pex.Presentation_Definition(verifier_data['application_name'], "Altme presentation definition subset of PEX v2.0")  
             prez.add_group("Group B", "B", type="min")
             for i in ["9", "10", "11", "12"] :
                 vc = 'vc_' + i
@@ -499,8 +505,14 @@ def ebsi_login_qrcode(red, mode):
                 prez.add_format_jwt_vp()
                 prez.add_format_jwt_vc()
 
+    
+    
     if 'vp_token' in response_type :
         presentation_definition = prez.get()
+        if verifier_data.get('presentation_definition_uri') :
+            id = str(uuid.uuid1())
+            red.setex(id, 180, json.dumps(prez.get()))
+            presentation_definition_uri = mode.server + 'sandbox/ebsi/login/presentation_definition_uri/' + id
     else :
         presentation_definition = ""
 
@@ -530,7 +542,10 @@ def ebsi_login_qrcode(red, mode):
         
         # OIDC4VP
         if 'vp_token' in response_type :
-            authorization_request['presentation_definition'] = presentation_definition
+            if presentation_definition_uri :
+                authorization_request['presentation_definition_uri'] = presentation_definition_uri
+            else:
+                authorization_request['presentation_definition'] = presentation_definition
             prefix = verifier_profile["oidc4vp_prefix"]
         
         if 'id_token' in response_type and not 'vp_token' in response_type :
