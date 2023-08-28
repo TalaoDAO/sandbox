@@ -33,11 +33,12 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/issuer/default_2',  view_func=issuer_default_2, methods = ['GET'], defaults={'mode' : mode}) # test 5
     app.add_url_rule('/sandbox/issuer/default_2/deferred',  view_func=issuer_default_2_deferred, methods = ['GET'], defaults={'mode' : mode}) # test 5
 
-
     app.add_url_rule('/sandbox/issuer/default_3',  view_func=issuer_default_3, methods = ['GET'], defaults={'mode' : mode}) # test 6
 
     app.add_url_rule('/sandbox/issuer/ebsiv3',  view_func=issuer_ebsiv3, methods = ['GET'], defaults={'mode' : mode}) # test 10
     app.add_url_rule('/sandbox/issuer/ebsiv31',  view_func=issuer_ebsiv31, methods = ['GET'], defaults={'mode' : mode}) # test 8
+
+    app.add_url_rule('/sandbox/issuer/wallet_link',  view_func=issuer_wallet_link, methods = ['GET'], defaults={'mode' : mode}) # test 8
 
 
     app.add_url_rule('/sandbox/issuer/callback',  view_func=issuer_callback, methods = ['GET'])
@@ -45,6 +46,42 @@ def init_app(app,red, mode) :
 
 def issuer_callback():
     return jsonify("Great ! request = " + json.dumps(request.args))
+
+
+def issuer_wallet_link(mode) :
+    if mode.myenv == 'aws' :
+        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/tdiwmpyhzc"
+        client_secret = "5972a3b8-45c3-11ee-93f5-0a1628958560"
+    else : 
+        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/raamxepqex"
+        client_secret = "5381c36b-45c2-11ee-ac39-9db132f0e4a1"
+    vc = 'EthereumAssociatedAddress'
+    with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f :
+        credential = json.loads(f.read())
+    credential['id'] = "urn:uuid:" + str(uuid.uuid4())
+    credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+    credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
+    """
+    to complete with credential data....;
+    
+    """
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization' : 'Bearer ' + client_secret
+    }
+    data = { 
+        "vc" : {vc : credential}, 
+        "issuer_state" : str(uuid.uuid1()),
+        "credential_type" : vc,
+        "pre-authorized_code" : True,
+        "callback" : mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
+        }
+    resp = requests.post(api_endpoint, headers=headers, json = data)
+    try :
+        qrcode =  resp.json()['redirect_uri']
+    except :
+        return jsonify("No qr code")
+    return redirect(qrcode) 
 
 
 def issuer_ebsiv2(mode):

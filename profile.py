@@ -52,7 +52,7 @@ profile = {
             'authorization_server_support' : False,
             'siopv2_prefix' : 'openid-vc://',
             'oidc4vp_prefix' : 'openid-vc://',
-            'credentials_supported' : ['EmployeeCredential',  'VerifiableId', 'EmailPass', 'PhoneProof', 'GreencypherPass'],
+            'credentials_supported' : ['EmployeeCredential',  'EthereumAssociatedAddress', 'VerifiableId', 'EmailPass', 'PhoneProof', 'GreencypherPass'],
             'grant_types_supported': [
                 #'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
