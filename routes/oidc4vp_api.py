@@ -542,7 +542,7 @@ def ebsi_login_qrcode(red, mode):
         
         # OIDC4VP
         if 'vp_token' in response_type :
-            if presentation_definition_uri :
+            if verifier_data.get('presentation_definition_uri') :
                 authorization_request['presentation_definition_uri'] = presentation_definition_uri
             else:
                 authorization_request['presentation_definition'] = presentation_definition
