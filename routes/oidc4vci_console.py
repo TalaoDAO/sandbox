@@ -3,8 +3,6 @@ import json
 import logging
 import copy
 import db_api 
-from urllib.parse import urlencode
-import uuid
 from oidc4vc_constante import  landing_page_style_list, oidc4vc_profile_list
 
 import oidc4vc

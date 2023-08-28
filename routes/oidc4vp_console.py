@@ -188,9 +188,11 @@ def ebsi_verifier_console(mode) :
         # presentation definition calculation
         if session['client_data'].get('vp_token') :
             presentation_definition = str()
+            prez = dict()
         
         if session['client_data'].get('vp_token') and not session['client_data'].get('group') :    
-            prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
+            if not prez :
+                prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
             for i in ["1", "2", "3", "4"] :
                 vc = 'vc_' + i
                 reason = 'reason_' + i
@@ -212,7 +214,8 @@ def ebsi_verifier_console(mode) :
                                             id= session['client_data'][vc].lower() + '_' + i)
         
         if session['client_data'].get('vp_token') and session['client_data'].get('group') : 
-            prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
+            if not prez :
+                prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
             prez.add_group("Group A", "A")
             for i in ["5", "6", "7", "8"] :
                 vc = 'vc_' + i
@@ -230,7 +233,6 @@ def ebsi_verifier_console(mode) :
         
         if session['client_data'].get('vp_token') and session['client_data'].get('group_B') : 
             if not prez :
-                print('not prez')
                 prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
             prez.add_group("Group B", "B", type="min")
             for i in ["9", "10", "11", "12"] :

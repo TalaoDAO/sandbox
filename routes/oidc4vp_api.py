@@ -375,7 +375,7 @@ def build_jwt_request_for_siopv2(key, kid, iss, aud, redirect_uri, nonce):
         'redirect_uri' : redirect_uri,
         'client_id' : iss,
         "response_type": "id_token",
-        "response_mode": "post",
+        "response_mode": "direct_post",
         'exp': datetime.timestamp(datetime.now()) + 1000,
         'nonce' : nonce
     }  
@@ -436,8 +436,13 @@ def ebsi_login_qrcode(red, mode):
     
     # Manage presentation definition with a subset of PEX 2.0
     
+    if 'vp_token' in response_type  :
+        presentation_definition = str()
+        prez = dict()
+
     if 'vp_token' in response_type and not verifier_data['group'] :    
-        prez = pex.Presentation_Definition(verifier_data['application_name'], "Talao-Altme presentation definition with a subset of PEX v2.0 syntax")  
+        if  not prez :
+            prez = pex.Presentation_Definition(verifier_data['application_name'], "Talao-Altme presentation definition with a subset of PEX v2.0 syntax")  
         for i in ["1", "2", "3", "4"] :
             vc = 'vc_' + i
             reason = 'reason_' + i
@@ -452,7 +457,8 @@ def ebsi_login_qrcode(red, mode):
                                         id = verifier_data[vc].lower() + '_' + i)
     
     if 'vp_token' in response_type and verifier_data['group'] : 
-        prez = pex.Presentation_Definition(verifier_data['application_name'], "Talao-Altme presentation definition with a subset of PEX v2.0 syntax")  
+        if not prez :
+            prez = pex.Presentation_Definition(verifier_data['application_name'], "Talao-Altme presentation definition with a subset of PEX v2.0 syntax")  
         prez.add_group("Group A", "A")
         for i in ["5", "6", "7", "8"] :
             vc = 'vc_' + i
@@ -466,7 +472,25 @@ def ebsi_login_qrcode(red, mode):
                                                         "",
                                                         "A",
                                                         id=verifier_data[vc].lower() + '_' + i)
-        
+
+
+    if 'vp_token' in response_type and verifier_data.get('group_B') : 
+            if not prez :
+                prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
+            prez.add_group("Group B", "B", type="min")
+            for i in ["9", "10", "11", "12"] :
+                vc = 'vc_' + i
+                if verifier_data[vc] != 'None'   :
+                    if verifier_data['profile'] == "EBSI-V2" :
+                        prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[verifier_data[vc]], "Input descriptor for credential " + i, "", "B")
+                    else :
+                        prez.add_constraint_with_group("$.credentialSubject.type",
+                                                            verifier_data[vc],
+                                                            "Input descriptor for credential " + i,
+                                                            "",
+                                                            "B",
+                                                            id=verifier_data[vc].lower() + '_' + i)
+
     # add format depending on profile
     if 'vp_token' in response_type and profile[verifier_data['profile']].get("verifier_vp_type") == 'ldp_vp' :
                 prez.add_format_ldp_vp()

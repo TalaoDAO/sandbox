@@ -72,7 +72,7 @@ def issuer_ebsiv2(mode):
     }
     data = { 
         "vc" : {vc : credential}, 
-        "state" : str(uuid.uuid1()),
+        "issuer_state" : str(uuid.uuid1()),
         "credential_type" : vc,
         "pre-authorized_code" : True,
         "callback" : mode.server + 'sandbox/issuer/callback',
@@ -103,9 +103,9 @@ def issuer_ebsiv31(mode):
    
     data = { 
         "vc" : build_credential_offered(offer), 
-        "state" : str(uuid.uuid1()),
+        "issuer_state" : str(uuid.uuid1()),
         "credential_type" : offer,
-        "pre-authorized_code" : True,
+        "pre-authorized_code" : False,
         "callback" : mode.server + 'sandbox/issuer/callback',
         "user_pin_required" : True,
         "user_pin" : "1000"
@@ -135,7 +135,7 @@ def issuer_ebsiv3(mode):
    
     data = { 
         "vc" : build_credential_offered(offer), 
-        "state" : str(uuid.uuid1()),
+        "issuer_state" : str(uuid.uuid1()),
         "credential_type" : offer,
         "pre-authorized_code" : True,
         "callback" : mode.server + 'sandbox/issuer/callback',
@@ -167,7 +167,7 @@ def issuer_hedera_3(mode):
     }
     data = { 
         "vc" : build_credential_offered(offer), 
-        "state" : str(uuid.uuid1()),
+        "issuer_state" : str(uuid.uuid1()),
         "credential_type" : offer,
         "pre-authorized_code" : True,
         "callback" : mode.server + 'sandbox/issuer/callback',
@@ -199,7 +199,7 @@ def issuer_default(mode):
     }
     data = { 
         "vc" : build_credential_offered(offer), 
-        "state" : str(uuid.uuid1()),
+        "issuer_state" : str(uuid.uuid1()),
         "pre-authorized_code" : True,
         "credential_type" : offer,
         "callback" : mode.server + 'sandbox/issuer/callback',
@@ -229,7 +229,7 @@ def issuer_default_2_deferred(mode):
     }
     data = { 
         "deferred_vc" : build_credential_offered(offer), 
-        "state" : "546754",
+        "issuer_state" : "546754",
         "pre-authorized_code" : True,
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
@@ -253,7 +253,7 @@ def issuer_default_2(mode): # Test 5 deferred
     }
     data = { 
         "vc" : {"EmailPass" : {}}, 
-        "state" : "546754",
+        "issuer_state" : "546754",
         "pre-authorized_code" : True,
         "credential_type" : offer,
         "callback" : mode.server + 'sandbox/issuer/callback',
@@ -283,7 +283,7 @@ def issuer_default_3(mode): # Test 6
     }
     data = { 
         "vc" : build_credential_offered(offer), 
-        "state" : str(uuid.uuid1()),
+        "issuer_state" : str(uuid.uuid1()),
         "credential_type" : offer,
         "pre-authorized_code" : True,
         "callback" : mode.server + 'sandbox/issuer/callback',
@@ -312,7 +312,7 @@ def issuer_gaiax(mode):
     }
     data = { 
         "vc" : build_credential_offered(offer), 
-        "state" : str(uuid.uuid1()),
+        "issuer_state" : str(uuid.uuid1()),
         "credential_type" : offer,
         "pre-authorized_code" : True,
         "callback" : mode.server + 'sandbox/issuer/callback',
@@ -341,7 +341,7 @@ def issuer_hedera(mode):
     }
     data = { 
         "vc" : build_credential_offered(offer), 
-        "state" : str(uuid.uuid1()),
+        "issuer_state" : str(uuid.uuid1()),
         "credential_type" : offer,
         "pre-authorized_code" : True,
         "callback" : mode.server + 'sandbox/issuer/callback',
@@ -371,7 +371,7 @@ def issuer_hedera_2(mode):
     }
     data = { 
         "vc" : build_credential_offered(offer), 
-        "state" : str(uuid.uuid1()),
+        "issuer_state" : str(uuid.uuid1()),
         "credential_type" : offer,
         "pre-authorized_code" : True,
         "callback" : mode.server + '/sandbox/issuer/callback',
