@@ -51,7 +51,7 @@ def init_app(app,red, mode) :
     # endpoints for siopv2 wallet
     app.add_url_rule('/sandbox/ebsi/login',  view_func=ebsi_login_qrcode, methods = ['GET', 'POST'], defaults={'red' : red, 'mode' : mode})
     app.add_url_rule('/sandbox/ebsi/login/endpoint/<stream_id>',  view_func=ebsi_login_endpoint, methods = ['POST'],  defaults={'red' : red}) # redirect_uri for PODST
-    app.add_url_rule('/sandbox/ebsi/login/request_uri/<stream_id>',  view_func=ebsi_request_uri, methods = ['GET'], defaults={'red' : red})
+    app.add_url_rule('/sandbox/ebsi/login/request_uri/<id>',  view_func=ebsi_request_uri, methods = ['GET'], defaults={'red' : red})
     app.add_url_rule('/sandbox/ebsi/login/client_metadata_uri/<stream_id>',  view_func=client_metadata_uri, methods = ['GET'], defaults={'red' : red})
     app.add_url_rule('/sandbox/ebsi/login/presentation_definition_uri/<id>',  view_func=presentation_definition_uri, methods = ['GET'], defaults={'red' : red})
     app.add_url_rule('/sandbox/ebsi/login/followup',  view_func=ebsi_login_followup, methods = ['GET'], defaults={'red' : red})
@@ -358,7 +358,7 @@ qrcode ="openid://
     &conformance=36c751ad-7c32-4baa-ab5c-2a303aad548f"
 
 """
-def build_jwt_request_for_siopv2(key, kid, iss, aud, redirect_uri, nonce):
+def build_jwt_request(key, kid, iss, aud, request):
     """
   For wallets natural person as jwk is added in header
   https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-proof-types
@@ -373,14 +373,15 @@ def build_jwt_request_for_siopv2(key, kid, iss, aud, redirect_uri, nonce):
     payload = {
         'iss' : iss, 
         'aud' : aud,
-        'scope' : "openid",
-        'redirect_uri' : redirect_uri,
-        'client_id' : iss,
-        "response_type": "id_token",
-        "response_mode": "direct_post",
+        #'scope' : "openid",
+        #'redirect_uri' : redirect_uri,
+        #'client_id' : iss,
+        #"response_type": "id_token",
+        #"response_mode": "direct_post",
         'exp': datetime.timestamp(datetime.now()) + 1000,
-        'nonce' : nonce
-    }  
+        #'nonce' : nonce
+    }
+    payload.update(request)  
     token = jwt.JWT(header=header,claims=payload, algs=[oidc4vc.alg(key)])
     token.make_signed_token(signer_key)
     return token.serialize()
@@ -549,22 +550,27 @@ def ebsi_login_qrcode(red, mode):
                 authorization_request['presentation_definition'] = presentation_definition
             prefix = verifier_profile["oidc4vp_prefix"]
         
-        if 'id_token' in response_type and not 'vp_token' in response_type :
-            authorization_request['request'] = build_jwt_request_for_siopv2(
+        request_as_jwt = build_jwt_request(
                 verifier_data['jwk'],
                 verifier_data['verification_method'],
                 verifier_data['did'],
                 'https://self-issued.me/v2',
-                mode.server + "sandbox/ebsi/login/endpoint/" + stream_id,
-                nonce)
+                authorization_request)
 
-    if not verifier_data.get('request_uri')  :
-        authorization_request_displayed = authorization_request
-    else :
+    if verifier_data.get('request_uri') :
+        id = str(uuid.uuid1())
+        red.setex(id, QRCODE_LIFE, json.dumps(request_as_jwt))
         authorization_request_displayed = { 
             "client_id" : verifier_data['did'],
-            "request_uri" : mode.server + "sandbox/ebsi/login/request_uri/" + stream_id 
+            "request_uri" : mode.server + "sandbox/ebsi/login/request_uri/" + id 
         }
+    else :
+        if not 'vp_token' in response_type  :
+            authorization_request['request'] = request_as_jwt
+            #del authorization_request['redirect_uri']
+        authorization_request_displayed = authorization_request
+
+
     data = { 
         "pattern": authorization_request,
         "code" : request.args['code'],
@@ -572,6 +578,7 @@ def ebsi_login_qrcode(red, mode):
     }
     red.setex(stream_id, QRCODE_LIFE, json.dumps(data))
     url = prefix + '?' + urlencode(authorization_request_displayed)
+    print('url len = ', len(url))
     deeplink_talao = mode.deeplink_talao + 'app/download/ebsi?' + urlencode({'uri' : url})
     deeplink_altme= mode.deeplink_altme + 'app/download/ebsi?' + urlencode({'uri' : url})
     qrcode_page = verifier_data.get('verifier_landing_page_style')
@@ -592,33 +599,19 @@ def ebsi_login_qrcode(red, mode):
                             )
     
 
-def ebsi_request_uri(stream_id, red) :
+def ebsi_request_uri(id, red) :
     """
     Request by uri
     https://www.rfc-editor.org/rfc/rfc9101.html
     """
     try :
-        payload = json.loads(red.get(stream_id).decode())['pattern']
-        client_id = json.loads(red.get(stream_id).decode())['client_id']
+        payload = red.get(id).decode().replace('"', '')
     except :
         return jsonify("Gone"), 410
-    verifier_data = json.loads(read_ebsi_verifier(client_id))
-    verifier_key = verifier_data['jwk']
-    verifier_key = json.loads(verifier_key) if isinstance(verifier_key, str) else verifier_key
-    signer_key = jwk.JWK(**verifier_key) 
-    header = {
-      'typ' :'JWT',
-      'kid': oidc4vc.verification_method(verifier_data['did'], verifier_key),
-      'alg': oidc4vc.alg(verifier_key)
-    }
-    token = jwt.JWT(header=header,claims=payload, algs=[oidc4vc.alg(verifier_key)])
-    token.make_signed_token(signer_key)
-    # https://tedboy.github.io/flask/generated/generated/flask.Response.html
     headers = { "Content-Type" : "application/oauth-authz-req+jwt",
                 "Cache-Control" : "no-cache"
     }
-    return Response(token.serialize(), headers=headers)
-
+    return Response(payload, headers=headers)
 
 
 async def ebsi_login_endpoint(stream_id, red):
