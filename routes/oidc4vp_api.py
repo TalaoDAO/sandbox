@@ -52,7 +52,7 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/ebsi/login',  view_func=ebsi_login_qrcode, methods = ['GET', 'POST'], defaults={'red' : red, 'mode' : mode})
     app.add_url_rule('/sandbox/ebsi/login/endpoint/<stream_id>',  view_func=ebsi_login_endpoint, methods = ['POST'],  defaults={'red' : red}) # redirect_uri for PODST
     app.add_url_rule('/sandbox/ebsi/login/request_uri/<id>',  view_func=ebsi_request_uri, methods = ['GET'], defaults={'red' : red})
-    app.add_url_rule('/sandbox/ebsi/login/client_metadata_uri/<stream_id>',  view_func=client_metadata_uri, methods = ['GET'], defaults={'red' : red})
+    app.add_url_rule('/sandbox/ebsi/login/client_metadata_uri/<id>',  view_func=client_metadata_uri, methods = ['GET'], defaults={'red' : red})
     app.add_url_rule('/sandbox/ebsi/login/presentation_definition_uri/<id>',  view_func=presentation_definition_uri, methods = ['GET'], defaults={'red' : red})
     app.add_url_rule('/sandbox/ebsi/login/followup',  view_func=ebsi_login_followup, methods = ['GET'], defaults={'red' : red})
 
@@ -387,12 +387,13 @@ def build_jwt_request(key, kid, iss, aud, request):
     return token.serialize()
 
 
-def client_metadata_uri(stream_id, red):
+def client_metadata_uri(client_id, redirect_uri):
     #https://openid.net/specs/openid-connect-registration-1_0.html
-    return jsonify(client_metadata(stream_id, red))
+    return jsonify(build_client_metadata(client_id, redirect_uri))
 
 
-def client_metadata(stream_id, red) :
+def build_client_metadata(client_id, redirect_uri) -> dict :
+    verifier_data = json.loads(read_ebsi_verifier(client_id))
     client_metadata = {
         'subject_syntax_types_supported': [
             "did:key",
@@ -409,6 +410,9 @@ def client_metadata(stream_id, red) :
             "did:hedera",
             "did:web"
         ], 
+        'redirect_uris' : [redirect_uri],
+        'request_parameter_supported' : True if verifier_data.get('request_parameter_supported') else False, 
+        'request_uri_parameter_supported' : True if verifier_data.get('request_uri_parameter_supported') else False,
         'cryptographic_suites_supported' : ['ES256K','ES256','EdDSA','RS256'],
         'client_name': 'Talao-Altme Verifier',
         "logo_uri": "https://altme.io/",
@@ -519,10 +523,11 @@ def ebsi_login_qrcode(red, mode):
         presentation_definition = ""
 
     nonce = nonce if nonce else str(uuid.uuid1())
+    redirect_uri = mode.server + "sandbox/ebsi/login/endpoint/" + stream_id
     authorization_request = { 
         "response_type" : response_type,
         "client_id" : verifier_data['did'],
-        "redirect_uri" : mode.server + "sandbox/ebsi/login/endpoint/" + stream_id,
+        "redirect_uri" : redirect_uri,
         "nonce" : nonce
     }
    
@@ -536,7 +541,7 @@ def ebsi_login_qrcode(red, mode):
     else :
         authorization_request['response_mode'] = 'post'
         authorization_request['aud'] = 'https://self-issued.me/v2'
-        authorization_request['client_metadata_uri'] = mode.server + "sandbox/ebsi/login/client_metadata_uri/" + stream_id
+        authorization_request['client_metadata_uri'] = mode.server + "sandbox/ebsi/login/client_metadata_uri/" + client_id
         # SIOPV2
         if 'id_token' in response_type :
             authorization_request['scope'] = 'openid'
@@ -555,9 +560,10 @@ def ebsi_login_qrcode(red, mode):
                 verifier_data['verification_method'],
                 verifier_data['did'],
                 'https://self-issued.me/v2',
-                authorization_request)
+                authorization_request
+        )    
 
-    if verifier_data.get('request_uri') :
+    if verifier_data.get('request_uri_parameter_supported') :
         id = str(uuid.uuid1())
         red.setex(id, QRCODE_LIFE, json.dumps(request_as_jwt))
         authorization_request_displayed = { 
@@ -565,11 +571,9 @@ def ebsi_login_qrcode(red, mode):
             "request_uri" : mode.server + "sandbox/ebsi/login/request_uri/" + id 
         }
     else :
-        if not 'vp_token' in response_type  :
+        if not 'vp_token' in response_type and verifier_data.get('request_parameter_supported') :
             authorization_request['request'] = request_as_jwt
-            #del authorization_request['redirect_uri']
         authorization_request_displayed = authorization_request
-
 
     data = { 
         "pattern": authorization_request,
@@ -578,7 +582,6 @@ def ebsi_login_qrcode(red, mode):
     }
     red.setex(stream_id, QRCODE_LIFE, json.dumps(data))
     url = prefix + '?' + urlencode(authorization_request_displayed)
-    print('url len = ', len(url))
     deeplink_talao = mode.deeplink_talao + 'app/download/ebsi?' + urlencode({'uri' : url})
     deeplink_altme= mode.deeplink_altme + 'app/download/ebsi?' + urlencode({'uri' : url})
     qrcode_page = verifier_data.get('verifier_landing_page_style')
@@ -588,7 +591,7 @@ def ebsi_login_qrcode(red, mode):
 							url=url,
                             authorization_request=json.dumps(authorization_request, indent=4),
                             url_json=json.dumps(authorization_request_displayed, indent=4),
-                            client_metadata=json.dumps(client_metadata(stream_id, red), indent=4),
+                            client_metadata=json.dumps(build_client_metadata(client_id, redirect_uri), indent=4),
                             deeplink_talao=deeplink_talao,
                             deeplink_altme=deeplink_altme,
 							stream_id=stream_id,

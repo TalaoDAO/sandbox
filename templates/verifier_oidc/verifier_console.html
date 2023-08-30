@@ -130,21 +130,28 @@
                                 <div class="col">
                                   <div class="form-check">
                                     <input class="form-check-input" type="checkbox" {{pkce}} name="pkce" id="flexCheckDefault_1">
-                                    <label class="form-check-label" for="flexCheckDefault_1">PKCE : <strong>checked</strong> if application is a dApp and you do not use client secret in authorization code flow</label>
+                                    <label class="form-check-label" for="flexCheckDefault_1">PKCE</label>
                                   </div>
                                 </div> 
 
                                   <div class="col">
                                     <div class="form-check">
-                                      <input class="form-check-input" type="checkbox" {{request_uri}} name="request_uri" id="flexCheckDefault_1">
-                                      <label class="form-check-label" for="flexCheckDefault_1">request_uri : <strong>checked</strong> to reduce the QR code size</label>
+                                      <input class="form-check-input" type="checkbox" {{request_uri_parameter_supported}} name="request_uri_parameter_supported" id="flexCheckDefault_1">
+                                      <label class="form-check-label" for="flexCheckDefault_1">request_uri</label>
+                                    </div>
+                                  </div> 
+
+                                  <div class="col">
+                                    <div class="form-check">
+                                      <input class="form-check-input" type="checkbox" {{request_parameter_supported}} name="request_parameter_supported" id="flexCheckDefault_1">
+                                      <label class="form-check-label" for="flexCheckDefault_1">request as a jwt (id_token only)</label>
                                     </div>
                                   </div> 
 
                                   <div class="col">
                                     <div class="form-check">
                                       <input class="form-check-input" type="checkbox" {{presentation_definition_uri}} name="presentation_definition_uri" id="flexCheckDefault_1">
-                                      <label class="form-check-label" for="flexCheckDefault_1">presentation_definition_uri : <strong>checked</strong> to reduce the QR code size</label>
+                                      <label class="form-check-label" for="flexCheckDefault_1">presentation_definition_uri </label>
                                     </div>
                                   </div> 
 

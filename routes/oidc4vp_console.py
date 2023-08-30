@@ -274,7 +274,8 @@ def ebsi_verifier_console(mode) :
                 group = "" if not session['client_data'].get('group') else "checked" ,
                 group_B = "" if not session['client_data'].get('group_B') else "checked" ,
                 presentation_definition_uri = "" if not session['client_data'].get('presentation_definition_uri') else "checked" ,
-                request_uri = "" if not session['client_data'].get('request_uri') else "checked" ,
+                request_uri_parameter_supported = "" if not session['client_data'].get('request_uri_parameter_supported') else "checked" ,
+                request_parameter_supported = "" if not session['client_data'].get('request_parameter_supported') else "checked" ,
                 standalone = "" if not session['client_data'].get('standalone')  else "checked" ,
                 application_name = session['client_data'].get('application_name', ""),
                 contact_name = session['client_data'].get('contact_name'),
@@ -343,7 +344,8 @@ def ebsi_verifier_console(mode) :
             session['client_data']['group'] = request.form.get('group') 
             session['client_data']['group_B'] = request.form.get('group_B') 
             session['client_data']['presentation_definition_uri'] = request.form.get('presentation_definition_uri') 
-            session['client_data']['request_uri'] = request.form.get('request_uri') 
+            session['client_data']['request_uri_parameter_supported'] = request.form.get('request_uri_parameter_supported') 
+            session['client_data']['request_parameter_supported'] = request.form.get('request_parameter_supported') 
             session['client_data']['application_name'] = request.form['application_name']
             session['client_data']['page_title'] = request.form['page_title']
             session['client_data']['page_subtitle'] = request.form['page_subtitle']

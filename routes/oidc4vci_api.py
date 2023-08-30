@@ -207,10 +207,7 @@ def issuer_api_endpoint(issuer_id, red, mode) :
         pre_authorized_code = request.json["pre-authorized_code"]
 
     except :
-        return Response(**manage_error("invalid_request", "Request format is incorrect", red))
-    
-    logging.info('vc received from API = %s', vc)
-    #wallet_did = "did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9Kbs5869W47bN5DBoWQGig9f25zS7vnMo5eYpXgyyxPwNnBjA3XXtbYBDEqFkH5mYTFs2eFgEbiUcKwxhuYhnYmrzUJjhJCB6i6NeQVKDxEYhK7Kdep64yzc81wAGhndjJnhJ"
+        return Response(**manage_error("invalid_request", "Request format is incorrect", red))    
     nonce = str(uuid.uuid1())
     if pre_authorized_code and profile[issuer_data['profile']].get('pre-authorized_code_as_jwt') :
         pre_authorized_code =  oidc4vc.build_pre_authorized_code(
