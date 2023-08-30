@@ -554,7 +554,8 @@ def ebsi_login_qrcode(red, mode):
             else:
                 authorization_request['presentation_definition'] = presentation_definition
             prefix = verifier_profile["oidc4vp_prefix"]
-        
+    
+    if 'vp_token' in response_type :
         request_as_jwt = build_jwt_request(
                 verifier_data['jwk'],
                 verifier_data['verification_method'],
@@ -563,6 +564,7 @@ def ebsi_login_qrcode(red, mode):
                 authorization_request
         )    
 
+    print(verifier_data.get('request_uri_parameter_supported'))
     if verifier_data.get('request_uri_parameter_supported') :
         id = str(uuid.uuid1())
         red.setex(id, QRCODE_LIFE, json.dumps(request_as_jwt))
