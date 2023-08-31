@@ -15,7 +15,8 @@ oidc4vc_profile_list = {
     'GAIA-X' : 'GAIA-X projects',
     'EBSI-V3' : 'EBSI V3 compliance',
     'JWT-VC' : 'JWT-VC presentation profile',
-    'HEDERA' : 'HEDERA projects'
+    'HEDERA' : 'HEDERA projects',
+    'DBC' : 'Deutch Blockchain Coalition'
 }
 
 

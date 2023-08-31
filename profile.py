@@ -117,5 +117,16 @@ profile = {
             'service_documentation' : 'https://identity.foundation/jwt-vc-presentation-profile/'
 
         },
+    'DBC' :
+        {
+            'verifier_vp_type' : 'jwt_vp',
+            'siopv2_prefix' : 'openid-vc://',
+            'credential_supported' : ['EmployeeCredential', 'VerifiableId', 'EmailPass'],
+            'schema_for_type' : False,
+            'authorization_server_support' : False,
+            'credential_manifest_support' : False,
+            'service_documentation' : 'https://identity.foundation/jwt-vc-presentation-profile/'
+
+        },
 
 }

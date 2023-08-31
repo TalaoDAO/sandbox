@@ -571,7 +571,7 @@ def ebsi_issuer_token(issuer_id, red) :
         logging.info('user_pin = %s', user_pin)
     
     elif grant_type == 'authorization_code' :
-        code = request.form.GET('code')
+        code = request.form.get('code')
     
     if not code : 
         logging.warning('code is missing')
@@ -653,23 +653,6 @@ async def ebsi_issuer_credential(issuer_id, red) :
     if proof_type != 'jwt' : 
         return Response(**manage_error("unsupported_credential_type", "The credential proof type is not supported =%s", proof_type)) 
 
-    # get type of credential requested
-    if issuer_data['profile'] == 'EBSI-V3' :
-        found = False
-        for vc_type in result['types'] :
-            if vc_type not in ['VerifiableCredential', 'VerifiableAttestation'] :
-                credential_type = vc_type
-                found = True
-                break
-        if not found :  
-            return Response(**manage_error('invalid_request', 'VC type not found', red, stream_id=stream_id)) 
-    else :
-        try :
-            credential_type = result['type']
-        except :
-            return Response(**manage_error('invalid_request', 'Invalid request format', red, stream_id=stream_id)) 
-    
-    """
     # Get credential type requested
     if result.get("types") :
         found = False
@@ -684,23 +667,11 @@ async def ebsi_issuer_credential(issuer_id, red) :
         credential_type = result['type']
     else :
         return Response(**manage_error('invalid_request', 'Invalid request format', red, stream_id=stream_id)) 
-    """
-
     logging.info('credential type requested = %s', credential_type)
     
-    credential_is_supported = False
-    if issuer_data['profile'] != 'EBSI-V2' :
-        for vc in issuer_profile['credentials_supported'] :
-            if vc == credential_type :
-                credential_is_supported = True
-                logging.info('credential is supported')
-                break
-        if not credential_is_supported : 
-            return Response(**manage_error('unsupported_credential_type', 'The credential type is not supported', red, stream_id=stream_id)) 
-
     # check proof format requested
     logging.info('proof format requested = %s', proof_format)
-    if proof_format not in ['jwt_vc','jwt_vc_json', 'jwt_vc_json-ld', 'ldp_vc'] :#TODO
+    if proof_format not in ['jwt_vc','jwt_vc_json', 'jwt_vc_json-ld', 'ldp_vc'] :
         return Response(**manage_error('invalid_or_missing_proof', 'The proof is invalid', red, stream_id=stream_id)) 
 
     # Check proof  of key ownership received (OPTIONAL check)
@@ -710,7 +681,6 @@ async def ebsi_issuer_credential(issuer_id, red) :
         logging.info('proof of ownership is validated')
     except Exception as e :
         logging.warning('proof of ownership error = %s', str(e))
-        #return Response(**manage_error('invalid_or_missing_proof', 'The proof is invalid', red, stream_id=stream_id)) 
 
     proof_payload=oidc4vc.get_payload_from_token(proof)
 

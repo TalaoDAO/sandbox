@@ -531,29 +531,28 @@ def ebsi_login_qrcode(red, mode):
         "nonce" : nonce
     }
    
-    if verifier_data['profile'] == "EBSI-V2" :
-        # previoous release of the OIDC4VC specifications
+
+    if verifier_data['profile'] in ["EBSI-V2", 'DBC'] :
         # OIDC claims parameter https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
-        authorization_request['scope'] = 'openid'
         authorization_request['claims'] = {"vp_token":{"presentation_definition": presentation_definition}}
-        prefix = verifier_profile["oidc4vp_prefix"]
     
     else :
         authorization_request['response_mode'] = 'post'
         authorization_request['aud'] = 'https://self-issued.me/v2'
         authorization_request['client_metadata_uri'] = mode.server + "sandbox/ebsi/login/client_metadata_uri/" + client_id
         # SIOPV2
-        if 'id_token' in response_type :
-            authorization_request['scope'] = 'openid'
-            prefix = verifier_profile["siopv2_prefix"]
+    
+    if 'id_token' in response_type :
+        authorization_request['scope'] = 'openid'
+        prefix = verifier_profile["siopv2_prefix"]
         
         # OIDC4VP
-        if 'vp_token' in response_type :
-            if verifier_data.get('presentation_definition_uri') :
-                authorization_request['presentation_definition_uri'] = presentation_definition_uri
-            else:
-                authorization_request['presentation_definition'] = presentation_definition
-            prefix = verifier_profile["oidc4vp_prefix"]
+    if 'vp_token' in response_type and  verifier_data['profile'] == "EBSI-V2":
+        if verifier_data.get('presentation_definition_uri') :
+            authorization_request['presentation_definition_uri'] = presentation_definition_uri
+        else:
+            authorization_request['presentation_definition'] = presentation_definition
+        prefix = verifier_profile["oidc4vp_prefix"]
     
     if 'vp_token' in response_type :
         request_as_jwt = build_jwt_request(
@@ -564,7 +563,6 @@ def ebsi_login_qrcode(red, mode):
                 authorization_request
         )    
 
-    print(verifier_data.get('request_uri_parameter_supported'))
     if verifier_data.get('request_uri_parameter_supported') :
         id = str(uuid.uuid1())
         red.setex(id, QRCODE_LIFE, json.dumps(request_as_jwt))

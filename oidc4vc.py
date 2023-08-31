@@ -285,7 +285,7 @@ def verify_jwt_credential(token, pub_key) :
   return
 
 
-def get_payload_from_token(token) :
+def get_payload_from_token(token) -> dict:
   """
   For verifier
   check the signature and return None if failed
