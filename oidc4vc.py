@@ -228,9 +228,10 @@ def resolve_did(vm) -> dict :
           logging.info('wallet jwk = %s', jwk)
           return jwk
     else :
-      url = 'https://dev.uniresolver.io/1.0/identifiers/' + did
+      url = 'https://unires:test@unires.talao.co/1.0/identifiers/' + did
       try :
-          r = requests.get(url, timeout=8)
+        r = requests.get(url, timeout=8)
+        logging.info('Access to Talao Universal Resolver')
       except :
         logging.error('cannot access to Universal Resolver')
         return
@@ -260,7 +261,6 @@ def verif_token(token, nonce, aud=None) :
       header['jwk'] = json.loads(header['jwk'])
     issuer_key = jwk.JWK(**header['jwk']) 
   elif header.get('kid') :
-    logging.info("resolve with external resolver")
     dict_key = resolve_did(header['kid'])
     if not dict_key :
         raise Exception("Cannot get public key")
@@ -387,7 +387,7 @@ def did_resolve_lp(did) :
     try :
       r = requests.get(url)
     except :
-      logging.error('cannot access to Universal Resolver API')
+      logging.error('cannot access to EBSI API')
       return "{'error' : 'cannot access to EBSI registry'}"
     logging.info("DID Document = %s", r.json())
     return r.json()
@@ -398,12 +398,13 @@ def did_resolve_lp(did) :
     return did_doc
   
   else :
-    url = 'https://dev.uniresolver.io/1.0/identifiers/' + did
+    url = 'https://unires:test@unires.talao.co/1.0/identifiers/' + did
   try :
     r = requests.get(url, timeout=10)
+    logging.info('Access to Talao Universal Resolver')
   except :
-    logging.error('cannot access to Universal Resolver API')
-    return "{'error' : 'cannot access to Universal Resolver API'}"
+    logging.error('cannot access to Talao Universal Resolver API')
+    return "{'error' : 'cannot access to Talao Universal Resolver API'}"
   logging.info("DID Document = %s", r.json())
   return r.json().get('didDocument')
 
