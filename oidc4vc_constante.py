@@ -84,7 +84,7 @@ client_data_pattern_ebsi = {
                 "group" : None,
                 "group_B" : None,
                 "request_parameter_supported" : None, 
-                "request_uri_parameter_supported" : None,
+                "request_uri_parameter_supported" : 'on',
                 "credential_offer_uri" : None,
                 "presentation_definition_uri" : None,
                 "deferred_flow" : None,

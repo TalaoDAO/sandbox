@@ -521,37 +521,32 @@ def ebsi_login_qrcode(red, mode):
             presentation_definition_uri = mode.server + 'sandbox/ebsi/login/presentation_definition_uri/' + id
     else :
         presentation_definition = ""
-
+    
     nonce = nonce if nonce else str(uuid.uuid1())
     redirect_uri = mode.server + "sandbox/ebsi/login/endpoint/" + stream_id
     authorization_request = { 
         "response_type" : response_type,
         "client_id" : verifier_data['did'],
         "redirect_uri" : redirect_uri,
-        "nonce" : nonce
-    }
+        "nonce" : nonce,
+        "response_mode" : 'post'    }
    
-
-    if verifier_data['profile'] in ["EBSI-V2", 'DBC'] :
-        # OIDC claims parameter https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
-        authorization_request['claims'] = {"vp_token":{"presentation_definition": presentation_definition}}
-    
+    if 'vp_token' in response_type and verifier_data['profile'] in ["EBSI-V2", 'DBC'] :
+        authorization_request['claims'] = {"vp_token":{"presentation_definition": presentation_definition}} 
     else :
-        authorization_request['response_mode'] = 'post'
+        authorization_request['presentation_definition'] = presentation_definition
         authorization_request['aud'] = 'https://self-issued.me/v2'
-        authorization_request['client_metadata_uri'] = mode.server + "sandbox/ebsi/login/client_metadata_uri/" + client_id
-        # SIOPV2
-    
+        
+    # SIOPV2
     if 'id_token' in response_type :
         authorization_request['scope'] = 'openid'
         prefix = verifier_profile["siopv2_prefix"]
+        authorization_request['registration'] = json.load(open('siopv2_config.json', 'r'))
         
-        # OIDC4VP
-    if 'vp_token' in response_type and  verifier_data['profile'] == "EBSI-V2":
-        if verifier_data.get('presentation_definition_uri') :
-            authorization_request['presentation_definition_uri'] = presentation_definition_uri
-        else:
-            authorization_request['presentation_definition'] = presentation_definition
+    # OIDC4VP
+    if 'vp_token' and verifier_data.get('presentation_definition_uri') and not verifier_data['profile'] in ["EBSI-V2", 'DBC'] :
+        authorization_request['presentation_definition_uri'] = presentation_definition_uri
+        del authorization_request['presentation_definition']
     
     if 'vp_token' in response_type :
         request_as_jwt = build_jwt_request(
@@ -562,6 +557,7 @@ def ebsi_login_qrcode(red, mode):
                 authorization_request
         )   
         prefix = verifier_profile["oidc4vp_prefix"] 
+        authorization_request['client_metadata_uri'] = mode.server + "sandbox/ebsi/login/client_metadata_uri/" + client_id
 
     if verifier_data.get('request_uri_parameter_supported') :
         id = str(uuid.uuid1())
