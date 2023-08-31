@@ -674,7 +674,7 @@ async def ebsi_issuer_credential(issuer_id, red) :
     if proof_format not in ['jwt_vc','jwt_vc_json', 'jwt_vc_json-ld', 'ldp_vc'] :
         return Response(**manage_error('invalid_or_missing_proof', 'The proof is invalid', red, stream_id=stream_id)) 
 
-    # Check proof  of key ownership received (OPTIONAL check)
+    # Check proof of key ownership received (OPTIONAL check)
     logging.info('proof of key ownership received = %s', proof)
     try :
         oidc4vc.verif_token(proof, access_token_data['c_nonce'])
@@ -721,6 +721,9 @@ async def ebsi_issuer_credential(issuer_id, red) :
         # send event to front to go forward callback and send credential to wallet
         return Response(**manage_error('unsupported_credential_type', 'The credential type is not offered', red, stream_id=stream_id)) 
     
+    if not credential : # deferred case with error #TODO
+        return Response(**manage_error('unsupported_credential_type', 'The credential requeted is empty', red, stream_id=stream_id)) 
+
     credential['id']= 'urn:uuid:' + str(uuid.uuid1())
     credential['credentialSubject']['id'] = proof_payload.get('iss')
     credential['issuer']= issuer_data['did']

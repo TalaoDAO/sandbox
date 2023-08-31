@@ -249,8 +249,8 @@ def issuer_default(mode):
     return redirect(qrcode) 
  
 
-# test 5
-def issuer_default_2_deferred(mode):
+# test 5 part 2
+def issuer_default_2_deferred(mode): # VC is sent after delay
     if mode.myenv == 'aws' :
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/wzxtwpltvn"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
@@ -274,7 +274,8 @@ def issuer_default_2_deferred(mode):
     return redirect('/sandbox/issuer/oidc/test')
 
 
-def issuer_default_2(mode): # Test 5 deferred
+# Test 5 part 1
+def issuer_default_2(mode): # Test 5 deferred no VC sent
     if mode.myenv == 'aws' :
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/wzxtwpltvn"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
@@ -289,7 +290,7 @@ def issuer_default_2(mode): # Test 5 deferred
         'Authorization' : 'Bearer ' + client_secret
     }
     data = { 
-        "vc" : {"EmailPass" : {}}, 
+        "vc" : {"EmailPass" : {}}, # no VC for deferred
         "issuer_state" : "546754",
         "pre-authorized_code" : True,
         "credential_type" : offer,
