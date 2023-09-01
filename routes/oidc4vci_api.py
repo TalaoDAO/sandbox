@@ -191,14 +191,16 @@ def issuer_api_endpoint(issuer_id, red, mode) :
     try :
         token = request.headers['Authorization']
         client_secret = token.split(" ")[1]
-        issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
-        vc =  request.json['vc']
-        issuer_state =  request.json['issuer_state']
-        credential_type = request.json['credential_type']  
-        pre_authorized_code = request.json["pre-authorized_code"]
     except :
         return Response(**manage_error("invalid_request", "Request format is incorrect", red))    
-    
+
+    issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
+
+    vc =  request.json.get('vc')
+    issuer_state =  request.json['issuer_state']
+    credential_type = request.json.get('credential_type')  
+    pre_authorized_code = request.json["pre-authorized_code"]
+  
     nonce = str(uuid.uuid1())
     if pre_authorized_code and profile[issuer_data['profile']].get('pre-authorized_code_as_jwt') :
         pre_authorized_code =  oidc4vc.build_pre_authorized_code(
@@ -211,15 +213,17 @@ def issuer_api_endpoint(issuer_id, red, mode) :
     elif pre_authorized_code and not profile[issuer_data['profile']].get('pre-authorized_code_as_jwt') :
         pre_authorized_code =  str(uuid.uuid1())
 
-    # For deferred flow only
+    # For deferred call only we store the vc in issuer_state
     deferred_vc = request.json.get('deferred_vc')
     if deferred_vc :
+        logging.info("Deferred API call with VC = %s", deferred_vc)
         deferred_data = {
             'deferred_vc' : deferred_vc
         }
-        red.setex(issuer_state, ACCEPTANCE_TOKEN_LIFE, deferred_data)
+        red.setex(issuer_state, ACCEPTANCE_TOKEN_LIFE, json.dumps(deferred_data))
 
     if client_secret != issuer_data['client_secret'] :
+        logging.warning("Client secret is incorrect")
         return Response(**manage_error("Unauthorized", "Client secret is incorrect", red, status=401))
     
     issuer_profile = profile[issuer_data['profile']]

@@ -268,6 +268,7 @@ def issuer_default_2_deferred(mode): # VC is sent after delay
         "deferred_vc" : build_credential_offered(offer), 
         "issuer_state" : "546754",
         "pre-authorized_code" : True,
+        "credential_type" : offer,
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
     print(resp.status_code)
