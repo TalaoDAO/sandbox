@@ -192,15 +192,21 @@ def issuer_api_endpoint(issuer_id, red, mode) :
         token = request.headers['Authorization']
         client_secret = token.split(" ")[1]
     except :
-        return Response(**manage_error("invalid_request", "Request format is incorrect", red))    
+        return Response(**manage_error("Unauthorized", "Unhauthorized token", red, status= 401))    
 
     issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
 
     vc =  request.json.get('vc')
     issuer_state =  request.json['issuer_state']
-    credential_type = request.json.get('credential_type')  
-    pre_authorized_code = request.json["pre-authorized_code"]
-  
+    try :
+        credential_type = request.json['credential_type']  
+    except :
+        return Response(**manage_error("Bad request", "credential_type missing", red, status= 401))    
+    try :
+        pre_authorized_code = request.json["pre-authorized_code"]
+    except :
+        return Response(**manage_error("Bad request", "pre-authorized_code is missing", red, status= 401))    
+
     nonce = str(uuid.uuid1())
     if pre_authorized_code and profile[issuer_data['profile']].get('pre-authorized_code_as_jwt') :
         pre_authorized_code =  oidc4vc.build_pre_authorized_code(
@@ -783,10 +789,12 @@ async def ebsi_issuer_deferred(issuer_id, red):
     
     # VC is not ready 404
     try : 
-        credential = red.get(issuer_state).decode()['deferred_vc'][credential_type]
+        acceptance_token_data = json.loads(red.get(issuer_state).decode())
     except :
-        return Response(**manage_error("invalid_token", "Access token expired", red, status=404)) 
+        return Response(**manage_error("invalid_token", "Acceptace token expired", red, status=404)) 
+    logging.info('In deferred endpoint acceptance token data = %s', acceptance_token_data)
 
+    credential = acceptance_token_data['deferred_vc'][credential_type]
     credential['id']= 'urn:uuid:' + str(uuid.uuid1())
     credential['credentialSubject']['id'] = acceptance_token_data['subjectId']
     credential['issuer']= issuer_data['did']
