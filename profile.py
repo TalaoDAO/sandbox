@@ -12,7 +12,57 @@ profile = {
                 'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
-            'credentials_supported' : ['VerifiableDiploma', 'VerifiableId'],
+            'credentials_types_supported' : ['VerifiableDiploma', 'VerifiableId'],
+            'credentials_supported' : [
+                {
+                    "id" : "VerifiableDiploma",
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "VerifiableAttestation",
+                        "VerifiableDiploma"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Verifiable diploma",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "VerifiableAttestation",
+                        "VerifiableId"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "id": "VerifiableId",
+                        "display": [
+                            {
+                            "name": "Verifiable Id",
+                            "locale": "en-GB"
+                            }
+                        ]
+                }
+            ],
             'schema_for_type' : True,
             'credential_manifest_support' : False,
             'service_documentation' : 'THIS PROFILE OF OIDC4VCI IS DEPRECATED. EBSI V2 COMPLIANCE. It is the profile of the EBSI V2 compliant test. DID for natural person is did:ebsi. \
@@ -30,7 +80,66 @@ profile = {
             'oidc4vci_prefix' : 'openid-credential-offer://',
             'siopv2_prefix' : 'openid-vc://',
             'oidc4vp_prefix' : 'openid-vc://',
-            'credentials_supported' : ['VerifiableDiploma', 'VerifiableId', 'GreencypherPass', 'ListOfProjects'],
+            'credentials_types_supported' : ['VerifiableDiploma', 'VerifiableId'],
+            'credentials_supported' : [
+                {
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "VerifiableAttestation",
+                        "VerifiableDiploma"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Verifiable diploma",
+                            "locale": "en-GB"
+                        }
+                    ],
+                    "trust_framework": {
+                        "name": "ebsi",
+                        "type": "Accreditation",
+                        "uri": "TIR link towards accreditation"
+                    }
+                },
+                {
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "VerifiableAttestation",
+                        "VerifiableId"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "id": "VerifiableId",
+                        "display": [
+                            {
+                            "name": "Verifiable Id",
+                            "locale": "en-GB"
+                            }
+                        ],
+                    "trust_framework": {
+                        "name": "ebsi",
+                        "type": "Accreditation",
+                        "uri": "TIR link towards accreditation"
+                    }
+                }
+            ],
             'grant_types_supported': [
                 #'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
@@ -52,7 +161,124 @@ profile = {
             'authorization_server_support' : False,
             'siopv2_prefix' : 'openid-vc://',
             'oidc4vp_prefix' : 'openid-vc://',
-            'credentials_supported' : ['EmployeeCredential',  'EthereumAssociatedAddress', 'VerifiableId', 'EmailPass', 'PhoneProof', 'GreencypherPass'],
+            'credentials_types_supported' : ['EmployeeCredential',  'EthereumAssociatedAddress', 'VerifiableId', 'EmailPass', 'PhoneProof'],
+            'credentials_supported' : [
+                {
+                    "id" : "EmployeeCredential",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "EmployeeCredential"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "EmployeeCredential",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id" : "EthereumAssociatedAddress",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "EthereumAssociatedAddress"
+                ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "EthereumAssociatedAddress",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id" : "VerifiableId",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "VerifiableId"
+                ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Verifiable Id",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id" : "EmailPass",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "EmailPass"
+                ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Proof of email",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id" : "PhoneProof",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "PhoneProof"
+                ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Proof of phone number",
+                            "locale": "en-GB"
+                        }
+                    ]
+                }
+            ],
             'grant_types_supported': [
                 #'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
@@ -72,7 +298,83 @@ profile = {
             'siopv2_prefix' : 'openid://',
             'oidc4vp_prefix' : 'openid://',
             'authorization_server_support' : False,
-            'credentials_supported' :  ['EmployeeCredential',  'VerifiableId',  'GreencypherPass', 'EmailPass'],
+            'credentials_types_supported' :  ['EmployeeCredential',  'VerifiableId',  'EmailPass'],
+            'credentials_supported' : [
+                {
+                    "id" : "EmployeeCredential",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "EmployeeCredential"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "EmployeeCredential",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id" : "VerifiableId",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "VerifiableId"
+                ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Verifiable Id",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id" : "EmailPass",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "EmailPass"
+                ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Proof of email",
+                            "locale": "en-GB"
+                        }
+                    ],
+                    "trust_framework": {
+                        "name": "ebsi",
+                        "type": "Accreditation",
+                        "uri": "TIR link towards accreditation"
+                    }
+                }
+            ],
             'grant_types_supported': [
                 #'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
@@ -92,7 +394,124 @@ profile = {
             'authorization_server_support' : False,
             'siopv2_prefix' : 'openid-hedera://',
             'oidc4vp_prefix' : 'openid-hedera://',
-            'credentials_supported' :  ['EmployeeCredential', 'VerifiableId', 'GreencypherPass', 'ListOfProjects', 'PhoneProof', 'EmailPass', 'Over18'],
+            'credentials_types_supported' :  ['ListOfProjects', 'VerifiableId', 'GreencypherPass', 'PhoneProof', 'EmailPass', 'Over18'],
+            'credentials_supported' : [
+                {
+                    "id" : "ListOfProjects",
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "ListOfProjects"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "List of projects",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id" : "Ethereum1AssociatedAddress",
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "EthereumAssociatedAddress"
+                ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "EthereumAssociatedAddress",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id" : "VerifiableId",
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "VerifiableId"
+                ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Verifiable Id",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id" : "EmailPass",
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "EmailPass"
+                ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Proof of email",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id" : "Over18",
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "Over18"
+                ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Over18 proof",
+                            "locale": "en-GB"
+                        }
+                    ]
+                }
+            ],
             'grant_types_supported': [
                 #'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
@@ -110,7 +529,7 @@ profile = {
         {
             'verifier_vp_type' : 'jwt_vp',
             'siopv2_prefix' : 'openid-vc://',
-            'credential_supported' : ['EmployeeCredential', 'VerifiableId', 'EmailPass'],
+            'credentials_types_supported' : ['EmployeeCredential', 'VerifiableId', 'EmailPass'],
             'schema_for_type' : False,
             'authorization_server_support' : False,
             'credential_manifest_support' : False,
@@ -121,7 +540,8 @@ profile = {
         {
             'verifier_vp_type' : 'jwt_vp',
             'siopv2_prefix' : 'openid-vc://',
-            'credential_supported' : ['EmployeeCredential', 'VerifiableId', 'EmailPass'],
+            'oidc4vp_prefix' : 'openid://',
+            'credentials_types_supported' : ['EmployeeCredential', 'VerifiableId', 'EmailPass'],
             'schema_for_type' : False,
             'authorization_server_support' : False,
             'credential_manifest_support' : False,

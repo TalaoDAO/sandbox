@@ -162,18 +162,36 @@ class Presentation_Definition :
                     }
                 }
             )
+    def add_constraint_with_group_and_schema(self, schema, name, purpose, group, id= str(uuid.uuid1())):
+        self.pd['input_descriptors'].append(
+                {   
+                    "id" : id,
+                    "group": [group],
+                    "name" : name,
+                    "schema" : [schema]
+                }
+            )
+       
 
-    def add_group(self, name, group, count=1, type="count"):
+    def add_group(self, name, group, min=None, max= None, count=None, rule="pick"):
+        if rule not in ['pick', 'all'] :
+            return
+        pattern = {
+                    "name": name,
+                    "rule": rule,
+                    "from": group
+                }
+        if rule == "pick" :
+            if count :
+                pattern['count'] = count
+            if not count :
+                if min >= 0:
+                    pattern['min'] = min
+                if max :
+                    pattern['max'] = max  
         if not self.pd.get("submission_requirements") :
             self.pd["submission_requirements"] = list()
-        self.pd["submission_requirements"].append(
-                {
-                    "name": name,
-                    "rule": "pick",
-                    type : count,
-                    "from": group
-                }       
-        )
+        self.pd["submission_requirements"].append(pattern)
 
     def get(self):
         return self.pd
@@ -188,9 +206,10 @@ if __name__ == '__main__':
     #myprez.add_constraint("$.credentialSubject.firstName", "", "", "", id="descriptor_1")
     #myprez.add_filter('descriptor_1', '$.credentialSubject.lastName', '')
     #myprez.add_constraint("$.credentialSubject.type", "VerifiableId", "", "")
-    myprez.add_group("test with group A", "A", count=2, type="min" )
-    myprez.add_group("test with group B", "B")
-    myprez.add_constraint_with_group("$.credentialSubject.type", "PhonePass", "avec ID card", "Present and IOd Card", "A")
+    myprez.add_group("test with group A", "A", min=1)
+    #myprez.add_constraint_with_group_and_schema({'uri' : 'https:///www.com'}, "DbcPhonePass", "avec ID card", "A")
+    #myprez.add_group("test with group B", "B")
+    #myprez.add_constraint_with_group("$.credentialSubject.type", "PhonePass", "avec ID card", "Present and IOd Card", "A")
     #myprez.add_constraint_with_group("$.credentialSubject.type", "EmailPass", "avec Email pass", "Present a proof of email", "A")
     #myprez.add_format_ldp_vc()
     #myprez.add_format_ldp_vp()

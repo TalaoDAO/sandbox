@@ -102,38 +102,25 @@ def oidc(issuer_id, mode) :
         logging.warning('issuer_id not found for %s', issuer_id)
         return
     
-    # Credential supported section
+    # Credentials_upported section
     cs = list()
     for vc in issuer_profile.get('credentials_supported'):
-        try :
-            file_path = './verifiable_credentials/' + vc + '.jsonld'
-        except :
-            logging.warning('Credential not found  %s', vc)
-            return
-        credential = json.load(open(file_path))
         oidc_data = {
-            'format': issuer_profile['issuer_vc_type'],
-            'types' : credential['type'],
-            'cryptographic_binding_methods_supported': ['DID'],
-            'cryptographic_suites_supported': ['ES256K','ES256','ES384','RS256'],
-            'id' : vc,
-            'display' : [
-                {
-                    "name": vc,
-                    "locale": "en-GB"
-                }
-            ]
+            'format': vc.get('format', 'missing, contact@talao.co'),
+            'types' : vc.get('types', 'missing, contact@talao.co'),
+            'cryptographic_binding_methods_supported': vc.get('cryptographic_binding_methods_supported', 'missing, contact@talao.co'),
+            'cryptographic_suites_supported': vc.get('cryptographic_suites_supported', 'missing, contact@talao.co'),
+            'display' : vc.get('display', 'missing, contact@talao.co'),
         }
-        if  issuer_profile.get('trust_framework') :
-            oidc_data["trust_framework"] = issuer_profile['trust_framework']
+        if vc.get('id') :
+            oidc_data['id'] = vc['id']
+        if vc.get('trust_framework') :
+            oidc_data['trust_framework'] = vc['trust_framework']
         cs.append(oidc_data)
-        
 
-    # Other section
+    # general section
     # https://www.rfc-editor.org/rfc/rfc8414.html#page-4
     openid_configuration = dict()
-    if issuer_profile.get('service_documentation') :
-        openid_configuration['service_documentation'] = issuer_profile['service_documentation']
     openid_configuration.update({
         'credential_issuer': mode.server + 'sandbox/ebsi/issuer/' + issuer_id,
         'credential_endpoint': mode.server + 'sandbox/ebsi/issuer/' + issuer_id + '/credential',
@@ -141,12 +128,16 @@ def oidc(issuer_id, mode) :
         'credentials_supported' : cs,
         'credential_supported' : cs # To be removed later
     })
+    if issuer_profile.get('service_documentation') :
+        openid_configuration['service_documentation'] = issuer_profile['service_documentation']
+    if issuer_profile.get('batch_credential_endpoint_support') :
+        openid_configuration['batch_credential_endpoint'] = mode.server + 'sandbox/ebsi/issuer/' + issuer_id + '/batch'
 
-    # setup credential manifest
+    # setup credential manifest as optional
     #https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-server-metadata    
     if issuer_profile.get('credential_manifest_support')  :
         cm = list()  
-        for vc in issuer_profile.get('credentials_supported') :
+        for vc in issuer_profile.get('credentials_types_supported') :
             file_path = './credential_manifest/' + vc + '_credential_manifest.json'
             cm_to_add = json.load(open(file_path))
             cm_to_add['issuer']['id'] = issuer_data.get('did' , 'Unknown')
@@ -185,7 +176,7 @@ def issuer_api_endpoint(issuer_id, red, mode) :
     }
     data = { 
         "vc" : OPTIONAL -> { "EmployeeCredendial" : {}, ....}, json object, VC as a json-ld not signed
-        "deferred_vc" : OPTIONAL but REQUIRED in case of deferred flow
+        "deferred_vc" : CONDITIONAL, REQUIRED in case of deferred flow
         "issuer_state" : REQUIRED, string,
         "credential_type" : REQUIRED -> array or string name of the credentials offered
         "pre-authorized_code" : REQUIRED , bool
@@ -205,9 +196,9 @@ def issuer_api_endpoint(issuer_id, red, mode) :
         issuer_state =  request.json['issuer_state']
         credential_type = request.json['credential_type']  
         pre_authorized_code = request.json["pre-authorized_code"]
-
     except :
         return Response(**manage_error("invalid_request", "Request format is incorrect", red))    
+    
     nonce = str(uuid.uuid1())
     if pre_authorized_code and profile[issuer_data['profile']].get('pre-authorized_code_as_jwt') :
         pre_authorized_code =  oidc4vc.build_pre_authorized_code(
@@ -233,9 +224,9 @@ def issuer_api_endpoint(issuer_id, red, mode) :
     
     issuer_profile = profile[issuer_data['profile']]
 
-    credential_type_checklist = credential_type if isinstance(credential_type, list) else [credential_type]
-    for _vc in credential_type_checklist :
-        if _vc not in issuer_profile[ 'credentials_supported'] :
+    credential_type = credential_type if isinstance(credential_type, list) else [credential_type]
+    for _vc in credential_type :
+        if _vc not in issuer_profile['credentials_types_supported'] :
               logging.warning("Credential not supported %s", _vc)
               return Response(**manage_error("Unauthorized", "Credential not supported", red, status=401))
     
@@ -259,24 +250,20 @@ def issuer_api_endpoint(issuer_id, red, mode) :
     red.setex(stream_id, API_LIFE, json.dumps(application_data))
     response = {"redirect_uri" : mode.server+ 'sandbox/ebsi/issuer/' + issuer_id +'/' + stream_id }
     logging.info('initiate qrcode = %s', mode.server+ 'sandbox/ebsi/issuer/' + issuer_id +'/' + stream_id)
-    return jsonify( response)
+    return jsonify(response)
 
 
 def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state, issuer_vc_type, issuer_profile, vc, user_pin_required, user_pin, mode) :
-   
-    
     if issuer_profile == 'EBSI-V2' :
         #  https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-pre-authorized-code-flow
         url_data  = { 
             'issuer' : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
-            'credential_type'  : type_2_schema[credential_type],
+            'credential_type'  : type_2_schema[credential_type[0]],
         }
         if pre_authorized_code :
             url_data['pre-authorized_code'] = pre_authorized_code
 
     elif issuer_profile == 'GAIA-X' :
-        if isinstance(credential_type, str) :
-            credential_type = [credential_type]
         if len(credential_type)== 1 :
             credential_type = credential_type[0]
         url_data  = { 
@@ -290,8 +277,6 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
     
     # new OIDC4VCI standard with  credential as json object
     elif profile[issuer_profile].get('credentials_as_json_object_array') :
-        if isinstance(credential_type, str) :
-            credential_type = [credential_type]
         url_data  = { 
             "credential_issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
             "credentials"  : []
@@ -309,15 +294,13 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                 "authorization_code": {"issuer_state" : issuer_state}
             }
         for one_vc in credential_type :
-            credential = json.load(open('verifiable_credentials/' + one_vc + '.jsonld', 'r'))
             url_data["credentials"].append({
-                'format': profile[issuer_profile]['issuer_vc_type'],
-                'types': credential['type'],
-                'trust_framework': profile[issuer_profile]['trust_framework']
+                'format': one_vc['format'],
+                'types': one_vc['types'],
             })
+            if vc.get('trust_framework') :
+                url_data[ 'trust_framework'] = one_vc['trust_framework']
     else :
-        if isinstance(credential_type, str) :
-            credential_type = [credential_type]
         url_data  = { 
             "credential_issuer" : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
             "credentials"  : credential_type
@@ -783,16 +766,22 @@ async def ebsi_issuer_deferred(issuer_id, red):
         acceptance_token = request.headers['Authorization'].split()[1]
     except :
         return Response(**manage_error("invalid_token", "Acceptance token not passed in request header", red))
+    
+    # VC is no more available 410
     try :
         acceptance_token_data = json.loads(red.get(acceptance_token).decode())
     except :
-        return Response(**manage_error("invalid_token", "Access token expired", red)) 
+        return Response(**manage_error("invalid_token", "Acceptance token expired", red, status=410)) 
         
     issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
-
     issuer_state = acceptance_token_data['issuer_state']
     credential_type = acceptance_token_data['credential_type']
-    credential = red.get(issuer_state).decode()['deferred_vc'][credential_type]
+    
+    # VC is not ready 404
+    try : 
+        credential = red.get(issuer_state).decode()['deferred_vc'][credential_type]
+    except :
+        return Response(**manage_error("invalid_token", "Access token expired", red, status=404)) 
 
     credential['id']= 'urn:uuid:' + str(uuid.uuid1())
     credential['credentialSubject']['id'] = acceptance_token_data['subjectId']

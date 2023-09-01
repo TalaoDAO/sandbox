@@ -218,22 +218,21 @@ def resolve_did(vm) -> dict :
     if jwk :
       logging.info('wallet jwk EBSI-V3= %s', jwk)
       return json.loads(jwk)
-    
-    elif did.split(':')[1] == "web" :
-      logging.info("did:web")
-      did_document = resolve_did_web(did)
-      for verificationMethod in did_document :
-        if vm == verificationMethod['id'] or '#' + vm.split('#')[1] == verificationMethod['id'] :
-          jwk = verificationMethod.get('publicKeyJwk')
-          logging.info('wallet jwk = %s', jwk)
-          return jwk
+    #elif did.split(':')[1] == "web" :
+    #  logging.info("did:web")
+    #  did_document = resolve_did_web(did)
+    #  for verificationMethod in did_document :
+    #    if vm == verificationMethod['id'] or '#' + vm.split('#')[1] == verificationMethod['id'] :
+    #      jwk = verificationMethod.get('publicKeyJwk')
+    #      logging.info('wallet jwk = %s', jwk)
+    #      return jwk
     else :
       url = 'https://unires:test@unires.talao.co/1.0/identifiers/' + did
       try :
         r = requests.get(url, timeout=8)
         logging.info('Access to Talao Universal Resolver')
       except :
-        logging.error('cannot access to Universal Resolver')
+        logging.error('cannot access to Talao Universal Resolver')
         return
       did_document = r.json()
       for verificationMethod in did_document['didDocument']['verificationMethod'] :
@@ -270,20 +269,20 @@ def verif_token(token, nonce, aud=None) :
   a.validate(issuer_key)
   return
 
-
+"""
 def verify_jwt_credential(token, pub_key) :
-  """
-  For verifier and holder
-  raise an exception if problem
-  pub_key is not in header
-  https://jwcrypto.readthedocs.io/en/latest/jwt.html#jwcrypto.jwt.JWT.validate
-  """
+  
+  #For verifier and holder
+  #raise an exception if problem
+  #pub_key is not in header
+  #https://jwcrypto.readthedocs.io/en/latest/jwt.html#jwcrypto.jwt.JWT.validate
+
   a =jwt.JWT.from_jose_token(token)
   pub_key = json.loads(pub_key) if isinstance(pub_key, str) else pub_key
   issuer_key = jwk.JWK(**pub_key) 
   a.validate(issuer_key)
   return
-
+"""
 
 def get_payload_from_token(token) -> dict:
   """
@@ -335,14 +334,12 @@ def thumbprint(key) :
   a  += "=" * ((4 - len(a) % 4) % 4) 
   return base64.urlsafe_b64decode(a).hex()
 
-
+"""
 def generate_lp_ebsi_did() :
-    """
-    for legal person as issuer
-    """
+    #for legal person as issuer
     return  'did:ebsi:z' + base58.b58encode(b'\x01' + os.urandom(16)).decode()
 
-"""
+
 def generate_np_ebsi_did(key) :
     #for natural person / wallet  EBSI V2
     key = json.loads(key) if isinstance(key, str) else key
@@ -392,10 +389,10 @@ def did_resolve_lp(did) :
     logging.info("DID Document = %s", r.json())
     return r.json()
   
-  elif did.split(':')[1] == 'web' :
-    did_doc = resolve_did_web(did)
-    logging.info("DID Document = %s", did_doc)
-    return did_doc
+  #elif did.split(':')[1] == 'web' :
+  #  did_doc = resolve_did_web(did)
+  #  logging.info("DID Document = %s", did_doc)
+  #  return did_doc
   
   else :
     url = 'https://unires:test@unires.talao.co/1.0/identifiers/' + did
@@ -408,23 +405,6 @@ def did_resolve_lp(did) :
   logging.info("DID Document = %s", r.json())
   return r.json().get('didDocument')
 
-
-"""
-def get_lp_public_jwk(did, kid) :
-  #support publikeyJWK only
-  did_document = did_resolve_lp(did)
-  if not did_document :
-    logging.warning('DID Document not found for %s', did)
-    return
-  try :
-    for key in did_document['verificationMethod'] :
-      if key['id'] == kid :
-        return key['publicKeyJwk']
-    logging.warning('public key not found')
-  except :
-    logging.warning('DID document not founds')
-  return  
-"""  
 
 def get_issuer_registry_data(did) :
   """
@@ -446,89 +426,6 @@ def get_issuer_registry_data(did) :
   except :
     logging.error('registry data in invalid format')
     return
-
-"""
-def did_resolve(did, key) :
-  
-  #EBSIV2
-  #did:ebsi for natural person
-  #https://ec.europa.eu/digital-building-blocks/wikis/display/EBSIDOC/EBSI+DID+Method
-  
-  if not did or not key :
-    return "{}" 
-  key = json.loads(key) if isinstance(key, str) else key
-  did_document = {
-    "@context": "https://w3id.org/did/v1",
-    "id": did,
-    "verificationMethod": [
-      {
-        "id": verification_method(did, key),
-        "type": "JsonWebKey2020",
-        "controller": did,
-        "publicKeyJwk": {
-          "kty": key['kty'],
-          "crv": key['crv'],
-          "x": key["x"],
-          "y": key["y"],
-          "alg": alg(key)
-        }
-      }
-    ],
-    "authentication": [
-      verification_method(did, key)
-    ],
-    "assertionMethod": [
-      verification_method(did, key)
-      ]
-    }
-  return json.dumps(did_document)
-"""
-
-"""
-# JSON-LD sign
-def sign_jsonld_vc(credential, key, did) :
-  key = json.loads(key) if isinstance(key, str) else key
-  issuer_key = jwk.JWK(**key) 
-  if isinstance(credential, str) :
-    credential = json.loads(credential)
-  proof= {
-    #'@context':'https://w3id.org/security/v2',
-    "type": "EcdsaSecp256k1Signature2019",
-    "created": datetime.now().replace(microsecond=0).isoformat() + 'Z',
-    "verificationMethod": verification_method(did, key),
-    "proofPurpose": "assertionMethod"
-  }
-  h = {'alg':alg(key),'b64':False,'crit':['b64']}
-  jws_header = json.dumps(h).encode()
-
-  normalized_doc   = jsonld.normalize(credential , {'algorithm': 'URDNA2015', 'format': 'application/n-quads'})
-  normalized_proof = jsonld.normalize(proof, {'algorithm': 'URDNA2015', 'format': 'application/n-quads'})
-  doc_hash         = hashlib.sha256()
-  proof_hash       = hashlib.sha256()
-
-  doc_hash.update(normalized_doc.encode('utf-8'))
-  proof_hash.update(normalized_proof.encode('utf-8'))
-
-  encodedHeader = base64.urlsafe_b64encode(jws_header)
-  to_sign = encodedHeader + b'.' + proof_hash.digest() + doc_hash.digest()
-
-  jwstoken = jws.JWS(to_sign)
-  jwstoken.add_signature(issuer_key, None, json_encode({'alg': alg(key)}))
-
-  sig = json.loads(jwstoken.serialize())['signature']
-  
-  proof_jws =encodedHeader + b'..' + base64.urlsafe_b64encode(sig.encode())
-
-  #TODO check that
-  #proof['jws']  = proof_jws.decode()[:-2] 
-  proof['jws']  = proof_jws.decode()
-  try :
-    del proof['@context']
-  except :
-    pass
-  credential['proof'] = proof
-  return json.dumps(credential)
-"""
 
 
 ########################## TEST VECTORS

@@ -34,7 +34,8 @@ ebsi_verifier_credential_list = {
     'WalletCredential' : 'Device information',
     "GreencypherPass" : "Pass GreenCypher",
     "ListOfProjects" : "ACX list of Projects",
-    "Over18" : "Over18"
+    "Over18" : "Over18",
+    "DbcEmailPass" : "DBC EmailPass"
 }
 
 

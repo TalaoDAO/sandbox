@@ -334,7 +334,6 @@ def issuer_default_3(mode): # Test 6
     return redirect(qrcode) 
   
 
-
 def issuer_gaiax(mode):
     if mode.myenv == 'aws' :
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/mfyttabosy"
@@ -343,7 +342,7 @@ def issuer_gaiax(mode):
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/cqmygbreop"
         client_secret = "a71f33f9-3100-11ee-825b-9db9eb02bfb8"
 
-    offer = "EmployeeCredential"
+    offer = ["EmployeeCredential"]
     headers = {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret
@@ -363,6 +362,7 @@ def issuer_gaiax(mode):
     return redirect(qrcode) 
    
 
+# Test 3
 def issuer_hedera(mode):
     if mode.myenv == 'aws' :
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/nkpbjplfbi"
@@ -372,7 +372,7 @@ def issuer_hedera(mode):
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/uxzjfrjptk"
         client_secret = "2675ebcf-2fc1-11ee-825b-9db9eb02bfb8"
 
-    offer = ["EmployeeCredential", "VerifiableId"]
+    offer = ["GreencypherPass", "ListOfProjects"]
     headers = {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret

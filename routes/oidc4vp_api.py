@@ -471,12 +471,21 @@ def ebsi_login_qrcode(red, mode):
     if 'vp_token' in response_type and verifier_data['group'] : 
         if not prez :
             prez = pex.Presentation_Definition(verifier_data['application_name'], "Talao-Altme presentation definition with a subset of PEX v2.0 syntax")  
-        prez.add_group("Group A", "A")
+        prez.add_group("Group A", "A", count=1)
         for i in ["5", "6", "7", "8"] :
             vc = 'vc_' + i
             if verifier_data[vc] != 'None'   :
                 if verifier_data['profile'] == "EBSI-V2" :
                     prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[verifier_data[vc]], "Input descriptor for credential " + i, "", "A")
+                
+                elif verifier_data['profile'] == "DBC" : 
+                    dbc_credential = json.load(open('verifiable_credentials/' + verifier_data[vc]  + '.jsonld' , 'r'))
+                    credentialSchema = dbc_credential.get('credentialSchema', {'uri' : 'unknown uri'}).get('uri')
+                    prez.add_constraint_with_group_and_schema( { 'uri' :  credentialSchema },
+                                                        verifier_data[vc],
+                                                        "Input descriptor for credential " + i,
+                                                        "A",
+                                                        id=verifier_data[vc].lower() + '_' + i)
                 else :
                     prez.add_constraint_with_group("$.credentialSubject.type",
                                                         verifier_data[vc],
@@ -489,12 +498,21 @@ def ebsi_login_qrcode(red, mode):
     if 'vp_token' in response_type and verifier_data.get('group_B') : 
             if not prez :
                 prez = pex.Presentation_Definition(verifier_data['application_name'], "Altme presentation definition subset of PEX v2.0")  
-            prez.add_group("Group B", "B", type="min")
+            prez.add_group("Group B", "B", min=1)
             for i in ["9", "10", "11", "12"] :
                 vc = 'vc_' + i
                 if verifier_data[vc] != 'None'   :
                     if verifier_data['profile'] == "EBSI-V2" :
                         prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[verifier_data[vc]], "Input descriptor for credential " + i, "", "B")
+                    
+                    elif verifier_data['profile'] == "DBC" : 
+                        dbc_credential = json.load(open('verifiable_credentials/' + verifier_data[vc]  + '.jsonld' , 'r'))
+                        credentialSchema = dbc_credential.get('credentialSchema', {'uri' : 'unknown uri'}).get('uri')
+                        prez.add_constraint_with_group_and_schema( { 'uri' :  credentialSchema },
+                                                        verifier_data[vc],
+                                                        "Input descriptor for credential " + i,
+                                                        "A",
+                                                        id=verifier_data[vc].lower() + '_' + i)
                     else :
                         prez.add_constraint_with_group("$.credentialSubject.type",
                                                             verifier_data[vc],
@@ -515,12 +533,14 @@ def ebsi_login_qrcode(red, mode):
     redirect_uri = mode.server + "sandbox/ebsi/login/endpoint/" + stream_id
     
     # general authorization reuest
+    state = id = str(uuid.uuid1())
     authorization_request = { 
         "response_type" : response_type,
         "client_id" : verifier_data['did'],
         "redirect_uri" : redirect_uri,
         "nonce" : nonce,
-        "response_mode" : 'post'
+        "response_mode" : 'post',
+        "state" : state
     }
     # OIDC4VP
     if 'vp_token' in response_type :

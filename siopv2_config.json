@@ -33,7 +33,7 @@
       "request_object"
     ]
   },
-  "vp_formats_supported": {
+  "vp_formats": {
     "jwt_vp": {
       "alg_values_supported": [
         "ES256",

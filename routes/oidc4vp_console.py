@@ -216,12 +216,22 @@ def ebsi_verifier_console(mode) :
         if session['client_data'].get('vp_token') and session['client_data'].get('group') : 
             if not prez :
                 prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
-            prez.add_group("Group A", "A")
+            prez.add_group("Group A", "A", count=1)
             for i in ["5", "6", "7", "8"] :
                 vc = 'vc_' + i
                 if session['client_data'][vc] != 'None'   :
                     if session['client_data']['profile'] == "EBSI-V2" :
                         prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[session['client_data'][vc]], "Input descriptor for credential " + i, "", "A")
+                    
+                    elif session['client_data']['profile'] == "DBC" : 
+                        credential = json.load(open('verifiable_credentials/' + session['client_data'][vc] + '.jsonld' , 'r'))
+                        credentialSchema = credential.get('credentialSchema', {'uri' : 'unknown uri'}).get('uri')
+                        prez.add_constraint_with_group_and_schema( { 'uri' :  credentialSchema },
+                                                        session['client_data'][vc],
+                                                        "Input descriptor for credential " + i,
+                                                        "A",
+                                                        id=session['client_data'][vc].lower() + '_' + i)
+                    
                     else :
                         prez.add_constraint_with_group("$.credentialSubject.type",
                                                             session['client_data'][vc],
@@ -234,12 +244,21 @@ def ebsi_verifier_console(mode) :
         if session['client_data'].get('vp_token') and session['client_data'].get('group_B') : 
             if not prez :
                 prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
-            prez.add_group("Group B", "B", type="min")
+            prez.add_group("Group B", "B", min=1)
             for i in ["9", "10", "11", "12"] :
                 vc = 'vc_' + i
                 if session['client_data'][vc] != 'None'   :
                     if session['client_data']['profile'] == "EBSI-V2" :
                         prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[session['client_data'][vc]], "Input descriptor for credential " + i, "", "B")
+                    
+                    elif session['client_data']['profile'] == "DBC" : 
+                        credential = json.load(open('verifiable_credentials/' + session['client_data'][vc] + '.jsonld' , 'r'))
+                        credentialSchema = credential.get('credentialSchema', {'uri' : 'unknown uri'}).get('uri')
+                        prez.add_constraint_with_group_and_schema( { 'uri' :  credentialSchema },
+                                                        session['client_data'][vc],
+                                                        "Input descriptor for credential " + i,
+                                                        "A",
+                                                        id=session['client_data'][vc].lower() + '_' + i)
                     else :
                         prez.add_constraint_with_group("$.credentialSubject.type",
                                                             session['client_data'][vc],

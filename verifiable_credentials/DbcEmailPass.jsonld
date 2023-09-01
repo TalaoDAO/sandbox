@@ -1,0 +1,32 @@
+{
+    "@context": ["https://www.w3.org/2018/credentials/v1",
+        {
+            "DubEmailPass" : {
+                "@id": "https://github.com/TalaoDAO/context#dbcemailpass",
+                "@context": {
+                    "@version": 1.1,
+                    "@protected": true,
+                    "schema" : "https://schema.org/",
+                    "id": "@id",
+                    "type": "@type",
+                    "firstName" : "schema:firstName",
+                    "lastName" : "schema:lastName",
+                    "emailAddress": "schema:email"
+                    }                   
+            }
+        }
+    ],
+    "id": "",
+    "type": ["VerifiableCredential", "DbcEmailPass"],
+    "issuer": "",
+    "issuanceDate": "",
+    "credentialSchema":{
+        "uri": "https://sphereon-opensource.github.io/ssi-mobile-wallet/context/sphereon-wallet-identity-v1.jsonld",
+        "type":"JsonSchemaValidator2018"},
+    "credentialSubject" : {
+        "type" : "DbcEmailPass",
+        "emailAddress" : "john.doe@gmail.com",
+        "firstName" : "John",
+        "lastName" : "Doe"
+    }
+}

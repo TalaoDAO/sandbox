@@ -14,7 +14,8 @@ def init_app(app,red, mode) :
 
 
     app.add_url_rule('/sandbox/verifier/hedera_2',  view_func=verifier_hedera_2, methods = ['GET'], defaults={'mode' : mode})
-    app.add_url_rule('/sandbox/verifier/hedera_3',  view_func=verifier_hedera_3, methods = ['GET'], defaults={'mode' : mode})
+    
+    app.add_url_rule('/sandbox/verifier/dbc',  view_func=verifier_dbc, methods = ['GET'], defaults={'mode' : mode})
 
     app.add_url_rule('/sandbox/verifier/gaiax',  view_func=verifier_gaiax, methods = ['GET'], defaults={'mode' : mode}) # test 9
     app.add_url_rule('/sandbox/verifier/gaiax_2',  view_func=verifier_gaiax_2, methods = ['GET'], defaults={'mode' : mode})
@@ -113,7 +114,7 @@ def verifier_hedera_2(mode): # Test 7
         url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
 
-def verifier_hedera_3(mode): # Test 8
+def verifier_dbc(mode): # Test 8
     if request.method == 'GET' :
         if mode.myenv == 'aws':
             client_id = "dxmdhauyrr"
