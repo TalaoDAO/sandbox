@@ -789,12 +789,12 @@ async def ebsi_issuer_deferred(issuer_id, red):
     
     # VC is not ready 404
     try : 
-        acceptance_token_data = json.loads(red.get(issuer_state).decode())
+        deferred_data = json.loads(red.get(issuer_state).decode())
     except :
-        return Response(**manage_error("invalid_token", "Acceptace token expired", red, status=404)) 
-    logging.info('In deferred endpoint acceptance token data = %s', acceptance_token_data)
+        return Response(**manage_error("invalid_token", "Acceptance token expired", red, status=404)) 
+    logging.info('In deferred endpoint acceptance token data = %s', deferred_data)
 
-    credential = acceptance_token_data['deferred_vc'][credential_type]
+    credential = deferred_data['deferred_vc'][credential_type]
     credential['id']= 'urn:uuid:' + str(uuid.uuid1())
     credential['credentialSubject']['id'] = acceptance_token_data['subjectId']
     credential['issuer']= issuer_data['did']
