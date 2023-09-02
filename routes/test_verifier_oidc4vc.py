@@ -22,6 +22,7 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/verifier/gaiax_3',  view_func=verifier_gaiax_3, methods = ['GET'], defaults={'mode' : mode})
 
     app.add_url_rule('/sandbox/verifier/ebsiv3',  view_func=verifier_ebsiv3, methods = ['GET'], defaults={'mode' : mode})
+    app.add_url_rule('/sandbox/verifier/ebsiv3_2',  view_func=verifier_ebsiv3_2, methods = ['GET'], defaults={'mode' : mode})
 
 
     app.add_url_rule('/sandbox/verifier/callback',  view_func=verifier_callback, methods = ['GET'])
@@ -87,14 +88,7 @@ def verifier_ebsiv2_2(mode): # Test 2
         url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
     
-def verifier_ebsiv3(mode): # Test 12
-    if request.method == 'GET' :
-        if mode.myenv == 'aws':
-            client_id = "novanyhlhs"
-        else :
-            client_id = "uxcdccjhmq"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
-        return redirect (url)
+
 
 def verifier_default_4(mode): # Test 6
     if request.method == 'GET' :
@@ -151,6 +145,24 @@ def verifier_gaiax_3(mode): # Test 11
         url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
 
+def verifier_ebsiv3(mode): # Test 12
+    if request.method == 'GET' :
+        if mode.myenv == 'aws':
+            client_id = "novanyhlhs"
+        else :
+            client_id = "uxcdccjhmq"
+        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        return redirect (url)
+    
+
+def verifier_ebsiv3_2(mode): # Test 13
+    if request.method == 'GET' :
+        if mode.myenv == 'aws':
+            client_id = ""
+        else :
+            client_id = "zvuzyxjhjk"
+        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        return redirect (url)
 
 def verifier_callback() :
     return jsonify(request.args)
