@@ -282,7 +282,7 @@ def issuer_api_endpoint(issuer_id, red, mode) :
             'deferred_vc_iat' :  round(datetime.timestamp(datetime.now())),
             'deferred_vc_exp' :  round(datetime.timestamp(datetime.now())) + ACCEPTANCE_TOKEN_LIFE
         })
-        
+
     # for authorization code flow and deferred
     red.setex(issuer_state, API_LIFE, json.dumps(application_data))
     
@@ -395,7 +395,7 @@ def ebsi_issuer_landing_page(issuer_id, stream_id, red, mode) :
     vc = application_data['vc']
     issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
     data_profile = profile[issuer_data['profile']]
-    url_data = build_credential_offer(issuer_id,
+    offer = build_credential_offer(issuer_id,
                         credential_type,
                         pre_authorized_code,
                         issuer_state,
@@ -404,18 +404,19 @@ def ebsi_issuer_landing_page(issuer_id, stream_id, red, mode) :
                         user_pin_required,
                         mode)
     
+    # credentilaoffer is passed by value 
     if issuer_data['profile']  not in ['EBSI-V2', 'GAIA-X'] :
-        url_to_display = data_profile['oidc4vci_prefix'] + '?' + urlencode ({'credential_offer' : json.dumps(url_data)})
-        json_url  = {"credential_offer" : json.loads(json.dumps(url_data))}
+        url_to_display = data_profile['oidc4vci_prefix'] + '?' + urlencode ({'credential_offer' : json.dumps(offer)})
+        json_url  = {"credential_offer" : offer}
     else :
-        url_to_display = data_profile['oidc4vci_prefix'] + '?' + urlencode(url_data)
-        json_url = url_data
-    
-    # credential offer uri
+        url_to_display = data_profile['oidc4vci_prefix'] + '?' + urlencode(offer)
+        json_url = offer
+
+    # credential offer is passed by reference  : credential offer uri
     if issuer_data.get('credential_offer_uri') :
         id = str(uuid.uuid1())
         credential_offer_uri = mode.server + 'sandbox/ebsi/issuer/credential_offer_uri/' + id
-        red.setex(id, GRANT_LIFE, json.dumps(url_data))
+        red.setex(id, GRANT_LIFE, json.dumps(offer))
         logging.info('credential offer uri =%s', credential_offer_uri)
         url_to_display =  data_profile['oidc4vci_prefix'] + '?credential_offer_uri=' + credential_offer_uri
 
@@ -515,7 +516,6 @@ def ebsi_issuer_authorize(issuer_id, red, mode) :
     stream_id = offer_data['stream_id']
     vc = offer_data['vc']
     credential_type =  offer_data['credential_type']
-    format = offer_data['format']
     
     # Code creation
     issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
