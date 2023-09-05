@@ -142,10 +142,9 @@ def issuer_ebsiv31(mode):
         "vc" : build_credential_offered(offer), 
         "issuer_state" : str(uuid.uuid1()),
         "credential_type" : offer,
-        "pre-authorized_code" : False,
+        "pre-authorized_code" : True,
         "callback" : mode.server + 'sandbox/issuer/callback',
-        "user_pin_required" : True,
-        "user_pin" : "1000"
+        "user_pin_required" : False,
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try :
@@ -375,7 +374,7 @@ def issuer_hedera(mode):
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/uxzjfrjptk"
         client_secret = "2675ebcf-2fc1-11ee-825b-9db9eb02bfb8"
 
-    offer = ["EmailPass", "ListOfProjects"]
+    offer = ["EmailPass", "ListOfProjects", "VerifiableId"]
     headers = {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret

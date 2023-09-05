@@ -393,7 +393,10 @@ def client_metadata_uri(client_id, redirect_uri):
 
 
 def build_client_metadata(client_id, redirect_uri) -> dict :
-    verifier_data = json.loads(read_ebsi_verifier(client_id))
+    try :
+        verifier_data = json.loads(read_ebsi_verifier(client_id))
+    except :
+        return
     client_metadata = {
         'subject_syntax_types_supported': [
             "did:key",
@@ -422,7 +425,10 @@ def build_client_metadata(client_id, redirect_uri) -> dict :
 
 
 def presentation_definition_uri(id, red) :
-    presentation_definition = json.loads(red.get(id).decode())
+    try :
+        presentation_definition = json.loads(red.get(id).decode())
+    except :
+        return jsonify('Request timeout'), 408
     return jsonify(presentation_definition)
 
                                         
@@ -557,7 +563,7 @@ def ebsi_login_qrcode(red, mode):
 
         if verifier_data.get('presentation_definition_uri') :
             id = str(uuid.uuid1())
-            red.setex(id, 180, json.dumps(presentation_definition))        
+            red.setex(id, QRCODE_LIFE, json.dumps(presentation_definition))        
             authorization_request['presentation_definition_uri'] = mode.server + 'sandbox/ebsi/login/presentation_definition_uri/' + id
             if authorization_request.get('presentation_definition') :
                 del authorization_request['presentation_definition']
@@ -626,7 +632,7 @@ def ebsi_request_uri(id, red) :
     try :
         payload = red.get(id).decode().replace('"', '')
     except :
-        return jsonify("Gone"), 410
+        return jsonify("Request timeout"), 408
     headers = { "Content-Type" : "application/oauth-authz-req+jwt",
                 "Cache-Control" : "no-cache"
     }
@@ -656,12 +662,11 @@ async def ebsi_login_endpoint(stream_id, red):
     # prepare the verifier response to wallet
     response_format = "Unknown"
     vc_type = "Unknown"
+    state = 'unknown'
     vp_type = "Unknown"
     presentation_submission_status = "Unknown"
     vp_token_status = "Unknown"
     id_token_status = "Unknown"
-    credential_status = "unknown"
-    issuer_status = "Unknown"
     aud_status = "unknown"
     nonce_status = "Unknown"
     vp_token_payload = {}
@@ -674,6 +679,10 @@ async def ebsi_login_endpoint(stream_id, red):
         presentation_submission =request.form.get('presentation_submission')
         response_format = "ok"
         logging.info('id_token received = %s', id_token)
+
+        if request.form.get('id_token') :
+            state = request.form.get('id_token')
+
         # check types of vp
         if vp_token :
             if vp_token[:2] == "ey" :
@@ -825,6 +834,7 @@ async def ebsi_login_endpoint(stream_id, red):
     response = {
       "created": datetime.timestamp(datetime.now()),
       "qrcode_status" : qrcode_status,
+      "state" : state,
       "vp type" : vp_type,
       "vc type" : vc_type,
       "presentation_submission_status" : presentation_submission_status,

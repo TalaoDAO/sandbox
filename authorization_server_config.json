@@ -72,7 +72,7 @@
   ],
   "subject_trust_frameworks_supported": [
     "ebsi",
-    "hedera",
+    "greencypher",
     "default",
     "gaia-x"
   ],
