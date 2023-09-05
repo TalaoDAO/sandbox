@@ -394,7 +394,11 @@ profile = {
             'authorization_server_support' : False,
             'siopv2_prefix' : 'openid-hedera://',
             'oidc4vp_prefix' : 'openid-hedera://',
-            'credentials_types_supported' :  ['ListOfProjects', 'VerifiableId', 'EmailPass', 'Over18'],
+            'credentials_types_supported' :  ['ListOfProjects', 'VerifiableId', 'EmailPass', 'GreencypherPass'],
+            'trust_framework': {
+                'name': 'greencypher',
+                'type': 'Accredition'
+            },
             'credentials_supported' : [
                 {
                     "id" : "ListOfProjects",
@@ -489,11 +493,11 @@ profile = {
                     ]
                 },
                 {
-                    "id" : "Over18",
+                    "id" : "GreencypherPass",
                     "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
-                        "Over18"
+                        "GreencypherPass"
                 ],
                     "cryptographic_binding_methods_supported": [
                         "DID"
@@ -506,7 +510,7 @@ profile = {
                     ],
                     "display": [
                         {
-                            "name": "Over18",
+                            "name": "GreenCypher Pass",
                             "locale": "en-GB"
                         }
                     ]

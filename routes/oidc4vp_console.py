@@ -190,24 +190,37 @@ def ebsi_verifier_console(mode) :
             presentation_definition = str()
             prez = dict()
         
-        if session['client_data'].get('vp_token') and not session['client_data'].get('group') :    
-            if not prez :
-                prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
-            for i in ["1", "2", "3", "4"] :
-                vc = 'vc_' + i
-                reason = 'reason_' + i
-                if session['client_data'][vc] != 'None'   :
-                    if session['client_data']['profile'] == "EBSI-V2" :
-                        if session['client_data'][vc] not in ['VerifiableId', 'VerifiableDiploma'] :
-                            flash("Supported VC for EBSI-V2 are only VerifiableId and VerifiableDiploma !", "warning")
-                            return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
-                        prez.add_constraint("$.credentialSchema.id",
+        if session['client_data'].get('vp_token') and not session['client_data'].get('group') : 
+            if session['client_data'].get('filter_type_array') :
+                if not prez :
+                    prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
+                for i in ["1", "2", "3", "4"] :
+                    vc = 'vc_' + i
+                    reason = 'reason_' + i
+                    if session['client_data'][vc] != 'None'   :
+                        prez.add_constraint_with_type_array("$.type",
+                                            session['client_data'][vc],
+                                            "Input descriptor for credential " + i,
+                                            session['client_data'][reason],
+                                            id= session['client_data'][vc].lower() + '_' + i) 
+            else :     
+                if not prez :
+                    prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
+                for i in ["1", "2", "3", "4"] :
+                    vc = 'vc_' + i
+                    reason = 'reason_' + i
+                    if session['client_data'][vc] != 'None'   :
+                        if session['client_data']['profile'] == "EBSI-V2" :
+                            if session['client_data'][vc] not in ['VerifiableId', 'VerifiableDiploma'] :
+                                flash("Supported VC for EBSI-V2 are only VerifiableId and VerifiableDiploma !", "warning")
+                                return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
+                            prez.add_constraint("$.credentialSchema.id",
                                             type_2_schema[session['client_data'][vc]],
                                             "Input descriptor for credential " + i ,
                                             session['client_data'][reason])
                                             
-                    else :
-                        prez.add_constraint("$.credentialSubject.type",
+                        else :
+                            prez.add_constraint("$.credentialSubject.type",
                                             session['client_data'][vc],
                                             "Input descriptor for credential " + i,
                                             session['client_data'][reason],
@@ -292,6 +305,7 @@ def ebsi_verifier_console(mode) :
                 vp_token = "" if not session['client_data'].get('vp_token')  else "checked" ,
                 group = "" if not session['client_data'].get('group') else "checked" ,
                 group_B = "" if not session['client_data'].get('group_B') else "checked" ,
+                filter_type_array = "" if not session['client_data'].get('filter_type_array') else "checked" ,
                 presentation_definition_uri = "" if not session['client_data'].get('presentation_definition_uri') else "checked" ,
                 request_uri_parameter_supported = "" if not session['client_data'].get('request_uri_parameter_supported') else "checked" ,
                 request_parameter_supported = "" if not session['client_data'].get('request_parameter_supported') else "checked" ,
@@ -362,6 +376,7 @@ def ebsi_verifier_console(mode) :
             session['client_data']['vp_token'] = request.form.get('vp_token') 
             session['client_data']['group'] = request.form.get('group') 
             session['client_data']['group_B'] = request.form.get('group_B') 
+            session['client_data']['filter_type_array'] = request.form.get('filter_type_array') 
             session['client_data']['presentation_definition_uri'] = request.form.get('presentation_definition_uri') 
             session['client_data']['request_uri_parameter_supported'] = request.form.get('request_uri_parameter_supported') 
             session['client_data']['request_parameter_supported'] = request.form.get('request_parameter_supported') 

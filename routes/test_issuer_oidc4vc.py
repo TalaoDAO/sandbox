@@ -23,7 +23,7 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/issuer/ebsiv2',  view_func=issuer_ebsiv2, methods = ['GET'], defaults={'mode' : mode})
 
     app.add_url_rule('/sandbox/issuer/hedera',  view_func=issuer_hedera, methods = ['GET'], defaults={'mode' : mode})
-    app.add_url_rule('/sandbox/issuer/hedera_2',  view_func=issuer_hedera_2, methods = ['GET'], defaults={'mode' : mode})
+    app.add_url_rule('/sandbox/issuer/hedera_2',  view_func=issuer_hedera_2, methods = ['GET'], defaults={'mode' : mode}) # test GreencyPher
     app.add_url_rule('/sandbox/issuer/hedera_30',  view_func=issuer_hedera_3, methods = ['GET'], defaults={'mode' : mode})
 
 
@@ -249,7 +249,6 @@ def issuer_default(mode):
 
 # test 5 part 2
 def issuer_default_2_deferred(red, mode): # VC is sent after delay
-    print("request form = ", request.form.__dict__)
     if mode.myenv == 'aws' :
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/wzxtwpltvn"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
@@ -394,7 +393,7 @@ def issuer_hedera(mode):
     return redirect(qrcode) 
    
    
-# test 7
+# test 7 GreenCypher with GreencypherPass and projects
 def issuer_hedera_2(mode):
     if mode.myenv == 'aws' :
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/gxstfttnum"
@@ -404,7 +403,7 @@ def issuer_hedera_2(mode):
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/fixmtbwkfr"
         client_secret = "2675ebcf-2fc1-11ee-825b-9db9eb02bfb8"
 
-    offer = ['EmailPass']
+    offer = ['GreencypherPass']
     headers = {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret

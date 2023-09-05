@@ -63,6 +63,7 @@ class Presentation_Definition :
                 }
             })
 
+
     def add_constraint(self, path, pattern, name, purpose, id= str(uuid.uuid1())) :
         if not pattern :
             self.pd['input_descriptors'].append(
@@ -98,8 +99,32 @@ class Presentation_Definition :
                     }
                 }
             )
+
+
+    def add_constraint_with_type_array(self, path, pattern, name, purpose, id= str(uuid.uuid1())) :
+        self.pd['input_descriptors'].append(
+            {   
+                "id" : id,
+                "name" : name,
+                "purpose" : purpose,
+                "constraints": {
+                    "fields": [
+                        {
+                            "path": [path],
+                            "filter": {
+                                "type": "array",
+                                "contains": {
+                                    "const": pattern
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        )
         
-    def add_filter(self, descriptor_id,path, pattern) :
+
+    def add_filter(self, descriptor_id, path, pattern) :
         for desc in self.pd['input_descriptors'] :
             found = False
             if desc['id'] == descriptor_id :
@@ -123,6 +148,9 @@ class Presentation_Definition :
                 break
             if found :
                 return True
+            
+
+   
     
 
     def add_constraint_with_group(self, path, pattern, name, purpose, group, id= str(uuid.uuid1())):
@@ -204,9 +232,9 @@ if __name__ == '__main__':
   
     myprez = Presentation_Definition("test", "This a test")  
     #myprez.add_constraint("$.credentialSubject.firstName", "", "", "", id="descriptor_1")
-    #myprez.add_filter('descriptor_1', '$.credentialSubject.lastName', '')
+    myprez.add_filter('descriptor_1', '$.credentialSubject.lastName', '')
     #myprez.add_constraint("$.credentialSubject.type", "VerifiableId", "", "")
-    myprez.add_group("test with group A", "A", min=1)
+    #myprez.add_group("test with group A", "A", min=1)
     #myprez.add_constraint_with_group_and_schema({'uri' : 'https:///www.com'}, "DbcPhonePass", "avec ID card", "A")
     #myprez.add_group("test with group B", "B")
     #myprez.add_constraint_with_group("$.credentialSubject.type", "PhonePass", "avec ID card", "Present and IOd Card", "A")

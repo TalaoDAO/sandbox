@@ -276,15 +276,16 @@ def issuer_api_endpoint(issuer_id, red, mode) :
         'callback' : request.json.get('callback')
     }
     # For deferred API call only VC is stored in redis with issuer_state as key
-    if deferred_vc :
+    if deferred_vc and red.get(issuer_state) :
         application_data.update({
             'deferred_vc' : deferred_vc,
             'deferred_vc_iat' :  round(datetime.timestamp(datetime.now())),
             'deferred_vc_exp' :  round(datetime.timestamp(datetime.now())) + ACCEPTANCE_TOKEN_LIFE
         })
-
-    # for authorization code flow and deferred
-    red.setex(issuer_state, API_LIFE, json.dumps(application_data))
+        red.setex(issuer_state, API_LIFE, json.dumps(application_data))
+    else :
+        # for authorization code flow
+        red.setex(issuer_state, API_LIFE, json.dumps(application_data))
     
     # for pre authorized code
     if pre_authorized_code : 
@@ -795,16 +796,19 @@ async def ebsi_issuer_deferred(issuer_id, red):
         return Response(**manage_error("invalid_token", "Acceptance token expired", red, status=410)) 
         
     issuer_state = acceptance_token_data['issuer_state']
+    credential_type = acceptance_token_data['credential_type']
     
     # VC is not ready return 404
     try : 
         deferred_data = json.loads(red.get(issuer_state).decode())
+        credential = deferred_data['deferred_vc'][credential_type]
     except :
         return Response(**manage_error("invalid_token", "Credential is not available yet", red, status=404)) 
-    
+
+    print(deferred_data)
     issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
-    credential_type = acceptance_token_data['credential_type']
-    credential = deferred_data['deferred_vc'][credential_type]
+   
+    
     #sign_credential
     credential_signed = await sign_credential(credential,
                                             acceptance_token_data['subjectId'],

@@ -458,17 +458,30 @@ def ebsi_login_qrcode(red, mode):
         presentation_definition = str()
         prez = dict()
 
-    if 'vp_token' in response_type and not verifier_data['group'] :    
-        if  not prez :
-            prez = pex.Presentation_Definition(verifier_data['application_name'], "Talao-Altme presentation definition with a subset of PEX v2.0 syntax")  
-        for i in ["1", "2", "3", "4"] :
-            vc = 'vc_' + i
-            reason = 'reason_' + i
-            if verifier_data[vc] != 'None'   :
-                if verifier_data['profile'] == "EBSI-V2" :
-                    prez.add_constraint("$.credentialSchema.id", type_2_schema[verifier_data[vc]], "Input descriptor for credential " + i , verifier_data[reason])
-                else :
-                    prez.add_constraint("$.credentialSubject.type",
+    if 'vp_token' in response_type and not verifier_data['group'] :
+        if verifier_data.get('filter_type_array') :
+                if not prez :
+                    prez = pex.Presentation_Definition(verifier_data['application_name'], "Altme presentation definition subset of PEX v2.0")  
+                for i in ["1", "2", "3", "4"] :
+                    vc = 'vc_' + i
+                    reason = 'reason_' + i
+                    if verifier_data[vc] != 'None'   :
+                        prez.add_constraint_with_type_array("$.type",
+                                            verifier_data[vc],
+                                            "Input descriptor for credential " + i,
+                                            verifier_data[reason],
+                                            id= verifier_data[vc].lower() + '_' + i)     
+        else :
+            if  not prez :
+                prez = pex.Presentation_Definition(verifier_data['application_name'], "Talao-Altme presentation definition with a subset of PEX v2.0 syntax")  
+            for i in ["1", "2", "3", "4"] :
+                vc = 'vc_' + i
+                reason = 'reason_' + i
+                if verifier_data[vc] != 'None'   :
+                    if verifier_data['profile'] == "EBSI-V2" :
+                        prez.add_constraint("$.credentialSchema.id", type_2_schema[verifier_data[vc]], "Input descriptor for credential " + i , verifier_data[reason])
+                    else :
+                        prez.add_constraint("$.credentialSubject.type",
                                         verifier_data[vc],
                                         "Input descriptor for credential " + i,
                                         verifier_data[reason],

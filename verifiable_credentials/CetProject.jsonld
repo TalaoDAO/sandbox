@@ -1,0 +1,35 @@
+{
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        
+        {
+            "CetProject" : {
+                "@id" : "urn:cetproject",
+                "@context" : {
+                    "@version": 1.1,
+                    "@protected": true,
+                    "id": "@id",
+                    "type": "@type",
+                    "schema" : "https://schema.org/",
+                    "projectId" : "schema:identifier",
+                    "name" : "schema:name",
+                    "aquiredFrom" : "schema:identifier",
+                    "numberOfCredits": "schema:quantity",
+               }
+            }
+        }
+    ],
+    "type": ["VerifiableCredential","CetProject"],
+    "id": "",
+    "issuer": "",
+    "issuanceDate": "",
+    "expirationDate": "",
+    "credentialSubject": {
+        "type" : "CetProject",
+        "id": "",
+        "peojectId" : "127",
+        "aquiredFrom" : "459",
+        "name" : "Amazon Forest development #1",
+        "numberOfCredits": "200"
+    }
+}
