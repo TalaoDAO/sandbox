@@ -282,11 +282,13 @@ def issuer_api_endpoint(issuer_id, red, mode) :
             'deferred_vc_iat' :  round(datetime.timestamp(datetime.now())),
             'deferred_vc_exp' :  round(datetime.timestamp(datetime.now())) + ACCEPTANCE_TOKEN_LIFE
         })
+        
     # for authorization code flow and deferred
     red.setex(issuer_state, API_LIFE, json.dumps(application_data))
     
     # for pre authorized code
-    red.setex(pre_authorized_code, GRANT_LIFE, json.dumps(application_data))
+    if pre_authorized_code : 
+        red.setex(pre_authorized_code, GRANT_LIFE, json.dumps(application_data))
 
     # for front page management
     red.setex(stream_id, API_LIFE, json.dumps(application_data))
