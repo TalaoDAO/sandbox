@@ -260,7 +260,7 @@ def issuer_api_endpoint(issuer_id, red, mode) :
         else :
             pre_authorized_code =  str(uuid.uuid1())
     
-    vc_formats_supported = issuer_profile['issuer_vc_type']
+    #vc_formats_supported = issuer_profile['issuer_vc_type']
     stream_id = str(uuid.uuid1())
     application_data = {
         'vc' : vc,
@@ -474,9 +474,14 @@ def ebsi_issuer_authorize(issuer_id, red, mode) :
         state = request.args.get('state')
     except :
         return jsonify('invalid_request'), 400
-    
-    issuer_state_data = json.loads(red.get(issuer_state).decode())
-    stream_id = issuer_state_data['stream_id']
+     
+    try :
+        issuer_state_data = json.loads(red.get(issuer_state).decode())
+        stream_id = issuer_state_data['stream_id']
+    except :
+        logging.warning('issuer_state not found in authorization code flow')
+        return jsonify('invalid_request'), 400
+
     logging.info('authorization_details = %s', authorization_details[0])
     if scope != "openid" :
         authorization_error_response('invalid_scope', 'scope not supported', stream_id, red)
