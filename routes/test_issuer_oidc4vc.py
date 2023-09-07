@@ -207,7 +207,7 @@ def issuer_hedera_3(mode):
         "pre-authorized_code" : True,
         "callback" : mode.server + 'sandbox/issuer/callback',
         "user_pin_required" : True,
-        "user_pin" : "1000"
+        "user_pin" : "100000"
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try :

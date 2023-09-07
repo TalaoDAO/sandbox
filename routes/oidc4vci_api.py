@@ -471,7 +471,7 @@ def ebsi_issuer_authorize(issuer_id, red, mode) :
         code_challenge = request.args.get("code_challenge")
         code_challenge_method = request.args.get("code_challenge_method")
         client_metadata = request.args.get("client_metadata")
-        state = request.args.get('state')
+        state = request.args['state']
     except :
         return jsonify('invalid_request'), 400
      
