@@ -617,8 +617,8 @@ def ebsi_login_qrcode(red, mode):
     }
     red.setex(stream_id, QRCODE_LIFE, json.dumps(data))
     url = prefix + '?' + urlencode(authorization_request_displayed)
-    deeplink_talao = mode.deeplink_talao + 'app/download/ebsi?' + urlencode({'uri' : url})
-    deeplink_altme= mode.deeplink_altme + 'app/download/ebsi?' + urlencode({'uri' : url})
+    deeplink_talao = mode.deeplink_talao + 'app/download/oidc4vc?' + urlencode({'uri' : url})
+    deeplink_altme= mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri' : url})
     qrcode_page = verifier_data.get('verifier_landing_page_style')
     logging.info ('url = %s', authorization_request)
     return render_template(qrcode_page,
