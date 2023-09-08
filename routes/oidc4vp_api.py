@@ -816,7 +816,7 @@ async def ebsi_login_endpoint(stream_id, red):
 
     # check nonce and aud in vp_token
     if access == 'ok' and vp_token :
-        if profile[verifier_data['profile']][ "verifier_vp_type"] == "jwt_vp" :
+        if profile[verifier_data['profile']][ "verifier_vp_type"] != "ldp_vp" :
             if oidc4vc.get_payload_from_token(vp_token)['nonce'] == nonce :
                 nonce_status = "ok"
             else :

@@ -549,7 +549,6 @@ def ebsi_issuer_authorize(issuer_id, red, mode) :
     code_data = {
         'credential_type' : credential_type,
         'issuer_id' : issuer_id,
-        #'format' : format,
         'issuer_state' : issuer_state,
         'state' : state,
         'stream_id' : stream_id,
@@ -643,7 +642,7 @@ def ebsi_issuer_token(issuer_id, red, mode) :
         'token_type' : 'Bearer',
         'expires_in': ACCESS_TOKEN_LIFE
     }
-    # multiple VC of the same type
+    # authorization_details and multiple VC of the same type
     if isinstance(vc, list) :
         identifiers = list()
         authorization_details = list()
@@ -659,14 +658,12 @@ def ebsi_issuer_token(issuer_id, red, mode) :
                 "types": types,
                 "identifiers" : identifiers 
             })
-        endpoint_response['organisations_details'] = authorization_details
-    print("access token = ", access_token)
+        endpoint_response['authorization_details'] = authorization_details
+    logging.info("token endpoint response = %s", endpoint_response)
     
     access_token_data = {
         'expires_at': datetime.timestamp(datetime.now()) + ACCESS_TOKEN_LIFE,
-        #'pre_authorized_code' : code,
         'c_nonce' : endpoint_response.get('c_nonce'),
-        #'format' : data.get('issuer_vc_type'),
         'credential_type' : data.get('credential_type'),
         'vc' : data.get('vc'),
         'stream_id' : data.get('stream_id'),

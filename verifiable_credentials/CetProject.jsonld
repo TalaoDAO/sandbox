@@ -14,7 +14,7 @@
                     "projectId" : "schema:identifier",
                     "name" : "schema:name",
                     "aquiredFrom" : "schema:identifier",
-                    "numberOfCredits": "schema:quantity",
+                    "numberOfCredits": "schema:quantity"
                }
             }
         }

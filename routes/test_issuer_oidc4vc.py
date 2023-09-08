@@ -473,11 +473,11 @@ def build_credential_offered(offer) :
 
 
 def build_credential(vc) :
-    try :
-        with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f :
+    #try :
+    with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f :
             credential = json.loads(f.read())
-    except :
-        return
+    #except :
+    #    return
     credential['id'] = "urn:uuid:" + str(uuid.uuid4())
     credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
     credential['issued'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
