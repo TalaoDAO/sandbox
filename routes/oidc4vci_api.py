@@ -475,14 +475,11 @@ def ebsi_issuer_authorize(issuer_id, red, mode) :
     except :
         return jsonify('invalid_request'), 400
     
-    print('redirect_uri = ', redirect_uri)
-    print('code_challenge = ', code_challenge)
-    print('client_metadata = ', client_metadata)
-    print('authorization details = ', authorization_details)
-    print('nonce = ', nonce)
-    print('client_id = ', client_id)
-    print('state = ', state)
-     
+    logging.info('redirect_uri = %s', redirect_uri)
+    logging.info('code_challenge = %s', code_challenge)
+    logging.info('client_metadata = %s', client_metadata)
+    logging.info('authorization details = %s', authorization_details)
+
     try :
         issuer_state_data = json.loads(red.get(issuer_state).decode())
         stream_id = issuer_state_data['stream_id']
@@ -490,7 +487,6 @@ def ebsi_issuer_authorize(issuer_id, red, mode) :
         logging.warning('issuer_state not found in authorization code flow')
         return jsonify('invalid_request'), 400
 
-    logging.info('authorization_details = %s', authorization_details[0])
     if scope != "openid" :
         authorization_error_response('invalid_scope', 'scope not supported', stream_id, red)
     
@@ -512,7 +508,6 @@ def ebsi_issuer_authorize(issuer_id, red, mode) :
             mode.server + "sandbox/ebsiv3/redirect_uri", #redirect_uri
             'nonce'
         )  
-        #print('request = ', request_as_jwt)
         request_data = {
             "state" : "state",
             "aud" : client_id,
@@ -710,6 +705,8 @@ async def ebsi_issuer_credential(issuer_id, red) :
     except :
         return Response(**manage_error("invalid_request", "Invalid request format", red, stream_id=stream_id)) 
     
+    identifier = result.get('identifier')
+    logging.info('identifier = %s', identifier)
     logging.info('credential request = %s', request.json)
     
     if proof_type != 'jwt' : 
@@ -840,7 +837,6 @@ async def ebsi_issuer_deferred(issuer_id, red):
     except :
         return Response(**manage_error("invalid_token", "Credential is not available yet", red, status=404)) 
 
-    print(deferred_data)
     issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
    
     
@@ -963,36 +959,3 @@ async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer
     &authorization_details=%5B%7B%22type%22%3A%22openid_credential%22,%22locations%22%3A%5B%22http%3A%2F%2F192.168.0.20%3A3000%2Fsandbox%2Febsi%2Fissuer%2Fkwcdgsspng%22%5D,%22format%22%3A%22jwt_vc%22,%22types%22%3A%5B%22VerifiableCredential%22,%22VerifiableAttestation%22,%22VerifiableDiploma%22%5D%7D%5D
     &client_metadata=%7B%22authorization_endpoint%22%3A%22openid%3A%22,%22scopes_supported%22%3A%5B%22openid%22%5D,%22response_types_supported%22%3A%5B%22vp_token%22,%22id_token%22%5D,%22subject_types_supported%22%3A%5B%22public%22%5D,%22id_token_signing_alg_values_supported%22%3A%5B%22ES256%22%5D,%22request_object_signing_alg_values_supported%22%3A%5B%22ES256%22%5D,%22vp_formats_supported%22%3A%7B%22jwt_vp%22%3A%7B%22alg_values_supported%22%3A%5B%22ES256%22%5D%7D,%22jwt_vc%22%3A%7B%22alg_values_supported%22%3A%5B%22ES256%22%5D%7D%7D,%22subject_syntax_types_supported%22%3A%5B%22urn%3Aietf%3Aparams%3Aoauth%3Ajwk-thumbprint%22,%22did%3Akey%3Ajwk_jcs-pub%22%5D,%22id_token_types_supported%22%3A%5B%22subject_signed_id_token%22%5D%7D HTTP/1.1
     """
-
-"""
- headers = {
-        'Content-Type': 'application/json',
-        'Authorization' : 'Bearer <client_secret>'
-    }
-
-    data = { 
-        "vc" : OPTIONAL -> { "VerifiableId" : { ......}}, json object, VC as a json-ld not signed
-        "issuer_state" : REQUIRED, string,
-        "credential_type" : [ "VerifiableId"]
-        "pre-authorized_code" : True
-        "user_pin_required" : True
-        "user_pin" : REQUIRED
-        "callback" : REQUIRED, string, this the user redirect route at the end of the flow
-        }
-    resp = requests.post(url, headers=headers, data = data)
-
-    """
-
-"""
-GET /sandbox/ebsi/issuer/pcbrwbvrsi/authorize?
-response_type=code
-&client_id=did%3Akey%3AzQ3shRDkkch8btUzfQhWRuqM4E6hBXR7e1x2Y8S56CzEn9KHX
-&redirect_uri=https%3A%2F%2Fapp.altme.io%2Fapp%2Fdownload%2Foidc4vc%2Fopenid-credential-offer%3A%2F%2F%3Fcredential_offer_uri%3Dhttps%3A%2F%2Ftalao.co%2Fsandbox%2Febsi%2Fissuer%2Fcredential_offer_uri%2F5212f8e5-4e0b-11ee-8a55-0a1628958560&scope=openid&issuer_state=51d4ae69-4e0b-11ee-b4de-0a1628958560&state=%5B0%5D&nonce=7c95aad4-f750-4a22-b367-61fbff152e5e&code_challenge=lf3q5-NObcyp41iDSIL51qI7pBLmeYNeyWnNcY2FlW4&code_challenge_method=S256&authorization_details=%5B%7B%22type%22%3A%22openid_credential%22%2C%22locations%22%3A%5B%22https%3A%2F%2Ftalao.co%2Fsandbox%2Febsi%2Fissuer%2Fpcbrwbvrsi%22%5D%2C%22format%22%3A%22jwt_vc%22%2C%22types%22%3A%5B%22VerifiableCredential%22%2C%22VerifiableAttestation%22%2C%22VerifiableDiploma%22%5D%7D%5D&client_metadata=%7B%22authorization_endpoint%22%3A%22openid%3A%22%2C%22scopes_supported%22%3A%5B%22openid%22%5D%2C%22response_types_supported%22%3A%5B%22vp_token%22%2C%22id_token%22%5D%2C%22subject_types_supported%22%3A%5B%22public%22%5D%2C%22id_token_signing_alg_values_supported%22%3A%5B%22ES256%22%5D%2C%22request_object_signing_alg_values_supported%22%3A%5B%22ES256%22%5D%2C%22vp_formats_supported%22%3A%7B%22jwt_vp%22%3A%7B%22alg_values_supported%22%3A%5B%22ES256%22%5D%7D%2C%22jwt_vc%22%3A%7B%22alg_values_supported%22%3A%5B%22ES256%22%5D%7D%7D%2C%22subject_syntax_types_supported%22%3A%5B%22urn%3Aietf%3Aparams%3Aoauth%3Ajwk-thumbprint%22%2C%22did%F0%9F%94%91jwk_jcs-pub%22%5D%2C%22id_token_types_supported%22%3A%5B%22subject_signed_id_token%22%5D%7D
-
-"""
-
-""""
-{"code": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImRpZDplYnNpOjEyMzQ1I2tleS0xIiwidHlwIjoiSldUIn0.eyJhdWQiOiJodHRwczovL3RhbGFvLmNvL3NhbmRib3gvZWJzaS9pc3N1ZXIvcGNicndidnJzaSIsImNsaWVudF9pZCI6Imh0dHBzOi8vc2VsZi1pc3N1ZWQubWUvdjIiLCJleHAiOjE2OTQxNTY0OTYsImlhdCI6MTY5NDE1NTQ5NiwiaXNzIjoiaHR0cHM6Ly90YWxhby5jby9zYW5kYm94L2Vic2kvaXNzdWVyL3BjYnJ3YnZyc2kiLCJub25jZSI6IjgxODhhMGMwLTdiMjctNGFlYy04ZWVmLWFiMzIyZWRjZTJjOSIsInN1YiI6Imh0dHBzOi8vc2VsZi1pc3N1ZWQubWUvdjIifQ.5rMGA5bWleQ5wvxo6qi8UdHGl_qt7hIvS6KU3I_Pfpe0z2RERLrz2o1CjjlAa68IY3ZfltUoLveFeLh-vAZ1KA", 
-"grant_type": "authorization_code"}
-
-"""

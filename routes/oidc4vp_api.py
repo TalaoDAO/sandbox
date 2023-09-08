@@ -828,7 +828,7 @@ async def ebsi_login_endpoint(stream_id, red):
                 aud_status = "failed in vp_token"
                 access = "access_denied"
         else :
-            if json.loads(vp_token)['proof'].get('challenge') == nonce :
+            if json.loads(vp_token)['proof']['challenge'] == nonce :
                 nonce_status = "ok"
             else :
                 nonce_status = "failed in vp_token"
