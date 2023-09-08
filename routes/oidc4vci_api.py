@@ -545,7 +545,6 @@ def ebsi_issuer_authorize(issuer_id, red, mode) :
         'credential_type' : credential_type,
         'issuer_id' : issuer_id,
         #'format' : format,
-        'issuer' : issuer_data['issuer'],
         'issuer_state' : issuer_state,
         'state' : state,
         'stream_id' : stream_id,
