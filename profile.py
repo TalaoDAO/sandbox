@@ -162,6 +162,10 @@ profile = {
             'siopv2_prefix' : 'openid-vc://',
             'oidc4vp_prefix' : 'openid-vc://',
             'credentials_types_supported' : ['EmployeeCredential',  'EthereumAssociatedAddress', 'VerifiableId', 'EmailPass', 'PhoneProof'],
+             'trust_framework': {
+                'name': 'default',
+                'type': 'Accredition'
+            },
             'credentials_supported' : [
                 {
                     "id" : "EmployeeCredential",
@@ -367,12 +371,7 @@ profile = {
                             "name": "Proof of email",
                             "locale": "en-GB"
                         }
-                    ],
-                    "trust_framework": {
-                        "name": "ebsi",
-                        "type": "Accreditation",
-                        "uri": "TIR link towards accreditation"
-                    }
+                    ]
                 }
             ],
             'grant_types_supported': [
