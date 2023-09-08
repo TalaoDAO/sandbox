@@ -22,9 +22,9 @@ issuer_vm = issuer_did  + "#key-1"
 def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/issuer/ebsiv2',  view_func=issuer_ebsiv2, methods = ['GET'], defaults={'mode' : mode})
 
-    app.add_url_rule('/sandbox/issuer/hedera',  view_func=issuer_hedera, methods = ['GET'], defaults={'mode' : mode})
+    app.add_url_rule('/sandbox/issuer/hedera',  view_func=issuer_hedera, methods = ['GET'], defaults={'mode' : mode}) # Test 3
     app.add_url_rule('/sandbox/issuer/hedera_2',  view_func=issuer_hedera_2, methods = ['GET'], defaults={'mode' : mode}) # test GreencyPher
-    app.add_url_rule('/sandbox/issuer/hedera_30',  view_func=issuer_hedera_3, methods = ['GET'], defaults={'mode' : mode})
+    app.add_url_rule('/sandbox/issuer/hedera_30',  view_func=issuer_hedera_3, methods = ['GET'], defaults={'mode' : mode}) # test 9
 
 
     app.add_url_rule('/sandbox/issuer/gaia-x',  view_func=issuer_gaiax, methods = ['GET'], defaults={'mode' : mode})
@@ -363,7 +363,7 @@ def issuer_gaiax(mode):
     return redirect(qrcode) 
    
 
-# Test 3
+# Test 3, multiple VC
 def issuer_hedera(mode):
     if mode.myenv == 'aws' :
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/nkpbjplfbi"
@@ -373,18 +373,48 @@ def issuer_hedera(mode):
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/uxzjfrjptk"
         client_secret = "2675ebcf-2fc1-11ee-825b-9db9eb02bfb8"
 
-    offer = ["EmailPass", "ListOfProjects", "VerifiableId"]
+    offer = ["EmailPass", "CetProject"]
     headers = {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret
     }
-    data = { 
-        "vc" : build_credential_offered(offer), 
+    # "vc" : OPTIONAL -> { "EmployeeCredendial" : {}, ....}, json object, VC as a json-ld not signed { "EmployeeCredendial" : { "identifier1" : {} },  ....}
+    data = {  
+        "vc" : [  
+            {
+                "type" : "CetProject",
+                "types" : ["VerifiableCredentials", "CetProject"],
+                "list" : [ 
+                    {
+                        "identifier" : "identifier_1",
+                        "value" : build_credential("CetProject")
+                    },
+                    {
+                        "identifier" : "identifier_2",
+                        "value" : build_credential("CetProject")
+                    }
+                    ]
+            },
+            {
+                "type" : "EmailPass",
+                "types" : ["VerifiableCredentials", "EmailPass"],
+                "list" : [
+                    {
+                        "identifier" : "identifier_3",
+                        "value" : build_credential("CetProject")
+                    },
+                    {
+                        "identifier" : "identifier_4",
+                        "value" : build_credential("CetProject")
+                    }
+                ]
+            }
+        ],
         "issuer_state" : str(uuid.uuid1()),
         "credential_type" : offer,
         "pre-authorized_code" : True,
         "callback" : mode.server + 'sandbox/issuer/callback',
-        }
+    }
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try :
         qrcode =  resp.json()['redirect_uri']
@@ -440,3 +470,17 @@ def build_credential_offered(offer) :
         credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
         credential_offered[vc] = credential
     return credential_offered
+
+
+def build_credential(vc) :
+    try :
+        with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f :
+            credential = json.loads(f.read())
+    except :
+        return
+    credential['id'] = "urn:uuid:" + str(uuid.uuid4())
+    credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+    credential['issued'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+    credential['validFrom'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
+    credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
+    return credential

@@ -48,7 +48,7 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/.well-known/openid-credential-issuer', view_func=ebsi_issuer_openid_configuration, methods=['GET'], defaults={'mode' : mode})
 
     app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/authorize',  view_func=ebsi_issuer_authorize, methods = ['GET', 'POST'], defaults={'red' :red, 'mode' : mode})
-    app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/token',  view_func=ebsi_issuer_token, methods = ['POST'], defaults={'red' :red})
+    app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/token',  view_func=ebsi_issuer_token, methods = ['POST'], defaults={'red' :red, 'mode' : mode})
     app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/credential',  view_func=ebsi_issuer_credential, methods = ['POST'], defaults={'red' :red})
     app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/deferred',  view_func=ebsi_issuer_deferred, methods = ['POST'], defaults={'red' :red})
 
@@ -185,7 +185,7 @@ def issuer_api_endpoint(issuer_id, red, mode) :
     }
 
     data = { 
-        "vc" : OPTIONAL -> { "EmployeeCredendial" : {}, ....}, json object, VC as a json-ld not signed
+        "vc" : OPTIONAL -> { "EmployeeCredendial" : {}, ....}, json object, VC as a json-ld not signed { "EmployeeCredendial" : [ {"identifier1" : {}},  ....}
         "deferred_vc" : CONDITIONAL, REQUIRED in case of 2nd deferred call
         "issuer_state" : REQUIRED, string,
         "credential_type" : REQUIRED -> array or string name of the credentials offered
@@ -474,6 +474,11 @@ def ebsi_issuer_authorize(issuer_id, red, mode) :
         state = request.args['state']
     except :
         return jsonify('invalid_request'), 400
+    
+    print('redirect_uri = ', redirect_uri)
+    print('code_challenge = ', code_challenge)
+    print('client_metadat = ', client_metadata)
+    print('authorization details = ', authorization_details)
      
     try :
         issuer_state_data = json.loads(red.get(issuer_state).decode())
@@ -540,6 +545,7 @@ def ebsi_issuer_authorize(issuer_id, red, mode) :
         'credential_type' : credential_type,
         'issuer_id' : issuer_id,
         #'format' : format,
+        'issuer' : issuer_data['issuer'],
         'issuer_state' : issuer_state,
         'state' : state,
         'stream_id' : stream_id,
@@ -586,7 +592,7 @@ def build_jwt_request_ebsiv3 (issuer_key, issuer_kid, client_id, aud, redirect_u
 
 
 # token endpoint
-def ebsi_issuer_token(issuer_id, red) :
+def ebsi_issuer_token(issuer_id, red, mode) :
     """
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-token-endpoint
     https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
@@ -622,13 +628,32 @@ def ebsi_issuer_token(issuer_id, red) :
 
     # token response
     access_token = str(uuid.uuid1())
-
+    vc = data.get('vc')
     endpoint_response = {
         'access_token' : access_token,
         'c_nonce' : str(uuid.uuid1()),
         'token_type' : 'Bearer',
         'expires_in': ACCESS_TOKEN_LIFE
     }
+    # multiple VC of the same type
+    if isinstance(vc, list) :
+        identifiers = list()
+        authorization_details = list()
+        for vc_type in vc :
+            types = vc_type['types']
+            vc_list = vc_type['list']
+            for one_vc in vc_list :
+                identifiers.append(one_vc['identifier'])        
+            authorization_details.append({
+                "type": "openid_credential",
+                "locations": [mode.server + '/sandbox/ebsi/issuer/api/' + issuer_id],
+                "format": "jwt_vc",
+                "types": types,
+                "identifiers" : identifiers 
+            })
+    endpoint_response['organisations_details'] = authorization_details
+    print("access token = ", access_token)
+    
     access_token_data = {
         'expires_at': datetime.timestamp(datetime.now()) + ACCESS_TOKEN_LIFE,
         #'pre_authorized_code' : code,
@@ -933,3 +958,30 @@ async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer
     &authorization_details=%5B%7B%22type%22%3A%22openid_credential%22,%22locations%22%3A%5B%22http%3A%2F%2F192.168.0.20%3A3000%2Fsandbox%2Febsi%2Fissuer%2Fkwcdgsspng%22%5D,%22format%22%3A%22jwt_vc%22,%22types%22%3A%5B%22VerifiableCredential%22,%22VerifiableAttestation%22,%22VerifiableDiploma%22%5D%7D%5D
     &client_metadata=%7B%22authorization_endpoint%22%3A%22openid%3A%22,%22scopes_supported%22%3A%5B%22openid%22%5D,%22response_types_supported%22%3A%5B%22vp_token%22,%22id_token%22%5D,%22subject_types_supported%22%3A%5B%22public%22%5D,%22id_token_signing_alg_values_supported%22%3A%5B%22ES256%22%5D,%22request_object_signing_alg_values_supported%22%3A%5B%22ES256%22%5D,%22vp_formats_supported%22%3A%7B%22jwt_vp%22%3A%7B%22alg_values_supported%22%3A%5B%22ES256%22%5D%7D,%22jwt_vc%22%3A%7B%22alg_values_supported%22%3A%5B%22ES256%22%5D%7D%7D,%22subject_syntax_types_supported%22%3A%5B%22urn%3Aietf%3Aparams%3Aoauth%3Ajwk-thumbprint%22,%22did%3Akey%3Ajwk_jcs-pub%22%5D,%22id_token_types_supported%22%3A%5B%22subject_signed_id_token%22%5D%7D HTTP/1.1
     """
+
+"""
+ headers = {
+        'Content-Type': 'application/json',
+        'Authorization' : 'Bearer <client_secret>'
+    }
+
+    data = { 
+        "vc" : OPTIONAL -> { "VerifiableId" : { ......}}, json object, VC as a json-ld not signed
+        "issuer_state" : REQUIRED, string,
+        "credential_type" : [ "VerifiableId"]
+        "pre-authorized_code" : True
+        "user_pin_required" : True
+        "user_pin" : REQUIRED
+        "callback" : REQUIRED, string, this the user redirect route at the end of the flow
+        }
+    resp = requests.post(url, headers=headers, data = data)
+
+    """
+
+"""
+GET /sandbox/ebsi/issuer/pcbrwbvrsi/authorize?
+response_type=code
+&client_id=did%3Akey%3AzQ3shRDkkch8btUzfQhWRuqM4E6hBXR7e1x2Y8S56CzEn9KHX
+&redirect_uri=https%3A%2F%2Fapp.altme.io%2Fapp%2Fdownload%2Foidc4vc%2Fopenid-credential-offer%3A%2F%2F%3Fcredential_offer_uri%3Dhttps%3A%2F%2Ftalao.co%2Fsandbox%2Febsi%2Fissuer%2Fcredential_offer_uri%2F5212f8e5-4e0b-11ee-8a55-0a1628958560&scope=openid&issuer_state=51d4ae69-4e0b-11ee-b4de-0a1628958560&state=%5B0%5D&nonce=7c95aad4-f750-4a22-b367-61fbff152e5e&code_challenge=lf3q5-NObcyp41iDSIL51qI7pBLmeYNeyWnNcY2FlW4&code_challenge_method=S256&authorization_details=%5B%7B%22type%22%3A%22openid_credential%22%2C%22locations%22%3A%5B%22https%3A%2F%2Ftalao.co%2Fsandbox%2Febsi%2Fissuer%2Fpcbrwbvrsi%22%5D%2C%22format%22%3A%22jwt_vc%22%2C%22types%22%3A%5B%22VerifiableCredential%22%2C%22VerifiableAttestation%22%2C%22VerifiableDiploma%22%5D%7D%5D&client_metadata=%7B%22authorization_endpoint%22%3A%22openid%3A%22%2C%22scopes_supported%22%3A%5B%22openid%22%5D%2C%22response_types_supported%22%3A%5B%22vp_token%22%2C%22id_token%22%5D%2C%22subject_types_supported%22%3A%5B%22public%22%5D%2C%22id_token_signing_alg_values_supported%22%3A%5B%22ES256%22%5D%2C%22request_object_signing_alg_values_supported%22%3A%5B%22ES256%22%5D%2C%22vp_formats_supported%22%3A%7B%22jwt_vp%22%3A%7B%22alg_values_supported%22%3A%5B%22ES256%22%5D%7D%2C%22jwt_vc%22%3A%7B%22alg_values_supported%22%3A%5B%22ES256%22%5D%7D%7D%2C%22subject_syntax_types_supported%22%3A%5B%22urn%3Aietf%3Aparams%3Aoauth%3Ajwk-thumbprint%22%2C%22did%F0%9F%94%91jwk_jcs-pub%22%5D%2C%22id_token_types_supported%22%3A%5B%22subject_signed_id_token%22%5D%7D
+
+"""

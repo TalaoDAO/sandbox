@@ -394,18 +394,18 @@ profile = {
             'authorization_server_support' : False,
             'siopv2_prefix' : 'openid-hedera://',
             'oidc4vp_prefix' : 'openid-hedera://',
-            'credentials_types_supported' :  ['ListOfProjects', 'VerifiableId', 'EmailPass', 'GreencypherPass'],
+            'credentials_types_supported' :  ['CetProject', 'EmailPass', 'GreencypherPass', 'VerifiableId'],
             'trust_framework': {
                 'name': 'greencypher',
                 'type': 'Accredition'
             },
             'credentials_supported' : [
                 {
-                    "id" : "ListOfProjects",
+                    "id" : "CetProject",
                     "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
-                        "ListOfProjects"
+                        "CetProject"
                     ],
                     "cryptographic_binding_methods_supported": [
                         "DID"
@@ -418,30 +418,7 @@ profile = {
                     ],
                     "display": [
                         {
-                            "name": "ListOfProjects",
-                            "locale": "en-GB"
-                        }
-                    ]
-                },
-                {
-                    "id" : "Ethereum1AssociatedAddress",
-                    "format": "jwt_vc",
-                    "types": [
-                        "VerifiableCredential",
-                        "EthereumAssociatedAddress"
-                ],
-                    "cryptographic_binding_methods_supported": [
-                        "DID"
-                    ],
-                    "cryptographic_suites_supported": [
-                        "ES256K",
-                        "ES256",
-                        "ES384",
-                        "RS256"
-                    ],
-                    "display": [
-                        {
-                            "name": "EthereumAssociatedAddress",
+                            "name": "CET projects",
                             "locale": "en-GB"
                         }
                     ]
