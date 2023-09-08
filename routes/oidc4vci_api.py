@@ -471,7 +471,7 @@ def ebsi_issuer_authorize(issuer_id, red, mode) :
         code_challenge = request.args.get("code_challenge")
         code_challenge_method = request.args.get("code_challenge_method")
         client_metadata = request.args.get("client_metadata")
-        state = request.args['state']
+        state = request.args.get('state')
     except :
         return jsonify('invalid_request'), 400
     
@@ -493,8 +493,10 @@ def ebsi_issuer_authorize(issuer_id, red, mode) :
     logging.info('authorization_details = %s', authorization_details[0])
     if scope != "openid" :
         authorization_error_response('invalid_scope', 'scope not supported', stream_id, red)
-    if 'id_token' not in response_type and 'vp_token' not in response_type :
-        authorization_error_response('invalid_response_type', 'response_type not supported', stream_id, red)
+    
+    if response_type not in ['code', 'id_token', 'vp_token'] :
+        #authorization_error_response('invalid_response_type', 'response_type not supported', stream_id, red)
+        logging.info('response type not supported %s', response_type)
 
     issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id)) 
     TEST = ""
