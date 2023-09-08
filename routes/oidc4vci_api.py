@@ -650,7 +650,7 @@ def ebsi_issuer_token(issuer_id, red, mode) :
                 "types": types,
                 "identifiers" : identifiers 
             })
-    endpoint_response['organisations_details'] = authorization_details
+        endpoint_response['organisations_details'] = authorization_details
     print("access token = ", access_token)
     
     access_token_data = {
