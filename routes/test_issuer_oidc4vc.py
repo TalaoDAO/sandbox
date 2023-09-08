@@ -26,7 +26,6 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/issuer/hedera_2',  view_func=issuer_hedera_2, methods = ['GET'], defaults={'mode' : mode}) # test GreencyPher
     app.add_url_rule('/sandbox/issuer/hedera_30',  view_func=issuer_hedera_3, methods = ['GET'], defaults={'mode' : mode}) # test 9
 
-
     app.add_url_rule('/sandbox/issuer/gaia-x',  view_func=issuer_gaiax, methods = ['GET'], defaults={'mode' : mode})
 
     app.add_url_rule('/sandbox/issuer/default',  view_func=issuer_default, methods = ['GET'], defaults={'mode' : mode})
@@ -39,7 +38,6 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/issuer/ebsiv31',  view_func=issuer_ebsiv31, methods = ['GET'], defaults={'mode' : mode}) # test 8
 
     app.add_url_rule('/sandbox/issuer/wallet_link',  view_func=issuer_wallet_link, methods = ['GET'], defaults={'mode' : mode}) # test 8
-
 
     app.add_url_rule('/sandbox/issuer/callback',  view_func=issuer_callback, methods = ['GET'])
 
@@ -61,10 +59,7 @@ def issuer_wallet_link(mode) :
     credential['id'] = "urn:uuid:" + str(uuid.uuid4())
     credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
     credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
-    """
-    to complete with credential data....;
     
-    """
     headers = {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret
@@ -88,12 +83,10 @@ def issuer_ebsiv2(mode):
     if mode.myenv == 'aws' :
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/zxhaokccsi"
         client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
-    
     else : 
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/zxhaokccsi"
         client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
    
-
     vc = 'VerifiableDiploma'
     with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f :
         credential = json.loads(f.read())
@@ -373,7 +366,7 @@ def issuer_hedera(mode):
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/uxzjfrjptk"
         client_secret = "2675ebcf-2fc1-11ee-825b-9db9eb02bfb8"
 
-    offer = ["EmailPass", "CetProject"]
+    offer = ["GreencypherPass", "CetProject"]
     headers = {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret
@@ -386,26 +379,30 @@ def issuer_hedera(mode):
                 "types" : ["VerifiableCredentials", "CetProject"],
                 "list" : [ 
                     {
-                        "identifier" : "identifier_1",
+                        "identifier" : "Forest_project_1345",
                         "value" : build_credential("CetProject")
                     },
                     {
-                        "identifier" : "identifier_2",
+                        "identifier" : "Kenyan_see_protection_28",
+                        "value" : build_credential("CetProject")
+                    },
+                     {
+                        "identifier" : "Forest_project_245",
+                        "value" : build_credential("CetProject")
+                    },
+                     {
+                        "identifier" : "Kenyan_see_protection_2",
                         "value" : build_credential("CetProject")
                     }
                     ]
             },
             {
-                "type" : "EmailPass",
-                "types" : ["VerifiableCredentials", "EmailPass"],
+                "type" : "GreencyphaerPass",
+                "types" : ["VerifiableCredentials", "GreencypherPass"],
                 "list" : [
                     {
-                        "identifier" : "identifier_3",
-                        "value" : build_credential("CetProject")
-                    },
-                    {
-                        "identifier" : "identifier_4",
-                        "value" : build_credential("CetProject")
+                        "identifier" : "identifier_38",
+                        "value" : build_credential("GreencypherPass")
                     }
                 ]
             }
@@ -473,11 +470,11 @@ def build_credential_offered(offer) :
 
 
 def build_credential(vc) :
-    #try :
-    with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f :
+    try :
+        with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f :
             credential = json.loads(f.read())
-    #except :
-    #    return
+    except :
+        return
     credential['id'] = "urn:uuid:" + str(uuid.uuid4())
     credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
     credential['issued'] = datetime.now().replace(microsecond=0).isoformat() + "Z"

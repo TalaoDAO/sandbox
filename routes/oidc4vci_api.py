@@ -708,6 +708,10 @@ async def ebsi_issuer_credential(issuer_id, red) :
     identifier = result.get('identifier')
     logging.info('identifier = %s', identifier)
     logging.info('credential request = %s', request.json)
+
+    # check credential request format
+    if not identifier and isinstance(access_token_data['vc'], list) :
+        return Response(**manage_error('unsupported_credential_type', 'identifier for multiple VC issuance expected', red, stream_id=stream_id))
     
     if proof_type != 'jwt' : 
         return Response(**manage_error("unsupported_credential_type", "The credential proof type is not supported =%s", proof_type)) 
@@ -727,6 +731,7 @@ async def ebsi_issuer_credential(issuer_id, red) :
     else :
         return Response(**manage_error('invalid_request', 'Invalid request format', red, stream_id=stream_id)) 
     logging.info('credential type requested = %s', credential_type)
+
     
     # check proof format requested
     logging.info('proof format requested = %s', proof_format)
@@ -773,11 +778,30 @@ async def ebsi_issuer_credential(issuer_id, red) :
         credential_type = 'VerifiableDiploma' 
     logging.info("credential type = %s", credential_type)
     
-    try :
-        credential = access_token_data['vc'][credential_type]
-    except :
-        # send event to front to go forward callback and send credential to wallet
-        return Response(**manage_error('unsupported_credential_type', 'The credential type is not offered', red, stream_id=stream_id))
+   
+    
+    if not identifier :
+        logging.info("1 VC of the same type")
+        try :
+            credential = access_token_data['vc'][credential_type]
+        except :
+            # send event to front to go forward callback and send credential to wallet
+            return Response(**manage_error('unsupported_credential_type', 'The credential type is not offered', red, stream_id=stream_id))
+    else :
+        found = False
+        logging.info("Multiple VCs of the same type")
+        for one_type in access_token_data['vc'] :
+            if one_type["type"] == credential_type :
+                credential_list = one_type['list']
+                for one_credential in credential_list :
+                    if one_credential['identifier'] == identifier :
+                        credential = one_credential['value']
+                        found = True
+                        break
+                break    
+        if not found :
+            return Response(**manage_error('unsupported_credential_type', 'The credential identiier is not found', red, stream_id=stream_id))
+    
     credential_signed = await sign_credential(credential,
                                             proof_payload.get('iss'),
                                             issuer_data['did'],
@@ -882,7 +906,7 @@ def ebsi_issuer_followup(stream_id, red):
         callback_uri +='&error=' + request.args.get('error') 
     return redirect(callback_uri) 
  
-
+ 
 # server event push for user agent EventSource
 def ebsi_issuer_stream(red):
     def event_stream(red):
@@ -924,38 +948,3 @@ async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer
     return credential_signed
 
 
-
-
-"""
-    authorization details
-   [
-  {
-    "type": "openid_credential",
-    "locations": [
-      "http://192.168.0.20:3000/sandbox/ebsi/issuer/kwcdgsspng"
-    ],
-    "format": "jwt_vc",
-    "types": [
-      "VerifiableCredential",
-      "VerifiableAttestation",
-      "VerifiableDiploma"
-    ]
-    }
-    ]
-
-"""
-
-"""
-    GET /sandbox/ebsi/issuer/kwcdgsspng/authorize?
-    response_type=code
-    &client_id=did%3Akey%3Az2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9Kbs5869W47bN5DBoWQGig9f25zS7vnMo5eYpXgyyxPwNnBjA3XXtbYBDEqFkH5mYTFs2eFgEbiUcKwxhuYhnYmrzUJjhJCB6i6NeQVKDxEYhK7Kdep64yzc81wAGhndjJnhJ
-    &redirect_uri=https%3A%2F%2Fexample.com
-    &scope=openid
-    &issuer_state=0843ddae-497b-11ee-a8c2-bd4f8da6aefe
-    &state=29471082-28af-41a7-8495-8530a957f56e
-    &nonce=4bfd6ae1-5e42-48cc-bbd1-53fba218311e
-    &code_challenge=lf3q5-NObcyp41iDSIL51qI7pBLmeYNeyWnNcY2FlW4
-    &code_challenge_method=S256
-    &authorization_details=%5B%7B%22type%22%3A%22openid_credential%22,%22locations%22%3A%5B%22http%3A%2F%2F192.168.0.20%3A3000%2Fsandbox%2Febsi%2Fissuer%2Fkwcdgsspng%22%5D,%22format%22%3A%22jwt_vc%22,%22types%22%3A%5B%22VerifiableCredential%22,%22VerifiableAttestation%22,%22VerifiableDiploma%22%5D%7D%5D
-    &client_metadata=%7B%22authorization_endpoint%22%3A%22openid%3A%22,%22scopes_supported%22%3A%5B%22openid%22%5D,%22response_types_supported%22%3A%5B%22vp_token%22,%22id_token%22%5D,%22subject_types_supported%22%3A%5B%22public%22%5D,%22id_token_signing_alg_values_supported%22%3A%5B%22ES256%22%5D,%22request_object_signing_alg_values_supported%22%3A%5B%22ES256%22%5D,%22vp_formats_supported%22%3A%7B%22jwt_vp%22%3A%7B%22alg_values_supported%22%3A%5B%22ES256%22%5D%7D,%22jwt_vc%22%3A%7B%22alg_values_supported%22%3A%5B%22ES256%22%5D%7D%7D,%22subject_syntax_types_supported%22%3A%5B%22urn%3Aietf%3Aparams%3Aoauth%3Ajwk-thumbprint%22,%22did%3Akey%3Ajwk_jcs-pub%22%5D,%22id_token_types_supported%22%3A%5B%22subject_signed_id_token%22%5D%7D HTTP/1.1
-    """
