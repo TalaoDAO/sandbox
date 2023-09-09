@@ -625,7 +625,7 @@ def ebsi_login_qrcode(red, mode):
         "code" : request.args['code'],
         "client_id" : client_id
     }
-    if not presentation_definition :
+    if not 'vp_token' in response_type :
         presentation_definition = {"N/A" : "N/A"}
     red.setex(stream_id, QRCODE_LIFE, json.dumps(data))
     url = prefix + '?' + urlencode(authorization_request_displayed)
