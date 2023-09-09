@@ -625,10 +625,12 @@ def ebsi_login_qrcode(red, mode):
         "code" : request.args['code'],
         "client_id" : client_id
     }
+    if not presentation_definition :
+        presentation_definition = {"N/A" : "N/A"}
     red.setex(stream_id, QRCODE_LIFE, json.dumps(data))
     url = prefix + '?' + urlencode(authorization_request_displayed)
-    deeplink_talao = mode.deeplink_talao + 'app/download/oidc4vc?' + urlencode({'uri' : url})
-    deeplink_altme= mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri' : url})
+    deeplink_talao = mode.deeplink_talao + 'app/download/ebsi?' + urlencode({'uri' : url})
+    deeplink_altme= mode.deeplink_altme + 'app/download/ebsi?' + urlencode({'uri' : url})
     qrcode_page = verifier_data.get('verifier_landing_page_style')
     logging.info ('url = %s', authorization_request)
     return render_template(qrcode_page,
@@ -636,6 +638,7 @@ def ebsi_login_qrcode(red, mode):
 							url=url,
                             authorization_request=json.dumps(authorization_request, indent=4),
                             url_json=json.dumps(authorization_request_displayed, indent=4),
+                            presentation_definition=json.dumps(presentation_definition, indent=4),
                             client_metadata=json.dumps(build_client_metadata(client_id, redirect_uri), indent=4),
                             deeplink_talao=deeplink_talao,
                             deeplink_altme=deeplink_altme,

@@ -62,6 +62,12 @@
                   <textarea rows="20" cols="150">{{authorization_request|safe}}</textarea>
                   </div>
 
+
+                <div class="text-center mt-5">
+                  <h2>Presentation Definition</h2><br>
+                  <textarea rows="20" cols="150">{{presentation_definition|safe}}</textarea>
+                  </div>
+
                 <div class="text-center mt-5">
                 <h2>Client metadata</h2><br>
                 <textarea rows="10" cols="150">{{client_metadata|safe}}</textarea>
@@ -88,10 +94,10 @@
             
                     <div class="text-center mt-5 ">
                       <h2>{{page_title}}</h2>
-                      <h4 class="mt-4">{{title}}</h4>
+                      <h4 class="mt-4">Clic to present</h4>
                         <div class ="mt-4">
                         <a href="{{deeplink_altme}}" class="bg-transparent" style="text-decoration: none;"><img src="/static/img/AltMe.png"  style="width: 75px;"></a>
-                        <h5 class="card-title mt-4">{{mobile_message}}</h5>
+
 
                         {% if back_button  %}
                         <button  onclick="goBack()" class="btn btn-outline-secondary mt-2">Back</button>
