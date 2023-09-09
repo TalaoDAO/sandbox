@@ -387,9 +387,13 @@ def build_jwt_request(key, kid, iss, aud, request):
     return token.serialize()
 
 
-def client_metadata_uri(client_id, redirect_uri):
+def client_metadata_uri(id, red):
     #https://openid.net/specs/openid-connect-registration-1_0.html
-    return jsonify(build_client_metadata(client_id, redirect_uri))
+    try :
+        client_metadata = json.loads(red.get(id).decode())
+    except :
+        return jsonify('Request timeout'), 408
+    return jsonify(client_metadata)
 
 
 def build_client_metadata(client_id, redirect_uri) -> dict :
@@ -563,17 +567,23 @@ def ebsi_login_qrcode(red, mode):
     }
     # OIDC4VP
     if 'vp_token' in response_type :
+        
+        # client_metadata_uri
         prefix = verifier_profile["oidc4vp_prefix"] 
-        authorization_request['client_metadata_uri'] = mode.server + "sandbox/ebsi/login/client_metadata_uri/" + client_id
+        id = str(uuid.uuid1())
+        client_metadata = build_client_metadata(client_id, redirect_uri)
+        red.setex(id, QRCODE_LIFE, json.dumps(client_metadata))
+        authorization_request['client_metadata_uri'] = mode.server + "sandbox/ebsi/login/client_metadata_uri/" + id
+        
+        # presentation_definition
         presentation_definition = prez.get()
-
-        # manage previous standard
         if verifier_data['profile'] in ["EBSI-V2", 'DBC'] :
             authorization_request['claims'] = {"vp_token":{"presentation_definition": presentation_definition}}
         else :
             authorization_request['presentation_definition'] = presentation_definition
             authorization_request['aud'] = 'https://self-issued.me/v2'
 
+        # presentation_definition_uri
         if verifier_data.get('presentation_definition_uri') :
             id = str(uuid.uuid1())
             red.setex(id, QRCODE_LIFE, json.dumps(presentation_definition))        
@@ -590,7 +600,7 @@ def ebsi_login_qrcode(red, mode):
         else :
             authorization_request["response_mode"] = 'direct_post'
     
-    # manage resuqest_uri
+    # manage request_urias jwt
     request_as_jwt = build_jwt_request(
             verifier_data['jwk'],
             verifier_data['verification_method'],
