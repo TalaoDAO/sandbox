@@ -825,11 +825,10 @@ async def ebsi_login_endpoint(stream_id, red):
                 except  :
                     vc_type += " ldp_vc"
 
-    # check holder binding
-
     # check nonce and aud in vp_token
     if access == 'ok' and vp_token :
         if profile[verifier_data['profile']][ "verifier_vp_type"] != "ldp_vp" :
+            vp_sub = vp_token_payload['iss']
             if oidc4vc.get_payload_from_token(vp_token)['nonce'] == nonce :
                 nonce_status = "ok"
             else :
@@ -841,7 +840,9 @@ async def ebsi_login_endpoint(stream_id, red):
                 aud_status = "failed in vp_token"
                 access = "access_denied"
         else :
-            if json.loads(vp_token)['proof']['challenge'] == nonce :
+            vp_sub = json.loads(vp_token)['holder']
+            print(" json.loads(vp_token)['proof'] = ", json.loads(vp_token)['proof'])
+            if json.loads(vp_token)['proof'].get('challenge') == nonce :
                 nonce_status = "ok"
             else :
                 nonce_status = "failed in vp_token"
@@ -869,17 +870,19 @@ async def ebsi_login_endpoint(stream_id, red):
       "response_format" : response_format,
       "id_token_status" : id_token_status,
       "vp_token_status" : vp_token_status,
-      #"issuer_status" : issuer_status,
-      #"credential_status" : credential_status,
       "access" : access,
       "status_code" : status_code    
     }
     logging.info("response = %s",json.dumps(response, indent=4))
     # follow up
+
+    sub = id_token_payload.get('sub') 
+    if not sub :
+        sub = vp_sub
     wallet_data = json.dumps({
                     "access" : access,
                     "vp_token_payload" : vp_token_payload,
-                    "sub" : id_token_payload.get('sub')
+                    "sub" : sub
                     })
     red.setex(stream_id + "_wallet_data", CODE_LIFE, wallet_data)
     event_data = json.dumps({"stream_id" : stream_id})           
