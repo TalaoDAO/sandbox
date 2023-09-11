@@ -430,7 +430,8 @@ def issuer_hedera_2(mode):
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/fixmtbwkfr"
         client_secret = "2675ebcf-2fc1-11ee-825b-9db9eb02bfb8"
 
-    offer = ['GreencypherPass']
+    offer = ['GreencypherPass', 'CetProject', 'GntProject', 'Gnt+Project', 'SdgtProject', 'RetProject', 'HotProject', 'XctProject']
+
     headers = {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret

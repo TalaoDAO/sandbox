@@ -393,10 +393,19 @@ profile = {
             'authorization_server_support' : False,
             'siopv2_prefix' : 'openid-hedera://',
             'oidc4vp_prefix' : 'openid-hedera://',
-            'credentials_types_supported' :  ['CetProject', 'EmailPass', 'GreencypherPass', 'VerifiableId'],
+            'credentials_types_supported' :  [
+                'CetProject',
+                'GntProject',
+                'Gnt+Project',
+                'SdgtProject',
+                'RetProject',
+                'HotProject',
+                'XctProject',
+                'GreencypherPass',
+                'VerifiableId'
+            ],
             'trust_framework': {
-                'name': 'greencypher',
-                'type': 'Accredition'
+                'name': 'greencypher'
             },
             'credentials_supported' : [
                 {
@@ -412,14 +421,103 @@ profile = {
                     "cryptographic_suites_supported": [
                         "ES256K",
                         "ES256",
-                        "ES384",
                         "RS256"
+                    ]
+                },
+                {
+                    "id" : "GntProject",
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "GntProject"
                     ],
-                    "display": [
-                        {
-                            "name": "CET projects",
-                            "locale": "en-GB"
-                        }
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "RS256"
+                    ]
+                },
+                {
+                    "id" : "Gnt+Project",
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "Gnt+Project"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "RS256"
+                    ]
+                },
+                {
+                    "id" : "SdgtProject",
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "SdgtProject"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "RS256"
+                    ]
+                },
+                 {
+                    "id" : "RetProject",
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "RetProject"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "RS256"
+                    ]
+                },
+                 {
+                    "id" : "HotProject",
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "HotProject"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "RS256"
+                    ]
+                },
+                 {
+                    "id" : "XctProject",
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "XctProject"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "RS256"
                     ]
                 },
                 {
@@ -435,37 +533,7 @@ profile = {
                     "cryptographic_suites_supported": [
                         "ES256K",
                         "ES256",
-                        "ES384",
                         "RS256"
-                    ],
-                    "display": [
-                        {
-                            "name": "VerifiableId",
-                            "locale": "en-GB"
-                        }
-                    ]
-                },
-                {
-                    "id" : "EmailPass",
-                    "format": "jwt_vc",
-                    "types": [
-                        "VerifiableCredential",
-                        "EmailPass"
-                    ],
-                    "cryptographic_binding_methods_supported": [
-                        "DID"
-                    ],
-                    "cryptographic_suites_supported": [
-                        "ES256K",
-                        "ES256",
-                        "ES384",
-                        "RS256"
-                    ],
-                    "display": [
-                        {
-                            "name": "EmailPass",
-                            "locale": "en-GB"
-                        }
                     ]
                 },
                 {
@@ -481,14 +549,7 @@ profile = {
                     "cryptographic_suites_supported": [
                         "ES256K",
                         "ES256",
-                        "ES384",
                         "RS256"
-                    ],
-                    "display": [
-                        {
-                            "name": "GreenCypher Pass",
-                            "locale": "en-GB"
-                        }
                     ]
                 }
             ],

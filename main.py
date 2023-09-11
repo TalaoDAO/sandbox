@@ -1,14 +1,17 @@
 import os
 import time
 import markdown
-from flask import Flask, redirect, request, render_template_string, request
+from flask import Flask, redirect, request, render_template_string, request, jsonify
 from flask_session import Session
 from flask_mobility import Mobility
-
+import requests
+from flask_restx import Resource, Api, fields, reqparse
+import uuid
 from datetime import timedelta
 from flask_qrcode import QRcode
 import redis
 import sys
+import json
 import logging
 import environment
 from components import message
@@ -102,6 +105,197 @@ def md_file() :
     return render_template_string( markdown.markdown(content, extensions=["fenced_code"]))
 
 
+################# GREENCYPHER API
+
+PROJECT_LIST = ['CET','GNT']
+credential_file = { "GNT" : "GntProject.jsonld", "CET" : "CetProject.jsonld"}
+credential_name = { "GNT" : "GntProject", "CET" : "CetProject"}
+
+CET_example = [
+    {
+        "projectId": "256",
+        "acquiredBy": "MyCompany Ltd.",
+        "name": "Amazon Forest #234",
+        "numberOfCredits": 350
+    },
+    {
+        "projectId": "123",
+        "acquiredBy": "MyCompany Ltd.",
+        "name": "Kenyan Forest #234",
+        "numberOfCredits": 100
+    }
+]
+
+GNT_example = [
+    {
+        "projectId": "256",
+        "acquiredBy": "MyCompany Ltd.",
+        "name": "Kenyan Electrityty #014",
+        "numberOfCredits": 800
+    }
+]
+
+api = Api()
+
+authorizations = {
+    'apikey': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'X-API-KEY'
+    }
+}
+
+api = Api(app, doc='/sandbox/greencypher/swagger',
+        authorizations=authorizations,
+        description="API description for the GreenCypher issuer. An apikey is needed to access that API, contact@talao.cio",
+        titles="GreenCypher API")
+ns = api.namespace('GreenCypher', description='Market place issuer')
+
+user_model = api.model('User', {
+        "userId" : fields.String (example=123, required=True),
+		"firstName" : fields.String(example="John"),
+		"lastName" : fields.String(example="Doe"),
+		"accountType" : fields.String(example="Monitor"),
+        "workForLegalName" : fields.String(example="MyCompany Ltd."),
+        "workForId" : fields.String(example="126"),
+        "email" : fields.String(example="john.doe@gamil.com")
+})
+
+
+project_model = api.model("Project",{
+                "projectId" : fields.String (required=True),
+        		"acquiredBy" : fields.String,
+        		"name" : fields.String,
+        		"numberOfCredits": fields.Integer    
+			},)
+
+
+project_type_model = api.model('Project type', {
+        "CET" : fields.List(fields.Nested(project_model), example=CET_example),
+		"GNT" : fields.List(fields.Nested(project_model), example=GNT_example),
+        "GNT+" : fields.List(fields.Nested(project_model)),
+		"SDGT" : fields.List(fields.Nested(project_model)),
+        "HOT" : fields.List(fields.Nested(project_model)),
+		"RET" : fields.List(fields.Nested(project_model)),
+		"XCT" : fields.List(fields.Nested(project_model)),
+})
+
+payload = api.model('Payload input', {
+    'state': fields.String (example='765765:98676:9797', required=True),
+    'callback': fields.Url('todo_resource', required=True, absolute=True, scheme='https', example="https://my.marketplace.com/callback"),
+    'user': fields.Nested(user_model),
+    'projects' : fields.Nested(project_type_model)
+})
+
+response = api.model('Response', {
+    'redirect_uri': fields.String(description='API response', required=True),
+})
+
+@ns.route('/sandbox/greencypher/acx/issuer', endpoint='acx_issuer')
+class Issuer(Resource):
+       
+    @api.response(200, 'Success')
+    @api.doc(responses={404: 'Not Authorized'})
+    @api.doc(responses={400: 'Bad Request'})
+    @api.doc(security='apikey')
+    @api.expect(payload)
+    @api.doc(model=response)
+
+    def post(self):  
+        apikey = request.headers.get('X-API_KEY')  
+        user =  request.json.get('user')
+        projects =  request.json.get('projects')
+        state =  request.json.get('state')
+        callback = request.json.get('callback')
+        if not state :
+            return {'message' : 'state is missing'}, 400
+        if not callback :
+            return {'message' : 'callback is missing'}, 400
+        if apikey != "greencypher" :
+             return {"message" : 'Not Authorized'  }, 404
+        if not user and not projects :
+            return {'message' : 'user and projects missing'}, 400
+        
+        data = {
+            "issuer_state" : state,
+            "pre-authorized_code" : True,
+            "credential_type" : list(), 
+            "callback" : callback,
+            "vc" : list()
+        }
+
+        if user :
+            data['credential_type'].append('GreencypherPass')
+            data['vc'].append(
+                {
+                    "type" : "GreencyphaerPass",
+                    "types" : ["VerifiableCredentials", "GreencypherPass"],
+                    "list" : [
+                        {
+                            "identifier" : "greecypherpass_01",
+                            "value" : build_credential_greencypherpass(user)
+                        }
+                    ]
+                }
+            )
+        if projects :
+            for project_type in PROJECT_LIST :
+                if projects.get(project_type) :
+                    data['credential_type'].append(credential_name[project_type])
+                    project_list = list()
+                    for project in projects[project_type] :
+                        project_list.append(
+                            {
+                                "identifier" : project['projectId'],
+                                "value" : build_credential_projects(credential_file[project_type], project)
+                            }
+                        )
+                    data['vc'].append(
+                        {
+                            "type" : credential_name[project_type],
+                            "types" : ["VerifiableCredentials", credential_name[project_type]],
+                            "list" : project_list
+                        }
+                    )    
+                   
+
+        print('data = ', data)
+        if mode.myenv == 'aws' :
+            api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/nkpbjplfbi"
+            client_secret = "ed055e57-3113-11ee-a280-0a1628958560"
+        else :
+            api_endpoint = mode.server + "sandbox/ebsi/issuer/api/uxzjfrjptk"
+            client_secret = "2675ebcf-2fc1-11ee-825b-9db9eb02bfb8"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization' : 'Bearer ' + client_secret
+        }
+        resp = requests.post(api_endpoint, headers=headers, json = data)
+        #return {"test" : "ok"}
+        return resp.json()
+
+
+
+def build_credential_greencypherpass(user) :
+    credential = json.load(open('verifiable_credentials/GreencypherPass.jsonld', 'r'))
+    credential['credentialSubject']['firstName'] = user['firstName']
+    credential['credentialSubject']['lastName'] = user['lastName']
+    credential['credentialSubject']['accounrType'] = user['accountType']
+    credential['credentialSubject']['userId'] = user['userId']
+    credential['credentialSubject']['workForId'] = user['workForId']
+    credential['credentialSubject']['email'] = user['email']
+    return credential
+
+
+def build_credential_projects(credential_file, project_data) :
+    credential = json.load(open('verifiable_credentials/' + credential_file, 'r'))
+    credential['credentialSubject']['projectId'] = project_data['projectId']
+    credential['credentialSubject']['acquiredBy'] = project_data['acquiredBy']
+    credential['credentialSubject']['name'] = project_data['name']
+    credential['credentialSubject']['numberOfCredits'] = project_data['numberOfCredits']
+    return credential
+
+
 # MAIN entry point for test
 if __name__ == '__main__':
     # info release
@@ -110,3 +304,7 @@ if __name__ == '__main__':
             port= mode.port,
             debug = mode.test,
             threaded=True)
+    
+
+
+  

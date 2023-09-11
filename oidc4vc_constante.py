@@ -15,8 +15,7 @@ oidc4vc_profile_list = {
     'GAIA-X' : 'GAIA-X projects',
     'EBSI-V3' : 'EBSI V3 compliance',
     'JWT-VC' : 'JWT-VC presentation profile',
-    'HEDERA' : 'HEDERA projects',
-    'DBC' : 'Deutch Blockchain Coalition'
+    'HEDERA' : 'Greencypher project'
 }
 
 
@@ -33,9 +32,14 @@ ebsi_verifier_credential_list = {
     'PhoneProof' : 'Phone proof',
     'WalletCredential' : 'Device information',
     "GreencypherPass" : "Pass GreenCypher",
-    "ListOfProjects" : "ACX list of Projects",
+    "CetProject" : "ACX CET project",
+    "GntProject" : "ACX GNT project",
+    "Gnt+Project" : "ACX GNT+ project",
+    "SdgtProject" : "ACX SDGT project",
+    "RetProject" : "ACX RET project",
+    "HotProject" : "ACX HOT project",
+    "XctProject" : "ACX XCT project",
     "Over18" : "Over18",
-    "DbcEmailPass" : "DBC EmailPass"
 }
 
 

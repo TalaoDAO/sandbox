@@ -148,10 +148,13 @@ def oidc(issuer_id, mode) :
         cm = list()  
         for _vc in issuer_profile.get('credentials_types_supported') :
             file_path = './credential_manifest/' + _vc + '_credential_manifest.json'
-            cm_to_add = json.load(open(file_path))
-            cm_to_add['issuer']['id'] = issuer_data.get('did' , 'Unknown')
-            cm_to_add['issuer']['name'] = issuer_data['application_name']
-            cm.append(cm_to_add)
+            try :
+                cm_to_add = json.load(open(file_path))
+                cm_to_add['issuer']['id'] = issuer_data.get('did' , 'Unknown')
+                cm_to_add['issuer']['name'] = issuer_data['application_name']
+                cm.append(cm_to_add)
+            except :
+                logging.warning("credential manifest not found for %s", _vc)
         openid_configuration['credential_manifests'] = cm
 
     # setup authorization server 
@@ -194,7 +197,7 @@ def issuer_api_endpoint(issuer_id, red, mode) :
         "user_pin" : CONDITIONAL, string, REQUIRED if user_pin_required is True
         "callback" : REQUIRED, string, this the user redirect route at the end of the flow
         }
-    resp = requests.post(token_endpoint, headers=headers, data = data)
+    resp = requests.post(token_endpoint, headers=headers, data = json.dumps(data))
     return resp.json()
 
     """
@@ -243,10 +246,11 @@ def issuer_api_endpoint(issuer_id, red, mode) :
     credential_type = credential_type if isinstance(credential_type, list) else [credential_type]
     for _vc in credential_type :
         if _vc not in issuer_profile['credentials_types_supported'] :
-              logging.error("Credential not supported %s", _vc)
-              return Response(**manage_error("Unauthorized", "Credential not supported", red, status=401))
+            logging.error("Credential not supported -> %s", _vc)
+            return Response(**manage_error("Unauthorized", "Credential not supported " + _vc, red, status=401))
 
     nonce = str(uuid.uuid1())
+
     # generate pre-authorized_code as jwt or string
     if pre_authorized_code :
         if profile[issuer_data['profile']].get('pre-authorized_code_as_jwt') :
@@ -266,7 +270,6 @@ def issuer_api_endpoint(issuer_id, red, mode) :
         'vc' : vc,
         'nonce' : nonce,
         'stream_id' : stream_id,
-        #'issuer_vc_type' : vc_formats_supported,
         'issuer_id' : issuer_id,
         'issuer_state' : request.json.get('issuer_state'),
         'credential_type' : credential_type,
@@ -275,6 +278,7 @@ def issuer_api_endpoint(issuer_id, red, mode) :
         'user_pin' : request.json.get('user_pin'),
         'callback' : request.json.get('callback')
     }
+
     # For deferred API call only VC is stored in redis with issuer_state as key
     if deferred_vc and red.get(issuer_state) :
         application_data.update({

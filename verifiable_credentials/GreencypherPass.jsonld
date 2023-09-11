@@ -15,7 +15,7 @@
                     "accountType" : "schema:identifier",
                     "email" : "schema:email",
                     "workForLegalName" : "schema:legalName",
-                    "workForLeiCode" : "schema:leiCode",
+                    "workForId" : "schema:identifier",
                     "photo": "schema:picture"
                 }
               }
@@ -34,7 +34,7 @@
         "lastName" : "Doe",
         "email" : "jonh.doe@gmail.com",
         "accountType" : "Monitor",
-        "workForLeiCode" : "9845008D81F584B75D25",
+        "workForId" : "984",
         "workForLegalName" : "TheCompany Ltd."
     }
 }

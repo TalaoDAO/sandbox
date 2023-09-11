@@ -7,13 +7,11 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/verifier/default',  view_func=verifier_default, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/verifier/default_2',  view_func=verifier_default_2, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/verifier/default_3',  view_func=verifier_default_3, methods = ['GET'], defaults={'mode' : mode})
-    app.add_url_rule('/sandbox/verifier/default_4',  view_func=verifier_default_4, methods = ['GET'], defaults={'mode' : mode})
-
-    app.add_url_rule('/sandbox/verifier/ebsiv2',  view_func=verifier_ebsiv2, methods = ['GET'], defaults={'mode' : mode})
-    app.add_url_rule('/sandbox/verifier/ebsiv2_2',  view_func=verifier_ebsiv2_2, methods = ['GET'], defaults={'mode' : mode})
 
 
-    app.add_url_rule('/sandbox/verifier/hedera_2',  view_func=verifier_hedera_2, methods = ['GET'], defaults={'mode' : mode})
+    app.add_url_rule('/sandbox/verifier/greencypher_1',  view_func=verifier_greencypher_1, methods = ['GET'], defaults={'mode' : mode}) # test 6
+    app.add_url_rule('/sandbox/verifier/greencypher_2',  view_func=verifier_greencypher_2, methods = ['GET'], defaults={'mode' : mode}) # Test 7
+
     
     app.add_url_rule('/sandbox/verifier/dbc',  view_func=verifier_dbc, methods = ['GET'], defaults={'mode' : mode})
 
@@ -69,28 +67,10 @@ def verifier_default_3(mode): # Test 5
         return redirect (url)
 
 
-def verifier_ebsiv2(mode): # Test 1
-    if request.method == 'GET' :
-        if mode.myenv == 'aws':
-            client_id = "oahrmewate"
-        else :
-            client_id = "pixsovsisy"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
-        return redirect (url)
-
-
-def verifier_ebsiv2_2(mode): # Test 2
-    if request.method == 'GET' :
-        if mode.myenv == 'aws':
-            client_id = "okiwojrycf"
-        else :
-            client_id = "cinuwjuhvj"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
-        return redirect (url)
     
 
 
-def verifier_default_4(mode): # Test 6
+def verifier_greencypher_1(mode): # Test 6
     if request.method == 'GET' :
         if mode.myenv == 'aws':
             client_id = "yxluhubhor"
@@ -99,7 +79,7 @@ def verifier_default_4(mode): # Test 6
         url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
 
-def verifier_hedera_2(mode): # Test 7
+def verifier_greencypher_2(mode): # Test 7
     if request.method == 'GET' :
         if mode.myenv == 'aws':
             client_id = "ctetbsbltd"
@@ -107,6 +87,7 @@ def verifier_hedera_2(mode): # Test 7
             client_id = "vzhawcuror"
         url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
+
 
 def verifier_dbc(mode): # Test 8
     if request.method == 'GET' :
