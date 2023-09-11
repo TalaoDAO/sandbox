@@ -210,17 +210,7 @@ def ebsi_verifier_console(mode) :
                     vc = 'vc_' + i
                     reason = 'reason_' + i
                     if session['client_data'][vc] != 'None'   :
-                        if session['client_data']['profile'] == "EBSI-V2" :
-                            if session['client_data'][vc] not in ['VerifiableId', 'VerifiableDiploma'] :
-                                flash("Supported VC for EBSI-V2 are only VerifiableId and VerifiableDiploma !", "warning")
-                                return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
-                            prez.add_constraint("$.credentialSchema.id",
-                                            type_2_schema[session['client_data'][vc]],
-                                            "Input descriptor for credential " + i ,
-                                            session['client_data'][reason])
-                                            
-                        else :
-                            prez.add_constraint("$.credentialSubject.type",
+                        prez.add_constraint("$.credentialSubject.type",
                                             session['client_data'][vc],
                                             "Input descriptor for credential " + i,
                                             session['client_data'][reason],
@@ -233,20 +223,7 @@ def ebsi_verifier_console(mode) :
             for i in ["5", "6", "7", "8"] :
                 vc = 'vc_' + i
                 if session['client_data'][vc] != 'None'   :
-                    if session['client_data']['profile'] == "EBSI-V2" :
-                        prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[session['client_data'][vc]], "Input descriptor for credential " + i, "", "A")
-                    
-                    elif session['client_data']['profile'] == "DBC" : 
-                        credential = json.load(open('verifiable_credentials/' + session['client_data'][vc] + '.jsonld' , 'r'))
-                        credentialSchema = credential.get('credentialSchema', {'uri' : 'unknown uri'}).get('uri')
-                        prez.add_constraint_with_group_and_schema( { 'uri' :  credentialSchema },
-                                                        session['client_data'][vc],
-                                                        "Input descriptor for credential " + i,
-                                                        "A",
-                                                        id=session['client_data'][vc].lower() + '_' + i)
-                    
-                    else :
-                        prez.add_constraint_with_group("$.credentialSubject.type",
+                    prez.add_constraint_with_group("$.credentialSubject.type",
                                                             session['client_data'][vc],
                                                             "Input descriptor for credential " + i,
                                                             "",
@@ -261,19 +238,7 @@ def ebsi_verifier_console(mode) :
             for i in ["9", "10", "11", "12"] :
                 vc = 'vc_' + i
                 if session['client_data'][vc] != 'None'   :
-                    if session['client_data']['profile'] == "EBSI-V2" :
-                        prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[session['client_data'][vc]], "Input descriptor for credential " + i, "", "B")
-                    
-                    elif session['client_data']['profile'] == "DBC" : 
-                        credential = json.load(open('verifiable_credentials/' + session['client_data'][vc] + '.jsonld' , 'r'))
-                        credentialSchema = credential.get('credentialSchema', {'uri' : 'unknown uri'}).get('uri')
-                        prez.add_constraint_with_group_and_schema( { 'uri' :  credentialSchema },
-                                                        session['client_data'][vc],
-                                                        "Input descriptor for credential " + i,
-                                                        "A",
-                                                        id=session['client_data'][vc].lower() + '_' + i)
-                    else :
-                        prez.add_constraint_with_group("$.credentialSubject.type",
+                    prez.add_constraint_with_group("$.credentialSubject.type",
                                                             session['client_data'][vc],
                                                             "Input descriptor for credential " + i,
                                                             "",

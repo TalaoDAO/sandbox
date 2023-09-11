@@ -482,10 +482,7 @@ def ebsi_login_qrcode(red, mode):
                 vc = 'vc_' + i
                 reason = 'reason_' + i
                 if verifier_data[vc] != 'None'   :
-                    if verifier_data['profile'] == "EBSI-V2" :
-                        prez.add_constraint("$.credentialSchema.id", type_2_schema[verifier_data[vc]], "Input descriptor for credential " + i , verifier_data[reason])
-                    else :
-                        prez.add_constraint("$.credentialSubject.type",
+                    prez.add_constraint("$.credentialSubject.type",
                                         verifier_data[vc],
                                         "Input descriptor for credential " + i,
                                         verifier_data[reason],
@@ -498,19 +495,7 @@ def ebsi_login_qrcode(red, mode):
         for i in ["5", "6", "7", "8"] :
             vc = 'vc_' + i
             if verifier_data[vc] != 'None'   :
-                if verifier_data['profile'] == "EBSI-V2" :
-                    prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[verifier_data[vc]], "Input descriptor for credential " + i, "", "A")
-                
-                elif verifier_data['profile'] == "DBC" : 
-                    dbc_credential = json.load(open('verifiable_credentials/' + verifier_data[vc]  + '.jsonld' , 'r'))
-                    credentialSchema = dbc_credential.get('credentialSchema', {'uri' : 'unknown uri'}).get('uri')
-                    prez.add_constraint_with_group_and_schema( { 'uri' :  credentialSchema },
-                                                        verifier_data[vc],
-                                                        "Input descriptor for credential " + i,
-                                                        "A",
-                                                        id=verifier_data[vc].lower() + '_' + i)
-                else :
-                    prez.add_constraint_with_group("$.credentialSubject.type",
+                prez.add_constraint_with_group("$.credentialSubject.type",
                                                         verifier_data[vc],
                                                         "Input descriptor for credential " + i,
                                                         "",
@@ -525,19 +510,7 @@ def ebsi_login_qrcode(red, mode):
             for i in ["9", "10", "11", "12"] :
                 vc = 'vc_' + i
                 if verifier_data[vc] != 'None'   :
-                    if verifier_data['profile'] == "EBSI-V2" :
-                        prez.add_constraint_with_group("$.credentialSchema.id", type_2_schema[verifier_data[vc]], "Input descriptor for credential " + i, "", "B")
-                    
-                    elif verifier_data['profile'] == "DBC" : 
-                        dbc_credential = json.load(open('verifiable_credentials/' + verifier_data[vc]  + '.jsonld' , 'r'))
-                        credentialSchema = dbc_credential.get('credentialSchema', {'uri' : 'unknown uri'}).get('uri')
-                        prez.add_constraint_with_group_and_schema( { 'uri' :  credentialSchema },
-                                                        verifier_data[vc],
-                                                        "Input descriptor for credential " + i,
-                                                        "A",
-                                                        id=verifier_data[vc].lower() + '_' + i)
-                    else :
-                        prez.add_constraint_with_group("$.credentialSubject.type",
+                    prez.add_constraint_with_group("$.credentialSubject.type",
                                                             verifier_data[vc],
                                                             "Input descriptor for credential " + i,
                                                             "",
@@ -577,11 +550,8 @@ def ebsi_login_qrcode(red, mode):
         
         # presentation_definition
         presentation_definition = prez.get()
-        if verifier_data['profile'] in ["EBSI-V2", 'DBC'] :
-            authorization_request['claims'] = {"vp_token":{"presentation_definition": presentation_definition}}
-        else :
-            authorization_request['presentation_definition'] = presentation_definition
-            authorization_request['aud'] = 'https://self-issued.me/v2'
+        authorization_request['presentation_definition'] = presentation_definition
+        authorization_request['aud'] = 'https://self-issued.me/v2'
 
         # presentation_definition_uri
         if verifier_data.get('presentation_definition_uri') :
@@ -679,7 +649,6 @@ async def ebsi_login_endpoint(stream_id, red):
         data = json.loads(red.get(stream_id).decode())
         client_id = data['client_id']
         verifier_data = json.loads(read_ebsi_verifier(client_id))
-        #verifier_profile = profile[verifier_data['profile']]
         logging.info('Profile = %s', verifier_data['profile'])
     except :
         qrcode_status = "QR code expired"
@@ -688,7 +657,7 @@ async def ebsi_login_endpoint(stream_id, red):
     # prepare the verifier response to wallet
     response_format = "Unknown"
     vc_type = "Unknown"
-    state = 'unknown'
+    state_status = 'unknown'
     vp_type = "Unknown"
     presentation_submission_status = "Unknown"
     vp_token_status = "Unknown"
@@ -706,8 +675,7 @@ async def ebsi_login_endpoint(stream_id, red):
         response_format = "ok"
         logging.info('id_token received = %s', id_token)
 
-        if request.form.get('id_token') :
-            state = request.form.get('id_token')
+        state = request.form.get('id_token')
 
         # check types of vp
         if vp_token :
@@ -743,7 +711,7 @@ async def ebsi_login_endpoint(stream_id, red):
         presentation_submission_status = "Not received"
          
     # check presentation submission
-    if  access == "ok"  and vp_token and verifier_data['profile'] != "EBSI-V2" :
+    if  access == "ok"  and vp_token  :
         if not presentation_submission :
             presentation_submission_status = "Not found"
             access = "access_denied" 
@@ -779,9 +747,6 @@ async def ebsi_login_endpoint(stream_id, red):
             id_token_status += " id token sub != iss"    
         if id_token_sub != id_token_kid.split("#")[0] :
             id_token_status += " id token sub != kid "
-        
-    if  access == "ok" and verifier_data['profile'] in ["EBSI-V2"] and not id_token_jwk :
-        id_token_status += " jwk is missing "
         
     if  access == "ok" and id_token :
         if nonce != id_token_nonce :
@@ -841,7 +806,6 @@ async def ebsi_login_endpoint(stream_id, red):
                 access = "access_denied"
         else :
             vp_sub = json.loads(vp_token)['holder']
-            print(" json.loads(vp_token)['proof'] = ", json.loads(vp_token)['proof'])
             if json.loads(vp_token)['proof'].get('challenge') == nonce :
                 nonce_status = "ok"
             else :
@@ -858,10 +822,13 @@ async def ebsi_login_endpoint(stream_id, red):
     else :
         status_code = 200
 
+    if state :
+        state_status = state
+    
     response = {
       "created": datetime.timestamp(datetime.now()),
       "qrcode_status" : qrcode_status,
-      "state" : state,
+      "state" : state_status,
       "vp type" : vp_type,
       "vc type" : vc_type,
       "presentation_submission_status" : presentation_submission_status,

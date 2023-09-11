@@ -20,7 +20,7 @@ issuer_did = didkit.key_to_did("key", key)
 issuer_vm = issuer_did  + "#key-1"
 
 def init_app(app,red, mode) :
-    app.add_url_rule('/sandbox/issuer/ebsiv2',  view_func=issuer_ebsiv2, methods = ['GET'], defaults={'mode' : mode})
+    app.add_url_rule('/sandbox/issuer/ebsiv3_diploma',  view_func=issuer_ebsiv3_diploma, methods = ['GET'], defaults={'mode' : mode})
 
     app.add_url_rule('/sandbox/issuer/hedera',  view_func=issuer_hedera, methods = ['GET'], defaults={'mode' : mode}) # Test 3
     app.add_url_rule('/sandbox/issuer/hedera_2',  view_func=issuer_hedera_2, methods = ['GET'], defaults={'mode' : mode}) # test GreencyPher
@@ -79,7 +79,7 @@ def issuer_wallet_link(mode) :
     return redirect(qrcode) 
 
 
-def issuer_ebsiv2(mode):
+def issuer_ebsiv3_diploma(mode):
     if mode.myenv == 'aws' :
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/zxhaokccsi"
         client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"

@@ -304,15 +304,9 @@ def issuer_api_endpoint(issuer_id, red, mode) :
 
 def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state, issuer_profile, vc, user_pin_required, mode) :
     #  https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-pre-authorized-code-flow
-    if issuer_profile == 'EBSI-V2' :
-        offer  = { 
-            'issuer' : mode.server +'sandbox/ebsi/issuer/' + issuer_id,
-            'credential_type'  : type_2_schema[credential_type[0]],
-        }
-        if pre_authorized_code :
-            offer['pre-authorized_code'] = pre_authorized_code
+   
     # same as EBSIV2 but without schema
-    elif issuer_profile == 'GAIA-X' :
+    if issuer_profile == 'GAIA-X' :
         if len(credential_type)== 1 :
             credential_type = credential_type[0]
         offer  = { 
@@ -410,7 +404,7 @@ def ebsi_issuer_landing_page(issuer_id, stream_id, red, mode) :
                         mode)
     
     # credentilaoffer is passed by value 
-    if issuer_data['profile']  not in ['EBSI-V2', 'GAIA-X'] :
+    if issuer_data['profile']  not in [ 'GAIA-X'] :
         url_to_display = data_profile['oidc4vci_prefix'] + '?' + urlencode ({'credential_offer' : json.dumps(offer)})
         json_url  = {"credential_offer" : offer}
     else :
@@ -524,7 +518,6 @@ def ebsi_issuer_authorize(issuer_id, red, mode) :
             "request" : request_as_jwt,
         }
         ebsiv3_wallet_request = "openid:?" + urlencode(request_data)
-        print("ebsiv3_wallet_request = ", ebsiv3_wallet_request)
         return redirect (ebsiv3_wallet_request)
 
     offer_data = json.loads(red.get(issuer_state).decode())
@@ -792,12 +785,8 @@ async def ebsi_issuer_credential(issuer_id, red) :
     else :
         found = False
         logging.info("Multiple VCs of the same type")
-        print("credential type = ", credential_type)
-        print('identifier = ', identifier)
-        print("access token data vc = ", access_token_data['vc'])
         for one_type in access_token_data['vc'] :
             if one_type["type"] == credential_type :
-                print("one type list = ", one_type['list'])
                 for one_credential in one_type['list'] :
                     if one_credential['identifier'] == identifier :
                         credential = one_credential['value']
