@@ -28,15 +28,6 @@ import pyotp
 logging.basicConfig(level=logging.INFO)
 OFFER_DELAY = timedelta(seconds= 10*60)
 
-"""
-try :
-    ISSUER_KEY_DICT = json.load(open("/home/admin/sandbox/keys.json", "r"))['issuer_key']
-except :
-    ISSUER_KEY_DICT = json.load(open("/home/thierry/sandbox/keys.json", "r"))['issuer_key']
-
-issuer_key = jwk.JWK(**ISSUER_KEY_DICT) 
-public_issuer_key =  issuer_key.export(private_key=False, as_dict=True)
-"""
 
 def init_app(app,red, mode) :
     # endpoint for application

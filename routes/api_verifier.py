@@ -51,10 +51,8 @@ SCOPE_SUPPORTED = [
     'fantom'
 ]
 
-try :
-    RSA_KEY_DICT = json.load(open('/home/admin/sandbox/keys.json', 'r'))['RSA_key']
-except :
-    RSA_KEY_DICT = json.load(open('/home/thierry/sandbox/keys.json', 'r'))['RSA_key']
+RSA_KEY_DICT = json.load(open('keys.json', 'r'))['RSA_key']
+
 
 rsa_key = jwk.JWK(**RSA_KEY_DICT) 
 public_rsa_key =  rsa_key.export(private_key=False, as_dict=True)
