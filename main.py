@@ -151,6 +151,7 @@ api = Api(app, doc='/sandbox/greencypher/swagger',
         contact='contact@talao.io',
         description="API description for the GreenCypher issuer. An apikey is needed to access that API, contact@talao.io",
         titles="GreenCypher API")
+
 ns = api.namespace('GreenCypher', description='Market place issuer')
 
 user_model = api.model('User', {
@@ -195,7 +196,6 @@ response = api.model('Response', {
 
 @ns.route('/sandbox/greencypher/acx/issuer', endpoint='acx_issuer')
 class Issuer(Resource):
-       
     @api.response(200, 'Success')
     @api.doc(responses={404: 'Not Authorized'})
     @api.doc(responses={400: 'Bad Request'})

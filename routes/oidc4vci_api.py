@@ -643,9 +643,9 @@ def ebsi_issuer_token(issuer_id, red, mode) :
     }
     # authorization_details and multiple VC of the same type
     if isinstance(vc, list) :
-        identifiers = list()
         authorization_details = list()
         for vc_type in vc :
+            identifiers = list()
             types = vc_type['types']
             vc_list = vc_type['list']
             for one_vc in vc_list :
