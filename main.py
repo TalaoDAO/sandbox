@@ -147,7 +147,7 @@ authorizations = {
 
 api = Api(app, doc='/sandbox/greencypher/swagger',
         authorizations=authorizations,
-        url_scheme='https',
+        #url_scheme='https',
         contact='contact@talao.io',
         description="API description for the GreenCypher issuer. An apikey is needed to access that API, contact@talao.io",
         titles="GreenCypher API")
