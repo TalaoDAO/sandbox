@@ -397,7 +397,7 @@ def issuer_hedera(mode):
                     ]
             },
             {
-                "type" : "GreencyphaerPass",
+                "type" : "GreencypherPass",
                 "types" : ["VerifiableCredentials", "GreencypherPass"],
                 "list" : [
                     {
