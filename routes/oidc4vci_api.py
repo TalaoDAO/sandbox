@@ -781,9 +781,7 @@ async def ebsi_issuer_credential(issuer_id, red) :
     elif  credential_type in ['https://api.preprod.ebsi.eu/trusted-schemas-registry/v1/schemas/0xbf78fc08a7a9f28f5479f58dea269d3657f54f13ca37d380cd4e92237fb691dd'] :
         credential_type = 'VerifiableDiploma' 
     logging.info("credential type = %s", credential_type)
-    
-   
-    
+     
     if not identifier :
         logging.info("1 VC of the same type")
         try :
@@ -794,17 +792,20 @@ async def ebsi_issuer_credential(issuer_id, red) :
     else :
         found = False
         logging.info("Multiple VCs of the same type")
+        print("credential type = ", credential_type)
+        print('identifier = ', identifier)
+        print("access token data vc = ", access_token_data['vc'])
         for one_type in access_token_data['vc'] :
             if one_type["type"] == credential_type :
-                credential_list = one_type['list']
-                for one_credential in credential_list :
+                print("one type list = ", one_type['list'])
+                for one_credential in one_type['list'] :
                     if one_credential['identifier'] == identifier :
                         credential = one_credential['value']
                         found = True
                         break
                 break    
         if not found :
-            return Response(**manage_error('unsupported_credential_type', 'The credential identiier is not found', red, stream_id=stream_id))
+            return Response(**manage_error('unsupported_credential_type', 'The credential identifier is not found', red, stream_id=stream_id))
     
     credential_signed = await sign_credential(credential,
                                             proof_payload.get('iss'),
