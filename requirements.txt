@@ -19,3 +19,4 @@ gevent
 py-multibase
 py-multicodec
 flask-restx
+pysodium

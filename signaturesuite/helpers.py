@@ -5,8 +5,9 @@ import base58
 from eth_keys import keys
 from eth_utils import decode_hex
 import didkit
-from pytezos.crypto.encoding import base58_encode
-from pytezos.crypto.key import Key
+
+#from pytezos.crypto.encoding import base58_encode
+#from pytezos.crypto.key import Key
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -50,7 +51,7 @@ def jwk_to_ethereum(jwk) :
     address = pub_key.to_checksum_address()
     return private_key, public_key, address
 
-
+"""
 def jwk_to_tezos(jwk) :
     if isinstance(jwk, str) :
         jwk = json.loads(jwk)
@@ -70,18 +71,19 @@ def jwk_to_tezos(jwk) :
     pbk = sk.public_key()
     pkh = sk.public_key_hash()
     return tez_pvk, pbk, pkh
+"""
 
-
+"""
 def ethereum_to_tezos(eth_pvk) :
-    """
-    @param : eth_pvk = "0X....."
-    """
+    
+    #@param : eth_pvk = "0X....."
+    
     tez_pvk = base58_encode(bytes.fromhex(eth_pvk[2:]), prefix = b'spsk')
     sk = Key.from_encoded_key(tez_pvk.decode())
     pbk = sk.public_key()
     pkh = sk.public_key_hash()
     return tez_pvk.decode(), pbk, pkh
-
+"""
 
 def ethereum_to_jwk256k(private_key) :
     """ pour did:key """
