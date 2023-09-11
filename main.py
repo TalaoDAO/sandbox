@@ -146,7 +146,7 @@ authorizations = {
 }
 
 api = Api(app, doc='/sandbox/greencypher/swagger',
-        authorizations=authorizations,
+        #authorizations=authorizations,
         description="API description for the GreenCypher issuer. An apikey is needed to access that API, contact@talao.cio",
         titles="GreenCypher API")
 ns = api.namespace('GreenCypher', description='Market place issuer')
