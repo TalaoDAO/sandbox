@@ -188,7 +188,7 @@ def issuer_hedera_3(mode):
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/beguvsaeox"
         client_secret = "72155eb7-3b5b-11ee-a601-b33f6ebca22b"
     
-    offer = ['EmailPass']
+    offer = ['GreencypherPass']
     headers = {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret
