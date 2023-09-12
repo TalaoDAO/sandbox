@@ -241,10 +241,15 @@ def issuer_api_endpoint(issuer_id, red, mode) :
     if request.json.get('user_pin_required') and not request.json.get('user_pin') :
         return Response(**manage_error("Unauthorized", "User pin is not set", red, status=401))
     
+    # check if user is string
+    if request.json.get('user_pin_required') and request.json.get('user_pin') :
+        if not isinstance(request.json.get('user_pin'), str):
+            return Response(**manage_error("Unauthorized", "User pin must be string", red, status=401))
+    
     # check if credential offered is supported
     issuer_profile = profile[issuer_data['profile']]
     credential_type = credential_type if isinstance(credential_type, list) else [credential_type]
-    for _vc in credential_type :
+    for _vc in credential_type:
         if _vc not in issuer_profile['credentials_types_supported'] :
             logging.error("Credential not supported -> %s", _vc)
             return Response(**manage_error("Unauthorized", "Credential not supported " + _vc, red, status=401))
@@ -260,7 +265,7 @@ def issuer_api_endpoint(issuer_id, red, mode) :
                 mode.server + 'sandbox/ebsi/issuer/' + issuer_id,
                 issuer_data['verification_method'],
                 nonce
-             )
+            )
         else :
             pre_authorized_code =  str(uuid.uuid1())
     
@@ -457,20 +462,20 @@ def ebsi_issuer_authorize(issuer_id, red, mode) :
             'error' : error
         }
         return redirect(redirect_uri + '?' + urlencode(resp))
-   
-    try :
+
+    try:
         response_type = request.args["response_type"]
         scope = request.args['scope']
         client_id = request.args['client_id']
         authorization_details = request.args["authorization_details"]
         redirect_uri = request.args['redirect_uri']
         nonce = request.args.get("nonce")
-        issuer_state=request.args['issuer_state']
+        issuer_state = request.args['issuer_state']
         code_challenge = request.args.get("code_challenge")
         code_challenge_method = request.args.get("code_challenge_method")
         client_metadata = request.args.get("client_metadata")
         state = request.args.get('state')
-    except :
+    except:
         return jsonify('invalid_request'), 400
     
     logging.info('redirect_uri = %s', redirect_uri)
@@ -595,35 +600,37 @@ def ebsi_issuer_token(issuer_id, red, mode) :
     logging.info("token endpoint request = %s", json.dumps(request.form))
 
     grant_type =  request.form.get('grant_type')
-    if not grant_type :
+    if not grant_type:
         return Response(**manage_error("invalid_request", "Request format is incorrect", red))
     
-    if grant_type == 'urn:ietf:params:oauth:grant-type:pre-authorized_code' :
-        code = request.form.get('pre-authorized_code')   
+    if grant_type == 'urn:ietf:params:oauth:grant-type:pre-authorized_code':
+        code = request.form.get('pre-authorized_code')
         user_pin = request.form.get('user_pin')
         logging.info('user_pin = %s', user_pin)
 
-    elif grant_type == 'authorization_code' :
+    elif grant_type == 'authorization_code':
         code = request.form.get('code')
     
-    if not code : 
+    if not code: 
         logging.warning('code is missing')
-        return Response(**manage_error("invalid_grant", "Request format is incorrect", red))
+        return Response(**manage_error("invalid_request", "Request format is incorrect", red))
 
     code_verifier = request.form.get('code_verifier')
-    logging.info('code_verifier = %s', code_verifier)
+    logging.info('PKCE code_verifier = %s', code_verifier)
     logging.info('code = %s', code)
 
-    try :
+    try:
         data = json.loads(red.get(code).decode())
-    except :
-        return Response(**manage_error("invalid_grant", "Grant code expired", red))     
+    except Exception:
+        return Response(**manage_error("invalid_request", "Grant code expired", red))     
     
+    # incorrect request
     if data.get('user_pin_required') and not user_pin :
-            return Response(**manage_error("invalid_request", "User pin is missing", red))
+        return Response(**manage_error("invalid_request", "User pin is missing", red))
     
-    if data.get('user_pin_required') and data.get('user_pin') != user_pin :
-            return Response(**manage_error("invalid_grant", "User pin is incorrect", red))
+    # wrong PIN
+    if data.get('user_pin_required') and data.get('user_pin') != user_pin:
+        return Response(**manage_error("invalid_grant", "User pin is incorrect", red))
 
     # token response
     access_token = str(uuid.uuid1())

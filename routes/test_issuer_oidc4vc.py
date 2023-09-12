@@ -26,7 +26,7 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/issuer/hedera_2',  view_func=issuer_hedera_2, methods = ['GET'], defaults={'mode' : mode}) # test GreencyPher
     app.add_url_rule('/sandbox/issuer/hedera_30',  view_func=issuer_hedera_3, methods = ['GET'], defaults={'mode' : mode}) # test 9
 
-    app.add_url_rule('/sandbox/issuer/gaia-x',  view_func=issuer_gaiax, methods = ['GET'], defaults={'mode' : mode})
+    app.add_url_rule('/sandbox/issuer/gaia-x',  view_func=issuer_gaiax, methods = ['GET'], defaults={'mode' : mode}) # test 4
 
     app.add_url_rule('/sandbox/issuer/default',  view_func=issuer_default, methods = ['GET'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/issuer/default_2',  view_func=issuer_default_2, methods = ['GET'], defaults={'mode' : mode, 'red' : red}) # test 5
@@ -69,6 +69,8 @@ def issuer_wallet_link(mode) :
         "issuer_state" : str(uuid.uuid1()),
         "credential_type" : vc,
         "pre-authorized_code" : True,
+        "user_pin_required" : True,
+        "user_pin" : "100000",
         "callback" : mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
@@ -125,7 +127,7 @@ def issuer_ebsiv31(mode):
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/nfwvbyacnw"
         client_secret = "4f64b6f5-3adf-11ee-a601-b33f6ebca22b"
     
-    offer = ['VerifiableDiploma']
+    offer = ['VerifiableDiploma', 'EmailPass']
     headers = {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret
@@ -328,7 +330,7 @@ def issuer_default_3(mode): # Test 6
     return redirect(qrcode) 
   
 
-def issuer_gaiax(mode):
+def issuer_gaiax(mode): # test 4
     if mode.myenv == 'aws' :
         api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/mfyttabosy"
         client_secret = "c0ab5d96-3113-11ee-a3e3-0a1628958560"
@@ -336,7 +338,7 @@ def issuer_gaiax(mode):
         api_endpoint = mode.server + "sandbox/ebsi/issuer/api/cqmygbreop"
         client_secret = "a71f33f9-3100-11ee-825b-9db9eb02bfb8"
 
-    offer = ["EmployeeCredential"]
+    offer = ["EmailPass"]
     headers = {
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret
@@ -348,13 +350,14 @@ def issuer_gaiax(mode):
         "pre-authorized_code" : True,
         "callback" : mode.server + 'sandbox/issuer/callback',
         }
+    print('API data = ', data)
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try :
         qrcode =  resp.json()['redirect_uri']
     except :
         return jsonify("No qr code")
     return redirect(qrcode) 
-   
+
 
 # Test 3, multiple VC
 def issuer_hedera(mode):

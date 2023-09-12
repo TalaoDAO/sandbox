@@ -10,7 +10,7 @@ profile = {
             'oidc4vci_prefix' : 'openid-credential-offer://',
             'siopv2_prefix' : 'openid-vc://',
             'oidc4vp_prefix' : 'openid-vc://',
-            'credentials_types_supported' : ['VerifiableDiploma', 'VerifiableId'],
+            'credentials_types_supported' : ['VerifiableDiploma', 'VerifiableId', 'EmailPass'],
             'credentials_supported' : [
                 {
                     "format": "jwt_vc",
@@ -31,6 +31,33 @@ profile = {
                     "display": [
                         {
                             "name": "Verifiable diploma",
+                            "locale": "en-GB"
+                        }
+                    ],
+                    "trust_framework": {
+                        "name": "ebsi",
+                        "type": "Accreditation",
+                        "uri": "TIR link towards accreditation"
+                    }
+                },
+                {
+                    "format": "jwt_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "EmailPass"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Email proof",
                             "locale": "en-GB"
                         }
                     ],
@@ -506,18 +533,6 @@ profile = {
             'credential_manifest_support' : False,
             'service_documentation' : 'https://identity.foundation/jwt-vc-presentation-profile/'
 
-        },
-    'DBC' :
-        {
-            'verifier_vp_type' : 'jwt_vp',
-            'siopv2_prefix' : 'openid-vc://',
-            'oidc4vp_prefix' : 'openid://',
-            'credentials_types_supported' : ['EmployeeCredential', 'VerifiableId', 'EmailPass'],
-            'schema_for_type' : False,
-            'authorization_server_support' : False,
-            'credential_manifest_support' : False,
-            'service_documentation' : 'https://identity.foundation/jwt-vc-presentation-profile/'
-
-        },
+        }
 
 }
