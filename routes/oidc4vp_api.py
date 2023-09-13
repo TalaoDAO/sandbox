@@ -3,6 +3,8 @@ This is a bridge between the SIOPV2 flow used by EBSI with a verifier and a stan
 
 Customer can use any OpenId lib in its own framework to access an EBSI conformant wallet
 
+OIDC4VP : https://openid.net/specs/openid-4-verifiable-presentations-1_0.html
+SIOPV2 : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html
 
 """
 
@@ -86,7 +88,7 @@ def ebsi_build_id_token(client_id, sub, nonce, mode) :
     token = jwt.JWT(header=header,claims=payload, algs=["RS256"])
     token.make_signed_token(verifier_key)
     return token.serialize()
-   
+
 
 def ebsi_jwks() :
     return jsonify({"keys" : [public_rsa_key]})
