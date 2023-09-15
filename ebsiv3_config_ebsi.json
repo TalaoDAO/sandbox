@@ -1,0 +1,143 @@
+{
+  "credential_issuer": "https://api-conformance.ebsi.eu/conformance/v3/issuer-mock",
+  "authorization_server": "https://api-conformance.ebsi.eu/conformance/v3/auth-mock",
+  "credential_endpoint": "https://api-conformance.ebsi.eu/conformance/v3/issuer-mock/credential",
+  "deferred_credential_endpoint": "https://api-conformance.ebsi.eu/conformance/v3/issuer-mock/credential_deferred",
+  "credentials_supported": [
+    {
+      "format": "jwt_vc",
+      "types": [
+        "VerifiableCredential",
+        "VerifiableAttestation",
+        "VerifiableAuthorisationToOnboard"
+      ],
+      "trust_framework": {
+        "name": "ebsi",
+        "type": "Accreditation",
+        "uri": "TIR link towards accreditation"
+      },
+      "display": [
+        {
+          "name": "Verifiable Authorisation to onboard",
+          "locale": "en-GB"
+        }
+      ]
+    },
+    {
+      "format": "jwt_vc",
+      "types": [
+        "VerifiableCredential",
+        "VerifiableAttestation",
+        "VerifiableAccreditation",
+        "VerifiableAccreditationToAttest"
+      ],
+      "trust_framework": {
+        "name": "ebsi",
+        "type": "Accreditation",
+        "uri": "TIR link towards accreditation"
+      },
+      "display": [
+        {
+          "name": "Verifiable Accreditation to attest",
+          "locale": "en-GB"
+        }
+      ]
+    },
+    {
+      "format": "jwt_vc",
+      "types": [
+        "VerifiableCredential",
+        "VerifiableAttestation",
+        "VerifiableAccreditation",
+        "VerifiableAccreditationToAccredit"
+      ],
+      "trust_framework": {
+        "name": "ebsi",
+        "type": "Accreditation",
+        "uri": "TIR link towards accreditation"
+      },
+      "display": [
+        {
+          "name": "Verifiable Accreditation to accredit",
+          "locale": "en-GB"
+        }
+      ]
+    },
+    {
+      "format": "jwt_vc",
+      "types": [
+        "VerifiableCredential",
+        "VerifiableAttestation",
+        "VerifiableAuthorisationForTrustChain"
+      ],
+      "trust_framework": {
+        "name": "ebsi",
+        "type": "Accreditation",
+        "uri": "TIR link towards accreditation"
+      },
+      "display": [
+        {
+          "name": "Verifiable Authorisation to issue verifiable tokens",
+          "locale": "en-GB"
+        }
+      ]
+    },
+    {
+      "format": "jwt_vc",
+      "types": [
+        "VerifiableCredential",
+        "VerifiableAttestation",
+        "CTAAQualificationCredential"
+      ],
+      "trust_framework": {
+        "name": "ebsi",
+        "type": "Accreditation",
+        "uri": "TIR link towards accreditation"
+      },
+      "display": [
+        {
+          "name": "Verifiable Attestation Conformance Qualification To Accredit & Authorise",
+          "locale": "en-GB"
+        }
+      ]
+    },
+    {
+      "format": "jwt_vc",
+      "types": [
+        "VerifiableCredential",
+        "VerifiableAttestation",
+        "CTWalletQualificationCredential"
+      ],
+      "trust_framework": {
+        "name": "ebsi",
+        "type": "Accreditation",
+        "uri": "TIR link towards accreditation"
+      },
+      "display": [
+        {
+          "name": "Verifiable Attestation Conformance Qualification Holder Wallet",
+          "locale": "en-GB"
+        }
+      ]
+    },
+    {
+      "format": "jwt_vc",
+      "types": [
+        "VerifiableCredential",
+        "VerifiableAttestation",
+        "CTIssueQualificationCredential"
+      ],
+      "trust_framework": {
+        "name": "ebsi",
+        "type": "Accreditation",
+        "uri": "TIR link towards accreditation"
+      },
+      "display": [
+        {
+          "name": "Verifiable Attestation Conformance Qualification Issue to Holder",
+          "locale": "en-GB"
+        }
+      ]
+    }
+  ]
+}
