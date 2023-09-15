@@ -70,7 +70,7 @@ def issuer_wallet_link(mode) :
         "credential_type" : vc,
         "pre-authorized_code" : True,
         "user_pin_required" : True,
-        "user_pin" : "100000",
+        "user_pin": "555555",
         "callback" : mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
@@ -115,7 +115,7 @@ def issuer_ebsiv3_diploma(mode):
     except :
         return jsonify("No qr code")
     return redirect(qrcode) 
-  
+
 
 
 # Test 8
@@ -132,7 +132,7 @@ def issuer_ebsiv31(mode):
         'Content-Type': 'application/json',
         'Authorization' : 'Bearer ' + client_secret
     }
-   
+
     data = { 
         "vc" : build_credential_offered(offer), 
         "issuer_state" : str(uuid.uuid1()),

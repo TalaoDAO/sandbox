@@ -350,8 +350,9 @@ def issuer_api_endpoint(issuer_id, red, mode):
         return Response(
             **manage_error("Unauthorized", "User pin is not set", red, status=401)
         )
+    logging.info('user PIN stored =  %s', request.json.get("user_pin"))
 
-    # check if user is string
+    # check if user pin is string
     if request.json.get("user_pin_required") and request.json.get("user_pin") and not isinstance(request.json.get("user_pin"), str):
         return Response(
             **manage_error(
@@ -757,6 +758,30 @@ def issuer_token(issuer_id, red, mode):
     https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
     """
     logging.info("token endpoint request = %s", json.dumps(request.form))
+    
+    # error response https://datatracker.ietf.org/doc/html/rfc6749#section-4.2.2.1
+    """
+    error
+        invalid_request
+            The request is missing a required parameter, includes an
+            invalid parameter value, includes a parameter more than
+            once, or is otherwise malformed.
+
+        unauthorized_client
+            The client is not authorized to request an access token
+            using this method.
+
+        access_denied
+            The resource owner or authorization server denied the
+            request.
+
+        unsupported_response_type
+            The authorization server does not support obtaining an
+            access token using this method.
+
+        invalid_scope
+            The requested scope is invalid, unknown, or malformed.
+    """
 
     grant_type = request.form.get("grant_type")
     if not grant_type:
@@ -764,10 +789,15 @@ def issuer_token(issuer_id, red, mode):
             **manage_error("invalid_request", "Request format is incorrect", red)
         )
 
+    if grant_type == "urn:ietf:params:oauth:grant-type:pre-authorized_code" and not request.form.get("pre-authorized_code"):
+        return Response(
+            **manage_error("invalid_request", "Request format is incorrect", red)
+        )
+
     if grant_type == "urn:ietf:params:oauth:grant-type:pre-authorized_code":
         code = request.form.get("pre-authorized_code")
         user_pin = request.form.get("user_pin")
-        logging.info("user_pin = %s", user_pin)
+        logging.info("user_pin recieved = %s", user_pin)
 
     elif grant_type == "authorization_code":
         code = request.form.get("code")
@@ -780,20 +810,24 @@ def issuer_token(issuer_id, red, mode):
 
     code_verifier = request.form.get("code_verifier")
     logging.info("PKCE code_verifier = %s", code_verifier)
+    # TODO check code verifier
     logging.info("code = %s", code)
 
+    # Code expired
     try:
         data = json.loads(red.get(code).decode())
     except Exception:
-        return Response(**manage_error("invalid_request", "Grant code expired", red))
+        return Response(**manage_error("access_denied", "Grant code expired", red, status=404))
 
-    # incorrect request
+    # user PIN missing
     if data.get("user_pin_required") and not user_pin:
         return Response(**manage_error("invalid_request", "User pin is missing", red))
 
     # wrong PIN
+    print(data.get("user_pin"))
+    print(user_pin)
     if data.get("user_pin_required") and data.get("user_pin") != user_pin:
-        return Response(**manage_error("invalid_grant", "User pin is incorrect", red))
+        return Response(**manage_error("access_denied", "User pin is incorrect", red, status=404))
 
     # token response
     access_token = str(uuid.uuid1())
@@ -806,18 +840,16 @@ def issuer_token(issuer_id, red, mode):
     }
     # authorization_details and multiple VC of the same type
     if isinstance(vc, list):
-        authorization_details = list()
+        authorization_details = []
         for vc_type in vc:
-            identifiers = list()
             types = vc_type["types"]
             vc_list = vc_type["list"]
-            for one_vc in vc_list:
-                identifiers.append(one_vc["identifier"])
+            identifiers = [one_vc["identifier"] for one_vc in vc_list]
             authorization_details.append(
                 {
                     "type": "openid_credential",
                     "locations": [
-                        mode.server + "/sandbox/ebsi/issuer/api/" + issuer_id
+                        f"{mode.server}/sandbox/ebsi/issuer/api/{issuer_id}"
                     ],
                     "format": "jwt_vc",
                     "types": types,

@@ -120,7 +120,7 @@
 
                           <div class="card-header py-3">
                   
-                         
+                        
                               <p style="color:#09060f;" class="card-title m-0 font-weight-bold">Parameters to setup the client</p>
                             
                           </div>
@@ -157,6 +157,16 @@
 
                             
                               </div>
+                              <div class="form-row mb-3">
+
+                                <div class="col">
+                                  <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" {{client_id_as_DID}} name="client_id_as_DID" id="flexCheckDefault_1">
+                                    <label class="form-check-label" for="flexCheckDefault_1">Client_id as a DID</label>
+                                  </div>
+                                </div> 
+                              
+                              </div> 
 
                               <ul class="nav nav-tabs card-header-tabs pull-right mb-3"  id="myTab" role="tablist">
                                 
@@ -174,15 +184,11 @@
                                 <li class="nav-item">
                                   <a class="nav-link" id="profile-tab" data-toggle="tab" href="#webflow" role="tab" aria-controls="webflow" aria-selected="false">Webflow</a>
                               </li>
-                               
+                              
                             </ul>
 
 
-                          
-
-
-                         
-             
+                                      
 
               <div class="tab-content" id="myTabContent">
 
@@ -263,7 +269,7 @@
                             </div>
 
                 </div>
-                         
+                        
                 <div class="tab-pane" id="static" role="tabpanel" aria-labelledby="miniorange-tab">
 
                   <div class="form-group row">
@@ -272,7 +278,7 @@
                       </div>
                   </div>
 
-                                 
+                                
                   <div class="form-group row">
                     <label class="col-sm-6  col-form-label"><strong>OAuth callback URL</strong></label>
                     <div class="col-sm-6">
@@ -447,7 +453,7 @@
                                   {{vc_select_1|safe}}  
                                   </select></div>
                             </div>  
-                           
+                        
                             <div class="col">
                               <div class="form-group"><label><strong>In wallet message credential 1</strong><br></label><textarea class="form-control" name="reason_1" >{{reason_1}}</textarea></div>
                             </div>
