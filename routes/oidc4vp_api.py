@@ -576,7 +576,7 @@ def ebsi_login_qrcode(red, mode):
         
         # presentation_definition
         presentation_definition = prez.get()
-        authorization_request['presentation_definition'] = presentation_definition
+        authorization_request['presentation_definition'] = presentation_definition # TODO
         authorization_request['aud'] = 'https://self-issued.me/v2'
 
         # presentation_definition_uri
@@ -592,7 +592,7 @@ def ebsi_login_qrcode(red, mode):
         authorization_request['scope'] = 'openid'
         prefix = verifier_profile["siopv2_prefix"]
         if verifier_data['profile'] != "EBSI-V3":
-            authorization_request['registration'] = json.load(open('siopv2_config.json', 'r'))
+            authorization_request['registration'] = json.dumps(json.load(open('siopv2_config_light.json', 'r'))) # TODO   
         else:
             authorization_request["response_mode"] = 'direct_post'
     
