@@ -92,9 +92,8 @@ def saas_logout():
 
 def saas_login(mode):
     session.clear()
-    print('mode server = ', mode.server)
     if mode.myenv == 'aws':
-        client_id = "pppbfvflvu"
+        client_id = "cbtzxuotun"
     else:
         mode.server == "http://192.168.0.65:3000/"
         client_id = "zpfzzwfstl"
@@ -105,9 +104,8 @@ def saas_login(mode):
 
 def saas_login_2(mode):
     session.clear()
-    print('mode server = ', mode.server)
     if mode.myenv == 'aws':
-        client_id = "cbtzxuotun"
+        client_id = "pppbfvflvu"
     else: 
         mode.server == "http://192.168.0.65:3000/"
         client_id = "hzohfwaxcp"
