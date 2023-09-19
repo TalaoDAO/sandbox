@@ -35,10 +35,21 @@
                   <div class="card shadow border-dark " style="border-radius: 4%; background-color: {{qrcode_background_color}} ">
                     <img class="card-img-top p-4" src="{{ qrcode(url) }}">
                   </div>
-
-            
-            </div>
               </div>
+              <br>
+            <form action="/sandbox/ebsi/login?code={{code}}" method="POST">
+              <div class="form-group"><select class="custom-select form-select-lg mb-3" aria-label=".form-select-lg example" name="prefix"  >
+                <option value="openid-vc://">openid-vc://</option>
+                <option value="openid://">openid://</option>
+                <option value="siopv2://">siopv2://</option>
+            </select></div>
+            <div class="text-center">
+
+                <div class="col"><button style="background-color: #09060f;"  class="btn btn-primary btn-sm" name="button" value="update" type="submit">Refresh</button></div>
+            </div>
+              </form>
+            </div>
+
           </div>
               <div class="text-center mt-5">
               <h2>URL</h2><br>

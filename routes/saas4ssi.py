@@ -17,27 +17,34 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/saas4ssi',  view_func=saas_home, methods = ['GET', 'POST'])
     app.add_url_rule('/sandbox/saas4ssi/dids',  view_func=dids, methods = ['GET'])
     app.add_url_rule('/sandbox/saas4ssi/menu',  view_func=saas_menu, methods = ['GET', 'POST'])
+    
     app.add_url_rule('/sandbox/saas4ssi/login',  view_func=saas_login, methods = ['GET', 'POST'], defaults={'mode' : mode})
+    app.add_url_rule('/sandbox/saas4ssi/login_2',  view_func=saas_login_2, methods = ['GET', 'POST'], defaults={'mode' : mode})
+
     app.add_url_rule('/sandbox/saas4ssi/signup',  view_func=saas_signup, methods = ['GET', 'POST'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/saas4ssi/admin',  view_func=admin, methods = ['GET', 'POST'], defaults={'mode' : mode})
     app.add_url_rule('/sandbox/saas4ssi/callback',  view_func=saas_callback, methods = ['GET', 'POST'], defaults={'mode' : mode}) # signup
-    app.add_url_rule('/sandbox/saas4ssi/callback_2',  view_func=saas_callback_2, methods = ['GET', 'POST']) # login
+    app.add_url_rule('/sandbox/saas4ssi/callback_4',  view_func=saas_callback_4, methods = ['GET', 'POST'], defaults={'mode' : mode}) # signup ebsi v3
+
+    
+    app.add_url_rule('/sandbox/saas4ssi/callback_2',  view_func=saas_callback_2, methods=['GET', 'POST']) # login
+    app.add_url_rule('/sandbox/saas4ssi/callback_3',  view_func=saas_callback_3, methods=['GET', 'POST']) # login with ebsi v3 
+
     app.add_url_rule('/sandbox/saas4ssi/logout',  view_func=saas_logout, methods = ['GET', 'POST'])
     app.add_url_rule('/sandbox/saas4ssi/webhook',  view_func=default_webhook, methods = ['POST'])
     
     # access to issuers and verifiers
-    app.add_url_rule('/sandbox/saas4ssi/verifier',  view_func=saas_verifier, methods = ['GET', 'POST'])
-    app.add_url_rule('/sandbox/saas4ssi/issuer',  view_func=saas_issuer, methods = ['GET', 'POST'])
-    app.add_url_rule('/sandbox/saas4ssi/beacon',  view_func=saas_beacon, methods = ['GET', 'POST'])
-    app.add_url_rule('/sandbox/saas4ssi/beacon/verifier',  view_func=saas_beacon_verifier, methods = ['GET', 'POST'])
-    app.add_url_rule('/sandbox/saas4ssi/ebsi/verifier',  view_func=saas_ebsi_verifier, methods = ['GET', 'POST'])
-    app.add_url_rule('/sandbox/saas4ssi/ebsi/issuer',  view_func=saas_ebsi_issuer, methods = ['GET', 'POST'])
+    app.add_url_rule('/sandbox/saas4ssi/verifier',  view_func=saas_verifier, methods=['GET', 'POST'])
+    app.add_url_rule('/sandbox/saas4ssi/issuer',  view_func=saas_issuer, methods=['GET', 'POST'])
+    app.add_url_rule('/sandbox/saas4ssi/beacon',  view_func=saas_beacon, methods=['GET', 'POST'])
+    app.add_url_rule('/sandbox/saas4ssi/beacon/verifier',  view_func=saas_beacon_verifier, methods=['GET', 'POST'])
+    app.add_url_rule('/sandbox/saas4ssi/ebsi/verifier',  view_func=saas_ebsi_verifier, methods=['GET', 'POST'])
+    app.add_url_rule('/sandbox/saas4ssi/ebsi/issuer',  view_func=saas_ebsi_issuer, methods=['GET', 'POST'])
 
     # test
-    app.add_url_rule('/sandbox/issuer/oidc/test',  view_func=issuer_oidc_test, methods = ['GET', 'POST'])
-    app.add_url_rule('/sandbox/verifier/oidc/test',  view_func=verifier_oidc_test, methods = ['GET', 'POST'])
+    app.add_url_rule('/sandbox/issuer/oidc/test',  view_func=issuer_oidc_test, methods=['GET', 'POST'])
+    app.add_url_rule('/sandbox/verifier/oidc/test',  view_func=verifier_oidc_test, methods=['GET', 'POST'])
 
-   
     return
 
 
@@ -87,26 +94,34 @@ def saas_login(mode):
     session.clear()
     print('mode server = ', mode.server)
     if mode.myenv == 'aws':
-        client_id = "cbtzxuotun"
-    elif mode.server == "http://192.168.0.65:3000/" :
+        client_id = "pppbfvflvu"
+    else:
+        mode.server == "http://192.168.0.65:3000/"
         client_id = "zpfzzwfstl"
-    elif mode.server == "http://192.168.1.54:3000/" : # biscarosse
-        client_id = "risgqghrrq"
-    else :
-        client_id = "grtqvinups"
     url = mode.server + "sandbox/op/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/saas4ssi/callback_2"
-    print('url =', url)
+    print('url = ', url)
+    return redirect (url) 
+
+
+def saas_login_2(mode):
+    session.clear()
+    print('mode server = ', mode.server)
+    if mode.myenv == 'aws':
+        client_id = "cbtzxuotun"
+    else: 
+        mode.server == "http://192.168.0.65:3000/"
+        client_id = "hzohfwaxcp"
+    url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/saas4ssi/callback_3"
     return redirect (url)
-       
+
 
 def saas_signup(mode):
     if mode.myenv == 'aws':
-        client_id = "ovuifzktle"
-    elif mode.server == "http://192.168.0.65:3000/" : # houdan
-        client_id = "evqozlvnsm"
-    else :
-        client_id = "tjxhcdbxei"  # paris
-    url = mode.server + "sandbox/op/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/saas4ssi/callback"
+        client_id = "nveyccqfoq"
+    else:
+        mode.server == "http://192.168.0.65:3000/"
+        client_id = "nkkxhmxxhw"
+    url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/saas4ssi/callback_4"
     return redirect (url)
 
 
@@ -149,6 +164,34 @@ def saas_callback(mode):
         return redirect ("/sandbox/saas4ssi")
 
 
+# Register with EBSI v3
+def saas_callback_4(mode):
+    if request.args.get("error") :
+        logging.warning("access denied")
+        session.clear()
+        return redirect ("/sandbox/saas4ssi")
+    id_token = request.args['id_token']
+    s = id_token.split('.')[1]
+    payload = base64.urlsafe_b64decode(s + '=' * (4 - len(s) % 4)) 
+    login_name = json.loads(payload.decode())['sub']
+    if not db_user_api.read(login_name) :
+        data = op_constante.user
+        data["did"] = json.loads(payload.decode())['sub']
+        data['login_name'] = session['login_name'] = login_name
+        session['is_connected'] = True
+        db_user_api.create(login_name, data)
+        try :
+            message.message("Registration on Saas Altme of " + login_name , "thierry@altme.io", "New user = " + login_name, mode)
+        except Exception:
+            pass
+        return redirect ('/sandbox/saas4ssi/menu')
+    else :
+        logging.warning('user already exists')
+        flash("You are already registered, you can login !", "warning")
+        return redirect ("/sandbox/saas4ssi")
+
+
+
 # login
 def saas_callback_2():
     if request.args.get("error") :
@@ -159,6 +202,30 @@ def saas_callback_2():
     s = id_token.split('.')[1]
     payload = base64.urlsafe_b64decode(s + '=' * (4 - len(s) % 4))
     login_name = json.loads(payload.decode())['email']
+    if login_name in admin_list :
+        session['login_name'] = "admin"
+        session['is_connected'] = True
+        return redirect ('/sandbox/saas4ssi/menu')
+    elif db_user_api.read(login_name) :
+        session['login_name'] = login_name
+        session['is_connected'] = True
+        return redirect ('/sandbox/saas4ssi/menu')
+    else :
+        logging.warning('erreur, user does not exist')
+        session.clear()
+        return render_template ("access_denied.html")
+    
+    
+# login
+def saas_callback_3():
+    if request.args.get("error") :
+        logging.warning("access denied")
+        session.clear()
+        return redirect ("/sandbox/saas4ssi")
+    id_token = request.args['id_token']
+    s = id_token.split('.')[1]
+    payload = base64.urlsafe_b64decode(s + '=' * (4 - len(s) % 4))
+    login_name = json.loads(payload.decode())['sub']
     if login_name in admin_list :
         session['login_name'] = "admin"
         session['is_connected'] = True

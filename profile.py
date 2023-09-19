@@ -345,7 +345,7 @@ profile = {
         {
             'issuer_vc_type': 'jwt_vc',
             'verifier_vp_type': 'jwt_vp',
-            'oidc4vci_prefix': 'openid-credential-offer-hedera://' ,
+            'oidc4vci_prefix': 'openid-credential-offer-hedera://',
             'authorization_server_support': False,
             'siopv2_prefix': 'openid-hedera://',
             'oidc4vp_prefix': 'openid-hedera://',

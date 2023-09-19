@@ -30,8 +30,13 @@
   },
   "subject_syntax_types_supported": [
     "did:key",
+    "did:web",
     "did:ebsi",
+    "did:tz",
+    "did:ion",
+    "did:ethr",
+    "did:polygonid",
     "did:pkh",
-    "did:web"
+    "did:hedera"
   ]
 }

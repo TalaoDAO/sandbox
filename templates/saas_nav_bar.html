@@ -60,8 +60,14 @@
           {% endif %}
 
           {% if not session['is_connected']  %}
-          <li class="nav-item active d-none d-md-block">
-            <a class="nav-link" style="color: rgb(54, 24, 88); margin-bottom: 0" href="/sandbox/saas4ssi/login">Login</a>
+          <li class="nav-item dropdown d-none d-md-block">
+            <a class="nav-link" style="color: rgb(54, 24, 88); margin-bottom: 0"  href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Login
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="/sandbox/saas4ssi/login">Registration made before 19 sept 2023 </a>
+              <a class="dropdown-item" href="/sandbox/saas4ssi/login_2">Registration made after the 19th sept 2023</a>
+            </div>
           </li>
           {% endif %}
 

@@ -14,13 +14,11 @@ import json
 from datetime import datetime, timedelta
 import uuid
 import logging
-import requests
 import didkit
 from urllib.parse import urlencode
 import db_api
 import oidc4vc
 from profile import profile
-from jwcrypto import jwk, jwt
 
 
 logging.basicConfig(level=logging.INFO)
@@ -114,13 +112,6 @@ def init_app(app, red, mode):
         defaults={"red": red},
     )
 
-    # test ebsiv3
-    app.add_url_rule(
-        "/sandbox/ebsiv3/redirect_uri",
-        view_func=ebsiv3_redirect_uri,
-        methods=["GET", "POST"],
-        defaults={"red": red},
-    )
     return
 
 
@@ -164,7 +155,7 @@ def oidc(issuer_id, mode):
         return
 
     # Credentials_supported section
-    cs = list()
+    cs = []
     for _vc in issuer_profile.get("credentials_supported"):
         oidc_data = {
             "format": _vc.get("format", "missing, contact@talao.co"),
@@ -191,7 +182,7 @@ def oidc(issuer_id, mode):
 
     # general section
     # https://www.rfc-editor.org/rfc/rfc8414.html#page-4
-    openid_configuration = dict()
+    openid_configuration = {}
     openid_configuration.update(
         {
             "credential_issuer": mode.server + "sandbox/ebsi/issuer/" + issuer_id,
@@ -204,7 +195,7 @@ def oidc(issuer_id, mode):
             + issuer_id
             + "/deferred",
             "credentials_supported": cs,
-            "credential_supported": cs,  # To be removed later
+            #  "credential_supported": cs,  # To be removed later
         }
     )
     if issuer_profile.get("service_documentation"):
@@ -219,7 +210,7 @@ def oidc(issuer_id, mode):
     # setup credential manifest as optional
     # https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-server-metadata
     if issuer_profile.get("credential_manifest_support"):
-        cm = list()
+        cm = []
         for _vc in issuer_profile.get("credentials_types_supported"):
             file_path = "./credential_manifest/" + _vc + "_credential_manifest.json"
             try:
@@ -293,13 +284,13 @@ def issuer_api_endpoint(issuer_id, red, mode):
         client_secret = token.split(" ")[1]
     except Exception:
         return Response(
-            **manage_error("Unauthorized", "Unhauthorized token", red, status=401)
+            **manage_error("Unauthorized", "Unauthorized token", red, status=401)
         )
     try:
         issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
     except Exception:
         return Response(
-            **manage_error("Unauthorized", "Unhauthorized client_id", red, status=401)
+            **manage_error("Unauthorized", "Unauthorized client_id", red, status=401)
         )
     try:
         issuer_state = request.json["issuer_state"]
@@ -336,20 +327,13 @@ def issuer_api_endpoint(issuer_id, red, mode):
     deferred_vc = request.json.get("deferred_vc")
     if vc and not request.json.get("callback"):
         return Response(
-            **manage_error("Bad request", "callback missing", red, status=401)
-        )
+            **manage_error("Bad request", "callback missing", red, status=401))
     if vc and deferred_vc:
-        return Response(
-            **manage_error(
-                "Bad request", "deferred_vc and vc not allowed", red, status=401
-            )
-        )
+        return Response(**manage_error("Bad request", "deferred_vc and vc not allowed", red, status=401))
 
     # Check if user pin exists
     if request.json.get("user_pin_required") and not request.json.get("user_pin"):
-        return Response(
-            **manage_error("Unauthorized", "User pin is not set", red, status=401)
-        )
+        return Response(**manage_error("Unauthorized", "User pin is not set", red, status=401))
     logging.info('user PIN stored =  %s', request.json.get("user_pin"))
 
     # check if user pin is string
@@ -373,7 +357,7 @@ def issuer_api_endpoint(issuer_id, red, mode):
                     "Unauthorized", "Credential not supported " + _vc, red, status=401
                 )
             )
-
+            
     nonce = str(uuid.uuid1())
 
     # generate pre-authorized_code as jwt or string
@@ -501,7 +485,7 @@ def build_credential_offer(
     # new OIDC4VCI standard with  credentials as an array of strings
     else:
         offer = {
-            "credential_issuer": mode.server + "sandbox/ebsi/issuer/" + issuer_id,
+            "credential_issuer": f'{mode.server}sandbox/ebsi/issuer/{issuer_id}',
             "credentials": credential_type,
         }
         if pre_authorized_code:
@@ -557,7 +541,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
         mode,
     )
 
-    # credentilaoffer is passed by value
+    # credential offer is passed by value
     if issuer_data["profile"] not in ["GAIA-X"]:
         url_to_display = (
             data_profile["oidc4vci_prefix"]
@@ -660,32 +644,6 @@ def issuer_authorize(issuer_id, red, mode):
         logging.info("response type not supported %s", response_type)
 
     issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
-    TEST = ""
-    if TEST == "EBBSI-V3":
-        # test pour EBSI v3
-        # def build_jwt_request_ebsiv3 (issuer_key, issuer_kid, client_id, aud, redirect_uri, nonce):
-        # client_id = mode.server + 'sandbox/ebsi/issuer/' + issuer_id
-        request_as_jwt = build_jwt_request_ebsiv3(
-            issuer_data["jwk"],  # issuer_key
-            issuer_data["verification_method"],  # issuer_kid
-            issuer_data["did"],
-            client_id,  # aud
-            mode.server + "sandbox/ebsiv3/redirect_uri",  # redirect_uri
-            "nonce",
-        )
-        request_data = {
-            "state": "state",
-            "aud": client_id,
-            "client_id": issuer_data["did"],
-            "redirect_uri": mode.server + "sandbox/ebsiv3/redirect_uri",
-            "respone_type": "id_token",
-            "nonce": "nonce",
-            "response_mode": "direct_post",
-            "scope": "openid",
-            "request": request_as_jwt,
-        }
-        ebsiv3_wallet_request = "openid:?" + urlencode(request_data)
-        return redirect(ebsiv3_wallet_request)
 
     offer_data = json.loads(red.get(issuer_state).decode())
     stream_id = offer_data["stream_id"]
@@ -726,29 +684,6 @@ def ebsiv3_redirect_uri(red):
     print("request form = ", request.form)
     return jsonify("ok from redire_uri")
 
-
-# for ebsiv3 test
-def build_jwt_request_ebsiv3(
-    issuer_key, issuer_kid, client_id, aud, redirect_uri, nonce
-):
-    key = json.loads(issuer_key) if isinstance(issuer_key, str) else issuer_key
-    signer_key = jwk.JWK(**key)
-    header = {"typ": "JWT", "alg": oidc4vc.alg(key), "kid": issuer_kid}
-    payload = {
-        "iss": client_id,
-        "aud": aud,
-        "scope": "openid",
-        "state": "state",
-        "redirect_uri": redirect_uri,
-        "client_id": client_id,
-        "response_type": "id_token",
-        "response_mode": "direct_post",
-        "exp": datetime.timestamp(datetime.now()) + 1000,
-        "nonce": nonce,
-    }
-    token = jwt.JWT(header=header, claims=payload, algs=[oidc4vc.alg(issuer_key)])
-    token.make_signed_token(signer_key)
-    return token.serialize()
 
 
 # token endpoint
