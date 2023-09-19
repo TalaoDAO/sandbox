@@ -846,7 +846,7 @@ async def ebsi_login_endpoint(stream_id, red):
                 aud_status = "ok"
             else:
                 aud_status = "failed in vp_token"
-                #access = "access_denied"
+                #  access = "access_denied"
 
     status_code = 400 if access == "access_denied" else 200
 

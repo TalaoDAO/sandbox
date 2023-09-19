@@ -1,0 +1,228 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/altme-identity/static/styleEth.css">
+    <link rel="icon" type="image/png" href="/altme-identity/static/img/icon.png" sizes="16x16">
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+</head>
+
+<body>
+    <script src="/altme-identity/static/out_oidc.js" type="module"></script>
+
+    <div id="page">
+        <div id="large">
+            <div id="body">
+                <nav id="navBar" class="js-nav nav-02  nav-02--sticky  nav-02--sticky--white  ">
+                    <div class="nav-02__box">
+                        <div class="nav-02__logo"><a class="nav-02__link" href="https://altme.io/" target="_self">
+                                <img loading="lazy" class="nav-02__logo_img"
+                                    src="/altme-identity/static/img/altme-decentralized-identity-wallet-did-logo.webp"
+                                    height="70" alt="Logo" />
+                            </a></div>
+
+                        <div class="nav-02__list_wrapper  ">
+                            <div class="nav-02__list nav-02__list--desktop">
+                                <!--<div class="nav-02__item">
+                    <a class="button   button--black-outline  button--empty " href="https://altme.io/#slider-07-879531"
+                      target="_self">
+                      <p class="linkP"> Wallet features
+                      </p>
+                    </a>
+                  </div>
+                  <div class="nav-02__item" id="newsNav">
+                    <a class="button   button--black-outline  button--empty " href="https://altme.io/#posts-05-876621"
+                      target="_self">
+                      <p class="linkP">News</p>
+  
+                    </a>
+                  </div>
+                  <div class="nav-02__item" id="roadmapNav">
+                    <a href="https://altme.io/#features-09-390941" target="_self">
+                      <p class="linkP">Roadmap</p>
+  
+                    </a>
+                  </div>-->
+                                <div class="nav-02__item" id="faqNav">
+                                    <a class="button   button--black-outline  button--empty " href="https://altme.io/"
+                                        target="_self">
+                                        <p class="linkP">Back to home</p>
+                                    </a>
+                                </div>
+                                <div class="nav-02__item">
+
+                                    <a data-stripe-product-id="" data-stripe-mode="payment"
+                                        data-successful-payment-url="" data-cancel-payment-url=""
+                                        class="button button--accent-bg "
+                                        href="mailto:contact@altme.io?cc=hugo@altme.io&subject=Altme" target="_blank">
+                                        <div class="contactSpan">
+                                            <p class="contactP">Contact</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
+                </nav>
+                <div id="menuDiv" class="nav-02__list_wrapper  ">
+                    <div class="nav-02__list nav-02__list--desktop">
+                        <div class="nav-02__item">
+                            <a class="button   button--black-outline  button--empty " href="https://altme.io/"
+                                target="_self">
+                                <p class="linkP"> Back to home
+                                </p>
+                            </a>
+                        </div>
+                        <!-- <div class="nav-02__item" id="newsNav">
+              <a class="button   button--black-outline  button--empty " href="https://altme.io/#posts-05-876621"
+                target="_self">
+                <p class="linkP">News</p>
+  
+              </a>
+            </div>
+            <div class="nav-02__item" id="roadmapNav">
+              <a href="https://altme.io/#features-09-390941" target="_self">
+                <p class="linkP">Roadmap</p>
+  
+              </a>
+            </div>
+            <div class="nav-02__item" id="faqNav">
+              <a class="button   button--black-outline  button--empty " href="#superFaq" target="_self">
+                <p class="linkP">FAQ</p>
+              </a>
+            </div>-->
+                        <div class="nav-02__item">
+
+                            <a data-stripe-product-id="" data-stripe-mode="payment" data-successful-payment-url=""
+                                data-cancel-payment-url="" class="button button--accent-bg "
+                                href="mailto:contact@altme.io?cc=hugo@altme.io&subject=Altme" target="_blank">
+                                <div class="contactSpan">
+                                    <p class="contactP">Contact</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div id="navBarMobile" class="js-nav nav-02  nav-02--sticky  nav-02--sticky--white  ">
+                    <div class="nav-02__box">
+                        <div class="nav-02__logo">
+                            <a class="nav-02__link" href="https://altme.io/" target="_self">
+                                <img loading="lazy" class="nav-02__logo_img"
+                                    src="https://unicorn-cdn.b-cdn.net/653ef4c9-deb9-41af-9fa0-dc973cdd8134/altme-identity-wallet---blockchain---web3---self-sovereign-identity---decentralized-identity---ebsi---ssi---did---digital-identity---logo.png"
+                                    height="70" alt="Logo" />
+                            </a>
+                        </div>
+
+
+                    </div>
+                    <button id="buttonMenu">
+                        <div id="buttonMenuLogo">
+                            <img id="imageButtonMenu" class="imgButtonMenuInactive"
+                                src="/altme-identity/static/img/div.png">
+                        </div>
+                    </button>
+
+                </div>
+                <div id="bigBox">
+                    <div id="titles">
+                        <p id="titleP">Add an identity to your favorite wallet</p>
+                        <p id="textTopP">Start using secure and verifiable digital credentials with your favorite wallet
+                            by
+                            verifying your blockchain address and obtaining a “Proof of ownership” in Altme wallet !</p>
+                    </div>
+                    <div id="mainBox">
+                        <div id="leftBox">
+                            <div id="leftTop">
+                                <p id="step1">Step 3 : Scan this QR code with Altme</p>
+                            </div>
+                            <div id="leftMid">
+                                <img id="qrcode" src="{{ qrcode(url) }}">
+
+                            
+                            </div>
+                            <div id="frame6">
+                                <p id="ssi">** Self-Sovereign Identity (SSI) gives individuals control over the personal
+                                    information
+                                    they
+                                    use across the web.</p>
+
+
+                            </div>
+
+
+                        </div>
+                        <div id="rightBox"> <img id="draw" src="/altme-identity/static/img/Illustration.png">
+                            <button id="logout">Disconnect Wallet</button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% include 'faq.html' %}
+
+
+
+
+
+
+    </div>
+
+    <div class="bg-white-color ">
+        <footer class="footer-02" id="footer">
+            <div class="footer-02__wrapper">
+                <div class="footer-02__text content_box">
+                    <p id="line1Footer">&copy; 2022&nbsp; TALAO - Altme All rights reserved, <a
+                            href="https://altme.io/cgu/" target="_blank">CGU</a>, <a href="https://altme.io/privacy/"
+                            target="_blank">Privacy</a></p>
+                    <p id="line2Footer" hidden><strong>Built with TzKT API, Spruce Didkit 0.4.0</strong>&nbsp;</p>
+                </div>
+                <div class="social-buttons  ">
+
+                    <div class="social-buttons__item"><a class="social-buttons__link social-buttons__link--twitter"
+                            href="https://twitter.com/Altme_io" target="_blank"><img loading="lazy"
+                                class="social-buttons__icon" alt="twitter icon"
+                                src="https://dvzvtsvyecfyp.cloudfront.net/static/img/icons/social/black/twitter.svg" /></a>
+                    </div>
+                    <div class="social-buttons__item"><a class="social-buttons__link social-buttons__link--linkedin"
+                            href="https://www.linkedin.com/company/altme-web3/" target="_blank"><img loading="lazy"
+                                class="social-buttons__icon" alt="linkedin icon"
+                                src="https://dvzvtsvyecfyp.cloudfront.net/static/img/icons/social/black/linkedin.svg" /></a>
+                    </div>
+
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+
+    <script>
+        var source = new EventSource('/sandbox/ebsi/issuer_stream');
+        source.onmessage = function (event) {
+        const data = JSON.parse(event.data)
+        if (data.stream_id == '{{stream_id}}'){
+          if (data.error){
+          window.location.href='/sandbox/ebsi/issuer_followup/{{stream_id}}?error=' + data.error ;
+          }
+          else {
+            window.location.href='/sandbox/ebsi/issuer_followup/{{stream_id}}' ; 
+          }
+        };
+      }
+      </script>
+      
+</body>
+
+</html>

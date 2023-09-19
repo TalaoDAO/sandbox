@@ -1,17 +1,16 @@
 profile = {
-
-    'EBSI-V3' : # TODO completed
+    'EBSI-V3':
         {
-            'issuer_vc_type' : 'jwt_vc',
-            'verifier_vp_type' : 'jwt_vp',
-            'authorization_server_support' : True,
-            'credentials_as_json_object_array' : True,
-            'pre-authorized_code_as_jwt' : True,
-            'oidc4vci_prefix' : 'openid-credential-offer://',
-            'siopv2_prefix' : 'openid-vc://',
-            'oidc4vp_prefix' : 'openid-vc://',
-            'credentials_types_supported' : ['VerifiableDiploma', 'VerifiableId', 'EmailPass'],
-            'credentials_supported' : [
+            'issuer_vc_type': 'jwt_vc',
+            'verifier_vp_type': 'jwt_vp',
+            'authorization_server_support': True,
+            'credentials_as_json_object_array': True,
+            'pre-authorized_code_as_jwt': True,
+            'oidc4vci_prefix': 'openid-credential-offer://',
+            'siopv2_prefix': 'openid-vc://',
+            'oidc4vp_prefix': 'openid-vc://',
+            'credentials_types_supported': ['VerifiableDiploma',  'VerifiableId', 'EmailPass'],
+            'credentials_supported': [
                 {
                     "format": "jwt_vc",
                     "types": [
@@ -66,7 +65,7 @@ profile = {
                         "type": "Accreditation",
                         "uri": "TIR link towards accreditation"
                     }
-                },
+                },        
                 {
                     "format": "jwt_vc",
                     "types": [
@@ -106,26 +105,26 @@ profile = {
                 'type': 'Accreditation',
                 'uri': 'TIR link towards accreditation'
             },
-            'schema_for_type' : False,
-            'credential_manifest_support' : False,
-            'service_documentation' : 'New environment for V3 compliance test, use specific did:key'
+            'schema_for_type': False,
+            'credential_manifest_support': False,
+            'service_documentation': 'New environment for V3 compliance test, use specific did:key'
         },
-     'DEFAULT' :
+    'DEFAULT':
         {
-            'issuer_vc_type' : 'ldp_vc',
-            'verifier_vp_type' : 'ldp_vp',
-            'oidc4vci_prefix' : 'openid-credential-offer://' ,
-            'authorization_server_support' : False,
-            'siopv2_prefix' : 'openid-vc://',
-            'oidc4vp_prefix' : 'openid-vc://',
-            'credentials_types_supported' : ['EmployeeCredential',  'EthereumAssociatedAddress', 'VerifiableId', 'EmailPass', 'PhoneProof'],
-             'trust_framework': {
+            'issuer_vc_type': 'ldp_vc',
+            'verifier_vp_type': 'ldp_vp',
+            'oidc4vci_prefix': 'openid-credential-offer://' ,
+            'authorization_server_support': False,
+            'siopv2_prefix': 'openid-vc://',
+            'oidc4vp_prefix': 'openid-vc://',
+            'credentials_types_supported': ['EmployeeCredential',  'EthereumAssociatedAddress', 'VerifiableId', 'EmailPass', 'PhoneProof'],
+            'trust_framework': {
                 'name': 'default',
                 'type': 'Accredition'
             },
-            'credentials_supported' : [
+            'credentials_supported': [
                 {
-                    "id" : "EmployeeCredential",
+                    "id": "EmployeeCredential",
                     "format": "ldp_vc",
                     "types": [
                         "VerifiableCredential",
@@ -148,12 +147,12 @@ profile = {
                     ]
                 },
                 {
-                    "id" : "EthereumAssociatedAddress",
+                    "id": "EthereumAssociatedAddress",
                     "format": "ldp_vc",
                     "types": [
                         "VerifiableCredential",
                         "EthereumAssociatedAddress"
-                ],
+                    ],
                     "cryptographic_binding_methods_supported": [
                         "DID"
                     ],
@@ -171,12 +170,12 @@ profile = {
                     ]
                 },
                 {
-                    "id" : "VerifiableId",
+                    "id": "VerifiableId",
                     "format": "ldp_vc",
                     "types": [
                         "VerifiableCredential",
                         "VerifiableId"
-                ],
+                    ],
                     "cryptographic_binding_methods_supported": [
                         "DID"
                     ],
@@ -194,12 +193,12 @@ profile = {
                     ]
                 },
                 {
-                    "id" : "EmailPass",
+                    "id": "EmailPass",
                     "format": "ldp_vc",
                     "types": [
                         "VerifiableCredential",
                         "EmailPass"
-                ],
+                    ],
                     "cryptographic_binding_methods_supported": [
                         "DID"
                     ],
@@ -217,12 +216,12 @@ profile = {
                     ]
                 },
                 {
-                    "id" : "PhoneProof",
+                    "id": "PhoneProof",
                     "format": "ldp_vc",
                     "types": [
                         "VerifiableCredential",
                         "PhoneProof"
-                ],
+                    ],
                     "cryptographic_binding_methods_supported": [
                         "DID"
                     ],
@@ -244,25 +243,25 @@ profile = {
                 #'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
-            'schema_for_type' : False,
-            'credential_manifest_support' : True,
-            'service_documentation' : 'We use JSON-LD VC and VP and last release of the specs. \
-                oidc4vci_draft : https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html \
-                siopv2_draft : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
-                oidc4vp_draft : https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  ',
+            'schema_for_type': False,
+            'credential_manifest_support': True,
+            'service_documentation': 'We use JSON-LD VC and VP and last release of the specs. \
+                oidc4vci_draft: https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html \
+                siopv2_draft: https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
+                oidc4vp_draft: https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  ',
         },
-         'GAIA-X' :
+    'GAIA-X':
         {
-            'issuer_vc_type' : 'ldp_vc',
-            'verifier_vp_type' : 'ldp_vp',
-            'oidc4vci_prefix' : 'openid-initiate-issuance://' ,
-            'siopv2_prefix' : 'openid://',
-            'oidc4vp_prefix' : 'openid://',
-            'authorization_server_support' : False,
-            'credentials_types_supported' :  ['EmployeeCredential',  'VerifiableId',  'EmailPass'],
-            'credentials_supported' : [
+            'issuer_vc_type': 'ldp_vc',
+            'verifier_vp_type': 'ldp_vp',
+            'oidc4vci_prefix': 'openid-initiate-issuance://' ,
+            'siopv2_prefix': 'openid://',
+            'oidc4vp_prefix': 'openid://',
+            'authorization_server_support': False,
+            'credentials_types_supported':  ['EmployeeCredential',  'VerifiableId',  'EmailPass'],
+            'credentials_supported': [
                 {
-                    "id" : "EmployeeCredential",
+                    "id": "EmployeeCredential",
                     "format": "ldp_vc",
                     "types": [
                         "VerifiableCredential",
@@ -285,12 +284,12 @@ profile = {
                     ]
                 },
                 {
-                    "id" : "VerifiableId",
+                    "id": "VerifiableId",
                     "format": "ldp_vc",
                     "types": [
                         "VerifiableCredential",
                         "VerifiableId"
-                ],
+                    ],
                     "cryptographic_binding_methods_supported": [
                         "DID"
                     ],
@@ -308,12 +307,12 @@ profile = {
                     ]
                 },
                 {
-                    "id" : "EmailPass",
+                    "id": "EmailPass",
                     "format": "ldp_vc",
                     "types": [
                         "VerifiableCredential",
                         "EmailPass"
-                ],
+                    ],
                     "cryptographic_binding_methods_supported": [
                         "DID"
                     ],
@@ -335,22 +334,22 @@ profile = {
                 #'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
-            'schema_for_type' : False,
-            'credential_manifest_support' : True,
-            'service_documentation' : 'THIS PROFILE OF OIDC4VCI IS DEPRECATED. \
-                oidc4vci_draft : https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-credential-endpoint \
-                siopv2_draft : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
-                oidc4vp_draft : https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  ',
+            'schema_for_type': False,
+            'credential_manifest_support': True,
+            'service_documentation': 'THIS PROFILE OF OIDC4VCI IS DEPRECATED. \
+                oidc4vci_draft: https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-credential-endpoint \
+                siopv2_draft: https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
+                oidc4vp_draft: https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  ',
         },
-        'HEDERA' :
+        'HEDERA':
         {
-            'issuer_vc_type' : 'jwt_vc',
-            'verifier_vp_type' : 'jwt_vp',
-            'oidc4vci_prefix' : 'openid-credential-offer-hedera://' ,
-            'authorization_server_support' : False,
-            'siopv2_prefix' : 'openid-hedera://',
-            'oidc4vp_prefix' : 'openid-hedera://',
-            'credentials_types_supported' :  [
+            'issuer_vc_type': 'jwt_vc',
+            'verifier_vp_type': 'jwt_vp',
+            'oidc4vci_prefix': 'openid-credential-offer-hedera://' ,
+            'authorization_server_support': False,
+            'siopv2_prefix': 'openid-hedera://',
+            'oidc4vp_prefix': 'openid-hedera://',
+            'credentials_types_supported':  [
                 'CetProject',
                 'GntProject',
                 'Gnt+Project',
@@ -364,9 +363,9 @@ profile = {
             'trust_framework': {
                 'name': 'greencypher'
             },
-            'credentials_supported' : [
+            'credentials_supported': [
                 {
-                    "id" : "CetProject",
+                    "id": "CetProject",
                     "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
@@ -382,7 +381,7 @@ profile = {
                     ]
                 },
                 {
-                    "id" : "GntProject",
+                    "id": "GntProject",
                     "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
@@ -398,7 +397,7 @@ profile = {
                     ]
                 },
                 {
-                    "id" : "Gnt+Project",
+                    "id": "Gnt+Project",
                     "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
@@ -414,7 +413,7 @@ profile = {
                     ]
                 },
                 {
-                    "id" : "SdgtProject",
+                    "id": "SdgtProject",
                     "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
@@ -430,7 +429,7 @@ profile = {
                     ]
                 },
                  {
-                    "id" : "RetProject",
+                    "id": "RetProject",
                     "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
@@ -446,7 +445,7 @@ profile = {
                     ]
                 },
                  {
-                    "id" : "HotProject",
+                    "id": "HotProject",
                     "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
@@ -462,7 +461,7 @@ profile = {
                     ]
                 },
                  {
-                    "id" : "XctProject",
+                    "id": "XctProject",
                     "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
@@ -478,7 +477,7 @@ profile = {
                     ]
                 },
                 {
-                    "id" : "VerifiableId",
+                    "id": "VerifiableId",
                     "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
@@ -494,7 +493,7 @@ profile = {
                     ]
                 },
                 {
-                    "id" : "GreencypherPass",
+                    "id": "GreencypherPass",
                     "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
@@ -514,24 +513,24 @@ profile = {
                 #'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
-            'schema_for_type' : False,
-            'credential_manifest_support' : True,
-            'service_documentation' : 'WORK IN PROGRESS EON project. last release of the specs. \
-                oidc4vci_draft : https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html \
-                siopv2_draft : https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
-                oidc4vp_draft : https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  \
+            'schema_for_type': False,
+            'credential_manifest_support': True,
+            'service_documentation': 'WORK IN PROGRESS EON project. last release of the specs. \
+                oidc4vci_draft: https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html \
+                siopv2_draft: https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
+                oidc4vp_draft: https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  \
                  Issuer and verifier for marjetplace and WCM'
         },
     
-    'JWT-VC' :
+    'JWT-VC':
         {
-            'verifier_vp_type' : 'jwt_vp',
-            'siopv2_prefix' : 'openid-vc://',
-            'credentials_types_supported' : ['EmployeeCredential', 'VerifiableId', 'EmailPass'],
-            'schema_for_type' : False,
-            'authorization_server_support' : False,
-            'credential_manifest_support' : False,
-            'service_documentation' : 'https://identity.foundation/jwt-vc-presentation-profile/'
+            'verifier_vp_type': 'jwt_vp',
+            'siopv2_prefix': 'openid-vc://',
+            'credentials_types_supported': ['EmployeeCredential', 'VerifiableId', 'EmailPass'],
+            'schema_for_type': False,
+            'authorization_server_support': False,
+            'credential_manifest_support': False,
+            'service_documentation': 'https://identity.foundation/jwt-vc-presentation-profile/'
 
         }
 
