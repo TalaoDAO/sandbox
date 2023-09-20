@@ -37,7 +37,7 @@
                   </div>
               </div>
               <br>
-            <form action="/sandbox/ebsi/login?code={{code}}" method="POST">
+            <form action="/sandbox/verifier/wallet?code={{code}}" method="POST">
               <div class="form-group"><select class="custom-select form-select-lg mb-3" aria-label=".form-select-lg example" name="prefix"  >
                 <option value="openid-vc://">openid-vc://</option>
                 <option value="openid://">openid://</option>
@@ -107,12 +107,12 @@
                       <h2>{{page_title}}</h2>
                       <h4 class="mt-4">Clic to present</h4>
                         <div class ="mt-4">
-                        <a href="{{deeplink_altme}}" class="bg-transparent" style="text-decoration: none;"><img src="/static/img/AltMe.png"  style="width: 75px;"></a>
+                          Altme wallet<br>
+                        <a href="{{deeplink_altme}}" class="bg-transparent " style="text-decoration: none;"><img src="/static/img/AltMe.png"  style="width: 75px;"></a>
+                          <br><br><br>
+                          Other wallets<br>
+                        <a href="{{url}}" class="bg-transparent" style="text-decoration: none;"><img src="/static/img/7.png"  style="width: 200px;"></a>
 
-
-                        {% if back_button  %}
-                        <button  onclick="goBack()" class="btn btn-outline-secondary mt-2">Back</button>
-                        {% endif %}
                         <div class="mt-5"><h6 class="text-secondary"><a href={{landing_page_url}}>{{landing_page_url}} </a></h6></div>
                   </div>
                   </div>
@@ -131,11 +131,11 @@
                 function goBack() {  window.history.back();}
       </script>
       <script>
-        var source = new EventSource('/sandbox/ebsi/login/stream');
+        var source = new EventSource('/sandbox/verifier/wallet/stream');
         source.onmessage = function (event) {
         const result = JSON.parse(event.data)
         if (result.stream_id == '{{stream_id}}' ){
-          window.location.href='/sandbox/ebsi/login/followup?stream_id=' + result.stream_id;
+          window.location.href='/sandbox/verifier/wallet/followup?stream_id=' + result.stream_id;
           }
         };
       </script>

@@ -760,7 +760,6 @@ def issuer_token(issuer_id, red, mode):
 
     # wrong PIN
     print(data.get("user_pin"))
-    print(user_pin)
     if data.get("user_pin_required") and data.get("user_pin") != user_pin:
         return Response(**manage_error("access_denied", "User pin is incorrect", red, status=404))
 

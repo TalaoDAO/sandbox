@@ -50,14 +50,16 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/ebsi/jwks.json', view_func=ebsi_jwks, methods=['GET'])
     
     # endpoints for siopv2 wallet
-    app.add_url_rule('/sandbox/ebsi/login',  view_func=ebsi_login_qrcode, methods = ['GET', 'POST'], defaults={'red': red, 'mode': mode})
-    app.add_url_rule('/sandbox/ebsi/login/endpoint/<stream_id>',  view_func=ebsi_login_endpoint, methods = ['POST'],  defaults={'red': red}) # redirect_uri for PODST
-    app.add_url_rule('/sandbox/ebsi/login/request_uri/<id>',  view_func=ebsi_request_uri, methods = ['GET'], defaults={'red': red})
-    app.add_url_rule('/sandbox/ebsi/login/client_metadata_uri/<id>',  view_func=client_metadata_uri, methods = ['GET'], defaults={'red': red})
-    app.add_url_rule('/sandbox/ebsi/login/presentation_definition_uri/<id>',  view_func=presentation_definition_uri, methods = ['GET'], defaults={'red': red})
-    app.add_url_rule('/sandbox/ebsi/login/followup',  view_func=ebsi_login_followup, methods = ['GET'], defaults={'red': red})
+    app.add_url_rule('/sandbox/verifier/wallet',  view_func=ebsi_login_qrcode, methods = ['GET', 'POST'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/sandbox/verifier/wallet/.well-known/openid-configuration',  view_func=wallet_openid_configuration, methods = ['GET'])
 
-    app.add_url_rule('/sandbox/ebsi/login/stream',  view_func=ebsi_login_stream, defaults={ 'red': red})
+    app.add_url_rule('/sandbox/verifier/wallet/endpoint/<stream_id>',  view_func=ebsi_login_endpoint, methods = ['POST'],  defaults={'red': red}) # redirect_uri for PODST
+    app.add_url_rule('/sandbox/verifier/wallet/request_uri/<id>',  view_func=ebsi_request_uri, methods = ['GET'], defaults={'red': red})
+    app.add_url_rule('/sandbox/verifier/wallet/client_metadata_uri/<id>',  view_func=client_metadata_uri, methods = ['GET'], defaults={'red': red})
+    app.add_url_rule('/sandbox/verifier/wallet/presentation_definition_uri/<id>',  view_func=presentation_definition_uri, methods = ['GET'], defaults={'red': red})
+    app.add_url_rule('/sandbox/verifier/wallet/followup',  view_func=ebsi_login_followup, methods = ['GET'], defaults={'red': red})
+
+    app.add_url_rule('/sandbox/verifier/wallet/stream',  view_func=ebsi_login_stream, defaults={ 'red': red})
     return
     
 
@@ -222,7 +224,7 @@ def ebsi_authorize(red, mode):
     code = str(uuid.uuid1())
     red.setex(code, CODE_LIFE, json.dumps(data))
     resp = {'code': code}
-    return redirect('/sandbox/ebsi/login?code=' + code)
+    return redirect('/sandbox/verifier/wallet?code=' + code)
 
 
 # token endpoint for customer application
@@ -346,6 +348,11 @@ def ebsi_userinfo(red):
         return Response(status=401,headers=headers)
     
 ################################# SIOPV2 + OIDC4VP ###########################################
+
+
+def wallet_openid_configuration():
+    config = json.load(open("ebsiv3_siopv2_openid_configuration.json", "r"))
+    return jsonify(config)
 
 
 def build_jwt_request(key, kid, iss, aud, request) -> str:
@@ -524,14 +531,14 @@ def ebsi_login_qrcode(red, mode):
         prez.add_format_jwt_vc()
 
     nonce = nonce or str(uuid.uuid1())
-    redirect_uri = mode.server + "sandbox/ebsi/login/endpoint/" + stream_id
+    redirect_uri = mode.server + "sandbox/verifier/wallet/endpoint/" + stream_id
     
     # general authorization request
     authorization_request = { 
         "response_type": response_type,
         "redirect_uri": redirect_uri,
         "nonce": nonce,
-        "response_mode": 'direct_post',
+        "response_mode": 'post',
         "state": str(uuid.uuid1())  # unused
     }
     
@@ -540,7 +547,10 @@ def ebsi_login_qrcode(red, mode):
         client_id = verifier_data['did']
     else:
         client_id = redirect_uri
-        
+    
+    if verifier_data['profile'] == "EBSI-V3":
+        client_id = mode.server + 'sandbox/verifier/wallet'
+    
     authorization_request['client_id'] = client_id
     
     # OIDC4VP
@@ -549,7 +559,7 @@ def ebsi_login_qrcode(red, mode):
         id = str(uuid.uuid1())
         client_metadata = build_client_metadata(client_id, redirect_uri)
         red.setex(id, QRCODE_LIFE, json.dumps(client_metadata))
-        authorization_request['client_metadata_uri'] = mode.server + "sandbox/ebsi/login/client_metadata_uri/" + id
+        authorization_request['client_metadata_uri'] = mode.server + "sandbox/verifier/wallet/client_metadata_uri/" + id
         
         # presentation_definition
         presentation_definition = prez.get()
@@ -560,31 +570,33 @@ def ebsi_login_qrcode(red, mode):
         if verifier_data.get('presentation_definition_uri'):
             id = str(uuid.uuid1())
             red.setex(id, QRCODE_LIFE, json.dumps(presentation_definition))        
-            authorization_request['presentation_definition_uri'] = mode.server + 'sandbox/ebsi/login/presentation_definition_uri/' + id
+            authorization_request['presentation_definition_uri'] = mode.server + 'sandbox/verifier/wallet/presentation_definition_uri/' + id
             if authorization_request.get('presentation_definition'):
                 del authorization_request['presentation_definition']
         
     # SIOPV2
     if 'id_token' in response_type:
         authorization_request['scope'] = 'openid'
-        if verifier_data['profile'] != "EBSI-V3":
-            authorization_request['registration'] = json.dumps(json.load(open('siopv2_config_light.json', 'r')))  # TODO   
+        if verifier_data['profile'] == "EBSI-V3":
+            authorization_request['response_mode'] = 'direct_post'
+        else:    
+            authorization_request['registration'] = json.dumps(json.load(open('siopv2_config_light.json', 'r')))           
     
     # manage request_uri as jwt
     request_as_jwt = build_jwt_request(
         verifier_data['jwk'],
         verifier_data['verification_method'],
         verifier_data['did'],
-        'https://self-issued.me/v2', # aud
+        'https://self-issued.me/v2', # aud requires static siopv2 data
         authorization_request
-    )  
+    )
     
     if verifier_data.get('request_uri_parameter_supported'):
         id = str(uuid.uuid1())
         red.setex(id, QRCODE_LIFE, json.dumps(request_as_jwt))
         authorization_request_displayed = { 
             "client_id": client_id,
-            "request_uri": mode.server + "sandbox/ebsi/login/request_uri/" + id 
+            "request_uri": mode.server + "sandbox/verifier/wallet/request_uri/" + id 
         }
     else:
         if 'vp_token' not in response_type and verifier_data.get('request_parameter_supported'):
@@ -609,7 +621,6 @@ def ebsi_login_qrcode(red, mode):
     qrcode_page = verifier_data.get('verifier_landing_page_style')
     return render_template(
         qrcode_page,
-        back_button=False,
         url=url,
         authorization_request=json.dumps(authorization_request, indent=4),
         url_json=json.dumps(authorization_request_displayed, indent=4),
