@@ -13,7 +13,6 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/verifier/greencypher_2',  view_func=verifier_greencypher_2, methods = ['GET'], defaults={'mode' : mode}) # Test 7
 
     
-    app.add_url_rule('/sandbox/verifier/dbc',  view_func=verifier_dbc, methods = ['GET'], defaults={'mode' : mode})
 
     app.add_url_rule('/sandbox/verifier/gaiax',  view_func=verifier_gaiax, methods = ['GET'], defaults={'mode' : mode}) # test 9
     app.add_url_rule('/sandbox/verifier/gaiax_2',  view_func=verifier_gaiax_2, methods = ['GET'], defaults={'mode' : mode})
@@ -33,7 +32,7 @@ def verifier_tezos_ebsi(mode): # Tezos EBSI
             client_id = "fofadhfrez"
         else :
             client_id = "rxukghiksb"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&nonce=100&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&nonce=100&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
 
 
@@ -43,7 +42,7 @@ def verifier_default(mode): # Test 3
             client_id = "rxbypnwhxc"
         else :
             client_id = "ybbiskyifx"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&nonce=100&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&nonce=100&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
 
 
@@ -53,7 +52,7 @@ def verifier_default_2(mode): # Test 4
             client_id = "wvjotpxxrd"
         else :
             client_id = "paqqladucu"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
 
 
@@ -63,7 +62,7 @@ def verifier_default_3(mode): # Test 5
             client_id = "iftsntwcyl"
         else :
             client_id = "gbypcbxtum"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&nonce=500&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&nonce=500&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
 
 
@@ -76,7 +75,7 @@ def verifier_greencypher_1(mode): # Test 6
             client_id = "yxluhubhor"
         else :
             client_id = "frigcycvbg"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
 
 def verifier_greencypher_2(mode): # Test 7
@@ -85,7 +84,7 @@ def verifier_greencypher_2(mode): # Test 7
             client_id = "ctetbsbltd"
         else :
             client_id = "vzhawcuror"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
 
 
@@ -95,7 +94,7 @@ def verifier_dbc(mode): # Test 8
             client_id = "dxmdhauyrr"
         else :
             client_id = "lzuwcmivmg"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
 
 
@@ -105,7 +104,7 @@ def verifier_gaiax(mode): # Test 9
             client_id = "xpkhvsemfd"
         else :
             client_id = "iddznwujyy"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
     
 def verifier_gaiax_2(mode): # Test 10
@@ -114,7 +113,7 @@ def verifier_gaiax_2(mode): # Test 10
             client_id = "zkzkwshdns"
         else :
             client_id = "ejqwxtjdlu"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
     
 def verifier_gaiax_3(mode): # Test 11
@@ -123,7 +122,7 @@ def verifier_gaiax_3(mode): # Test 11
             client_id = "feyfeamejt"
         else :
             client_id = "ypsfdlfoti"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
 
 def verifier_ebsiv3(mode): # Test 12
@@ -132,7 +131,7 @@ def verifier_ebsiv3(mode): # Test 12
             client_id = "novanyhlhs"
         else :
             client_id = "uxcdccjhmq"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
     
 
@@ -142,8 +141,9 @@ def verifier_ebsiv3_2(mode): # Test 13
             client_id = "rkubsscrkt"
         else :
             client_id = "zvuzyxjhjk"
-        url = mode.server + "sandbox/ebsi/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect (url)
 
-def verifier_callback() :
+
+def verifier_callback():
     return jsonify(request.args)

@@ -40,30 +40,30 @@ rsa_key = jwk.JWK(**RSA_KEY_DICT)
 public_rsa_key =  rsa_key.export(private_key=False, as_dict=True)
 
 
-def init_app(app,red, mode):
+def init_app(app, red, mode):
     # endpoints for OpenId customer application
-    app.add_url_rule('/sandbox/ebsi/authorize',  view_func=ebsi_authorize, methods = ['GET', 'POST'], defaults={"red": red, "mode": mode})
-    app.add_url_rule('/sandbox/ebsi/token',  view_func=ebsi_token, methods = ['GET', 'POST'], defaults={"red": red, 'mode': mode})
-    app.add_url_rule('/sandbox/ebsi/logout',  view_func=ebsi_logout, methods = ['GET', 'POST'])
-    app.add_url_rule('/sandbox/ebsi/userinfo',  view_func=ebsi_userinfo, methods = ['GET', 'POST'], defaults={"red": red})
-    app.add_url_rule('/sandbox/ebsi/.well-known/openid-configuration', view_func=ebsi_openid_configuration, methods=['GET'], defaults={'mode': mode})
-    app.add_url_rule('/sandbox/ebsi/jwks.json', view_func=ebsi_jwks, methods=['GET'])
+    app.add_url_rule('/sandbox/verifier/app/authorize',  view_func=oidc4vc_authorize, methods=['GET', 'POST'], defaults={"red": red, "mode": mode})
+    app.add_url_rule('/sandbox/verifier/app/token',  view_func=oidc4vc_token, methods=['GET', 'POST'], defaults={"red": red, 'mode': mode})
+    app.add_url_rule('/sandbox/verifier/app/logout',  view_func=oidc4vc_logout, methods=['GET', 'POST'])
+    app.add_url_rule('/sandbox/verifier/app/userinfo',  view_func=oidc4vc_userinfo, methods=['GET', 'POST'], defaults={"red": red})
+    app.add_url_rule('/sandbox/verifier/app/.well-known/openid-configuration', view_func=oidc4vc_openid_configuration, methods=['GET'], defaults={'mode': mode})
+    app.add_url_rule('/sandbox/verifier/app/jwks.json', view_func=oidc4vc_jwks, methods=['GET'])
     
     # endpoints for siopv2 wallet
-    app.add_url_rule('/sandbox/verifier/wallet',  view_func=ebsi_login_qrcode, methods = ['GET', 'POST'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/sandbox/verifier/wallet',  view_func=oidc4vc_login_qrcode, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/sandbox/verifier/wallet/.well-known/openid-configuration',  view_func=wallet_openid_configuration, methods = ['GET'])
 
-    app.add_url_rule('/sandbox/verifier/wallet/endpoint/<stream_id>',  view_func=ebsi_login_endpoint, methods = ['POST'],  defaults={'red': red}) # redirect_uri for PODST
-    app.add_url_rule('/sandbox/verifier/wallet/request_uri/<id>',  view_func=ebsi_request_uri, methods = ['GET'], defaults={'red': red})
-    app.add_url_rule('/sandbox/verifier/wallet/client_metadata_uri/<id>',  view_func=client_metadata_uri, methods = ['GET'], defaults={'red': red})
-    app.add_url_rule('/sandbox/verifier/wallet/presentation_definition_uri/<id>',  view_func=presentation_definition_uri, methods = ['GET'], defaults={'red': red})
-    app.add_url_rule('/sandbox/verifier/wallet/followup',  view_func=ebsi_login_followup, methods = ['GET'], defaults={'red': red})
+    app.add_url_rule('/sandbox/verifier/wallet/endpoint/<stream_id>',  view_func=oidc4vc_login_endpoint, methods=['POST'],  defaults={'red': red}) # redirect_uri for PODST
+    app.add_url_rule('/sandbox/verifier/wallet/request_uri/<id>',  view_func=oidc4vc_request_uri, methods=['GET'], defaults={'red': red})
+    app.add_url_rule('/sandbox/verifier/wallet/client_metadata_uri/<id>',  view_func=client_metadata_uri, methods=['GET'], defaults={'red': red})
+    app.add_url_rule('/sandbox/verifier/wallet/presentation_definition_uri/<id>',  view_func=presentation_definition_uri, methods=['GET'], defaults={'red': red})
+    app.add_url_rule('/sandbox/verifier/wallet/followup',  view_func=oidc4vc_login_followup, methods=['GET'], defaults={'red': red})
 
-    app.add_url_rule('/sandbox/verifier/wallet/stream',  view_func=ebsi_login_stream, defaults={ 'red': red})
+    app.add_url_rule('/sandbox/verifier/wallet/stream',  view_func=oidc4vc_login_stream, defaults={ 'red': red})
     return
     
 
-def ebsi_build_id_token(client_id, sub, nonce, mode):
+def oidc4vc_build_id_token(client_id, sub, nonce, mode):
     """
     Build an Id_token for application 
 
@@ -78,7 +78,7 @@ def ebsi_build_id_token(client_id, sub, nonce, mode):
     }
     # https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
     payload = {
-        "iss": mode.server +'sandbox/ebsi',
+        "iss": mode.server + 'sandbox/verifier/app',
         "nonce": nonce,
         "iat": datetime.timestamp(datetime.now()),
         "aud": client_id,
@@ -86,29 +86,29 @@ def ebsi_build_id_token(client_id, sub, nonce, mode):
         "sub": sub,
     }  
     logging.info("ID Token payload = %s", payload)
-    token = jwt.JWT(header=header,claims=payload, algs=["RS256"])
+    token = jwt.JWT(header=header, claims=payload, algs=["RS256"])
     token.make_signed_token(verifier_key)
     return token.serialize()
 
 
-def ebsi_jwks():
+def oidc4vc_jwks():
     return jsonify({"keys": [public_rsa_key]})
 
 
 # For customer app
-def ebsi_openid_configuration(mode):
+def oidc4vc_openid_configuration(mode):
     """
     For the customer application of the saas platform  
     https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#name-dynamic-self-issued-openid-
     """
     return {
-        "issuer": mode.server + 'sandbox/ebsi',
-        "authorization_endpoint":  mode.server + 'sandbox/ebsi/authorize',
-        "token_endpoint": mode.server + 'sandbox/ebsi/token',
-        "userinfo_endpoint": mode.server + 'sandbox/ebsi/userinfo',
-        "logout_endpoint": mode.server + 'sandbox/ebsi/logout',
-        "jwks_uri": mode.server + 'sandbox/ebsi/jwks.json',
-        "scopes_supported": ["openid diploma verifiableid"],
+        "issuer": mode.server + 'sandbox/verifier/app',
+        "authorization_endpoint":  mode.server + 'sandbox/verifier/app/authorize',
+        "token_endpoint": mode.server + 'sandbox/verifier/app/token',
+        "userinfo_endpoint": mode.server + 'sandbox/verifier/app/userinfo',
+        "logout_endpoint": mode.server + 'sandbox/verifier/app/logout',
+        "jwks_uri": mode.server + 'sandbox/verifier/app/jwks.json',
+        "scopes_supported": ["openid"],
         "response_types_supported": ["code", "id_token"],
         "token_endpoint_auth_methods_supported": ["client_secret_basic"]
     }
@@ -122,7 +122,8 @@ id_token -> implicit flow
 # https://openid.net/specs/openid-4-verifiable-presentations-1_0.html
 """
 
-def ebsi_authorize(red, mode):
+
+def oidc4vc_authorize(red, mode):
     logging.info("authorization endpoint request  = %s", request.args)
     """ https://www.rfc-editor.org/rfc/rfc6749.html#section-4.1.2
     code_wallet_data = 
@@ -133,13 +134,13 @@ def ebsi_authorize(red, mode):
     """
     # user is connected, successful exit to client with code
     if session.get('verified') and request.args.get('code'):
-        code = request.args['code'] 
+        code = request.args['code']
         code_data = json.loads(red.get(code).decode())
         
         # authorization code flow -> redirect with code
         if code_data['response_type'] == 'code':
             logging.info("response_type = code: successful redirect to client with code = %s", code) 
-            resp = {'code': code,  'state': code_data.get('state')}  if  code_data.get('state') else {'code': code}
+            resp = {'code': code,  'state': code_data.get('state')} if code_data.get('state') else {'code': code}
             logging.info('response to redirect_uri = %s', resp)
             return redirect(code_data['redirect_uri'] + '?' + urlencode(resp)) 
 
@@ -156,7 +157,7 @@ def ebsi_authorize(red, mode):
                 session.clear()
                 return redirect(redirect_uri + sep + urlencode(resp)) 
             
-            id_token = ebsi_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], mode)
+            id_token = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], mode)
             resp = {"id_token": id_token} 
             logging.info("redirect to client with id-token = %s", id_token)
             return redirect(code_data['redirect_uri'] + sep + urlencode(resp))
@@ -185,18 +186,18 @@ def ebsi_authorize(red, mode):
     def manage_error_request(msg):
         session.clear()
         resp = {'error': msg}
-        return redirect(request.args['redirect_uri'] + '?' +urlencode(resp))
+        return redirect(request.args['redirect_uri'] + '?' + urlencode(resp))
 
     session['verified'] = False
     logging.info('user is not connected in OP')
     # PKCE https://datatracker.ietf.org/doc/html/draft-ietf-oauth-spop-14
     try:
         data = {
-            'client_id': request.args['client_id'], # required
-            'scope': request.args['scope'].split(), # required
+            'client_id': request.args['client_id'],  # required
+            'scope': request.args['scope'].split(),  # required
             'state': request.args.get('state'),
-            'response_type': request.args['response_type'], # required
-            'redirect_uri': request.args['redirect_uri'], # required
+            'response_type': request.args['response_type'],  # required
+            'redirect_uri': request.args['redirect_uri'],  # required
             'nonce': request.args.get('nonce'),
             'code_challenge': request.args.get('code_challenge'),
             'code_challenge_method': request.args.get('code_challenge_method'),
@@ -228,13 +229,13 @@ def ebsi_authorize(red, mode):
 
 
 # token endpoint for customer application
-def ebsi_token(red, mode):
+def oidc4vc_token(red, mode):
     #https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
     logging.info("token endpoint request ")
 
-    def manage_error (msg):
+    def manage_error(msg):
         logging.warning(msg)
-        endpoint_response= {"error": msg}
+        endpoint_response = {"error": msg}
         headers = {'Content-Type': 'application/json'}
         return Response(response=json.dumps(endpoint_response), status=400, headers=headers)
         
@@ -245,7 +246,7 @@ def ebsi_token(red, mode):
         client_secret = token.split(":")[1]
         client_id = token.split(":")[0]
         verifier_data = json.loads(read_ebsi_verifier(client_id))
-        grant_type =  request.form['grant_type']
+        grant_type = request.form['grant_type']
         code = request.form['code']
         redirect_uri = request.form['redirect_uri']
         code_verifier = request.form.get('code_verifier')
@@ -279,7 +280,7 @@ def ebsi_token(red, mode):
     except Exception:
         logging.error("redis get problem to get code_ebsi")
         return manage_error("invalid_grant")
-    id_token = ebsi_build_id_token(client_id, code_wallet_data['sub'], data['nonce'], mode)
+    id_token = oidc4vc_build_id_token(client_id, code_wallet_data['sub'], data['nonce'], mode)
     logging.info('id_token and access_token sent to client from token endpoint')
     access_token = str(uuid.uuid1())
     endpoint_response = {
@@ -291,9 +292,9 @@ def ebsi_token(red, mode):
     red.setex(access_token + '_wallet_data', 
             ACCESS_TOKEN_LIFE,
             json.dumps({
-                "client_id":client_id,
-                "sub":code_wallet_data['sub'],
-                "vp_token_payload":code_wallet_data['vp_token_payload']
+                "client_id": client_id,
+                "sub": code_wallet_data['sub'],
+                "vp_token_payload": code_wallet_data['vp_token_payload']
             })
     )
     headers = {
@@ -305,14 +306,14 @@ def ebsi_token(red, mode):
 
 # logout endpoint
 #https://openid.net/specs/openid-connect-rpinitiated-1_0-02.html
-def ebsi_logout():
+def oidc4vc_logout():
     if not session.get('verified'):
-        return jsonify ('Forbidden'), 403
+        return jsonify('Forbidden'), 403
     if request.method == "GET":
-        id_token_hint = request.args.get('id_token_hint')
+        #  id_token_hint = request.args.get('id_token_hint')
         post_logout_redirect_uri = request.args.get('post_logout_redirect_uri')
     elif request.method == "POST":
-        id_token_hint = request.form.get('id_token_hint')
+        #  id_token_hint = request.form.get('id_token_hint')
         post_logout_redirect_uri = request.form.get('post_logout_redirect_uri')
     if not post_logout_redirect_uri:
         post_logout_redirect_uri = session.get('redirect_uri')
@@ -323,11 +324,12 @@ def ebsi_logout():
 
 # userinfo endpoint
 """
- https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
- only access token is needed
-
+https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+only access token is needed
 """
-def ebsi_userinfo(red):
+
+
+def oidc4vc_userinfo(red):
     logging.info("user info endpoint request")
     access_token = request.headers["Authorization"].split()[1]
     try:
@@ -432,7 +434,7 @@ def presentation_definition_uri(id, red):
     return jsonify(presentation_definition)
 
                                         
-def ebsi_login_qrcode(red, mode):
+def oidc4vc_login_qrcode(red, mode):
     stream_id = str(uuid.uuid1())
     try:
         verifier_id = json.loads(red.get(request.args['code']).decode())['client_id']
@@ -616,8 +618,9 @@ def ebsi_login_qrcode(red, mode):
         presentation_definition = {"N/A": "N/A"}
         
     url = prefix + '?' + urlencode(authorization_request_displayed)
-    deeplink_talao = mode.deeplink_talao + 'app/download/ebsi?' + urlencode({'uri': url})
-    deeplink_altme = mode.deeplink_altme + 'app/download/ebsi?' + urlencode({'uri': url})
+    deeplink_talao = mode.deeplink_talao + 'app/download/authorize?' + urlencode(authorization_request_displayed)
+    deeplink_altme = mode.deeplink_altme + 'app/download/authorize?' + urlencode(authorization_request_displayed)
+    print("deep link = ", deeplink_altme)
     qrcode_page = verifier_data.get('verifier_landing_page_style')
     return render_template(
         qrcode_page,
@@ -637,7 +640,7 @@ def ebsi_login_qrcode(red, mode):
     )
     
 
-def ebsi_request_uri(id, red):
+def oidc4vc_request_uri(id, red):
     """
     Request by uri
     https://www.rfc-editor.org/rfc/rfc9101.html
@@ -652,7 +655,7 @@ def ebsi_request_uri(id, red):
     return Response(payload, headers=headers)
 
 
-async def ebsi_login_endpoint(stream_id, red):
+async def oidc4vc_login_endpoint(stream_id, red):
     logging.info("Enter wallet response endpoint")
     """
     https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#section-6.2
@@ -869,7 +872,7 @@ async def ebsi_login_endpoint(stream_id, red):
     return jsonify(response), status_code
 
 
-def ebsi_login_followup(red):  
+def oidc4vc_login_followup(red):  
     """
     check if user is connected or not and redirect data to authorization server
     Prepare de data to transfer
@@ -887,7 +890,7 @@ def ebsi_login_followup(red):
         logging.error("code expired in follow up")
         resp = {'code': code, 'error': "access_denied"}
         session['verified'] = False
-        return redirect ('/sandbox/ebsi/authorize?' + urlencode(resp))
+        return redirect ('/sandbox/verifier/app/authorize?' + urlencode(resp))
 
     if stream_id_wallet_data['access'] != 'ok':
         resp = {'code': code, 'error': stream_id_wallet_data['access']}
@@ -897,10 +900,10 @@ def ebsi_login_followup(red):
         red.setex(code +"_wallet_data", CODE_LIFE, json.dumps(stream_id_wallet_data))
         resp = {'code': code}
 
-    return redirect('/sandbox/ebsi/authorize?' + urlencode(resp))
+    return redirect('/sandbox/verifier/app/authorize?' + urlencode(resp))
 
 
-def ebsi_login_stream(red):
+def oidc4vc_login_stream(red):
     def login_event_stream(red):
         pubsub = red.pubsub()
         pubsub.subscribe('api_ebsi_verifier')

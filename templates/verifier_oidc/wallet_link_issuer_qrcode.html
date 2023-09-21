@@ -209,15 +209,15 @@
 
 
     <script>
-        var source = new EventSource('/sandbox/ebsi/issuer_stream');
+        var source = new EventSource('/sandbox/verifier/app/issuer_stream');
         source.onmessage = function (event) {
         const data = JSON.parse(event.data)
         if (data.stream_id == '{{stream_id}}'){
           if (data.error){
-          window.location.href='/sandbox/ebsi/issuer_followup/{{stream_id}}?error=' + data.error ;
+          window.location.href='/sandbox/verifier/app/issuer_followup/{{stream_id}}?error=' + data.error ;
           }
           else {
-            window.location.href='/sandbox/ebsi/issuer_followup/{{stream_id}}' ; 
+            window.location.href='/sandbox/verifier/app/issuer_followup/{{stream_id}}' ; 
           }
         };
       }

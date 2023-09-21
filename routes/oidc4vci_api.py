@@ -66,6 +66,7 @@ def init_app(app, red, mode):
         methods=["GET"],
         defaults={"mode": mode},
     )
+    
     app.add_url_rule(
         "/sandbox/ebsi/issuer/<issuer_id>/.well-known/openid-credential-issuer",
         view_func=issuer_openid_configuration,
@@ -186,14 +187,8 @@ def oidc(issuer_id, mode):
     openid_configuration.update(
         {
             "credential_issuer": mode.server + "sandbox/ebsi/issuer/" + issuer_id,
-            "credential_endpoint": mode.server
-            + "sandbox/ebsi/issuer/"
-            + issuer_id
-            + "/credential",
-            "deferred_credential_endpoint": mode.server
-            + "sandbox/ebsi/issuer/"
-            + issuer_id
-            + "/deferred",
+            "credential_endpoint": mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/credential",
+            "deferred_credential_endpoint": mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/deferred",
             "credentials_supported": cs,
             #  "credential_supported": cs,  # To be removed later
         }
@@ -618,7 +613,7 @@ def issuer_authorize(issuer_id, red, mode):
         code_challenge = request.args.get("code_challenge")
         code_challenge_method = request.args.get("code_challenge_method")
         client_metadata = request.args.get("client_metadata")
-        state = request.args.get("state")
+        state = request.args.get("state") # wallet state
     except Exception:
         return jsonify("invalid_request"), 400
 
@@ -679,10 +674,6 @@ def issuer_authorize(issuer_id, red, mode):
         resp["state"] = state
     return redirect(redirect_uri + "?" + urlencode(resp))
 
-
-def ebsiv3_redirect_uri(red):
-    print("request form = ", request.form)
-    return jsonify("ok from redire_uri")
 
 
 
@@ -759,7 +750,7 @@ def issuer_token(issuer_id, red, mode):
         return Response(**manage_error("invalid_request", "User pin is missing", red))
 
     # wrong PIN
-    print(data.get("user_pin"))
+    logging.info('user_pin = %s', data.get("user_pin"))
     if data.get("user_pin_required") and data.get("user_pin") != user_pin:
         return Response(**manage_error("access_denied", "User pin is incorrect", red, status=404))
 
@@ -772,6 +763,7 @@ def issuer_token(issuer_id, red, mode):
         "token_type": "Bearer",
         "expires_in": ACCESS_TOKEN_LIFE,
     }
+    
     # authorization_details and multiple VC of the same type
     if isinstance(vc, list):
         authorization_details = []
@@ -1140,3 +1132,21 @@ async def sign_credential(
         logging.info("signature check with didkit = %s", result)
         credential_signed = json.loads(credential_signed)
     return credential_signed
+
+
+
+"""
+    ?
+    response_type=code
+    &client_id=did%3Akey%3AzBhBLmYmyihtomRdJJNEKzbPj51o4a3GYFeZoRHSABKUwqdjiQPY2cHKUWX2rrZxfyTxEegukGQVEdVydh3KheCsPhbskrRrwkuH5o26iCMmhqNcTrDwQVEtEDDdHc71j57k7dTwfdvp9q3kqEKtS7f3oN5X17PcdrxCxpB9kBdkeA3ephFkoYg
+    &redirect_uri=https%3A%2F%2Fapp.altme.io%2Fapp%2Fdownload%2Foidc4vc%3Furi%3Dopenid-credential-offer%3A%2F%2F%3Fcredential_offer_uri%3Dhttps%3A%2F%2Ftalao.co%2Fsandbox%2Febsi%2Fissuer%2Fcredential_offer_uri%2Ffbb5f678-57ab-11ee-88fa-0a1628958560
+    &scope=openid
+    &issuer_state=fb81a03c-57ab-11ee-ab56-0a1628958560
+    &state=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2RlVmVyaWZpZXIiOiJPNXZMcGcwLUtKbXhuMk9zT0ZoeTNJMU1OZnV1TTJQQ2ZYM1lEQUx1QzNrIiwib3B0aW9ucyI6WzBdLCJpYXQiOjE2OTUyMTA3MjUsImlzcyI6Imh0dHBzOi8vZ2l0aHViLmNvbS9qb25hc3JvdXNzZWwvZGFydF9qc29ud2VidG9rZW4ifQ.Wjlx2BkvtPDNtwQk87XSwgD3NwugDjBn4J5VTyh4bFk
+    &nonce=dc250f43-4760-4e6c-beec-9e4340c2b4f1
+    &code_challenge=UzWsPOLx1QtDKKxOCdtpmBz7lDcIcS4Fx1O-8OWNdSU
+    &code_challenge_method=S256
+    &authorization_details=%5B%7B%22type%22%3A%22openid_credential%22%2C%22locations%22%3A%5B%22https%3A%2F%2Ftalao.co%2Fsandbox%2Febsi%2Fissuer%2Fpcbrwbvrsi%22%5D%2C%22format%22%3A%22jwt_vc%22%2C%22types%22%3A%5B%22VerifiableCredential%22%2C%22VerifiableAttestation%22%2C%22VerifiableDiploma%22%5D%7D%5D
+    &client_metadata=%7B%22authorization_endpoint%22%3A%22https%3A%2F%2Ftalao.co%2Fsandbox%2Febsi%2Fissuer%2Fpcbrwbvrsi%2Fauthorize%22%2C%22scopes_supported%22%3A%5B%22openid%22%5D%2C%22response_types_supported%22%3A%5B%22vp_token%22%2C%22id_token%22%5D%2C%22subject_types_supported%22%3A%5B%22public%22%5D%2C%22id_token_signing_alg_values_supported%22%3A%5B%22ES256%22%5D%2C%22request_object_signing_alg_values_supported%22%3A%5B%22ES256%22%5D%2C%22vp_formats_supported%22%3A%7B%22jwt_vp%22%3A%7B%22alg_values_supported%22%3A%5B%22ES256%22%5D%7D%2C%22jwt_vc%22%3A%7B%22alg_values_supported%22%3A%5B%22ES256%22%5D%7D%7D%2C%22subject_syntax_types_supported%22%3A%5B%22urn%3Aietf%3Aparams%3Aoauth%3Ajwk-thumbprint%22%2C%22did%F0%9F%94%91jwk_jcs-pub%22%5D%2C%22id_token_types_supported%22%3A%5B%22subject_signed_id_token%22%5D%7D
+
+"""
