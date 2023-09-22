@@ -2,23 +2,23 @@
 <!-- home.html
 last one-->
 <html>
-  <head>
+<head>
     {% include 'head.html' %}
-  </head>
-  <body>
-      
+</head>
+<body>
+
     {% include 'saas_nav_bar.html' %} 
 
-    <div class="container-fluid">
+<div class="container-fluid">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show m-0" role="alert">
+    <div class="alert alert-{{ category }} alert-dismissible fade show m-0" role="alert">
             <h5 >{{ message }}</h5>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
             <span aria-hidden="true">&times;</span>
             </button>
-        </div>
+    </div>
             {% endfor %}
         {% endif %}
     {% endwith %}
@@ -30,34 +30,27 @@ last one-->
         <div class="row mt-5">
             <div class="col-lg-8 col-sm-12  offset-lg-2 text-center mt-5">
                 <div class="my-2 p-2">                
-                       <h2 style="color: rgb(54, 24, 88); margin-bottom: 0" ><strong>Saas platform </strong> (Beta release, not for production project)  to integrate verifiable credentials and DIDs in applications and Digital Identity wallets</h2>
+                    <h2 style="color: rgb(54, 24, 88); margin-bottom: 0" ><strong>Saas platform </strong> (Beta release, not for production project)  to integrate verifiable credentials and DIDs in applications and Digital Identity wallets</h2>
                         <br><br><br>    
                         <h2 style="color: rgb(54, 24, 88); margin-bottom: 0" >W3C compliant, OIDC4VCI/OIDC4VP/SIOPV2 support, JWT and JSON-LD VC/VP more than 50 credentials types available, open source</h2>
                         <br><br><br>    
                         <h2 style="color: rgb(54, 24, 88); margin-bottom: 0" >API for Digital Identity wallets</h2>
-         
+        
                 </div>
-           </div>
+            </div>
         </div>
-
-
-   
         <div class="row mt-2 mb-5">
             <div class="col text-center">
-        <a href="/sandbox/saas4ssi/signup"><button type="button"   class="btn btn-outline-dark mt-2">Get started</button></a></h3>
-           </div>
-           </div>         
-   
-
+                <a href="/sandbox/saas4ssi/signup"><button type="button"   class="btn btn-outline-dark mt-2">Get started</button></a></h3>
+            </div>
+        </div>         
+    
 </div>
+                
 
 
-</div>
-                               
-       
-   
 
-   {% include 'user_footer.html' %}
+{% include 'user_footer.html' %}
 
               <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
               <script src="{{ url_for('static', filename='bs-init.js') }}"></script>

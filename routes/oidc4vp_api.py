@@ -159,7 +159,7 @@ def oidc4vc_authorize(red, mode):
             
             id_token = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], mode)
             resp = {"id_token": id_token} 
-            logging.info("redirect to client with id-token = %s", id_token)
+            logging.info("redirect to application with id-token = %s", id_token)
             return redirect(code_data['redirect_uri'] + sep + urlencode(resp))
         
         else:
@@ -620,7 +620,7 @@ def oidc4vc_login_qrcode(red, mode):
     url = prefix + '?' + urlencode(authorization_request_displayed)
     deeplink_talao = mode.deeplink_talao + 'app/download/authorize?' + urlencode(authorization_request_displayed)
     deeplink_altme = mode.deeplink_altme + 'app/download/authorize?' + urlencode(authorization_request_displayed)
-    print("deep link = ", deeplink_altme)
+    logging.info("weblink for same device flow = %s", deeplink_altme)
     qrcode_page = verifier_data.get('verifier_landing_page_style')
     return render_template(
         qrcode_page,
@@ -881,23 +881,23 @@ def oidc4vc_login_followup(red):
     logging.info("Enter follow up endpoint")
     try:
         stream_id = request.args.get('stream_id')
+        code = json.loads(red.get(stream_id).decode())['code']
     except Exception:
         return jsonify("Forbidden"), 403
-    code = json.loads(red.get(stream_id).decode())['code']
     try:
         stream_id_wallet_data = json.loads(red.get(stream_id + '_wallet_data').decode())
     except Exception:
         logging.error("code expired in follow up")
         resp = {'code': code, 'error': "access_denied"}
         session['verified'] = False
-        return redirect ('/sandbox/verifier/app/authorize?' + urlencode(resp))
+        return redirect('/sandbox/verifier/app/authorize?' + urlencode(resp))
 
     if stream_id_wallet_data['access'] != 'ok':
         resp = {'code': code, 'error': stream_id_wallet_data['access']}
         session['verified'] = False
     else:
         session['verified'] = True
-        red.setex(code +"_wallet_data", CODE_LIFE, json.dumps(stream_id_wallet_data))
+        red.setex(code + "_wallet_data", CODE_LIFE, json.dumps(stream_id_wallet_data))
         resp = {'code': code}
 
     return redirect('/sandbox/verifier/app/authorize?' + urlencode(resp))

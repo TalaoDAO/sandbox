@@ -569,6 +569,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     deeplink_altme = (
         mode.deeplink_altme + "app/download/oidc4vc?" + urlencode({"uri": url_to_display})
     )
+    print("url = ", url_to_display)
     qrcode_page = issuer_data.get("issuer_landing_page")
     logging.info("QR code page = %s", qrcode_page)
     return render_template(
