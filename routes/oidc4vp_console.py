@@ -88,7 +88,7 @@ def ebsi_verifier_console_select(mode):
 
 def ebsi_verifier_console(mode):
     global vc, reason
-  
+
     if not session.get('is_connected') or not session.get('login_name'):
         return redirect('/sandbox/saas4ssi')
     if request.method == 'GET':

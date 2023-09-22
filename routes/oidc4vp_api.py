@@ -828,12 +828,12 @@ async def oidc4vc_login_endpoint(stream_id, red):
             if json.loads(vp_token)['proof'].get('challenge') == nonce:
                 nonce_status = "ok"
             else:
-                nonce_status = "failed in vp_token"
-                access = "access_denied"
+                nonce_status = "failed in vp_token for challenge "
+                # access = "access_denied"
             if json.loads(vp_token)['proof'].get('domain') == verifier_data['did']:
                 aud_status = "ok"
             else:
-                aud_status = "failed in vp_token"
+                aud_status = "failed in vp_token for domain "
                 #  access = "access_denied"
 
     status_code = 400 if access == "access_denied" else 200
