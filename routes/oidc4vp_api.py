@@ -818,11 +818,11 @@ async def oidc4vc_login_endpoint(stream_id, red):
             else:
                 nonce_status = "failed in vp_token nonce "
                 #access = "access_denied"
-            if oidc4vc.get_payload_from_token(vp_token)['aud'] == verifier_data['did']:
-                aud_status = "ok"
-            else:
-                aud_status = "failed in vp_token aud"
-                #access = "access_denied"
+            #if oidc4vc.get_payload_from_token(vp_token)['aud'] == verifier_data['did']:
+            #    aud_status = "ok"
+            #else:
+            #    aud_status = "failed in vp_token aud"
+            #    #access = "access_denied"
         else:
             vp_sub = json.loads(vp_token)['holder']
             if json.loads(vp_token)['proof'].get('challenge') == nonce:
@@ -830,11 +830,11 @@ async def oidc4vc_login_endpoint(stream_id, red):
             else:
                 nonce_status = "failed in vp_token for challenge "
                 # access = "access_denied"
-            if json.loads(vp_token)['proof'].get('domain') == verifier_data['did']:
-                aud_status = "ok"
-            else:
-                aud_status = "failed in vp_token for domain "
-                #  access = "access_denied"
+            #if json.loads(vp_token)['proof'].get('domain') == verifier_data['did']:
+            #    aud_status = "ok"
+            #else:
+            #    aud_status = "failed in vp_token for domain "
+            #    #  access = "access_denied"
 
     status_code = 400 if access == "access_denied" else 200
 
