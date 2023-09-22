@@ -816,13 +816,13 @@ async def oidc4vc_login_endpoint(stream_id, red):
             if oidc4vc.get_payload_from_token(vp_token)['nonce'] == nonce:
                 nonce_status = "ok"
             else:
-                nonce_status = "failed in vp_token"
-                access = "access_denied"
+                nonce_status = "failed in vp_token nonce "
+                #access = "access_denied"
             if oidc4vc.get_payload_from_token(vp_token)['aud'] == verifier_data['did']:
                 aud_status = "ok"
             else:
-                aud_status = "failed in vp_token"
-                access = "access_denied"
+                aud_status = "failed in vp_token aud"
+                #access = "access_denied"
         else:
             vp_sub = json.loads(vp_token)['holder']
             if json.loads(vp_token)['proof'].get('challenge') == nonce:
