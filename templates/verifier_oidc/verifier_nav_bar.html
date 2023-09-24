@@ -11,14 +11,14 @@
       
       <ul class="nav navbar-nav ml-auto d-lg-flex align-items-center" style="flex-direction: row;">
 
-       
-        <li class="nav-item active">
+    
+        <li class="nav-item active nav-item dropdown d-none d-md-block">
           <a class="nav-link" style="color: rgb(54, 24, 88); margin-bottom: 0" href="/sandbox/saas4ssi/menu">Menu</a>
         </li> 
-        <li class="nav-item active">
+        <li class="nav-item active nav-item dropdown d-none d-md-block">
           <a class="nav-link" style="color: rgb(54, 24, 88); margin-bottom: 0" href="/sandbox/ebsi/verifier/nav/create">Create</a>
         </li>
-        <li class="nav-item active">
+        <li class="nav-item active nav-item dropdown d-none d-md-block">
           <a class="nav-link" style="color: rgb(54, 24, 88); margin-bottom: 0" href="/sandbox/ebsi/verifier/console/select">Select</a>
         </li>
       
@@ -34,8 +34,24 @@
             
           </li>
 
-          <li class="nav-item active">
+          <li class="nav-item active nav-item dropdown d-none d-md-block">
             <a class="nav-link" style="color: rgb(54, 24, 88); margin-bottom: 0" href="/sandbox/saas4ssi/logout">Logout</a>
+          </li>
+
+
+          <li class="nav-item dropdown no-arrow h-100 d-md-none" role="presentation">
+            <div class="nav-item dropdown show">
+              <a class=" nav-link" data-toggle="dropdown" aria-expanded="true" href="#"> 
+                <span  style="color: grey;"><i class="fas fa-bars fa-sm fa-fw mr-2 text-gray-400"></i></span>
+              </a>
+              <div class="dropdown-menu shadow dropdown-menu-right animated--grow-in" style="position:absolute;" role="menu">
+                <a class="dropdown-item" role="presentation" href="/sandbox/saas4ssi">Home</a>
+                  <a class="dropdown-item" role="presentation" href="https://altme.io">Download Altme</a>
+                  <a class="dropdown-item" role="presentation" href="mailto:thierry@altme.io">Contact</a>
+                  <a class="dropdown-item" href="/sandbox/issuer/oidc/test">OIDC4VCI wallet testing</a>
+                  <a class="dropdown-item" href="/sandbox/verifier/oidc/test">OIDC4VP/SIOPV2 wallet testing</a>
+              </div>
+            </div>
           </li>
       
       </ul>

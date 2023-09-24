@@ -6,52 +6,50 @@ import db_api
 from profile import profile
 import oidc4vc
 import pex
-from oidc4vc_constante import ebsi_verifier_credential_list
-from oidc4vc_constante import ebsi_verifier_landing_page_style_list, oidc4vc_profile_list
+from oidc4vc_constante import oidc4vc_verifier_credential_list
+from oidc4vc_constante import oidc4vc_verifier_landing_page_style_list, oidc4vc_profile_list
 
 logging.basicConfig(level=logging.INFO)
 
 did_selected = 'did:tz:tz2NQkPq3FFA3zGAyG8kLcWatGbeXpHMu7yk'
 
 def init_app(app,red, mode):
-    app.add_url_rule('/sandbox/ebsi/verifier/console/logout',  view_func=ebsi_verifier_console_logout, methods = ['GET', 'POST'])
-    app.add_url_rule('/sandbox/ebsi/verifier/console',  view_func=ebsi_verifier_console, methods = ['GET', 'POST'], defaults={'mode': mode})
-    app.add_url_rule('/sandbox/ebsi/verifier/console/select',  view_func=ebsi_verifier_console_select, methods = ['GET', 'POST'], defaults={'mode': mode})
-    app.add_url_rule('/sandbox/ebsi/verifier/console/advanced',  view_func=ebsi_verifier_advanced, methods = ['GET', 'POST'])
-
-    #app.add_url_rule('/sandbox/ebsi/verifier/preview_presentation/<stream_id>',  view_func=ebsi_verifier_preview_presentation_endpoint, methods = ['GET', 'POST'],  defaults={'red': red})
+    app.add_url_rule('/sandbox/ebsi/verifier/console/logout',  view_func=oidc4vc_verifier_console_logout, methods = ['GET', 'POST'])
+    app.add_url_rule('/sandbox/ebsi/verifier/console',  view_func=oidc4vc_verifier_console, methods = ['GET', 'POST'], defaults={'mode': mode})
+    app.add_url_rule('/sandbox/ebsi/verifier/console/select',  view_func=oidc4vc_verifier_console_select, methods = ['GET', 'POST'], defaults={'mode': mode})
+    app.add_url_rule('/sandbox/ebsi/verifier/console/advanced',  view_func=oidc4vc_verifier_advanced, methods = ['GET', 'POST'])
 
     # nav bar option
-    app.add_url_rule('/sandbox/ebsi/verifier/nav/logout',  view_func=ebsi_verifier_nav_logout, methods = ['GET'])
-    app.add_url_rule('/sandbox/ebsi/verifier/nav/create',  view_func=ebsi_verifier_nav_create, methods = ['GET'], defaults= {'mode': mode})
+    app.add_url_rule('/sandbox/ebsi/verifier/nav/logout',  view_func=oidc4vc_verifier_nav_logout, methods = ['GET'])
+    app.add_url_rule('/sandbox/ebsi/verifier/nav/create',  view_func=oidc4vc_verifier_nav_create, methods = ['GET'], defaults= {'mode': mode})
     return
 
     
-def ebsi_verifier_nav_logout():
+def oidc4vc_verifier_nav_logout():
     if not session.get('is_connected') or not session.get('login_name'):
         return redirect('/sandbox/saas4ssi')
     session.clear()
     return redirect('/sandbox/saas4ssi')
 
 
-def ebsi_verifier_nav_create(mode):
+def oidc4vc_verifier_nav_create(mode):
     if not session.get('is_connected') or not session.get('login_name'):
         return redirect('/sandbox/saas4ssi')
-    return redirect('/sandbox/ebsi/verifier/console?client_id=' + db_api.create_ebsi_verifier(mode, user=session['login_name']))
+    return redirect('/sandbox/ebsi/verifier/console?client_id=' + db_api.create_oidc4vc_verifier(mode, user=session['login_name']))
 
- 
-def ebsi_verifier_console_logout():
+
+def oidc4vc_verifier_console_logout():
     if session.get('is_connected'):
         session.clear()
     return redirect('/sandbox/saas4ssi')
 
 
-def ebsi_verifier_console_select(mode):
+def oidc4vc_verifier_console_select(mode):
     if not session.get('is_connected') or not session.get('login_name'):
         return redirect('/sandbox/saas4ssi')
     if request.method == 'GET':  
-        my_list = db_api.list_ebsi_verifier()
-        verifier_list=str()
+        my_list = db_api.list_oidc4vc_verifier()
+        verifier_list = str()
         for data in my_list:
             data_dict = json.loads(data)
             id_token =  "Yes" if data_dict.get('id_token') == 'on' else 'No'
@@ -63,8 +61,8 @@ def ebsi_verifier_console_select(mode):
                     verifier = """<tr>
                         <td>""" + data_dict.get('application_name', "") + """</td>
                         <td>""" + data_dict['user'] + """</td>
-                        <td>""" + ebsi_verifier_credential_list.get(data_dict.get('vc_1', 'Unknown'), "unknown") + """</td>
-                        <td>""" + ebsi_verifier_credential_list.get(data_dict['vc_2'], "unknown") + """</td>
+                        <td>""" + oidc4vc_verifier_credential_list.get(data_dict.get('vc_1', 'Unknown'), "unknown") + """</td>
+                        <td>""" + oidc4vc_verifier_credential_list.get(data_dict['vc_2'], "unknown") + """</td>
                         <td>""" + data_dict.get('profile', 'Unknwon') + """</td>
                         <td>""" + id_token + """</td>
                         <td>""" + vp_token + """</td>
@@ -78,116 +76,116 @@ def ebsi_verifier_console_select(mode):
         return render_template('verifier_oidc/verifier_select.html', verifier_list=verifier_list, login_name=session['login_name']) 
     else:
         if request.form['button'] == "new":
-            return redirect('/sandbox/ebsi/verifier/console?client_id=' + db_api.create_ebsi_verifier(mode, user=session['login_name']))
+            return redirect('/sandbox/ebsi/verifier/console?client_id=' + db_api.create_oidc4vc_verifier(mode, user=session['login_name']))
         elif request.form['button'] == "logout":
             session.clear()
-            return redirect ('/sandbox/saas4ssi')
+            return redirect('/sandbox/saas4ssi')
         elif request.form['button'] == "home":
             return render_template("menu.html", login_name=session["login_name"])
     
 
-def ebsi_verifier_console(mode):
+def oidc4vc_verifier_console(mode):
     global vc, reason
 
     if not session.get('is_connected') or not session.get('login_name'):
         return redirect('/sandbox/saas4ssi')
     if request.method == 'GET':
         if not request.args.get('client_id'):
-            return redirect('/sandbox/ebsi/verifier/console/select?user='+ session.get('login_name'))
+            return redirect('/sandbox/ebsi/verifier/console/select?user=' + session.get('login_name'))
         else :
             session['client_id'] = request.args.get('client_id')
-        session['client_data'] = json.loads(db_api.read_ebsi_verifier(session['client_id']))
+        session['client_data'] = json.loads(db_api.read_oidc4vc_verifier(session['client_id']))
         
         verifier_landing_page_style_select = str()
-        for key, value in ebsi_verifier_landing_page_style_list.items():
-                if key == session['client_data'].get('verifier_landing_page_style'):
-                    verifier_landing_page_style_select +=  "<option selected value=" + key + ">" + value + "</option>"
-                else:
-                    verifier_landing_page_style_select +=  "<option value=" + key + ">" + value + "</option>"
+        for key, value in oidc4vc_verifier_landing_page_style_list.items():
+            if key == session['client_data'].get('verifier_landing_page_style'):
+                verifier_landing_page_style_select +=  "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                verifier_landing_page_style_select +=  "<option value=" + key + ">" + value + "</option>"
 
         vc_select_1 = str()
-        for key, value in ebsi_verifier_credential_list.items():
-                if key == session['client_data'].get('vc_1', 'DID'):
-                    vc_select_1 +=  "<option selected value=" + key + ">" + value + "</option>"
-                else:
-                    vc_select_1 +=  "<option value=" + key + ">" + value + "</option>"
+        for key, value in oidc4vc_verifier_credential_list.items():
+            if key == session['client_data'].get('vc_1', 'DID'):
+                vc_select_1 +=  "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                vc_select_1 +=  "<option value=" + key + ">" + value + "</option>"
         vc_select_2 = str()
-        for key, value in ebsi_verifier_credential_list.items():
-                if key == session['client_data'].get('vc_2', "DID"):
-                    vc_select_2 +=  "<option selected value=" + key + ">" + value + "</option>"
-                else:
-                    vc_select_2 +=  "<option value=" + key + ">" + value + "</option>"
+        for key, value in oidc4vc_verifier_credential_list.items():
+            if key == session['client_data'].get('vc_2', "DID"):
+                vc_select_2 +=  "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                vc_select_2 +=  "<option value=" + key + ">" + value + "</option>"
         vc_select_3 = str()
-        for key, value in ebsi_verifier_credential_list.items():
-                if key == session['client_data'].get('vc_3', "DID"):
-                    vc_select_3 +=  "<option selected value=" + key + ">" + value + "</option>"
-                else:
-                    vc_select_3 +=  "<option value=" + key + ">" + value + "</option>"
+        for key, value in oidc4vc_verifier_credential_list.items():
+            if key == session['client_data'].get('vc_3', "DID"):
+                vc_select_3 +=  "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                vc_select_3 +=  "<option value=" + key + ">" + value + "</option>"
         vc_select_4 = str()
-        for key, value in ebsi_verifier_credential_list.items():
-                if key == session['client_data'].get('vc_4', "DID"):
-                    vc_select_4 += "<option selected value=" + key + ">" + value + "</option>"
-                else:
-                    vc_select_4 += "<option value=" + key + ">" + value + "</option>"
+        for key, value in oidc4vc_verifier_credential_list.items():
+            if key == session['client_data'].get('vc_4', "DID"):
+                vc_select_4 += "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                vc_select_4 += "<option value=" + key + ">" + value + "</option>"
 
         # for group A
         vc_select_5 = str()
-        for key, value in ebsi_verifier_credential_list.items():
-                if key == session['client_data'].get('vc_5', 'DID'):
-                    vc_select_5 += "<option selected value=" + key + ">" + value + "</option>"
-                else:
-                    vc_select_5 +=  "<option value=" + key + ">" + value + "</option>"
+        for key, value in oidc4vc_verifier_credential_list.items():
+            if key == session['client_data'].get('vc_5', 'DID'):
+                vc_select_5 += "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                vc_select_5 +=  "<option value=" + key + ">" + value + "</option>"
         
         vc_select_6 = str()
-        for key, value in ebsi_verifier_credential_list.items():
-                if key ==   session['client_data'].get('vc_6', "DID"):
-                    vc_select_6 +=  "<option selected value=" + key + ">" + value + "</option>"
-                else:
-                    vc_select_6 +=  "<option value=" + key + ">" + value + "</option>"
+        for key, value in oidc4vc_verifier_credential_list.items():
+            if key ==   session['client_data'].get('vc_6', "DID"):
+                vc_select_6 +=  "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                vc_select_6 +=  "<option value=" + key + ">" + value + "</option>"
         vc_select_7 = str()
-        for key, value in ebsi_verifier_credential_list.items():
-                if key ==   session['client_data'].get('vc_7', "DID"):
-                    vc_select_7 +=  "<option selected value=" + key + ">" + value + "</option>"
-                else:
-                    vc_select_7 +=  "<option value=" + key + ">" + value + "</option>"
+        for key, value in oidc4vc_verifier_credential_list.items():
+            if key ==   session['client_data'].get('vc_7', "DID"):
+                vc_select_7 +=  "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                vc_select_7 +=  "<option value=" + key + ">" + value + "</option>"
         vc_select_8 = str()
-        for key, value in ebsi_verifier_credential_list.items():
-                if key ==   session['client_data'].get('vc_8', "DID"):
-                    vc_select_8 +=  "<option selected value=" + key + ">" + value + "</option>"
-                else:
-                    vc_select_8 +=  "<option value=" + key + ">" + value + "</option>"
+        for key, value in oidc4vc_verifier_credential_list.items():
+            if key ==   session['client_data'].get('vc_8', "DID"):
+                vc_select_8 +=  "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                vc_select_8 +=  "<option value=" + key + ">" + value + "</option>"
         
         # for group B
         vc_select_9 = str()
-        for key, value in ebsi_verifier_credential_list.items():
-                if key ==   session['client_data'].get('vc_9', 'DID'):
-                    vc_select_9 +=  "<option selected value=" + key + ">" + value + "</option>"
-                else:
-                    vc_select_9 +=  "<option value=" + key + ">" + value + "</option>"
+        for key, value in oidc4vc_verifier_credential_list.items():
+            if key ==   session['client_data'].get('vc_9', 'DID'):
+                vc_select_9 +=  "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                vc_select_9 +=  "<option value=" + key + ">" + value + "</option>"
         
         vc_select_10 = str()
-        for key, value in ebsi_verifier_credential_list.items():
-                if key ==   session['client_data'].get('vc_10', "DID"):
-                    vc_select_10 +=  "<option selected value=" + key + ">" + value + "</option>"
-                else:
-                    vc_select_10 +=  "<option value=" + key + ">" + value + "</option>"
+        for key, value in oidc4vc_verifier_credential_list.items():
+            if key ==   session['client_data'].get('vc_10', "DID"):
+                vc_select_10 +=  "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                vc_select_10 +=  "<option value=" + key + ">" + value + "</option>"
         vc_select_11 = str()
-        for key, value in ebsi_verifier_credential_list.items():
-                if key ==   session['client_data'].get('vc_11', "DID"):
-                    vc_select_11 +=  "<option selected value=" + key + ">" + value + "</option>"
-                else:
-                    vc_select_11 +=  "<option value=" + key + ">" + value + "</option>"
+        for key, value in oidc4vc_verifier_credential_list.items():
+            if key ==   session['client_data'].get('vc_11', "DID"):
+                vc_select_11 +=  "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                vc_select_11 +=  "<option value=" + key + ">" + value + "</option>"
         vc_select_12 = str()
-        for key, value in ebsi_verifier_credential_list.items():
-                if key ==  session['client_data'].get('vc_12', "DID"):
-                    vc_select_12 +=  "<option selected value=" + key + ">" + value + "</option>"
-                else:
-                    vc_select_12 +=  "<option value=" + key + ">" + value + "</option>"
+        for key, value in oidc4vc_verifier_credential_list.items():
+            if key ==  session['client_data'].get('vc_12', "DID"):
+                vc_select_12 +=  "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                vc_select_12 +=  "<option value=" + key + ">" + value + "</option>"
 
         # presentation definition calculation
         if session['client_data'].get('vp_token'):
             presentation_definition = str()
-            prez = dict()
+            prez = {}
         
         if session['client_data'].get('vp_token') and not session['client_data'].get('group'): 
             if session['client_data'].get('filter_type_array'):
@@ -197,11 +195,13 @@ def ebsi_verifier_console(mode):
                     vc = 'vc_' + i
                     reason = 'reason_' + i
                     if session['client_data'][vc] != 'None'  :
-                        prez.add_constraint_with_type_array("$.type",
-                                            session['client_data'][vc],
-                                            "Input descriptor for credential " + i,
-                                            session['client_data'][reason],
-                                            id= session['client_data'][vc].lower() + '_' + i) 
+                        prez.add_constraint_with_type_array(
+                            "$.type",
+                            session['client_data'][vc],
+                            "Input descriptor for credential " + i,
+                            session['client_data'][reason],
+                            id= session['client_data'][vc].lower() + '_' + i
+                        ) 
             else:     
                 if not prez:
                     prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
@@ -209,11 +209,13 @@ def ebsi_verifier_console(mode):
                     vc = 'vc_' + i
                     reason = 'reason_' + i
                     if session['client_data'][vc] != 'None'  :
-                        prez.add_constraint("$.credentialSubject.type",
-                                            session['client_data'][vc],
-                                            "Input descriptor for credential " + i,
-                                            session['client_data'][reason],
-                                            id= session['client_data'][vc].lower() + '_' + i)
+                        prez.add_constraint(
+                            "$.credentialSubject.type",
+                            session['client_data'][vc],
+                            "Input descriptor for credential " + i,
+                            session['client_data'][reason],
+                            id= session['client_data'][vc].lower() + '_' + i
+                        )
         
         if session['client_data'].get('vp_token') and session['client_data'].get('group'): 
             if not prez:
@@ -222,13 +224,14 @@ def ebsi_verifier_console(mode):
             for i in ["5", "6", "7", "8"]:
                 vc = 'vc_' + i
                 if session['client_data'][vc] != 'None'  :
-                    prez.add_constraint_with_group("$.credentialSubject.type",
-                                                            session['client_data'][vc],
-                                                            "Input descriptor for credential " + i,
-                                                            "",
-                                                            "A",
-                                                            id=session['client_data'][vc].lower() + '_' + i)
-        
+                    prez.add_constraint_with_group(
+                        "$.credentialSubject.type",
+                        session['client_data'][vc],
+                        "Input descriptor for credential " + i,
+                        "",
+                        "A",
+                        id=session['client_data'][vc].lower() + '_' + i
+                    )
         
         if session['client_data'].get('vp_token') and session['client_data'].get('group_B'): 
             if not prez:
@@ -237,20 +240,22 @@ def ebsi_verifier_console(mode):
             for i in ["9", "10", "11", "12"]:
                 vc = 'vc_' + i
                 if session['client_data'][vc] != 'None'  :
-                    prez.add_constraint_with_group("$.credentialSubject.type",
-                                                            session['client_data'][vc],
-                                                            "Input descriptor for credential " + i,
-                                                            "",
-                                                            "B",
-                                                            id=session['client_data'][vc].lower() + '_' + i)
+                    prez.add_constraint_with_group(
+                        "$.credentialSubject.type",
+                        session['client_data'][vc],
+                        "Input descriptor for credential " + i,
+                        "",
+                        "B",
+                        id=session['client_data'][vc].lower() + '_' + i
+                    )
             
         if session['client_data'].get('vp_token') and profile[session['client_data']['profile']]["verifier_vp_type"] == 'ldp_vp':
-                prez.add_format_ldp_vp()
-                prez.add_format_ldp_vc()
+            prez.add_format_ldp_vp()
+            prez.add_format_ldp_vc()
         
         if session['client_data'].get('vp_token') and profile[session['client_data']['profile']]["verifier_vp_type"] == 'jwt_vp':
-                prez.add_format_jwt_vp()
-                prez.add_format_jwt_vc()
+            prez.add_format_jwt_vp()
+            prez.add_format_jwt_vc()
 
         if session['client_data'].get('vp_token'):
             presentation_definition = prez.get()
@@ -260,7 +265,8 @@ def ebsi_verifier_console(mode):
         authorization_request = mode.server + 'sandbox/ebsi/authorize?client_id=' + session['client_data']['client_id'] + "&scope=openid&response_type=code&redirect_uri=" +  session['client_data']['callback'] 
         implicit_request = mode.server + 'sandbox/ebsi/authorize?client_id=' + session['client_data']['client_id'] + "&scope=openid&response_type=id_token&redirect_uri=" +  session['client_data']['callback']
         
-        return render_template('verifier_oidc/verifier_console.html',
+        return render_template(
+            'verifier_oidc/verifier_console.html',
             authorization_request=authorization_request,
             implicit_request=implicit_request,
             title=session['client_data'].get('title'),
@@ -270,10 +276,10 @@ def ebsi_verifier_console(mode):
             vp_token="checked" if session['client_data'].get('vp_token') else "",
             group="checked" if session['client_data'].get('group') else "",
             client_id_as_DID="checked" if session['client_data'].get('client_id_as_DID') else "",
-            group_B="" if not session['client_data'].get('group_B') else "checked" ,
-            filter_type_array="" if not session['client_data'].get('filter_type_array') else "checked" ,
-            presentation_definition_uri="" if not session['client_data'].get('presentation_definition_uri') else "checked" ,
-            request_uri_parameter_supported="" if not session['client_data'].get('request_uri_parameter_supported') else "checked" ,
+            group_B="checked" if session['client_data'].get('group_B') else "",
+            filter_type_array="checked" if session['client_data'].get('filter_type_array') else "" ,
+            presentation_definition_uri="checked" if session['client_data'].get('presentation_definition_uri') else "" ,
+            request_uri_parameter_supported="checked" if session['client_data'].get('request_uri_parameter_supported') else "" ,
             request_parameter_supported="" if not session['client_data'].get('request_parameter_supported') else "checked" ,
             standalone="" if not session['client_data'].get('standalone')  else "checked" ,
             application_name=session['client_data'].get('application_name', ""),
@@ -315,17 +321,17 @@ def ebsi_verifier_console(mode):
         )
     if request.method == 'POST':
         if request.form['button'] == "advanced":
-            return redirect ('/sandbox/ebsi/verifier/console/advanced')
+            return redirect('/sandbox/ebsi/verifier/console/advanced')
         
         elif request.form['button'] == "delete":
-            db_api.delete_ebsi_verifier( request.form['client_id'])
-            return redirect ('/sandbox/ebsi/verifier/console')
+            db_api.delete_oidc4vc_verifier( request.form['client_id'])
+            return redirect('/sandbox/ebsi/verifier/console')
 
         elif request.form['button'] == "activity":
-            return redirect ('/sandbox/ebsi/verifier/console/activity')
+            return redirect('/sandbox/ebsi/verifier/console/activity')
     
         elif request.form['button'] == "update":    
-            if not request.form.get('id_token') and not request.form.get('vp_token') :
+            if not request.form.get('id_token') and not request.form.get('vp_token'):
                 flash("MUST add an id_token or a vp_token !", "warning")
                 return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
             if request.form.get('group_B') and not request.form.get('vp_token') :
@@ -385,46 +391,47 @@ def ebsi_verifier_console(mode):
                 flash("MUST select vp_token to use group !", "warning")
                 session['client_data']['group'] = None        
             
-            db_api.update_ebsi_verifier(request.form['client_id'], json.dumps(session['client_data']))
+            db_api.update_oidc4vc_verifier(request.form['client_id'], json.dumps(session['client_data']))
             return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
 
         elif request.form['button'] == "copy":
-            new_client_id =  db_api.create_ebsi_verifier(mode,  user=session['login_name'])
+            new_client_id =  db_api.create_oidc4vc_verifier(mode,  user=session['login_name'])
             new_data = copy.deepcopy(session['client_data'])
             new_data['application_name'] = new_data['application_name'] + ' (copie)'
             new_data['client_id'] = new_client_id
             new_data['user'] = session['login_name']
-            db_api.update_ebsi_verifier(new_client_id, json.dumps(new_data))
+            db_api.update_oidc4vc_verifier(new_client_id, json.dumps(new_data))
             return redirect('/sandbox/ebsi/verifier/console?client_id=' + new_client_id)
 
 
-async def ebsi_verifier_advanced():
+async def oidc4vc_verifier_advanced():
     global reason
     if not session.get('is_connected') or not session.get('login_name'):
         return redirect('/sandbox/saas4ssi')
     if request.method == 'GET':
-        session['client_data'] = json.loads(db_api.read_ebsi_verifier(session['client_id']))
+        session['client_data'] = json.loads(db_api.read_oidc4vc_verifier(session['client_id']))
         oidc4vc_profile_select = str()
         for key, value in oidc4vc_profile_list.items():
-                if key ==  session['client_data'].get('profile', "DEFAULT"):
-                    oidc4vc_profile_select +=  "<option selected value=" + key + ">" + value + "</option>"
-                else:
-                    oidc4vc_profile_select +=  "<option value=" + key + ">" + value + "</option>"      
+            if key ==  session['client_data'].get('profile', "DEFAULT"):
+                oidc4vc_profile_select +=  "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                oidc4vc_profile_select +=  "<option value=" + key + ">" + value + "</option>"      
 
         did = session['client_data'].get('did', "")
         did_document = oidc4vc.did_resolve_lp(did)
         jwk = json.dumps(json.loads(session['client_data']['jwk']), indent=4)
     
-        return render_template('verifier_oidc/verifier_advanced.html',
-                client_id=session['client_data']['client_id'],
-                jwk=jwk,
-                verification_method=session['client_data'].get('verification_method', ""),
-                oidc4vc_profile_select=oidc4vc_profile_select,
-                did=session['client_data'].get('did', ""),
-                did_document=json.dumps(did_document, indent=4)
-                )
+        return render_template(
+            'verifier_oidc/verifier_advanced.html',
+            client_id=session['client_data']['client_id'],
+            jwk=jwk,
+            verification_method=session['client_data'].get('verification_method', ""),
+            oidc4vc_profile_select=oidc4vc_profile_select,
+            did=session['client_data'].get('did', ""),
+            did_document=json.dumps(did_document, indent=4)
+            )
     if request.method == 'POST':     
-        session['client_data'] = json.loads(db_api.read_ebsi_verifier(session['client_id']))
+        session['client_data'] = json.loads(db_api.read_oidc4vc_verifier(session['client_id']))
         if request.form['button'] == "back":
             return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
 
@@ -448,9 +455,8 @@ async def ebsi_verifier_advanced():
             elif request.form['profile'] == "JWTVC" and did_method not in ['web', 'ion']:
                 flash("This profile requires did:web or did:ion", "warning")
                 return redirect('/sandbox/ebsi/verifier/console/advanced')
-            
             else:
                 session['client_data']['jwk'] = request.form['jwk']
-                db_api.update_ebsi_verifier( request.form['client_id'], json.dumps(session['client_data']))
+                db_api.update_oidc4vc_verifier( request.form['client_id'], json.dumps(session['client_data']))
                 return redirect('/sandbox/ebsi/verifier/console/advanced')
         

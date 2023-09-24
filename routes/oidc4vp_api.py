@@ -17,7 +17,7 @@ import logging
 import base64
 from datetime import datetime
 from jwcrypto import jwk, jwt
-from db_api import read_ebsi_verifier
+from db_api import read_oidc4vc_verifier
 import pkce # https://github.com/xzava/pkce
 import oidc4vc
 from profile import profile
@@ -37,7 +37,7 @@ QRCODE_LIFE = 2000
 # OpenID key of the OP for customer application
 RSA_KEY_DICT = json.load(open("keys.json", "r"))['RSA_key']
 rsa_key = jwk.JWK(**RSA_KEY_DICT) 
-public_rsa_key =  rsa_key.export(private_key=False, as_dict=True)
+public_rsa_key = rsa_key.export(private_key=False, as_dict=True)
 
 
 def init_app(app, red, mode):
@@ -212,7 +212,7 @@ def oidc4vc_authorize(red, mode):
             session.clear()
             return jsonify('request malformed'), 400
 
-    if not read_ebsi_verifier(request.args['client_id']):
+    if not read_oidc4vc_verifier(request.args['client_id']):
         logging.warning('client_id not found in client data base')
         return manage_error_request("unauthorized_client")
 
@@ -245,7 +245,7 @@ def oidc4vc_token(red, mode):
         token = base64.b64decode(token).decode()
         client_secret = token.split(":")[1]
         client_id = token.split(":")[0]
-        verifier_data = json.loads(read_ebsi_verifier(client_id))
+        verifier_data = json.loads(read_oidc4vc_verifier(client_id))
         grant_type = request.form['grant_type']
         code = request.form['code']
         redirect_uri = request.form['redirect_uri']
@@ -266,7 +266,7 @@ def oidc4vc_token(red, mode):
     elif redirect_uri != data['redirect_uri']:
         return manage_error("invalid_redirect_uri")
     elif grant_type != 'authorization_code':
-        return manage_error("unhauthorized_client")
+        return manage_error("unauthorized_client")
     if verifier_data.get('pkce') == 'on' and not code_verifier:
         logging.warning("pb code verifier")
         return manage_error("invalid_request")
@@ -289,13 +289,14 @@ def oidc4vc_token(red, mode):
         "token_type": "Bearer",
         "expires_in": ACCESS_TOKEN_LIFE
     }
-    red.setex(access_token + '_wallet_data', 
-            ACCESS_TOKEN_LIFE,
-            json.dumps({
-                "client_id": client_id,
-                "sub": code_wallet_data['sub'],
-                "vp_token_payload": code_wallet_data['vp_token_payload']
-            })
+    red.setex(
+        access_token + '_wallet_data',
+        ACCESS_TOKEN_LIFE,
+        json.dumps({
+            "client_id": client_id,
+            "sub": code_wallet_data['sub'],
+            "vp_token_payload": code_wallet_data['vp_token_payload']
+        })
     )
     headers = {
         "Cache-Control": "no-store",
@@ -391,7 +392,7 @@ def client_metadata_uri(id, red):
 
 def build_client_metadata(client_id, redirect_uri) -> dict:
     try:
-        verifier_data = json.loads(read_ebsi_verifier(client_id))
+        verifier_data = json.loads(read_oidc4vc_verifier(client_id))
     except Exception:
         return
     return {
@@ -439,7 +440,7 @@ def oidc4vc_login_qrcode(red, mode):
     try:
         verifier_id = json.loads(red.get(request.args['code']).decode())['client_id']
         nonce = json.loads(red.get(request.args['code']).decode()).get('nonce')
-        verifier_data = json.loads(read_ebsi_verifier(verifier_id))
+        verifier_data = json.loads(read_oidc4vc_verifier(verifier_id))
         verifier_profile = profile[verifier_data['profile']]
     except Exception:
         logging.error("session expired in login_qrcode")
@@ -454,6 +455,7 @@ def oidc4vc_login_qrcode(red, mode):
     else:
         return render_template("verifier_oidc/verifier_session_problem.html", message='Invalid configuration')
     
+    # manage the choice of prefix for testing purpose
     if not request.form.get('prefix'):
         if response_type == 'id_token':
             prefix = verifier_profile["siopv2_prefix"]
@@ -463,7 +465,6 @@ def oidc4vc_login_qrcode(red, mode):
         prefix = request.form.get('prefix')      
     
     # Manage presentation definition with a subset of PEX 2.0
-    
     if 'vp_token' in response_type:
         presentation_definition = str()
         prez = {}
@@ -544,17 +545,15 @@ def oidc4vc_login_qrcode(red, mode):
         "state": str(uuid.uuid1())  # unused
     }
     
-    # use W3C DID identifier for client_id
+    # Set client_id, use W3C DID identifier for client_id
     if verifier_data.get('client_id_as_DID'):
         client_id = verifier_data['did']
     else:
         client_id = redirect_uri
-    
     if verifier_data['profile'] == "EBSI-V3":
         client_id = mode.server + 'sandbox/verifier/wallet'
-    
     authorization_request['client_id'] = client_id
-    
+
     # OIDC4VP
     if 'vp_token' in response_type:
         # client_metadata_uri
@@ -565,8 +564,8 @@ def oidc4vc_login_qrcode(red, mode):
         
         # presentation_definition
         presentation_definition = prez.get()
-        authorization_request['presentation_definition'] = presentation_definition # TODO
-        authorization_request['aud'] = 'https://self-issued.me/v2'
+        authorization_request['presentation_definition'] = presentation_definition   # TODO
+        authorization_request['aud'] = 'https://self-issued.me/v2'   #TODO implies wallet profile 
 
         # presentation_definition_uri
         if verifier_data.get('presentation_definition_uri'):
@@ -582,7 +581,7 @@ def oidc4vc_login_qrcode(red, mode):
         if verifier_data['profile'] == "EBSI-V3":
             authorization_request['response_mode'] = 'direct_post'
         else:    
-            authorization_request['registration'] = json.dumps(json.load(open('siopv2_config_light.json', 'r')))           
+            authorization_request['registration'] = json.dumps(json.load(open('siopv2_config.json', 'r')))           
     
     # manage request_uri as jwt
     request_as_jwt = build_jwt_request(
@@ -668,7 +667,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
         qrcode_status = "ok"
         data = json.loads(red.get(stream_id).decode())
         verifier_id = data['verifier_id']
-        verifier_data = json.loads(read_ebsi_verifier(verifier_id))
+        verifier_data = json.loads(read_oidc4vc_verifier(verifier_id))
         logging.info('Profile = %s', verifier_data['profile'])
     except Exception:
         qrcode_status = "QR code expired"
@@ -782,7 +781,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
                 vp_token_status = "signature check failed"
                 access = "access_denied"
         else:
-            verifyResult = json.loads(await didkit.verify_presentation(vp_token, "{}" ))
+            verifyResult = json.loads(await didkit.verify_presentation(vp_token, "{}"))
             vp_token_status = verifyResult
 
     # check VC signature
@@ -811,30 +810,30 @@ async def oidc4vc_login_endpoint(stream_id, red):
 
     # check nonce and aud in vp_token
     if access == 'ok' and vp_token:
-        if vp_type != "ldp_vp":
-            vp_sub = vp_token_payload['iss']
-            if oidc4vc.get_payload_from_token(vp_token)['nonce'] == nonce:
-                nonce_status = "ok"
-            else:
-                nonce_status = "failed in vp_token nonce "
-                #access = "access_denied"
-            #if oidc4vc.get_payload_from_token(vp_token)['aud'] == verifier_data['did']:
-            #    aud_status = "ok"
-            #else:
-            #    aud_status = "failed in vp_token aud"
-            #    #access = "access_denied"
-        else:
+        if vp_type == "ldp_vp":
             vp_sub = json.loads(vp_token)['holder']
             if json.loads(vp_token)['proof'].get('challenge') == nonce:
                 nonce_status = "ok"
             else:
                 nonce_status = "failed in vp_token for challenge "
-                # access = "access_denied"
-            #if json.loads(vp_token)['proof'].get('domain') == verifier_data['did']:
-            #    aud_status = "ok"
-            #else:
-            #    aud_status = "failed in vp_token for domain "
-            #    #  access = "access_denied"
+                access = "access_denied"
+            if json.loads(vp_token)['proof'].get('domain') == data['client_id']:
+                aud_status = "ok"
+            else:
+                aud_status = "failed in vp_token for domain "
+                access = "access_denied"
+        else:
+            vp_sub = vp_token_payload['iss']
+            if oidc4vc.get_payload_from_token(vp_token)['nonce'] == nonce:
+                nonce_status = "ok"
+            else:
+                nonce_status = "failed in vp_token nonce "
+                access = "access_denied"
+            if oidc4vc.get_payload_from_token(vp_token)['aud'] == data['client_id']:
+                aud_status = "ok"
+            else:
+                aud_status = "failed in vp_token aud"
+                access = "access_denied"
 
     status_code = 400 if access == "access_denied" else 200
 

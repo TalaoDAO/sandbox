@@ -149,7 +149,7 @@ def oidc(issuer_id, mode):
     ATTENTION new standard is https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html
     """
     try:
-        issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
+        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
         issuer_profile = profile[issuer_data["profile"]]
     except Exception:
         logging.warning("issuer_id not found for %s", issuer_id)
@@ -282,7 +282,7 @@ def issuer_api_endpoint(issuer_id, red, mode):
             **manage_error("Unauthorized", "Unauthorized token", red, status=401)
         )
     try:
-        issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
+        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     except Exception:
         return Response(
             **manage_error("Unauthorized", "Unauthorized client_id", red, status=401)
@@ -523,7 +523,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     user_pin_required = application_data["user_pin_required"]
     issuer_state = application_data["issuer_state"]
     vc = application_data["vc"]
-    issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     data_profile = profile[issuer_data["profile"]]
     offer = build_credential_offer(
         issuer_id,
@@ -639,7 +639,7 @@ def issuer_authorize(issuer_id, red, mode):
         # authorization_error_response('invalid_response_type', 'response_type not supported', stream_id, red)
         logging.info("response type not supported %s", response_type)
 
-    issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
 
     offer_data = json.loads(red.get(issuer_state).decode())
     stream_id = offer_data["stream_id"]
@@ -647,7 +647,7 @@ def issuer_authorize(issuer_id, red, mode):
     credential_type = offer_data["credential_type"]
 
     # Code creation
-    issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     if profile[issuer_data["profile"]].get("pre-authorized_code_as_jwt"):
         code = oidc4vc.build_pre_authorized_code(
             issuer_data["jwk"],
@@ -824,7 +824,7 @@ async def issuer_credential(issuer_id, red):
 
     # to manage followup screen
     stream_id = access_token_data.get("stream_id")
-    issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     logging.info("Profile = %s", issuer_data["profile"])
     # issuer_profile = profile[issuer_data['profile']]
 
@@ -1042,7 +1042,7 @@ async def issuer_deferred(issuer_id, red):
             )
         )
 
-    issuer_data = json.loads(db_api.read_ebsi_issuer(issuer_id))
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
 
     # sign_credential
     credential_signed = await sign_credential(
@@ -1078,7 +1078,7 @@ def oidc_issuer_followup(stream_id, red):
     callback = user_data["callback"]
     if not callback:
         issuer_id = user_data["issuer_id"]
-        issuer_data = db_api.read_ebsi_issuer(issuer_id)
+        issuer_data = db_api.read_oidc4vc_issuer(issuer_id)
         callback = json.loads(issuer_data)["callback"]
     callback_uri = f"{callback}?issuer_state=" + user_data.get("issuer_state")
     if request.args.get("error"):

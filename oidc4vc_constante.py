@@ -1,12 +1,9 @@
 
-
-
 user = {
-        "login_name": "",
-        "did": "",
-        "client_id": []
+    "login_name": "",
+    "did": "",
+    "client_id": []
 }
-
 
 
 oidc4vc_profile_list = {
@@ -18,9 +15,8 @@ oidc4vc_profile_list = {
 }
 
 
-
 #OIDC4VC Verifier
-ebsi_verifier_credential_list = {
+oidc4vc_verifier_credential_list = {
     #"DID": "Authentication",
     "None": "None",
     'VerifiableId':  'Verifiable ID',
@@ -42,7 +38,6 @@ ebsi_verifier_credential_list = {
 }
 
 
-
 # issuer
 landing_page_style_list = {
     "./issuer_oidc/issuer_qrcode.html": "Style",
@@ -52,21 +47,22 @@ landing_page_style_list = {
 
 
 # verifier
-ebsi_verifier_landing_page_style_list = {
-                    "./verifier_oidc/verifier_qrcode_2.html": "Style 2",
-                    "./verifier_oidc/verifier_qrcode_test.html": "Test",
-                    "./verifier_oidc/diploma_verifier.html": "Diplome Tezos Ebsi"
+oidc4vc_verifier_landing_page_style_list = {
+    "./verifier_oidc/verifier_qrcode_2.html": "Style 2",
+    "./verifier_oidc/verifier_qrcode_test.html": "Test",
+    "./verifier_oidc/diploma_verifier.html": "Diplome Tezos Ebsi"
 
 }
 
 
-pre_authorized_code_list = {'none': "None",
-                'pac': 'Pre authorized code',
-                'pac_pin': 'Pre authorized code + PIN code'
+pre_authorized_code_list = {
+    'none': "None",
+    'pac': 'Pre authorized code',
+    'pac_pin': 'Pre authorized code + PIN code'
 }
 
 
-client_data_pattern_ebsi = {
+client_data_pattern_oidc4vc = {
     "profile": "DEFAULT",
     "pkce": None,
     "id_token": "on",

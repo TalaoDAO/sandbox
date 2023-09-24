@@ -3,10 +3,12 @@
     "openid"
   ],
   "grant_types_supported": [
-    "authorization_code"
+    "authorization_code",
+    "urn:ietf:params:oauth:grant-type:pre-authorized_code"
   ],
   "id_token_signing_alg_values_supported": [
-    "ES256"
+    "ES256",
+    "ES256K"
   ],
   "request_object_signing_alg_values_supported": [
     "ES256",
