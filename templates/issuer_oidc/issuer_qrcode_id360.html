@@ -84,8 +84,22 @@
             </div>
         </footer>
     </div>
-   
- 
+
+    <script>
+        var source = new EventSource('/sandbox/ebsi/issuer_stream');
+        source.onmessage = function (event) {
+        const data = JSON.parse(event.data)
+        if (data.stream_id == '{{stream_id}}'){
+          if (data.error){
+          window.location.href='/sandbox/ebsi/issuer_followup/{{stream_id}}?error=' + data.error ;
+          }
+          else {
+            window.location.href='/sandbox/ebsi/issuer_followup/{{stream_id}}' ; 
+          }
+        };
+      }
+      </script>
+
 </body>
 
 </html>
