@@ -1,0 +1,91 @@
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/oidc.css">
+
+</head>
+
+
+<body>
+
+    <nav class=" nav-02 ">
+        <div class="nav-02__box">
+            <div class="nav-02__logo"><a class="nav-02__link" href="https://altme.io/" target="_self">
+                    <img loading="lazy" class="nav-02__logo_img"
+                        src="/static/img/altme-decentralized-identity-wallet-did-logo.webp" height="70" alt="Logo" />
+                </a></div>
+
+            <div class="nav-02__list_wrapper  ">
+                <div class="nav-02__list nav-02__list--desktop">
+                    <div class="nav-02__item" id="faqNav">
+                        <a class="button   button--black-outline  button--empty " href="https://altme.io/"
+                            target="_self">
+                            <p class="linkP">Back to home</p>
+                        </a>
+                    </div>
+                    <div class="nav-02__item">
+
+                        <a data-stripe-product-id="" data-stripe-mode="payment" data-successful-payment-url=""
+                            data-cancel-payment-url="" class="button button--accent-bg "
+                            href="mailto:contact@altme.io?cc=hugo@altme.io&subject=Altme" target="_blank">
+                            <div class="contactSpan">
+                                <p class="contactP">Contact</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </nav>
+
+    <div id="mainBox">
+        <p id="title">Your ID has been verified !</p>
+        <p id="subTitle">Scan this final QR code with Altme to get your ID</p>
+        <div id="cardBox">
+                <img id="qrcode" src="{{ qrcode(url) }}">
+                <img id="arrow" src="/static/img/arrow_right.png">
+                <img id="card" src="/static/img/VerifiableId.png">
+
+        </div>
+        
+    </div>
+
+
+    <div class="bg-white-color ">
+        <footer class="footer-02" id="footer">
+            <div class="container">
+                <div class="footer-02__wrapper">
+                    <div class="footer-02__text content_box">
+                        <p id="line1Footer">&copy; 2023&nbsp; TALAO - Altme All rights reserved, <a
+                                href="https://altme.io/cgu/" target="_blank">CGU</a>, <a
+                                href="https://altme.io/privacy/" target="_blank">Privacy</a></p>
+                        <p id="line2Footer" hidden><strong>Built with TzKT API, Spruce Didkit 0.4.0</strong>&nbsp;</p>
+                    </div>
+                    <div class="social-buttons  ">
+
+                        <div class="social-buttons__item"><a class="social-buttons__link social-buttons__link--twitter"
+                                href="https://twitter.com/Altme_io" target="_blank"><img loading="lazy"
+                                    class="social-buttons__icon" alt="twitter icon"
+                                    src="https://dvzvtsvyecfyp.cloudfront.net/static/img/icons/social/black/twitter.svg" /></a>
+                        </div>
+                        <div class="social-buttons__item"><a class="social-buttons__link social-buttons__link--linkedin"
+                                href="https://www.linkedin.com/company/altme-web3/" target="_blank"><img loading="lazy"
+                                    class="social-buttons__icon" alt="linkedin icon"
+                                    src="https://dvzvtsvyecfyp.cloudfront.net/static/img/icons/social/black/linkedin.svg" /></a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+   
+ 
+</body>
+
+</html>

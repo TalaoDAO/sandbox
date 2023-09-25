@@ -42,6 +42,7 @@ oidc4vc_verifier_credential_list = {
 landing_page_style_list = {
     "./issuer_oidc/issuer_qrcode.html": "Style",
     "./issuer_oidc/issuer_qrcode_test.html": "Test",
+    "./issuer_oidc/issuer_qrcode_id360.html": "Id360",
     "./issuer_oidc/wallet_link_issuer_qrcode.html": "Wallet link"
 }
 
