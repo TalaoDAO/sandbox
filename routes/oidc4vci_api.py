@@ -124,13 +124,19 @@ def front_publish(stream_id, red, error=None):
     red.publish("issuer_oidc", json.dumps(data))
 
 
-def manage_error(error, error_description, red, stream_id=None, status=400):
+def manage_error(error, error_description, red, error_uri=None, stream_id=None, status=400):
     """
     Return error code to wallet and front channel
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-credential-error-response
     """
     logging.warning(error_description)
-    payload = {"error": error, "error_description": error_description}
+    payload = {
+        "error": error,
+        "error_description": error_description
+    }
+    if error_uri:
+        payload['error_uri'] = error_uri
+        
     headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
     if stream_id:
         front_publish(stream_id, red, error=error)
@@ -689,10 +695,10 @@ def issuer_token(issuer_id, red, mode):
     # error response https://datatracker.ietf.org/doc/html/rfc6749#section-4.2.2.1
     """
     error
-        invalid_request
+    invalid_request 
             The request is missing a required parameter, includes an
             invalid parameter value, includes a parameter more than
-            once, or is otherwise malformed.
+            once, or is otherwise malformed."
 
         unauthorized_client
             The client is not authorized to request an access token
@@ -713,12 +719,12 @@ def issuer_token(issuer_id, red, mode):
     grant_type = request.form.get("grant_type")
     if not grant_type:
         return Response(
-            **manage_error("invalid_request", "Request format is incorrect", red)
+            **manage_error("invalid_request", "Request format is incorrect, grant is missing", red, error_uri="https://altme.io")
         )
 
     if grant_type == "urn:ietf:params:oauth:grant-type:pre-authorized_code" and not request.form.get("pre-authorized_code"):
         return Response(
-            **manage_error("invalid_request", "Request format is incorrect", red)
+            **manage_error("invalid_request", "Request format is incorrect, this grant type is not supported", red)
         )
 
     if grant_type == "urn:ietf:params:oauth:grant-type:pre-authorized_code":
@@ -732,7 +738,7 @@ def issuer_token(issuer_id, red, mode):
     if not code:
         logging.warning("code is missing")
         return Response(
-            **manage_error("invalid_request", "Request format is incorrect", red)
+            **manage_error("invalid_request", "Request format is incorrect, code is missing", red)
         )
 
     code_verifier = request.form.get("code_verifier")
@@ -753,7 +759,7 @@ def issuer_token(issuer_id, red, mode):
     # wrong PIN
     logging.info('user_pin = %s', data.get("user_pin"))
     if data.get("user_pin_required") and data.get("user_pin") != user_pin:
-        return Response(**manage_error("access_denied", "User pin is incorrect", red, status=404))
+        return Response(**manage_error("access_denied", "User pin is incorrect", red, error_uri="https://altme.io", status=404))
 
     # token response
     access_token = str(uuid.uuid1())
@@ -813,9 +819,7 @@ async def issuer_credential(issuer_id, red):
         access_token = request.headers["Authorization"].split()[1]
     except Exception:
         return Response(
-            **manage_error(
-                "invalid_token", "Access token not passed in request header", red
-            )
+            **manage_error("invalid_token", "Access token not passed in request header", red)
         )
     try:
         access_token_data = json.loads(red.get(access_token).decode())
@@ -835,11 +839,7 @@ async def issuer_credential(issuer_id, red):
         proof_type = result["proof"]["proof_type"]
         proof = result["proof"]["jwt"]
     except Exception:
-        return Response(
-            **manage_error(
-                "invalid_request", "Invalid request format", red, stream_id=stream_id
-            )
-        )
+        return Response(**manage_error("invalid_request", "Invalid request format", red, stream_id=stream_id))
 
     identifier = result.get("identifier")
     logging.info("identifier = %s", identifier)
@@ -875,17 +875,13 @@ async def issuer_credential(issuer_id, red):
                 break
         if not found:
             return Response(
-                **manage_error(
-                    "invalid_request", "VC type not found", red, stream_id=stream_id
-                )
+                **manage_error("invalid_request", "VC type not found", red, stream_id=stream_id)
             )
     elif result.get("type"):
         credential_type = result["type"]
     else:
         return Response(
-            **manage_error(
-                "invalid_request", "Invalid request format", red, stream_id=stream_id
-            )
+            **manage_error("invalid_request", "Invalid request format, type(s) is missing", red, stream_id=stream_id)
         )
     logging.info("credential type requested = %s", credential_type)
 
@@ -895,7 +891,7 @@ async def issuer_credential(issuer_id, red):
         return Response(
             **manage_error(
                 "invalid_or_missing_proof",
-                "The proof is invalid",
+                "The proof format is invalid",
                 red,
                 stream_id=stream_id,
             )

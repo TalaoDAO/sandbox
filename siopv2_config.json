@@ -82,5 +82,7 @@
   "id_token_types_supported": [
     "subject_signed_id_token",
     "attester_signed_id_token"
-  ]
+  ],
+  "client_purpose": "Verify VC",
+  "client_name": "Altme Verify Credential Verifier platform"
 }
