@@ -1034,7 +1034,7 @@ async def issuer_deferred(issuer_id, red):
     except Exception:
         return Response(
             **manage_error(
-                "invalid_token", "Credential is not available yet", red, status=404
+                "invalid_token", "Credential is not available yet", red, error_uri="https://altme.io", status=404
             )
         )
 
