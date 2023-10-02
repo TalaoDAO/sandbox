@@ -53,17 +53,15 @@
     }
   },
   "subject_syntax_types_supported": [
+    "urn:ietf:params:oauth:jwk-thumbprint",
     "did:key",
     "did:ebsi",
     "did:tz",
     "did:pkh",
     "did:hedera",
-    "did:ion",
     "did:key",
     "did:polygonid",
-    "did:peer",
     "did:ethr",
-    "did:sol",
     "did:web"
   ],
   "subject_syntax_types_discriminations": [

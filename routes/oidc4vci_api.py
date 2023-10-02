@@ -199,8 +199,7 @@ def oidc(issuer_id, mode):
             "credential_issuer": mode.server + "sandbox/ebsi/issuer/" + issuer_id,
             "credential_endpoint": mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/credential",
             "deferred_credential_endpoint": mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/deferred",
-            "credentials_supported": cs,
-            #  "credential_supported": cs,  # To be removed later
+            "credentials_supported": cs
         }
     )
     if issuer_profile.get("service_documentation"):
@@ -229,19 +228,11 @@ def oidc(issuer_id, mode):
 
     # setup authorization server
     if issuer_profile.get("authorization_server_support"):
-        openid_configuration["authorization_server"] = (
-            mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/authorize_server"
-        )
+        openid_configuration["authorization_server"] = mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/authorize_server"
     else:
-        authorization_server_config = json.load(
-            open("authorization_server_config.json")
-        )
-        openid_configuration["authorization_endpoint"] = (
-            mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/authorize"
-        )
-        openid_configuration["token_endpoint"] = (
-            mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/token"
-        )
+        authorization_server_config = json.load(open("authorization_server_config.json"))
+        openid_configuration["authorization_endpoint"] = mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/authorize"
+        openid_configuration["token_endpoint"] = mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/token"
         openid_configuration.update(authorization_server_config)
     return openid_configuration
 
@@ -249,11 +240,8 @@ def oidc(issuer_id, mode):
 def issuer_authorization_server(issuer_id, mode):
     authorization_server_config = json.load(open("authorization_server_config.json"))
     config = {
-        "authorization_endpoint": mode.server
-        + "sandbox/ebsi/issuer/"
-        + issuer_id
-        + "/authorize",
-        "token_endpoint": f"{mode.server}sandbox/ebsi/issuer/{issuer_id}/token",
+        "authorization_endpoint": mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/authorize",
+        "token_endpoint": f"{mode.server}sandbox/ebsi/issuer/{issuer_id}/token"
     }
     config.update(authorization_server_config)
     return jsonify(config)
@@ -626,6 +614,8 @@ def issuer_authorize(issuer_id, red, mode):
         state = request.args.get("state") # wallet state
     except Exception:
         return jsonify("invalid_request"), 400
+    
+    print("issuer_id =", issuer_id, " client_id = ", client_id)
 
     logging.info("redirect_uri = %s", redirect_uri)
     logging.info("code_challenge = %s", code_challenge)
