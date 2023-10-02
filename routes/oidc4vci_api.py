@@ -602,8 +602,8 @@ def issuer_authorize(issuer_id, red, mode):
 
     try:
         response_type = request.args["response_type"]
-        scope = request.args["scope"]
-        client_id = request.args["client_id"]
+        scope = request.args.get("scope")
+        client_id = request.args["client_id"]  # DID of the issuer
         authorization_details = request.args["authorization_details"]
         redirect_uri = request.args["redirect_uri"]
         nonce = request.args.get("nonce")
@@ -615,12 +615,11 @@ def issuer_authorize(issuer_id, red, mode):
     except Exception:
         return jsonify("invalid_request"), 400
     
-    print("issuer_id =", issuer_id, " client_id = ", client_id)
-
     logging.info("redirect_uri = %s", redirect_uri)
     logging.info("code_challenge = %s", code_challenge)
     logging.info("client_metadata = %s", client_metadata)
     logging.info("authorization details = %s", authorization_details)
+    logging.info("scope = %s", scope)
 
     try:
         issuer_state_data = json.loads(red.get(issuer_state).decode())
@@ -629,14 +628,8 @@ def issuer_authorize(issuer_id, red, mode):
         logging.warning("issuer_state not found in authorization code flow")
         return jsonify("invalid_request"), 400
 
-    if scope != "openid":
-        authorization_error_response(
-            "invalid_scope", "scope not supported", stream_id, red
-        )
-
-    if response_type not in ["code", "id_token", "vp_token"]:
-        # authorization_error_response('invalid_response_type', 'response_type not supported', stream_id, red)
-        logging.info("response type not supported %s", response_type)
+    if response_type != "code":
+        authorization_error_response('invalid_response_type', 'response_type not supported', stream_id, red)
 
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
 
@@ -660,6 +653,7 @@ def issuer_authorize(issuer_id, red, mode):
 
     code_data = {
         "credential_type": credential_type,
+        "client_id": client_id,  # DID of the issuer
         "issuer_id": issuer_id,
         "issuer_state": issuer_state,
         "state": state,
