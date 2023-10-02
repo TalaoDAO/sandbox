@@ -414,7 +414,6 @@ def build_client_metadata(client_id, redirect_uri) -> dict:
             "did:key",
             "did:ebsi",
             "did:tz",
-            "did:ion",
             "did:key",
             "did:ethr",
             "did:polygonid",
@@ -561,7 +560,7 @@ def oidc4vc_login_qrcode(red, mode):
     else:
         authorization_request['response_mode'] = 'direct_post'
         
-    if response_type == 'vp_token':
+    if response_type == 'vp_token' and verifier_data['profile'] != "EBSI-V3":  #TODO
         authorization_request['response_uri'] = redirect_uri
     else:
         authorization_request['redirect_uri'] = redirect_uri
