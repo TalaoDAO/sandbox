@@ -245,13 +245,22 @@ def oidc4vc_token(red, mode):
         token = base64.b64decode(token).decode()
         client_secret = token.split(":")[1]
         client_id = token.split(":")[0]
+    except Exception:
+        logging.warning('No Authorization Basic')
+        try:
+            client_id = request.form['client_id']
+            client_secret = request.form['client_secret']
+        except Exception:
+            return manage_error("invalid_request")
+    try:
         verifier_data = json.loads(read_oidc4vc_verifier(client_id))
         grant_type = request.form['grant_type']
         code = request.form['code']
         redirect_uri = request.form['redirect_uri']
-        code_verifier = request.form.get('code_verifier')
     except Exception:
         return manage_error("invalid_request")
+    
+    code_verifier = request.form.get('code_verifier')
 
     try:
         data = json.loads(red.get(code).decode())
@@ -332,7 +341,12 @@ only access token is needed
 
 def oidc4vc_userinfo(red):
     logging.info("user info endpoint request")
-    access_token = request.headers["Authorization"].split()[1]
+    try:
+        access_token = request.headers["Authorization"].split()[1]
+    except Exception:
+        logging.warning("Access token is passed as argument by application")
+        access_token = request.args['access_token']
+
     try:
         wallet_data = json.loads(red.get(access_token + '_wallet_data').decode())
         payload = {
@@ -448,9 +462,9 @@ def oidc4vc_login_qrcode(red, mode):
     
     if verifier_data.get('id_token') and not verifier_data.get('vp_token'):
         response_type = 'id_token'
-    elif verifier_data.get('id_token'):
+    elif verifier_data.get('id_token') and verifier_data.get('vp_token'):
         response_type = 'id_token vp_token'
-    elif verifier_data.get('vp_token'):
+    elif verifier_data.get('vp_token') and not verifier_data.get('id_token'):
         response_type = 'vp_token'
     else:
         return render_template("verifier_oidc/verifier_session_problem.html", message='Invalid configuration')
@@ -539,11 +553,18 @@ def oidc4vc_login_qrcode(red, mode):
     # general authorization request
     authorization_request = { 
         "response_type": response_type,
-        "redirect_uri": redirect_uri,
         "nonce": nonce,
-        "response_mode": 'post',
         "state": str(uuid.uuid1())  # unused
     }
+    if response_type == 'id_token':
+        authorization_request['response_mode'] = 'post'
+    else:
+        authorization_request['response_mode'] = 'direct_post'
+        
+    if response_type == 'vp_token':
+        authorization_request['response_uri'] = redirect_uri
+    else:
+        authorization_request['redirect_uri'] = redirect_uri
     
     # Set client_id, use W3C DID identifier for client_id
     if verifier_data.get('client_id_as_DID'):
@@ -578,10 +599,8 @@ def oidc4vc_login_qrcode(red, mode):
     # SIOPV2
     if 'id_token' in response_type:
         authorization_request['scope'] = 'openid'
-        if verifier_data['profile'] == "EBSI-V3":
-            authorization_request['response_mode'] = 'direct_post'
-        else:    
-            authorization_request['registration'] = json.dumps(json.load(open('siopv2_config.json', 'r')))           
+    if 'id_token' in response_type and verifier_data['profile'] != "EBSI-V3":
+        authorization_request['registration'] = json.dumps(json.load(open('siopv2_config.json', 'r')))           
     
     # manage request_uri as jwt
     request_as_jwt = build_jwt_request(
