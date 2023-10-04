@@ -202,6 +202,12 @@ def oidc(issuer_id, mode):
             "credentials_supported": cs
         }
     )
+    # TESTING TEST 6
+    print("issuer_id = ", issuer_id)
+    if issuer_id in ["cejjvswuep", "ooroomolyd"] :
+        del openid_configuration['credential_endpoint']
+    
+    
     if issuer_profile.get("service_documentation"):
         openid_configuration["service_documentation"] = issuer_profile[
             "service_documentation"
@@ -680,15 +686,12 @@ def issuer_token(issuer_id, red, mode):
     # error response https://datatracker.ietf.org/doc/html/rfc6749#section-4.2.2.1
     grant_type = request.form.get("grant_type")
     if not grant_type:
-        return Response(**manage_error("invalid_request", "Request format is incorrect, grant is missing", red, error_uri="https://altme.io"))
+        return Response(**manage_error("invalid_request", "Request format is incorrect, grant is missing", red))
 
     if grant_type == "urn:ietf:params:oauth:grant-type:pre-authorized_code" and not request.form.get("pre-authorized_code"):
         return Response(**manage_error("invalid_request", "Request format is incorrect, this grant type is not supported", red))
 
     if grant_type == "urn:ietf:params:oauth:grant-type:pre-authorized_code":
-        # TESTING purpose
-        if issuer_id in ["mfyttabosy", "cqmygbreop"]:
-            return Response(**manage_error("invalid_request", "Error management testing purpose, this issuer is not supported", red, error_uri="https://altme.io"))
         code = request.form.get("pre-authorized_code")
         user_pin = request.form.get("user_pin")
         logging.info("user_pin recieved = %s", user_pin)

@@ -232,12 +232,22 @@ def oidc4vc_authorize(red, mode):
 def oidc4vc_token(red, mode):
     #https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
     logging.info("token endpoint request ")
-
-    def manage_error(msg):
-        logging.warning(msg)
-        endpoint_response = {"error": msg}
-        headers = {'Content-Type': 'application/json'}
-        return Response(response=json.dumps(endpoint_response), status=400, headers=headers)
+    
+    def manage_error(error, error_description=None, status=400):
+        logging.warning(error)
+        endpoint_response = {"error": error}
+        if error_description:
+            endpoint_response['error_description'] = error_description
+        headers = {
+            "Cache-Control": "no-store",
+            "Pragma": "no-cache",
+            'Content-Type': 'application/json'
+        }
+        return Response(response=json.dumps(
+            endpoint_response),
+            status=status,
+            headers=headers
+        )
         
     try:
         token = request.headers['Authorization']
@@ -560,7 +570,7 @@ def oidc4vc_login_qrcode(red, mode):
     else:
         authorization_request['response_mode'] = 'direct_post'
         
-    if response_type == 'vp_token' and verifier_data['profile'] != "EBSI-V3":  #TODO
+    if response_type == 'vp_token' and verifier_data['profile'] != "EBSI-V3":
         authorization_request['response_uri'] = redirect_uri
     else:
         authorization_request['redirect_uri'] = redirect_uri
@@ -854,6 +864,8 @@ async def oidc4vc_login_endpoint(stream_id, red):
                 access = "access_denied"
 
     status_code = 400 if access == "access_denied" else 200
+    #status_code = 400
+    #access = "access_denied"
 
     if state:
         state_status = state
