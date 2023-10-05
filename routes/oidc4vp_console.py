@@ -56,13 +56,16 @@ def oidc4vc_verifier_console_select(mode):
             vp_token =  "Yes" if data_dict.get('vp_token') == 'on' else 'No'
             group =  "Yes" if data_dict.get('group') == 'on' else 'No'
             curve = json.loads(data_dict['jwk'])['crv']
+            if data_dict.get('client_id_as_DID'):
+                client_id = data_dict['did']
+            else: 
+                client_id = "redirect_uri"
             try:
                 if data_dict['user'] == "all" or session['login_name'] in [data_dict['user'], "admin"]:
                     verifier = """<tr>
                         <td>""" + data_dict.get('application_name', "") + """</td>
                         <td>""" + data_dict['user'] + """</td>
-                        <td>""" + oidc4vc_verifier_credential_list.get(data_dict.get('vc_1', 'Unknown'), "unknown") + """</td>
-                        <td>""" + oidc4vc_verifier_credential_list.get(data_dict['vc_2'], "unknown") + """</td>
+                        <td>""" + client_id + """</td>
                         <td>""" + data_dict.get('profile', 'Unknwon') + """</td>
                         <td>""" + id_token + """</td>
                         <td>""" + vp_token + """</td>

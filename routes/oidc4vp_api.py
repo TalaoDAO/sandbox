@@ -566,27 +566,25 @@ def oidc4vc_login_qrcode(red, mode):
         "nonce": nonce,
         "state": str(uuid.uuid1())  # unused
     }
+    
     if response_type == 'id_token':
         authorization_request['response_mode'] = 'post'
     else:
         authorization_request['response_mode'] = 'direct_post'
     
-    # TEST 10 
+    # TEST 10 TODO
     if verifier_id not in ["ejqwxtjdlu", "zkzkwshdns"]:    
         if response_type == 'vp_token' and verifier_data['profile'] != "EBSI-V3":
             authorization_request['response_uri'] = redirect_uri
         else:
             authorization_request['redirect_uri'] = redirect_uri
     
-    
-    
-    # Set client_id, use W3C DID identifier for client_id
-    if verifier_data.get('client_id_as_DID'):
-        client_id = verifier_data['did']
-    else:
+    # Set client_id, use W3C DID identifier for client_id "on" ou None
+    if not verifier_data.get('client_id_as_DID'):
         client_id = redirect_uri
-    if verifier_data['profile'] == "EBSI-V3":
-        client_id = mode.server + 'sandbox/verifier/wallet'
+    else:
+        client_id = verifier_data['did']
+    
     authorization_request['client_id'] = client_id
 
     # OIDC4VP
