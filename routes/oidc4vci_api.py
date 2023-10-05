@@ -121,11 +121,13 @@ def init_app(app, red, mode):
     return
 
 
-def front_publish(stream_id, red, error=None):
+def front_publish(stream_id, red, error=None, error_description=None):
     # send event to front channel to go forward callback and send credential to wallet
     data = {"stream_id": stream_id}
     if error:
         data["error"] = error
+    if error_description:
+        data["error_description"] = error_description
     red.publish("issuer_oidc", json.dumps(data))
 
 
@@ -171,7 +173,7 @@ def manage_error(error, error_description, red, mode, request=None, stream_id=No
     
     # front channel
     if stream_id:
-        front_publish(stream_id, red, error=error)
+        front_publish(stream_id, red, error=error, error_description=error_description)
     
     # wallet
     payload = {
@@ -1058,7 +1060,11 @@ def oidc_issuer_followup(stream_id, red):
     callback_uri = f"{callback}?issuer_state=" + user_data.get("issuer_state")
     if request.args.get("error"):
         callback_uri += "&error=" + request.args.get("error")
+    if request.args.get("error_description"):
+        callback_uri += "&error_description=" + request.args.get("error_description")
+    print('callback uri = ', callback_uri)
     return redirect(callback_uri)
+
 
 # server event push for user agent EventSource
 def oidc_issuer_stream(red):

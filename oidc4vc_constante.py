@@ -7,7 +7,8 @@ user = {
 
 
 oidc4vc_profile_list = {
-    'DEFAULT': 'DEFAULT',
+    'DEFAULT': 'DEFAULT JSON-LD',
+    'DEFAULT-JWT': 'DEFAULT JWT',
     'GAIA-X': 'GAIA-X projects',
     'EBSI-V3': 'EBSI V3 compliance',
     'JWT-VC': 'JWT-VC presentation profile',

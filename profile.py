@@ -250,6 +250,147 @@ profile = {
                 siopv2_draft: https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
                 oidc4vp_draft: https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  ',
         },
+    'DEFAULT-JWT':
+        {
+            'issuer_vc_type': 'jwt_vc',
+            'verifier_vp_type': 'jwt_vp',
+            'oidc4vci_prefix': 'openid-credential-offer://' ,
+            'authorization_server_support': False,
+            'siopv2_prefix': 'openid-vc://',
+            'oidc4vp_prefix': 'openid-vc://',
+            'credentials_types_supported': ['EmployeeCredential',  'EthereumAssociatedAddress', 'VerifiableId', 'EmailPass', 'PhoneProof'],
+            'trust_framework': {
+                'name': 'default',
+                'type': 'Accredition'
+            },
+            'credentials_supported': [
+                {
+                    "id": "EmployeeCredential",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "EmployeeCredential"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "EmployeeCredential",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id": "EthereumAssociatedAddress",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "EthereumAssociatedAddress"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "EthereumAssociatedAddress",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id": "VerifiableId",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "VerifiableId"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Verifiable Id",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id": "EmailPass",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "EmailPass"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "EmailPass",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id": "PhoneProof",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "PhoneProof"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Proof of phone number",
+                            "locale": "en-GB"
+                        }
+                    ]
+                }
+            ],
+            'grant_types_supported': [
+                #'authorization_code',
+                'urn:ietf:params:oauth:grant-type:pre-authorized_code'
+            ],
+            'schema_for_type': False,
+            'credential_manifest_support': True,
+            'service_documentation': 'We use JSON-LD VC and VP and last release of the specs. \
+                oidc4vci_draft: https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html \
+                siopv2_draft: https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
+                oidc4vp_draft: https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  ',
+        },
     'GAIA-X':
         {
             'issuer_vc_type': 'ldp_vc',

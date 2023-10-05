@@ -135,7 +135,7 @@
         const data = JSON.parse(event.data)
         if (data.stream_id == '{{stream_id}}'){
           if (data.error){
-          window.location.href='/sandbox/ebsi/issuer_followup/{{stream_id}}?error=' + data.error ;
+            window.location.href = '/sandbox/ebsi/issuer_followup/{{stream_id}}?error=' + data.error + '&error_description=' + data.error_description;
           }
           else {
             window.location.href='/sandbox/ebsi/issuer_followup/{{stream_id}}' ; 
