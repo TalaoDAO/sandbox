@@ -751,7 +751,9 @@ def issuer_token(issuer_id, red, mode):
         if code_challenge_calculated != data['code_challenge']:
             #return Response(**manage_error("access_denied", "Code verifier is incorrect", red, mode, request=request, stream_id=stream_id, status=404))
             logging.error('Code verifier is incorrect')
-    
+        else:
+            logging.error('Code verifier is ok')
+            
     # wrong PIN
     logging.info('user_pin = %s', data.get("user_pin"))
     if data.get("user_pin_required") and data.get("user_pin") != user_pin:
