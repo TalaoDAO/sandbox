@@ -570,11 +570,15 @@ def oidc4vc_login_qrcode(red, mode):
         authorization_request['response_mode'] = 'post'
     else:
         authorization_request['response_mode'] = 'direct_post'
-        
-    if response_type == 'vp_token' and verifier_data['profile'] != "EBSI-V3":
-        authorization_request['response_uri'] = redirect_uri
-    else:
-        authorization_request['redirect_uri'] = redirect_uri
+    
+    # TEST 10 
+    if verifier_id not in ["ejqwxtjdlu", "zkzkwshdns"]:    
+        if response_type == 'vp_token' and verifier_data['profile'] != "EBSI-V3":
+            authorization_request['response_uri'] = redirect_uri
+        else:
+            authorization_request['redirect_uri'] = redirect_uri
+    
+    
     
     # Set client_id, use W3C DID identifier for client_id
     if verifier_data.get('client_id_as_DID'):

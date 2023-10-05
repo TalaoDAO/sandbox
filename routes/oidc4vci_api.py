@@ -19,7 +19,6 @@ from urllib.parse import urlencode
 import db_api
 import oidc4vc
 from profile import profile
-import base64
 
 
 logging.basicConfig(level=logging.INFO)
@@ -135,7 +134,6 @@ def wallet_error_uri():
     error_description = request.args.get('error_description')
     header = request.args.get('header')
     body = request.args.get('body')
-    print("header =", header)
     return render_template(
         'issuer_oidc/issuer_error_uri.html',
         header=header,
@@ -144,16 +142,18 @@ def wallet_error_uri():
         body=body
     )
 
+
 def error_uri_build(request, error, error_description, mode):
-    header = str(request.headers)
-    if request.headers['Content-Type'] == "application/json":
-        body = json.dumps(request.json)
-    else:
-        body = json.dumps(request.form)
-    print("header = ", header)
-    print("body = ", body)
+    try:
+        if request.headers['Content-Type'] == "application/json":
+            body = json.dumps(request.json)
+        else:
+            body = json.dumps(request.form)
+    except Exception:
+        body = "Content-Type not supported  : " + request.headers['Content-Type']
+        
     data = {
-        "header" : header,
+        "header" : str(request.headers),
         "body": body,
         "error": error,
         "error_description": error_description
@@ -180,10 +180,8 @@ def manage_error(error, error_description, red, mode, request=None, stream_id=No
     }
     if request:
         payload['error_uri'] = error_uri_build(request, error, error_description, mode)
-        logging.info("wallet error payload = %s", payload)
 
     headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
-    
     return {"response": json.dumps(payload), "status": status, "headers": headers}
 
 
@@ -193,11 +191,6 @@ def issuer_openid_configuration(issuer_id, mode):
 
 
 def oidc(issuer_id, mode):
-    """
-    Attention for EBSI "types" = id of data model
-    https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html
-    ATTENTION new standard is https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html
-    """
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
         issuer_profile = profile[issuer_data["profile"]]
@@ -243,7 +236,6 @@ def oidc(issuer_id, mode):
         }
     )
     # TESTING TEST 6
-    print("issuer_id = ", issuer_id)
     if issuer_id in ["cejjvswuep", "ooroomolyd"] :
         del openid_configuration['credential_endpoint']
     
@@ -1006,7 +998,7 @@ async def issuer_deferred(issuer_id, red, mode):
         acceptance_token = request.headers["Authorization"].split()[1]
     except Exception:
         return Response(
-            **manage_error("invalid_request","Acceptance token not passed in request header",red, mode, request=request, status=400)        )
+            **manage_error("invalid_request","Acceptance token not passed in request header", red, mode, request=request, status=400)        )
 
     # Offer expired, VC is no more available return 410
     try:
