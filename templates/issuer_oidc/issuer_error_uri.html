@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=300px, initial-scale=1, maximum-scale=1">  
+        <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='./img/3D.ico') }}"/>
+        <title>{{company_name}}</title>
+        <link rel = "stylesheet" type= "text/css" href= "{{ url_for('static', filename='bootstrap.min.css') }}">
+</head>
+<body>
+
+    <div class="text-center mt-5">
+        <h2>Error details</h2>
+        <h3>error</h3>
+        <p>{{error}}</p>
+        <br>
+        <h3>error description</h3>
+        <p>{{error_description}}</p>
+        <br>
+        <h3>header</h3>
+        <p>{{header}}</p>
+        <br>    
+        <h3>body</h3>
+        <p>{{body}}</p>
+        <br>    
+    </div>
+
+<script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
+<script src="{{ url_for('static', filename='bs-init.js') }}"></script>
+<script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+    
+</body>
+</html>

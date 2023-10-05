@@ -255,13 +255,14 @@ def oidc4vc_token(red, mode):
         token = base64.b64decode(token).decode()
         client_secret = token.split(":")[1]
         client_id = token.split(":")[0]
+        logging.info('Authentication client_secret_basic')
     except Exception:
-        logging.warning('No Authorization Basic')
         try:
             client_id = request.form['client_id']
             client_secret = request.form['client_secret']
+            logging.info('Authorization client_secret_post')
         except Exception:
-            return manage_error("invalid_request")
+            return manage_error("request_not_supported", error_description="Client authentication method not supported")
     try:
         verifier_data = json.loads(read_oidc4vc_verifier(client_id))
         grant_type = request.form['grant_type']

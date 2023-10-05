@@ -19,6 +19,7 @@ from urllib.parse import urlencode
 import db_api
 import oidc4vc
 from profile import profile
+import base64
 
 
 logging.basicConfig(level=logging.INFO)
@@ -90,13 +91,13 @@ def init_app(app, red, mode):
         "/sandbox/ebsi/issuer/<issuer_id>/credential",
         view_func=issuer_credential,
         methods=["POST"],
-        defaults={"red": red},
+        defaults={"red": red, "mode": mode},
     )
     app.add_url_rule(
         "/sandbox/ebsi/issuer/<issuer_id>/deferred",
         view_func=issuer_deferred,
         methods=["POST"],
-        defaults={"red": red},
+        defaults={"red": red, "mode": mode},
     )
 
     app.add_url_rule(
@@ -113,6 +114,11 @@ def init_app(app, red, mode):
         defaults={"red": red},
     )
 
+    app.add_url_rule(
+        "/sandbox/ebsi/issuer/error_uri",
+        view_func=wallet_error_uri,
+        methods=["GET"]
+    )
     return
 
 
@@ -124,7 +130,38 @@ def front_publish(stream_id, red, error=None):
     red.publish("issuer_oidc", json.dumps(data))
 
 
-def manage_error(error, error_description, red, error_uri=None, stream_id=None, status=400):
+def wallet_error_uri():
+    error = request.args.get('error')
+    error_description = request.args.get('error_description')
+    header = request.args.get('header')
+    body = request.args.get('body')
+    print("header =", header)
+    return render_template(
+        'issuer_oidc/issuer_error_uri.html',
+        header=header,
+        error=error,
+        error_description=error_description,
+        body=body
+    )
+
+def error_uri_build(request, error, error_description, mode):
+    header = str(request.headers)
+    if request.headers['Content-Type'] == "application/json":
+        body = json.dumps(request.json)
+    else:
+        body = json.dumps(request.form)
+    print("header = ", header)
+    print("body = ", body)
+    data = {
+        "header" : header,
+        "body": body,
+        "error": error,
+        "error_description": error_description
+    }
+    return mode.server + 'sandbox/ebsi/issuer/error_uri?' + urlencode(data)
+
+
+def manage_error(error, error_description, red, mode, request=None, stream_id=None, status=400):
     """
     Return error code to wallet and front channel
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-credential-error-response
@@ -139,11 +176,14 @@ def manage_error(error, error_description, red, error_uri=None, stream_id=None, 
     # wallet
     payload = {
         "error": error,
-        "error_description": error_description
+        "error_description": error_description,
     }
-    if error_uri:
-        payload['error_uri'] = error_uri
+    if request:
+        payload['error_uri'] = error_uri_build(request, error, error_description, mode)
+        logging.info("wallet error payload = %s", payload)
+
     headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
+    
     return {"response": json.dumps(payload), "status": status, "headers": headers}
 
 
@@ -206,7 +246,6 @@ def oidc(issuer_id, mode):
     print("issuer_id = ", issuer_id)
     if issuer_id in ["cejjvswuep", "ooroomolyd"] :
         del openid_configuration['credential_endpoint']
-    
     
     if issuer_profile.get("service_documentation"):
         openid_configuration["service_documentation"] = issuer_profile[
@@ -283,32 +322,32 @@ def issuer_api_endpoint(issuer_id, red, mode):
         client_secret = token.split(" ")[1]
     except Exception:
         return Response(
-            **manage_error("unauthorized", "Unauthorized token", red, status=401)
+            **manage_error("unauthorized", "Unauthorized token", red, mode, status=401)
         )
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     except Exception:
         return Response(
-            **manage_error("unauthorized", "Unauthorized client_id", red, status=401)
+            **manage_error("unauthorized", "Unauthorized client_id", red, mode, status=401)
         )
     try:
         issuer_state = request.json["issuer_state"]
     except Exception:
         return Response(
-            **manage_error("invalid_request", "issuer_state missing", red, status=401)
+            **manage_error("invalid_request", "issuer_state missing", red, mode, status=401)
         )
     try:
         credential_type = request.json["credential_type"]
     except Exception:
         return Response(
-            **manage_error("invalid_request", "credential_type missing", red, status=401)
+            **manage_error("invalid_request", "credential_type missing", red, mode, status=401)
         )
     try:
         pre_authorized_code = request.json["pre-authorized_code"]
     except Exception:
         return Response(
             **manage_error(
-                "invalid_request", "pre-authorized_code is missing", red, status=401
+                "invalid_request", "pre-authorized_code is missing", red, mode, status=401
             )
         )
 
@@ -317,7 +356,7 @@ def issuer_api_endpoint(issuer_id, red, mode):
         logging.warning("Client secret is incorrect")
         return Response(
             **manage_error(
-                "unauthorized", "Client secret is incorrect", red, status=401
+                "unauthorized", "Client secret is incorrect", red, mode, status=401
             )
         )
 
@@ -328,20 +367,17 @@ def issuer_api_endpoint(issuer_id, red, mode):
         return Response(
             **manage_error("invalid_request", "callback missing", red, status=401))
     if vc and deferred_vc:
-        return Response(**manage_error("invalid_request", "deferred_vc and vc not allowed", red, status=401))
+        return Response(**manage_error("invalid_request", "deferred_vc and vc not allowed", red, mode, status=401))
 
     # Check if user pin exists
     if request.json.get("user_pin_required") and not request.json.get("user_pin"):
-        return Response(**manage_error("invalid_request", "User pin is not set", red, status=401))
+        return Response(**manage_error("invalid_request", "User pin is not set", red, mode, status=401))
     logging.info('user PIN stored =  %s', request.json.get("user_pin"))
 
     # check if user pin is string
     if request.json.get("user_pin_required") and request.json.get("user_pin") and not isinstance(request.json.get("user_pin"), str):
         return Response(
-            **manage_error(
-                "invalid_request", "User pin must be string", red, status=401
-            )
-        )
+            **manage_error("invalid_request", "User pin must be string", red, mode, status=401))
 
     # check if credential offered is supported
     issuer_profile = profile[issuer_data["profile"]]
@@ -352,10 +388,7 @@ def issuer_api_endpoint(issuer_id, red, mode):
         if _vc not in issuer_profile["credentials_types_supported"]:
             logging.error("Credential not supported -> %s", _vc)
             return Response(
-                **manage_error(
-                    "unauthorized", "Credential not supported " + _vc, red, status=401
-                )
-            )
+                **manage_error("unauthorized", "Credential not supported " + _vc, red, mode, status=401))
             
     nonce = str(uuid.uuid1())
 
@@ -686,21 +719,21 @@ def issuer_token(issuer_id, red, mode):
     # error response https://datatracker.ietf.org/doc/html/rfc6749#section-4.2.2.1
     grant_type = request.form.get("grant_type")
     if not grant_type:
-        return Response(**manage_error("invalid_request", "Request format is incorrect, grant is missing", red))
+        return Response(**manage_error("invalid_request", "Request format is incorrect, grant is missing", red, mode, request=request))
 
     if grant_type == "urn:ietf:params:oauth:grant-type:pre-authorized_code" and not request.form.get("pre-authorized_code"):
-        return Response(**manage_error("invalid_request", "Request format is incorrect, this grant type is not supported", red))
+        return Response(**manage_error("invalid_request", "Request format is incorrect, this grant type is not supported", red, mode, request=request))
 
     if grant_type == "urn:ietf:params:oauth:grant-type:pre-authorized_code":
         code = request.form.get("pre-authorized_code")
         user_pin = request.form.get("user_pin")
-        logging.info("user_pin recieved = %s", user_pin)
+        logging.info("user_pin received = %s", user_pin)
     elif grant_type == "authorization_code":
         code = request.form.get("code")
     else:
-        return Response(**manage_error("invalid_request", "Grant type not supported", red))
+        return Response(**manage_error("invalid_request", "Grant type not supported", red, mode, request=request))
     if not code:
-        return Response(**manage_error("invalid_request", "Request format is incorrect, code is missing", red))
+        return Response(**manage_error("invalid_request", "Request format is incorrect, code is missing", red, mode, request=request))
 
     code_verifier = request.form.get("code_verifier")
     logging.info("PKCE code_verifier = %s", code_verifier)
@@ -711,16 +744,18 @@ def issuer_token(issuer_id, red, mode):
     try:
         data = json.loads(red.get(code).decode())
     except Exception:
-        return Response(**manage_error("access_denied", "Grant code expired", red, status=404))
-
+        return Response(**manage_error("access_denied", "Grant code expired", red, mode, request=request, status=404))
+    
+    stream_id = data['stream_id']
+    
     # user PIN missing
     if data.get("user_pin_required") and not user_pin:
-        return Response(**manage_error("invalid_request", "User pin is missing", red))
+        return Response(**manage_error("invalid_request", "User pin is missing", red, mode, request=request, stream_id=stream_id))
 
     # wrong PIN
     logging.info('user_pin = %s', data.get("user_pin"))
     if data.get("user_pin_required") and data.get("user_pin") != user_pin:
-        return Response(**manage_error("access_denied", "User pin is incorrect", status=404))
+        return Response(**manage_error("access_denied", "User pin is incorrect", red, mode, request=request, stream_id=stream_id, status=404))
 
     # token response
     access_token = str(uuid.uuid1())
@@ -769,7 +804,7 @@ def issuer_token(issuer_id, red, mode):
 
 
 # credential endpoint
-async def issuer_credential(issuer_id, red):
+async def issuer_credential(issuer_id, red, mode):
     """
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-credential-endpoint
 
@@ -779,11 +814,11 @@ async def issuer_credential(issuer_id, red):
     try:
         access_token = request.headers["Authorization"].split()[1]
     except Exception:
-        return Response(**manage_error("invalid_token", "Access token not passed in request header", red))
+        return Response(**manage_error("invalid_token", "Access token not passed in request header", red, mode, request=request))
     try:
         access_token_data = json.loads(red.get(access_token).decode())
     except Exception:
-        return Response(**manage_error("invalid_token", "Access token expired", red))
+        return Response(**manage_error("invalid_token", "Access token expired", red, mode, request=request))
 
     # to manage followup screen
     stream_id = access_token_data.get("stream_id")
@@ -796,20 +831,14 @@ async def issuer_credential(issuer_id, red):
         result = request.json
         vc_format = result["format"]
     except Exception:
-        return Response(**manage_error("invalid_request", "Invalid request format", red, stream_id=stream_id))
+        return Response(**manage_error("invalid_request", "Invalid request format", red, mode, request=request, stream_id=stream_id))
 
     proof = result.get("proof")
     if proof:
         proof_type = result["proof"]["proof_type"]
         proof = result["proof"]["jwt"]
         if proof_type != "jwt":
-            return Response(
-                **manage_error(
-                    "unsupported_credential_type",
-                    "The credential proof type is not supported =%s",
-                    proof_type,
-                )
-            )
+            return Response(**manage_error("unsupported_credential_type","The credential proof type is not supported", red, mode, request=request, stream_id=stream_id )            )
         # Check proof of key ownership received (OPTIONAL check)
         logging.info("proof of key ownership received = %s", proof)
         try:
@@ -817,13 +846,13 @@ async def issuer_credential(issuer_id, red):
             logging.info("proof of ownership is validated")
         except Exception as e:
             logging.warning("proof of ownership error = %s", e)
-            return Response(**manage_error("access_denied", "Proof of key ownership, signature verification error : " + str(e), red, stream_id=stream_id))
+            return Response(**manage_error("access_denied", "Proof of key ownership, signature verification error : " + str(e), red, mode, request=request, stream_id=stream_id))
         proof_payload = oidc4vc.get_payload_from_token(proof)
     else:
         logging.warning('No proof available, Bearer credential)')
         proof_payload = None
         if vc_format == 'ldp_vc':
-            return Response(**manage_error("access_denied", "Issuer does not support Bearer credential in ldp_vc format", red, stream_id=stream_id))
+            return Response(**manage_error("access_denied", "Issuer does not support Bearer credential in ldp_vc format", red, mode, request=request, stream_id=stream_id))
         
     identifier = result.get("identifier")
     logging.info("identifier = %s", identifier)
@@ -832,11 +861,7 @@ async def issuer_credential(issuer_id, red):
     # check credential request format
     if not identifier and isinstance(access_token_data["vc"], list):
         return Response(
-            **manage_error(
-                "unsupported_credential_type",
-                "identifier for multiple VC issuance expected",
-                red,
-                stream_id=stream_id,
+            **manage_error("unsupported_credential_type","identifier for multiple VC issuance expected", red, mode, request=request, stream_id=stream_id,
             )
         )
 
@@ -850,14 +875,11 @@ async def issuer_credential(issuer_id, red):
                 break
         if not found:
             return Response(
-                **manage_error("invalid_request", "VC type not found", red, stream_id=stream_id)
-            )
+                **manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
     elif result.get("type"):
         credential_type = result["type"]
     else:
-        return Response(
-            **manage_error("invalid_request", "Invalid request format, type(s) is missing", red, stream_id=stream_id)
-        )
+        return Response(**manage_error("invalid_request", "Invalid request format, type(s) is missing", red, mode, request=request, stream_id=stream_id))
     logging.info("credential type requested = %s", credential_type)
 
     # check credential format requested
@@ -868,6 +890,8 @@ async def issuer_credential(issuer_id, red):
                 "invalid_or_missing_proof",
                 "The proof format is invalid",
                 red,
+                mode,
+                request=request,
                 stream_id=stream_id,
             )
         )
@@ -912,6 +936,8 @@ async def issuer_credential(issuer_id, red):
                     "unsupported_credential_type",
                     "The credential type is not offered",
                     red,
+                    mode,
+                    request=request,
                     stream_id=stream_id,
                 )
             )
@@ -932,6 +958,8 @@ async def issuer_credential(issuer_id, red):
                     "unsupported_credential_type",
                     "The credential identifier is not found",
                     red,
+                    mode,
+                    request=request,
                     stream_id=stream_id,
                 )
             )
@@ -965,31 +993,26 @@ async def issuer_credential(issuer_id, red):
     return Response(response=json.dumps(payload), headers=headers)
 
 
-async def issuer_deferred(issuer_id, red):
+
+async def issuer_deferred(issuer_id, red, mode):
     """
     Deferred endpoint
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-deferred-credential-endpoin
     """
     logging.info("deferred endpoint request")
+    
     # Check access token
     try:
         acceptance_token = request.headers["Authorization"].split()[1]
     except Exception:
         return Response(
-            **manage_error(
-                "invalid_request",
-                "Acceptance token not passed in request header",
-                red,
-                status=400,
-            )
-        )
+            **manage_error("invalid_request","Acceptance token not passed in request header",red, mode, request=request, status=400)        )
 
     # Offer expired, VC is no more available return 410
     try:
         acceptance_token_data = json.loads(red.get(acceptance_token).decode())
     except Exception:
-        return Response(
-            **manage_error("invalid_token", "Acceptance token expired", red, status=410)
+        return Response(**manage_error("invalid_token", "Acceptance token expired", red, mode, request=request, status=410)
         )
 
     issuer_state = acceptance_token_data["issuer_state"]
@@ -1000,11 +1023,7 @@ async def issuer_deferred(issuer_id, red):
         deferred_data = json.loads(red.get(issuer_state).decode())
         credential = deferred_data["deferred_vc"][credential_type]
     except Exception:
-        return Response(
-            **manage_error(
-                "invalid_token", "Credential is not available yet", red, error_uri="https://altme.io", status=404
-            )
-        )
+        return Response(**manage_error("invalid_token", "Credential is not available yet", red, mode, request=request, status=404))
 
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
 
