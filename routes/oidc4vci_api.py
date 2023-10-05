@@ -749,10 +749,7 @@ def issuer_token(issuer_id, red, mode):
         code_verifier = request.form.get("code_verifier")
         code_challenge_calculated = pkce.get_code_challenge(code_verifier)
         if code_challenge_calculated != data['code_challenge']:
-            #return Response(**manage_error("access_denied", "Code verifier is incorrect", red, mode, request=request, stream_id=stream_id, status=404))
-            logging.error('Code verifier is incorrect')
-        else:
-            logging.error('Code verifier is ok')
+            return Response(**manage_error("access_denied", "Code verifier is incorrect", red, mode, request=request, stream_id=stream_id, status=404))
             
     # wrong PIN
     logging.info('user_pin = %s', data.get("user_pin"))

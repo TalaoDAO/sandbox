@@ -30,6 +30,8 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/issuer/default_2/deferred',  view_func=issuer_default_2_deferred, methods=['GET', 'POST'], defaults={'mode': mode, 'red': 'red'}) # test 5
 
     app.add_url_rule('/sandbox/issuer/default_3',  view_func=issuer_default_3, methods=['GET'], defaults={'mode': mode}) # test 6
+    app.add_url_rule('/sandbox/issuer/default_jwt',  view_func=issuer_default_jwt, methods=['GET'], defaults={'mode': mode}) # test 7
+
 
     app.add_url_rule('/sandbox/issuer/ebsiv3',  view_func=issuer_ebsiv3, methods=['GET'], defaults={'mode': mode}) # test 10
     app.add_url_rule('/sandbox/issuer/ebsiv31',  view_func=issuer_ebsiv31, methods=['GET'], defaults={'mode': mode}) # test 8
@@ -243,7 +245,7 @@ def issuer_default(mode):
     except:
         return jsonify("No qr code")
     return redirect(qrcode) 
- 
+
 
 # test 5 part 2
 def issuer_default_2_deferred(red, mode): # VC is sent after delay
@@ -331,6 +333,36 @@ def issuer_default_3(mode): # Test 6
     except:
         return jsonify("No qr code")
     return redirect(qrcode) 
+
+
+def issuer_default_jwt(mode): # Test 7 
+    if mode.myenv == 'aws':
+        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/grlvzckofy"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    else:       
+        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/kivrsduinn"
+        client_secret = "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"
+
+    offer = ["VerifiableId", "PhoneProof"]
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + client_secret
+    }
+    data = { 
+        "vc": build_credential_offered(offer), 
+        "issuer_state": str(uuid.uuid1()),
+        "credential_type": offer,
+        "pre-authorized_code": True,
+        "callback": mode.server + 'sandbox/issuer/callback',
+        }
+    resp = requests.post(api_endpoint, headers=headers, json = data)
+    try:
+        qrcode =  resp.json()['redirect_uri']
+    except:
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+
 
 
 def issuer_gaiax(mode): # test 4
