@@ -19,7 +19,7 @@ from urllib.parse import urlencode
 import db_api
 import oidc4vc
 from profile import profile
-
+import pkce
 
 logging.basicConfig(level=logging.INFO)
 
@@ -238,9 +238,9 @@ def oidc(issuer_id, mode):
         }
     )
     # TESTING TEST 6
-    if issuer_id in ["cejjvswuep", "ooroomolyd"] :
-        del openid_configuration['credential_endpoint']
-    
+    #if issuer_id in ["cejjvswuep", "ooroomolyd"] :
+    #    del openid_configuration['credentials_supported']
+        
     if issuer_profile.get("service_documentation"):
         openid_configuration["service_documentation"] = issuer_profile[
             "service_documentation"
@@ -729,8 +729,6 @@ def issuer_token(issuer_id, red, mode):
     if not code:
         return Response(**manage_error("invalid_request", "Request format is incorrect, code is missing", red, mode, request=request))
 
-    code_verifier = request.form.get("code_verifier")
-    logging.info("PKCE code_verifier = %s", code_verifier)
     # TODO check code verifier
     logging.info("code = %s", code)
 
@@ -745,7 +743,15 @@ def issuer_token(issuer_id, red, mode):
     # user PIN missing
     if data.get("user_pin_required") and not user_pin:
         return Response(**manage_error("invalid_request", "User pin is missing", red, mode, request=request, stream_id=stream_id))
-
+    
+    # wrong code verifier
+    if grant_type == "authorization_code":
+        code_verifier = request.form.get("code_verifier")
+        code_challenge_calculated = pkce.get_code_challenge(code_verifier)
+        if code_challenge_calculated != data['code_challenge']:
+            #return Response(**manage_error("access_denied", "Code verifier is incorrect", red, mode, request=request, stream_id=stream_id, status=404))
+            logging.error('Code verifier is incorrect')
+    
     # wrong PIN
     logging.info('user_pin = %s', data.get("user_pin"))
     if data.get("user_pin_required") and data.get("user_pin") != user_pin:
