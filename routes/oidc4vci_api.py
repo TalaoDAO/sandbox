@@ -640,9 +640,9 @@ def issuer_authorize(issuer_id, red, mode):
 
     try:
         issuer_state = request.args["issuer_state"]
-        stream_id = json.loads[red.get(issuer_state).decode()]['stream_id']
+        stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
     except Exception:
-        return jsonify("unauthorized"), 403
+        return jsonify({"error": "access_denied"}), 403
 
     scope = request.args.get("scope")
     nonce = request.args.get("nonce")
