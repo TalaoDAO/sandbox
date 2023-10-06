@@ -637,8 +637,7 @@ def issuer_authorize(issuer_id, red, mode):
         resp['error_uri'] = error_uri_build(request, error, error_description, mode)
         if state:
             resp["state"] = state
-        print('sortie')
-        return redirect(redirect_uri + "?" + urlencode(resp))
+        return urlencode(resp)
     
     try:
         issuer_state = request.args["issuer_state"]
@@ -657,12 +656,17 @@ def issuer_authorize(issuer_id, red, mode):
         redirect_uri = request.args["redirect_uri"]
     except Exception:
         return jsonify({"error": "invalid_request"}), 403
-        
+    
+    test = True
+    response_type = "code"
+    if test:
+        """
     try:
         response_type = request.args["response_type"]
     except Exception:
         pass
-    authorization_error_response('invalid_request', 'Response type is missing', stream_id, red, state=state)
+        """
+        return redirect(redirect_uri + '?' + authorization_error_response('invalid_request', 'Response type is missing', stream_id, red, state=state)) 
     
     try:
         client_id = request.args["client_id"]  # DID of the issuer
@@ -671,7 +675,7 @@ def issuer_authorize(issuer_id, red, mode):
     try:
         authorization_details = request.args["authorization_details"]
     except Exception:
-        authorization_error_response('invalid_request', 'Authorization details', stream_id, red, state=state)
+        return redirect(redirect_uri + '?' + authorization_error_response('invalid_request', 'Authorization details', stream_id, red, state=state))
 
     logging.info("redirect_uri = %s", redirect_uri)
     logging.info("code_challenge = %s", code_challenge)
@@ -680,7 +684,7 @@ def issuer_authorize(issuer_id, red, mode):
     logging.info("scope = %s", scope)
     
     if response_type != "code":
-        authorization_error_response('invalid_response_type', 'response_type not supported', stream_id, red, state=state)
+        return redirect( redirect_uri + '?' + authorization_error_response('invalid_response_type', 'response_type not supported', stream_id, red, state=state))
 
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
 
