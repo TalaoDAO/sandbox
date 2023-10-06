@@ -637,6 +637,7 @@ def issuer_authorize(issuer_id, red, mode):
         resp['error_uri'] = error_uri_build(request, error, error_description, mode)
         if state:
             resp["state"] = state
+        print('sortie')
         return redirect(redirect_uri + "?" + urlencode(resp))
     
     try:
@@ -715,6 +716,7 @@ def issuer_authorize(issuer_id, red, mode):
     resp = {"code": code}
     if state:
         resp["state"] = state
+    print('sortie avec code)')
     return redirect(redirect_uri + "?" + urlencode(resp))
 
 
