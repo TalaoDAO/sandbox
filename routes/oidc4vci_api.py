@@ -147,7 +147,7 @@ def wallet_error_uri():
 
 def error_uri_build(request, error, error_description, mode):
     try:
-        if request.headers['Content-Type'] == "application/json":
+        if request.headers.get('Content-Type', 'application/json') == "application/json":
             body = json.dumps(request.json)
         else:
             body = json.dumps(request.form)
