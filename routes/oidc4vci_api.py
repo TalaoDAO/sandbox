@@ -147,18 +147,17 @@ def wallet_error_uri():
     )
 
 
-def error_uri_build(request, error, error_description, mode, arguments=None):
-    try:
-        if request.headers.get('Content-Type', 'application/json') == "application/json":
-            body = json.dumps(request.json)
-        else:
-            body = json.dumps(request.form)
-    except Exception:
-        body = "Content-Type not supported  : " + request.headers.get('Content-Type', "No Content-Type")
-        
+def error_uri_build(request, error, error_description, mode):
+    if request.headers.get('Content-Type') == "application/json":
+        body = json.dumps(request.json)
+    elif not request.headers.get('Content-Type'):
+        body = ""
+    else:
+        body = json.dumps(request.form)
+
     data = {
         "header": str(request.headers),
-        "arguments": arguments,
+        "arguments": json.dumsp(request.args),
         "body": body,
         "error": error,
         "error_description": error_description
@@ -635,7 +634,7 @@ def issuer_authorize(issuer_id, red, mode):
         resp = {
             "error_description": error_description,
             "error": error}
-        resp['error_uri'] = error_uri_build(request, error, error_description, mode, arguments=request.args)
+        resp['error_uri'] = error_uri_build(request, error, error_description, mode)
         if state:
             resp["state"] = state
         return redirect(redirect_uri + "?" + urlencode(resp))
@@ -653,10 +652,12 @@ def issuer_authorize(issuer_id, red, mode):
     client_metadata = request.args.get("client_metadata")
     state = request.args.get("state") # wallet state
     
-    try:
-        redirect_uri = request.args["redirect_uri"]
-    except Exception:
-        authorization_error_response('invalid_request', 'Request uri is missing', stream_id, red, state=state)    
+    #try:
+    #    redirect_uri = request.args["redirect_uri"]
+    #except Exception:
+    authorization_error_response('invalid_request', 'Request uri is missing', stream_id, red, state=state)    
+    
+    
     try:
         response_type = request.args["response_type"]
     except Exception:
