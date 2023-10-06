@@ -11,7 +11,6 @@ oidc4vc_profile_list = {
     'DEFAULT-JWT': 'DEFAULT JWT',
     'GAIA-X': 'GAIA-X projects',
     'EBSI-V3': 'EBSI V3 compliance',
-    'JWT-VC': 'JWT-VC presentation profile',
     'HEDERA': 'Greencypher project'
 }
 
@@ -23,7 +22,6 @@ oidc4vc_verifier_credential_list = {
     'VerifiableId':  'Verifiable ID',
     'VerifiableDiploma': 'EBSI Diploma',
     'EmployeeCredential': 'Employee Credential',
-    'ProofOfAsset': 'Carbon credit projects',
     'EmailPass': 'Email proof',
     'PhoneProof': 'Phone proof',
     'WalletCredential': 'Device information',
@@ -128,4 +126,3 @@ client_data_pattern_oidc4vc = {
     "landing_page_url": "https://talao.io",
     "title": "Get it !" # QR code title
 }
-

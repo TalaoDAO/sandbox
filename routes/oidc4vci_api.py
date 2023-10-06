@@ -136,7 +136,7 @@ def wallet_error_uri():
     error_description = request.args.get('error_description')
     header = request.args.get('header')
     body = request.args.get('body')
-    arguments = request.args.get['arguments']
+    arguments = request.args.get('arguments')
     return render_template(
         'issuer_oidc/issuer_error_uri.html',
         header=header,
@@ -401,7 +401,6 @@ def issuer_api_endpoint(issuer_id, red, mode):
         else:
             pre_authorized_code = str(uuid.uuid1())
 
-    # vc_formats_supported = issuer_profile['issuer_vc_type']
     stream_id = str(uuid.uuid1())
     session_data = {
         "vc": vc,
@@ -1137,5 +1136,3 @@ async def sign_credential(
         logging.info("signature check with didkit = %s", result)
         credential_signed = json.loads(credential_signed)
     return credential_signed
-
-

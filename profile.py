@@ -1,7 +1,6 @@
 profile = {
     'EBSI-V3':
         {
-            'issuer_vc_type': 'jwt_vc',
             'verifier_vp_type': 'jwt_vp',
             'authorization_server_support': True,
             'credentials_as_json_object_array': True,
@@ -97,7 +96,7 @@ profile = {
                 }
             ],
             'grant_types_supported': [
-                #'authorization_code',
+                'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
             'trust_framework': {
@@ -111,7 +110,6 @@ profile = {
         },
     'DEFAULT':
         {
-            'issuer_vc_type': 'ldp_vc',
             'verifier_vp_type': 'ldp_vp',
             'oidc4vci_prefix': 'openid-credential-offer://' ,
             'authorization_server_support': False,
@@ -240,7 +238,7 @@ profile = {
                 }
             ],
             'grant_types_supported': [
-                #'authorization_code',
+                'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
             'schema_for_type': False,
@@ -252,7 +250,6 @@ profile = {
         },
     'DEFAULT-JWT':
         {
-            'issuer_vc_type': 'jwt_vc',
             'verifier_vp_type': 'jwt_vp',
             'oidc4vci_prefix': 'openid-credential-offer://' ,
             'authorization_server_support': False,
@@ -266,7 +263,7 @@ profile = {
             'credentials_supported': [
                 {
                     "id": "EmployeeCredential",
-                    "format": "ldp_vc",
+                    "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
                         "EmployeeCredential"
@@ -289,7 +286,7 @@ profile = {
                 },
                 {
                     "id": "EthereumAssociatedAddress",
-                    "format": "ldp_vc",
+                    "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
                         "EthereumAssociatedAddress"
@@ -312,7 +309,7 @@ profile = {
                 },
                 {
                     "id": "VerifiableId",
-                    "format": "ldp_vc",
+                    "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
                         "VerifiableId"
@@ -335,7 +332,7 @@ profile = {
                 },
                 {
                     "id": "EmailPass",
-                    "format": "ldp_vc",
+                    "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
                         "EmailPass"
@@ -358,7 +355,7 @@ profile = {
                 },
                 {
                     "id": "PhoneProof",
-                    "format": "ldp_vc",
+                    "format": "jwt_vc",
                     "types": [
                         "VerifiableCredential",
                         "PhoneProof"
@@ -381,7 +378,7 @@ profile = {
                 }
             ],
             'grant_types_supported': [
-                #'authorization_code',
+                'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
             'schema_for_type': False,
@@ -393,7 +390,6 @@ profile = {
         },
     'GAIA-X':
         {
-            'issuer_vc_type': 'ldp_vc',
             'verifier_vp_type': 'ldp_vp',
             'oidc4vci_prefix': 'openid-initiate-issuance://' ,
             'siopv2_prefix': 'openid://',
@@ -472,7 +468,7 @@ profile = {
                 }
             ],
             'grant_types_supported': [
-                #'authorization_code',
+                'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
             'schema_for_type': False,
@@ -484,7 +480,6 @@ profile = {
         },
         'HEDERA':
         {
-            'issuer_vc_type': 'jwt_vc',
             'verifier_vp_type': 'jwt_vp',
             'oidc4vci_prefix': 'openid-credential-offer-hedera://',
             'authorization_server_support': False,
@@ -651,7 +646,6 @@ profile = {
                 }
             ],
             'grant_types_supported': [
-                #'authorization_code',
                 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
             ],
             'schema_for_type': False,
@@ -660,19 +654,7 @@ profile = {
                 oidc4vci_draft: https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html \
                 siopv2_draft: https://openid.net/specs/openid-connect-self-issued-v2-1_0.html \
                 oidc4vp_draft: https://openid.net/specs/openid-4-verifiable-presentations-1_0.html  \
-                 Issuer and verifier for marjetplace and WCM'
-        },
-    
-    'JWT-VC':
-        {
-            'verifier_vp_type': 'jwt_vp',
-            'siopv2_prefix': 'openid-vc://',
-            'credentials_types_supported': ['EmployeeCredential', 'VerifiableId', 'EmailPass'],
-            'schema_for_type': False,
-            'authorization_server_support': False,
-            'credential_manifest_support': False,
-            'service_documentation': 'https://identity.foundation/jwt-vc-presentation-profile/'
-
+                Issuer and verifier for marjetplace and WCM'
         }
 
 }
