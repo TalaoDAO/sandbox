@@ -9,7 +9,7 @@ EBSI V2 https://openid.net/specs/openid-connect-4-verifiable-credential-issuance
 support Authorization code flow and pre-authorized code flow of OIDC4VCI
 
 """
-from flask import jsonify, request, render_template, Response, redirect
+from flask import jsonify, request, render_template, Response, redirect, session
 import json
 from datetime import datetime, timedelta
 import uuid
@@ -544,6 +544,7 @@ def issuer_credential_offer_uri(id, red):
 
 # Display QRcode page for credential offer
 def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
+    session['stream_id'] = stream_id
     try:
         application_data = json.loads(red.get(stream_id).decode())
     except Exception:
@@ -621,53 +622,65 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
 
 
 def issuer_authorize(issuer_id, red, mode):
-    def authorization_error_response(error, error_description, stream_id, red):
+    
+    def authorization_error_response(error, error_description, stream_id, red, state=None):
         """
         https://www.rfc-editor.org/rfc/rfc6749.html#page-26
         """
         # front channel follow up
-        if stream_id:
-            event_data = json.dumps({"stream_id": stream_id})
-            red.publish("issuer_oidc", event_data)
-        logging.warning(error_description)
-        resp = {"error_description": error_description, "error": error}
+        front_publish(stream_id, red, error=error, error_description=error_description)
+        
+        resp = {
+            "error_description": error_description,
+            "error": error}
+
+        resp['error_uri'] = error_uri_build(request, error, error_description, mode)
+        
+        if state:
+            resp["state"] = state
         return redirect(redirect_uri + "?" + urlencode(resp))
 
+    if not session['stream_id']:
+        return jsonify("unauthorized"), 403
+
+    scope = request.args.get("scope")
+    nonce = request.args.get("nonce")
+    issuer_state = request.args.get("issuer_state")
+    code_challenge = request.args.get("code_challenge")
+    code_challenge_method = request.args.get("code_challenge_method")
+    client_metadata = request.args.get("client_metadata")
+    state = request.args.get("state") # wallet state
+    
+    try:
+        redirect_uri = request.args["redirect_uri"]
+    except Exception:
+        authorization_error_response('invalid_request', 'Request uri is missing', session['stream_id'], red, state=state)
+        # return jsonify("invalid_request"), 400
     try:
         response_type = request.args["response_type"]
-        scope = request.args.get("scope")
-        client_id = request.args["client_id"]  # DID of the issuer
-        authorization_details = request.args["authorization_details"]
-        redirect_uri = request.args["redirect_uri"]
-        nonce = request.args.get("nonce")
-        issuer_state = request.args["issuer_state"]
-        code_challenge = request.args.get("code_challenge")
-        code_challenge_method = request.args.get("code_challenge_method")
-        client_metadata = request.args.get("client_metadata")
-        state = request.args.get("state") # wallet state
     except Exception:
-        return jsonify("invalid_request"), 400
-    
+        authorization_error_response('invalid_request', 'Response type is missing', session['stream_id'], red, state=state)
+    try:
+        client_id = request.args["client_id"]  # DID of the issuer
+    except Exception:
+        authorization_error_response('invalid_request', 'Client id is missing', session['stream_id'], red, state=state)
+    try:
+        authorization_details = request.args["authorization_details"]
+    except Exception:
+        authorization_error_response('invalid_request', 'Authorization details', session['stream_id'], red, state=state)
+
     logging.info("redirect_uri = %s", redirect_uri)
     logging.info("code_challenge = %s", code_challenge)
     logging.info("client_metadata = %s", client_metadata)
     logging.info("authorization details = %s", authorization_details)
     logging.info("scope = %s", scope)
-
-    try:
-        issuer_state_data = json.loads(red.get(issuer_state).decode())
-        stream_id = issuer_state_data["stream_id"]
-    except Exception:
-        logging.warning("issuer_state not found in authorization code flow")
-        return jsonify("invalid_request"), 400
-
+    
     if response_type != "code":
-        authorization_error_response('invalid_response_type', 'response_type not supported', stream_id, red)
+        authorization_error_response('invalid_response_type', 'response_type not supported', session['stream_id'], red, state=state)
 
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
 
     offer_data = json.loads(red.get(issuer_state).decode())
-    stream_id = offer_data["stream_id"]
     vc = offer_data["vc"]
     credential_type = offer_data["credential_type"]
 
@@ -682,7 +695,7 @@ def issuer_authorize(issuer_id, red, mode):
             nonce,
         )
     else:
-        code = str(uuid.uuid1())
+        code = str(uuid.uuid1()) + '.' + str(uuid.uuid1()) + '.' + str(uuid.uuid1())
 
     code_data = {
         "credential_type": credential_type,
@@ -690,7 +703,7 @@ def issuer_authorize(issuer_id, red, mode):
         "issuer_id": issuer_id,
         "issuer_state": issuer_state,
         "state": state,
-        "stream_id": stream_id,
+        "stream_id": session['stream_id'],
         "vc": vc,
         "code_challenge": code_challenge,
         "code_challenge_method": code_challenge_method,

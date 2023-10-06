@@ -300,10 +300,9 @@ def issuer_default_2(red, mode): # Test 5 deferred no VC sent
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try:
         qrcode =  resp.json()['redirect_uri']
-    except:
+    except Exception:
         return jsonify("No qr code")
     return redirect(qrcode +'?issuer_state=' + issuer_state) 
-    
 
 
 def issuer_default_3(mode): # Test 6 
@@ -330,7 +329,7 @@ def issuer_default_3(mode): # Test 6
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try:
         qrcode =  resp.json()['redirect_uri']
-    except:
+    except Exception:
         return jsonify("No qr code")
     return redirect(qrcode) 
 

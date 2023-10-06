@@ -473,7 +473,7 @@ def oidc4vc_login_qrcode(red, mode):
     if verifier_data.get('id_token') and not verifier_data.get('vp_token'):
         response_type = 'id_token'
     elif verifier_data.get('id_token') and verifier_data.get('vp_token'):
-        response_type = 'id_token vp_token'
+        response_type = 'vp_token id_token'
     elif verifier_data.get('vp_token') and not verifier_data.get('id_token'):
         response_type = 'vp_token'
     else:
@@ -589,11 +589,18 @@ def oidc4vc_login_qrcode(red, mode):
 
     # OIDC4VP
     if 'vp_token' in response_type:
+        
         # client_metadata_uri
         id = str(uuid.uuid1())
         client_metadata = build_client_metadata(client_id, redirect_uri)
         red.setex(id, QRCODE_LIFE, json.dumps(client_metadata))
         authorization_request['client_metadata_uri'] = mode.server + "sandbox/verifier/wallet/client_metadata_uri/" + id
+        
+        # client_id_scheme
+        if verifier_data.get('client_id_as_DID'):
+            authorization_request['client_id_scheme'] = 'did'
+        else:
+            authorization_request['client_id_scheme'] = 'redirect_uri'
         
         # presentation_definition
         presentation_definition = prez.get()
@@ -610,6 +617,7 @@ def oidc4vc_login_qrcode(red, mode):
         
     # SIOPV2
     if 'id_token' in response_type:
+        
         authorization_request['scope'] = 'openid'
     if 'id_token' in response_type and verifier_data['profile'] != "EBSI-V3":
         authorization_request['registration'] = json.dumps(json.load(open('siopv2_config.json', 'r')))           
