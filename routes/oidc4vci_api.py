@@ -660,7 +660,7 @@ def issuer_authorize(issuer_id, red, mode):
     #try:
     #    response_type = request.args["response_type"]
     #except Exception:
-    authorization_error_response('invalid_request', 'Response type is missing', stream_id, red, state=state)
+    return authorization_error_response('invalid_request', 'Response type is missing', stream_id, red, state=state)
     try:
         client_id = request.args["client_id"]  # DID of the issuer
     except Exception:
