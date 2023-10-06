@@ -145,7 +145,10 @@ def wallet_error_uri():
     )
 
 
-def error_uri_build(request, error, error_description, mode):
+def error_uri_build(request, error, error_description, mode, arguments=None):
+    if arguments:
+        print("arguments = ", arguments)
+    
     try:
         if request.headers.get('Content-Type', 'application/json') == "application/json":
             print('request.json = ', request.json)
@@ -634,12 +637,10 @@ def issuer_authorize(issuer_id, red, mode):
             "error_description": error_description,
             "error": error}
 
-        resp['error_uri'] = error_uri_build(request, error, error_description, mode)
+        resp['error_uri'] = error_uri_build(request, error, error_description, mode, arguments=request.args)
         if state:
             resp["state"] = state
         return redirect(redirect_uri + "?" + urlencode(resp))
-
-    print('request.json = ', request.json)
     
     try:
         issuer_state = request.args["issuer_state"]
