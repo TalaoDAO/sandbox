@@ -623,7 +623,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     )
 
 
-def authorization_error(request, error, error_description, stream_id, red, state=None):
+def authorization_error(request, error, error_description, stream_id, red, mode, state=None):
         """
         https://www.rfc-editor.org/rfc/rfc6749.html#page-26
         """
@@ -632,51 +632,47 @@ def authorization_error(request, error, error_description, stream_id, red, state
         resp = {
             "error_description": error_description,
             "error": error}
+        
+        # redirect arguments for errors
         resp['error_uri'] = error_uri_build(request, error, error_description, mode)
         if state:
             resp["state"] = state
         return urlencode(resp)
 
+
 def issuer_authorize(issuer_id, red, mode):
-    
     try:
         issuer_state = request.args["issuer_state"]
         stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
     except Exception:
         return jsonify({"error": "access_denied"}), 403
 
-    scope = request.args.get("scope")
+    scope = request.args.get("scope")  # not required for this flow
     nonce = request.args.get("nonce")
     code_challenge = request.args.get("code_challenge")
     code_challenge_method = request.args.get("code_challenge_method")
     client_metadata = request.args.get("client_metadata")
-    state = request.args.get("state") # wallet state
+    state = request.args.get("state")  # wallet state
     
     try:
         redirect_uri = request.args["redirect_uri"]
     except Exception:
         return jsonify({"error": "invalid_request"}), 403
-    
-    test = True
-    response_type = "code"
-    if test:
-        """
+
     try:
         response_type = request.args["response_type"]
     except Exception:
-        pass
-        """
-        #return redirect(redirect_uri + '?' + authorization_error(request, 'invalid_request', 'Response type is missing', stream_id, red, state=state)) 
-        return redirect(redirect_uri + "?" + "error=invalid_request")
+        return redirect(redirect_uri + '?' + authorization_error(request, 'invalid_request', 'Response type is missing', stream_id, red, mode, state=state)) 
 
     try:
         client_id = request.args["client_id"]  # DID of the issuer
     except Exception:
-        authorization_error(request, 'invalid_request', 'Client id is missing', stream_id, red, state=state)
+        return redirect(redirect_uri + '?' + authorization_error(request, 'invalid_request', 'Client id is missing', stream_id, red, mode, state=state))
+    
     try:
         authorization_details = request.args["authorization_details"]
     except Exception:
-        return redirect(redirect_uri + '?' + authorization_error(request, 'invalid_request', 'Authorization details', stream_id, red, state=state))
+        return redirect(redirect_uri + '?' + authorization_error(request, 'invalid_request', 'Authorization details is missing', stream_id, red, mode, state=state))
 
     logging.info("redirect_uri = %s", redirect_uri)
     logging.info("code_challenge = %s", code_challenge)
@@ -685,7 +681,7 @@ def issuer_authorize(issuer_id, red, mode):
     logging.info("scope = %s", scope)
     
     if response_type != "code":
-        return redirect(redirect_uri + '?' + authorization_error(request, 'invalid_response_type', 'response_type not supported', stream_id, red, state=state))
+        return redirect(redirect_uri + '?' + authorization_error(request, 'invalid_response_type', 'response_type not supported', stream_id, red, mode, state=state))
 
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
 
@@ -721,7 +717,6 @@ def issuer_authorize(issuer_id, red, mode):
     resp = {"code": code}
     if state:
         resp["state"] = state
-    print('sortie avec code)')
     return redirect(redirect_uri + "?" + urlencode(resp))
 
 
