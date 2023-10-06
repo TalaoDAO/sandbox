@@ -652,16 +652,15 @@ def issuer_authorize(issuer_id, red, mode):
     client_metadata = request.args.get("client_metadata")
     state = request.args.get("state") # wallet state
     
-    #try:
-    #    redirect_uri = request.args["redirect_uri"]
-    #except Exception:
-    authorization_error_response('invalid_request', 'Request uri is missing', stream_id, red, state=state)    
-    
-    
     try:
-        response_type = request.args["response_type"]
+        redirect_uri = request.args["redirect_uri"]
     except Exception:
-        authorization_error_response('invalid_request', 'Response type is missing', stream_id, red, state=state)
+        return jsonify({"error": "invalid_request"}), 403
+        
+    #try:
+    #    response_type = request.args["response_type"]
+    #except Exception:
+    authorization_error_response('invalid_request', 'Response type is missing', stream_id, red, state=state)
     try:
         client_id = request.args["client_id"]  # DID of the issuer
     except Exception:
