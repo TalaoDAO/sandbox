@@ -623,9 +623,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     )
 
 
-def issuer_authorize(issuer_id, red, mode):
-    
-    def authorization_error_response(error, error_description, stream_id, red, state=None):
+def authorization_error(request, error, error_description, stream_id, red, state=None):
         """
         https://www.rfc-editor.org/rfc/rfc6749.html#page-26
         """
@@ -638,6 +636,8 @@ def issuer_authorize(issuer_id, red, mode):
         if state:
             resp["state"] = state
         return urlencode(resp)
+
+def issuer_authorize(issuer_id, red, mode):
     
     try:
         issuer_state = request.args["issuer_state"]
@@ -666,16 +666,17 @@ def issuer_authorize(issuer_id, red, mode):
     except Exception:
         pass
         """
-        return redirect(redirect_uri + '?' + authorization_error_response('invalid_request', 'Response type is missing', stream_id, red, state=state)) 
-    
+        #return redirect(redirect_uri + '?' + authorization_error(request, 'invalid_request', 'Response type is missing', stream_id, red, state=state)) 
+        return redirect(redirect_uri + "?" + "error=invalid_request")
+
     try:
         client_id = request.args["client_id"]  # DID of the issuer
     except Exception:
-        authorization_error_response('invalid_request', 'Client id is missing', stream_id, red, state=state)
+        authorization_error(request, 'invalid_request', 'Client id is missing', stream_id, red, state=state)
     try:
         authorization_details = request.args["authorization_details"]
     except Exception:
-        return redirect(redirect_uri + '?' + authorization_error_response('invalid_request', 'Authorization details', stream_id, red, state=state))
+        return redirect(redirect_uri + '?' + authorization_error(request, 'invalid_request', 'Authorization details', stream_id, red, state=state))
 
     logging.info("redirect_uri = %s", redirect_uri)
     logging.info("code_challenge = %s", code_challenge)
@@ -684,7 +685,7 @@ def issuer_authorize(issuer_id, red, mode):
     logging.info("scope = %s", scope)
     
     if response_type != "code":
-        return redirect( redirect_uri + '?' + authorization_error_response('invalid_response_type', 'response_type not supported', stream_id, red, state=state))
+        return redirect(redirect_uri + '?' + authorization_error(request, 'invalid_response_type', 'response_type not supported', stream_id, red, state=state))
 
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
 
