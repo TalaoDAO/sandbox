@@ -657,10 +657,12 @@ def issuer_authorize(issuer_id, red, mode):
     except Exception:
         return jsonify({"error": "invalid_request"}), 403
         
-    #try:
-    #    response_type = request.args["response_type"]
-    #except Exception:
-    return authorization_error_response('invalid_request', 'Response type is missing', stream_id, red, state=state)
+    try:
+        response_type = request.args["response_type"]
+    except Exception:
+        pass
+    authorization_error_response('invalid_request', 'Response type is missing', stream_id, red, state=state)
+    
     try:
         client_id = request.args["client_id"]  # DID of the issuer
     except Exception:
