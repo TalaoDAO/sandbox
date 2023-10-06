@@ -401,7 +401,7 @@ def issuer_api_endpoint(issuer_id, red, mode):
 
     # vc_formats_supported = issuer_profile['issuer_vc_type']
     stream_id = str(uuid.uuid1())
-    application_data = {
+    session_data = {
         "vc": vc,
         "nonce": nonce,
         "stream_id": stream_id,
@@ -416,7 +416,7 @@ def issuer_api_endpoint(issuer_id, red, mode):
 
     # For deferred API call only VC is stored in redis with issuer_state as key
     if deferred_vc and red.get(issuer_state):
-        application_data.update(
+        session_data.update(
             {
                 "deferred_vc": deferred_vc,
                 "deferred_vc_iat": round(datetime.timestamp(datetime.now())),
@@ -424,20 +424,20 @@ def issuer_api_endpoint(issuer_id, red, mode):
                 + ACCEPTANCE_TOKEN_LIFE,
             }
         )
-        red.setex(issuer_state, API_LIFE, json.dumps(application_data))
+        red.setex(issuer_state, API_LIFE, json.dumps(session_data))
         logging.info(
             "Deferred VC has been issued with issuer_state =  %s", issuer_state
         )
     else:
         # for authorization code flow
-        red.setex(issuer_state, API_LIFE, json.dumps(application_data))
+        red.setex(issuer_state, API_LIFE, json.dumps(session_data))
 
     # for pre authorized code
     if pre_authorized_code:
-        red.setex(pre_authorized_code, GRANT_LIFE, json.dumps(application_data))
+        red.setex(pre_authorized_code, GRANT_LIFE, json.dumps(session_data))
 
     # for front page management
-    red.setex(stream_id, API_LIFE, json.dumps(application_data))
+    red.setex(stream_id, API_LIFE, json.dumps(session_data))
     response = {
         "redirect_uri": mode.server
         + "sandbox/ebsi/issuer/"
@@ -546,15 +546,15 @@ def issuer_credential_offer_uri(id, red):
 def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     session['stream_id'] = stream_id
     try:
-        application_data = json.loads(red.get(stream_id).decode())
+        session_data = json.loads(red.get(stream_id).decode())
     except Exception:
         logging.warning("session expired")
         return jsonify("Session expired"), 404
-    credential_type = application_data["credential_type"]
-    pre_authorized_code = application_data["pre-authorized_code"]
-    user_pin_required = application_data["user_pin_required"]
-    issuer_state = application_data["issuer_state"]
-    vc = application_data["vc"]
+    credential_type = session_data["credential_type"]
+    pre_authorized_code = session_data["pre-authorized_code"]
+    user_pin_required = session_data["user_pin_required"]
+    issuer_state = session_data["issuer_state"]
+    vc = session_data["vc"]
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     data_profile = profile[issuer_data["profile"]]
     offer = build_credential_offer(
@@ -629,23 +629,23 @@ def issuer_authorize(issuer_id, red, mode):
         """
         # front channel follow up
         front_publish(stream_id, red, error=error, error_description=error_description)
-        
         resp = {
             "error_description": error_description,
             "error": error}
 
         resp['error_uri'] = error_uri_build(request, error, error_description, mode)
-        
         if state:
             resp["state"] = state
         return redirect(redirect_uri + "?" + urlencode(resp))
 
-    if not session['stream_id']:
+    try:
+        issuer_state = request.args["issuer_state"]
+        stream_id = json.loads[red.get(issuer_state).decode()]['stream_id']
+    except Exception:
         return jsonify("unauthorized"), 403
 
     scope = request.args.get("scope")
     nonce = request.args.get("nonce")
-    issuer_state = request.args.get("issuer_state")
     code_challenge = request.args.get("code_challenge")
     code_challenge_method = request.args.get("code_challenge_method")
     client_metadata = request.args.get("client_metadata")
@@ -654,20 +654,20 @@ def issuer_authorize(issuer_id, red, mode):
     try:
         redirect_uri = request.args["redirect_uri"]
     except Exception:
-        authorization_error_response('invalid_request', 'Request uri is missing', session['stream_id'], red, state=state)
+        authorization_error_response('invalid_request', 'Request uri is missing', stream_id, red, state=state)
         # return jsonify("invalid_request"), 400
     try:
         response_type = request.args["response_type"]
     except Exception:
-        authorization_error_response('invalid_request', 'Response type is missing', session['stream_id'], red, state=state)
+        authorization_error_response('invalid_request', 'Response type is missing', stream_id, red, state=state)
     try:
         client_id = request.args["client_id"]  # DID of the issuer
     except Exception:
-        authorization_error_response('invalid_request', 'Client id is missing', session['stream_id'], red, state=state)
+        authorization_error_response('invalid_request', 'Client id is missing', stream_id, red, state=state)
     try:
         authorization_details = request.args["authorization_details"]
     except Exception:
-        authorization_error_response('invalid_request', 'Authorization details', session['stream_id'], red, state=state)
+        authorization_error_response('invalid_request', 'Authorization details', stream_id, red, state=state)
 
     logging.info("redirect_uri = %s", redirect_uri)
     logging.info("code_challenge = %s", code_challenge)
@@ -676,7 +676,7 @@ def issuer_authorize(issuer_id, red, mode):
     logging.info("scope = %s", scope)
     
     if response_type != "code":
-        authorization_error_response('invalid_response_type', 'response_type not supported', session['stream_id'], red, state=state)
+        authorization_error_response('invalid_response_type', 'response_type not supported', stream_id, red, state=state)
 
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
 
@@ -703,7 +703,7 @@ def issuer_authorize(issuer_id, red, mode):
         "issuer_id": issuer_id,
         "issuer_state": issuer_state,
         "state": state,
-        "stream_id": session['stream_id'],
+        "stream_id": stream_id,
         "vc": vc,
         "code_challenge": code_challenge,
         "code_challenge_method": code_challenge_method,
