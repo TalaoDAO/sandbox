@@ -157,7 +157,7 @@ def error_uri_build(request, error, error_description, mode):
 
     data = {
         "header": str(request.headers),
-        "arguments": json.dumsp(request.args),
+        "arguments": json.dumps(request.args),
         "body": body,
         "error": error,
         "error_description": error_description
