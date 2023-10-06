@@ -136,22 +136,20 @@ def wallet_error_uri():
     error_description = request.args.get('error_description')
     header = request.args.get('header')
     body = request.args.get('body')
+    arguments = request.args.get['arguments']
     return render_template(
         'issuer_oidc/issuer_error_uri.html',
         header=header,
         error=error,
         error_description=error_description,
-        body=body
+        body=body,
+        arguments=arguments
     )
 
 
 def error_uri_build(request, error, error_description, mode, arguments=None):
-    if arguments:
-        print("arguments = ", arguments)
-    
     try:
         if request.headers.get('Content-Type', 'application/json') == "application/json":
-            print('request.json = ', request.json)
             body = json.dumps(request.json)
         else:
             body = json.dumps(request.form)
@@ -159,7 +157,8 @@ def error_uri_build(request, error, error_description, mode, arguments=None):
         body = "Content-Type not supported  : " + request.headers.get('Content-Type', "No Content-Type")
         
     data = {
-        "header" : str(request.headers),
+        "header": str(request.headers),
+        "arguments": arguments,
         "body": body,
         "error": error,
         "error_description": error_description
@@ -636,7 +635,6 @@ def issuer_authorize(issuer_id, red, mode):
         resp = {
             "error_description": error_description,
             "error": error}
-
         resp['error_uri'] = error_uri_build(request, error, error_description, mode, arguments=request.args)
         if state:
             resp["state"] = state
