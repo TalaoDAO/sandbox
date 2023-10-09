@@ -619,7 +619,6 @@ def oidc4vc_login_qrcode(red, mode):
     if 'id_token' in response_type:
         authorization_request['scope'] = 'openid'       
         authorization_request['registration'] = json.dumps(json.load(open('siopv2_config.json', 'r')))           
-        #authorization_request['nonce'] = nonce 
 
 
     # manage request_uri as jwt
@@ -777,7 +776,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
             presentation_submission_status = "ok"
 
     if access == "ok":
-        nonce = data['pattern']['nonce']
+        nonce = data['pattern'].get('nonce')
 
     # check id_token signature
     if access == "ok"  and id_token:
@@ -805,9 +804,6 @@ async def oidc4vc_login_endpoint(stream_id, red):
             id_token_status += " id token sub != iss"    
         if id_token_sub != id_token_kid.split("#")[0]:
             id_token_status += " id token sub != kid "
-        
-    if access == "ok" and id_token and nonce != id_token_nonce:
-        id_token_status += " nonce does not match "
 
     # check vp_token signature
     if access == 'ok' and vp_token:

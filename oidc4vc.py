@@ -248,8 +248,9 @@ def verif_token(token, nonce, aud=None):
     logging.info("call oidc4vc module")
     header = get_header_from_token(token)
     payload = get_payload_from_token(token)
-    if payload['nonce'] != nonce:
-        raise Exception("Nonce is incorrect")
+    if nonce:
+        if payload['nonce'] != nonce:
+            raise Exception("Nonce is incorrect")
     if aud and payload.get('aud') != aud:
         raise Exception("Aud is incorrect")
     if header.get('jwk'):
