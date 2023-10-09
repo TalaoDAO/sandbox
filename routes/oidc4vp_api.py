@@ -563,7 +563,6 @@ def oidc4vc_login_qrcode(red, mode):
     # general authorization request
     authorization_request = { 
         "response_type": response_type,
-        "nonce": nonce,
         "state": str(uuid.uuid1())  # unused
     }
     
@@ -589,7 +588,8 @@ def oidc4vc_login_qrcode(red, mode):
 
     # OIDC4VP
     if 'vp_token' in response_type:
-        
+        authorization_request['nonce'] = nonce 
+            
         # client_metadata_uri
         id = str(uuid.uuid1())
         client_metadata = build_client_metadata(client_id, redirect_uri)
@@ -617,11 +617,11 @@ def oidc4vc_login_qrcode(red, mode):
         
     # SIOPV2
     if 'id_token' in response_type:
-        
-        authorization_request['scope'] = 'openid'
-    if 'id_token' in response_type and verifier_data['profile'] != "EBSI-V3":
+        authorization_request['scope'] = 'openid'       
         authorization_request['registration'] = json.dumps(json.load(open('siopv2_config.json', 'r')))           
-    
+        #authorization_request['nonce'] = nonce 
+
+
     # manage request_uri as jwt
     request_as_jwt = build_jwt_request(
         verifier_data['jwk'],

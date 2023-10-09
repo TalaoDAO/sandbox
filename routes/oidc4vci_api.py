@@ -60,64 +60,16 @@ def init_app(app, red, mode):
     )
 
     # OIDC4VCI protocol with wallet
-    app.add_url_rule(
-        "/sandbox/ebsi/issuer/<issuer_id>/.well-known/openid-configuration",
-        view_func=issuer_openid_configuration,
-        methods=["GET"],
-        defaults={"mode": mode},
-    )
+    app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/.well-known/openid-configuration", view_func=issuer_openid_configuration, methods=["GET"],defaults={"mode": mode})
+    app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/.well-known/openid-credential-issuer",view_func=issuer_openid_configuration, methods=["GET"], defaults={"mode": mode})
+    app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/authorize", view_func=issuer_authorize, methods=["GET", "POST"], defaults={"red": red, "mode": mode})
+    app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/token", view_func=issuer_token, methods=["POST"], defaults={"red": red, "mode": mode},)
+    app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/credential", view_func=issuer_credential, methods=["POST"], defaults={"red": red, "mode": mode})
+    app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/deferred", view_func=issuer_deferred, methods=["POST"], defaults={"red": red, "mode": mode},)
+    app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/authorize_server/.well-known/openid-configuration", view_func=issuer_authorization_server, methods=["GET"], defaults={"mode": mode},)
+    app.add_url_rule("/sandbox/ebsi/issuer/credential_offer_uri/<id>", view_func=issuer_credential_offer_uri, methods=["GET"], defaults={"red": red})
+    app.add_url_rule("/sandbox/ebsi/issuer/error_uri", view_func=wallet_error_uri, methods=["GET"])
     
-    app.add_url_rule(
-        "/sandbox/ebsi/issuer/<issuer_id>/.well-known/openid-credential-issuer",
-        view_func=issuer_openid_configuration,
-        methods=["GET"],
-        defaults={"mode": mode},
-    )
-
-    app.add_url_rule(
-        "/sandbox/ebsi/issuer/<issuer_id>/authorize",
-        view_func=issuer_authorize,
-        methods=["GET", "POST"],
-        defaults={"red": red, "mode": mode},
-    )
-    app.add_url_rule(
-        "/sandbox/ebsi/issuer/<issuer_id>/token",
-        view_func=issuer_token,
-        methods=["POST"],
-        defaults={"red": red, "mode": mode},
-    )
-    app.add_url_rule(
-        "/sandbox/ebsi/issuer/<issuer_id>/credential",
-        view_func=issuer_credential,
-        methods=["POST"],
-        defaults={"red": red, "mode": mode},
-    )
-    app.add_url_rule(
-        "/sandbox/ebsi/issuer/<issuer_id>/deferred",
-        view_func=issuer_deferred,
-        methods=["POST"],
-        defaults={"red": red, "mode": mode},
-    )
-
-    app.add_url_rule(
-        "/sandbox/ebsi/issuer/<issuer_id>/authorize_server/.well-known/openid-configuration",
-        view_func=issuer_authorization_server,
-        methods=["GET"],
-        defaults={"mode": mode},
-    )
-
-    app.add_url_rule(
-        "/sandbox/ebsi/issuer/credential_offer_uri/<id>",
-        view_func=issuer_credential_offer_uri,
-        methods=["GET"],
-        defaults={"red": red},
-    )
-
-    app.add_url_rule(
-        "/sandbox/ebsi/issuer/error_uri",
-        view_func=wallet_error_uri,
-        methods=["GET"]
-    )
     return
 
 
@@ -307,6 +259,7 @@ def issuer_api_endpoint(issuer_id, red, mode):
         "user_pin_required": OPTIONAL bool, default is false
         "user_pin": CONDITIONAL, string, REQUIRED if user_pin_required is True
         "callback": REQUIRED, string, this the user redirect route at the end of the flow
+        "login" : OPTIONAL for authorization code flow with login
         }
     resp = requests.post(token_endpoint, headers=headers, data = json.dumps(data))
     return resp.json()
@@ -413,6 +366,7 @@ def issuer_api_endpoint(issuer_id, red, mode):
         "user_pin_required": request.json.get("user_pin_required"),
         "user_pin": request.json.get("user_pin"),
         "callback": request.json.get("callback"),
+        "login": request.json.get("login"),
     }
 
     # For deferred API call only VC is stored in redis with issuer_state as key
