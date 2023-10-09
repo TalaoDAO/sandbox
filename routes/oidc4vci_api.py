@@ -1033,13 +1033,14 @@ def oidc_issuer_followup(stream_id, red):
         issuer_id = user_data["issuer_id"]
         issuer_data = db_api.read_oidc4vc_issuer(issuer_id)
         callback = json.loads(issuer_data)["callback"]
-    callback_uri = f"{callback}?issuer_state=" + user_data.get("issuer_state")
+    callback_uri = callback + '?'
+    data = {"issuer_state" : user_data.get("issuer_state")}
     if request.args.get("error"):
-        callback_uri += "&error=" + request.args.get("error")
+        data["error"] = request.args.get("error")
     if request.args.get("error_description"):
-        callback_uri += "&error_description=" + request.args.get("error_description")
-    print('callback uri = ', callback_uri)
-    return redirect(callback_uri)
+        data["error_description"] = request.args.get("error_description")
+    print('callback uri = ', callback_uri + urlencode(data))
+    return redirect(callback_uri + urlencode(data))
 
 
 # server event push for user agent EventSource
