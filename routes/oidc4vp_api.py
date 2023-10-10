@@ -892,10 +892,13 @@ async def oidc4vc_login_endpoint(stream_id, red):
         "access": access,
         "status_code": status_code    
     }
-    logging.info("response = %s",json.dumps(response, indent=4))
+    logging.info("response = %s", json.dumps(response, indent=4))
     
     # follow up
-    sub = id_token_payload.get('sub') or vp_sub
+    if id_token:
+        sub = id_token_payload.get('sub')
+    else:
+        sub = vp_sub
     wallet_data = json.dumps({
                     "access": access,
                     "vp_token_payload": vp_token_payload,
