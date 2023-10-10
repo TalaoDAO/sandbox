@@ -191,10 +191,7 @@ def oidc(issuer_id, mode):
             "credentials_supported": cs
         }
     )
-    # TESTING TEST 6
-    #if issuer_id in ["cejjvswuep", "ooroomolyd"] :
-    #    del openid_configuration['credentials_supported']
-        
+
     if issuer_profile.get("service_documentation"):
         openid_configuration["service_documentation"] = issuer_profile[
             "service_documentation"
@@ -259,7 +256,6 @@ def issuer_api_endpoint(issuer_id, red, mode):
         "user_pin_required": OPTIONAL bool, default is false
         "user_pin": CONDITIONAL, string, REQUIRED if user_pin_required is True
         "callback": REQUIRED, string, this the user redirect route at the end of the flow
-        "login" : OPTIONAL for authorization code flow with login
         }
     resp = requests.post(token_endpoint, headers=headers, data = json.dumps(data))
     return resp.json()
@@ -611,6 +607,10 @@ def issuer_authorize(issuer_id, red, mode):
         redirect_uri = request.args["redirect_uri"]
     except Exception:
         return jsonify({"error": "invalid_request"}), 403
+    
+    # TESTING 
+    if issuer_id in ["npwsshblrm", "npwsshblrm"]:
+        return redirect(redirect_uri + '?' + authorization_error(request, 'server_error', 'This is a OIDC4VCI test', stream_id, red, mode, state=state)) 
 
     try:
         response_type = request.args["response_type"]
