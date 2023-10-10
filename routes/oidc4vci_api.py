@@ -307,13 +307,17 @@ def issuer_api_endpoint(issuer_id, red, mode):
 
     # Check vc and vc_deferred
     vc = request.json.get("vc")
-    deferred_vc = request.json.get("deferred_vc")
     if vc and not request.json.get("callback"):
-        return Response(
-            **manage_error("invalid_request", "callback missing", red, status=401))
-    if vc and deferred_vc:
-        return Response(**manage_error("invalid_request", "deferred_vc and vc not allowed", red, mode, status=401))
-
+        return Response(**manage_error("invalid_request", "callback missing", red, status=401))
+    
+    # Check deferred vc
+    if issuer_data.get("deferred_flow"):
+        deferred_vc = request.json.get("deferred_vc")
+        if vc and deferred_vc:
+            return Response(**manage_error("invalid_request", "deferred_vc and vc not allowed", red, mode, status=401))
+    else:
+        deferred_vc = None
+        
     # Check if user pin exists
     if request.json.get("user_pin_required") and not request.json.get("user_pin"):
         return Response(**manage_error("invalid_request", "User pin is not set", red, mode, status=401))
@@ -1007,6 +1011,9 @@ async def issuer_deferred(issuer_id, red, mode):
         acceptance_token_data["c_nonce"],
         acceptance_token_data["format"],
     )
+    if not credential_signed:
+        return Response(**manage_error("internal_error", "Credential signature failed due to format", red, mode, request=request, status=404))
+        
     logging.info("credential signed sent to wallet = %s", credential_signed)
 
     # delete deferred VC data
@@ -1039,7 +1046,7 @@ def oidc_issuer_followup(stream_id, red):
         data["error"] = request.args.get("error")
     if request.args.get("error_description"):
         data["error_description"] = request.args.get("error_description")
-    print('callback uri = ', callback_uri + urlencode(data))
+    logging.info('callback uri = %s', callback_uri + urlencode(data))
     return redirect(callback_uri + urlencode(data))
 
 
@@ -1078,15 +1085,21 @@ async def sign_credential(
             credential, issuer_vm, issuer_key, c_nonce
         )
     else:  #  proof_format == 'ldp_vc':
-        didkit_options = {
-            "proofPurpose": "assertionMethod",
-            "verificationMethod": issuer_vm,
-        }
-        credential_signed = await didkit.issue_credential(
-            json.dumps(credential),
-            didkit_options.__str__().replace("'", '"'),
-            issuer_key,
-        )
+        try: 
+            didkit_options = {
+                "proofPurpose": "assertionMethod",
+                "verificationMethod": issuer_vm,
+            }
+            credential_signed = await didkit.issue_credential(
+                json.dumps(credential),
+                didkit_options.__str__().replace("'", '"'),
+                issuer_key,
+            )
+        except Exception as e:
+            logging.warning("Didkit exception = %s", str(e))
+            logging.warning("incorrect json_ld = %s", json.dumps(credential))
+            return None
+        
         result = await didkit.verify_credential(credential_signed, "{}")
         logging.info("signature check with didkit = %s", result)
         credential_signed = json.loads(credential_signed)

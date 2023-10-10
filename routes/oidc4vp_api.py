@@ -911,7 +911,6 @@ async def oidc4vc_login_endpoint(stream_id, red):
     red.setex(stream_id + "_wallet_data", CODE_LIFE, wallet_data)
     event_data = json.dumps({"stream_id": stream_id})           
     red.publish('api_ebsi_verifier', event_data)
-    
     return jsonify(response), status_code
 
 
