@@ -256,15 +256,17 @@ def verif_token(token, nonce, aud=None):
     if header.get('jwk'):
         if isinstance(header['jwk'], str):
             header['jwk'] = json.loads(header['jwk'])
-        issuer_key = jwk.JWK(**header['jwk']) 
+        dict_key = header['jwk']
     elif header.get('kid'):
         dict_key = resolve_did(header['kid'])
         if not dict_key:
             raise Exception("Cannot get public key with kid")
-        issuer_key = jwk.JWK(**dict_key)
+    elif payload.get('sub_jwk'):
+        dict_key = payload['sub_jwk']
     else:
         raise Exception("Cannot resolve public key")
     a = jwt.JWT.from_jose_token(token)
+    issuer_key = jwk.JWK(**dict_key)
     a.validate(issuer_key)
     return True
 

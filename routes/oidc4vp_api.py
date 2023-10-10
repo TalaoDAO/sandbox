@@ -721,6 +721,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
     id_token_status = "Unknown"
     aud_status = "unknown"
     nonce_status = "Unknown"
+    subject_syntax_type = "DID"
     vp_token_payload = {}
     id_token_payload = {}
 
@@ -804,6 +805,8 @@ async def oidc4vc_login_endpoint(stream_id, red):
             id_token_status += " id token sub != iss"    
         if id_token_sub != id_token_kid.split("#")[0]:
             id_token_status += " id token sub != kid "
+        if id_token_payload.get('sub_jwk'):
+            subject_syntax_type = "JWK Thumbprint"
 
     # check vp_token signature
     if access == 'ok' and vp_token:
@@ -883,6 +886,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
         "state": state_status,
         "vp type": vp_type,
         "vc type": vc_type,
+        "subject_syntax_type" : subject_syntax_type,
         "presentation_submission_status": presentation_submission_status,
         "nonce_status": nonce_status,
         "aud_status": aud_status,
