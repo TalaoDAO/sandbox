@@ -614,6 +614,7 @@ def issuer_authorize(issuer_id, red, mode):
     
     # TESTING 
     if issuer_id in ["npwsshblrm", "npwsshblrm"]:
+        print('redirect = ', redirect_uri + '?' + authorization_error(request, 'server_error', 'This is a OIDC4VCI test', stream_id, red, mode, state=state))
         return redirect(redirect_uri + '?' + authorization_error(request, 'server_error', 'This is a OIDC4VCI test', stream_id, red, mode, state=state)) 
 
     try:
