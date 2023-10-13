@@ -587,7 +587,7 @@ def authorization_error(request, error, error_description, stream_id, red, mode,
             "error": error}
         
         # redirect arguments for errors
-        resp['error_uri'] = error_uri_build(request, error, error_description, mode)
+        #resp['error_uri'] = error_uri_build(request, error, error_description, mode)
         if state:
             resp["state"] = state
         return urlencode(resp)
