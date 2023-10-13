@@ -780,34 +780,43 @@ async def oidc4vc_login_endpoint(stream_id, red):
         nonce = data['pattern'].get('nonce')
 
     # check id_token signature
-    if access == "ok"  and id_token:
+    if access == "ok" and id_token:
         try:
             oidc4vc.verif_token(id_token, nonce)
         except Exception:
             id_token_status = "signature check failed"
             access = "access_denied" 
     
-    if access == "ok"  and id_token:
+    if access == "ok" and id_token:
         try:
             id_token_payload = oidc4vc.get_payload_from_token(id_token)
             id_token_header = oidc4vc.get_header_from_token(id_token)
             id_token_jwk = id_token_header.get('jwk')
-            id_token_kid = id_token_header['kid']
+            id_token_kid = id_token_header.get('kid')
             id_token_iss = id_token_payload.get('iss')
             id_token_sub = id_token_payload.get('sub')
+            id_token_sub_jwk = id_token_payload.get('sub_jwk')
             id_token_nonce = id_token_payload.get('nonce')
         except Exception:
-            id_token_status += "id_token invalid format "
+            id_token_status += " id_token invalid format "
             access = "access_denied" 
-
-    if access == "ok" and id_token:
-        if id_token_sub != id_token_iss:
-            id_token_status += " id token sub != iss"    
-        if id_token_sub != id_token_kid.split("#")[0]:
-            id_token_status += " id token sub != kid "
-        if id_token_payload.get('sub_jwk'):
+        if id_token_sub_jwk:
             subject_syntax_type = "JWK Thumbprint"
-
+        if not id_token_sub_jwk and not id_token_kid:
+            access = "access_denied"
+        if id_token_sub_jwk and id_token_kid:
+            access = "access_denied"
+        
+    if access == "ok" and id_token:
+        if id_token_kid:
+            if id_token_sub != id_token_iss:
+                id_token_status += " id token sub != iss"    
+            if id_token_sub != id_token_kid.split("#")[0]:
+                id_token_status += " id token sub != kid "
+        if id_token_sub_jwk:
+            if id_token_sub != id_token_iss:
+                id_token_status += " id token sub != iss"   
+                
     # check vp_token signature
     if access == 'ok' and vp_token:
         if vp_type == "jwt_vp":
@@ -874,8 +883,6 @@ async def oidc4vc_login_endpoint(stream_id, red):
                 access = "access_denied"
 
     status_code = 400 if access == "access_denied" else 200
-    #status_code = 400
-    #access = "access_denied"
 
     if state:
         state_status = state
@@ -886,7 +893,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
         "state": state_status,
         "vp type": vp_type,
         "vc type": vc_type,
-        "subject_syntax_type" : subject_syntax_type,
+        "subject_syntax_type": subject_syntax_type,
         "presentation_submission_status": presentation_submission_status,
         "nonce_status": nonce_status,
         "aud_status": aud_status,
