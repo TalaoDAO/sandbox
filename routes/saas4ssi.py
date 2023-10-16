@@ -75,7 +75,7 @@ def saas_menu():
 
 def saas_logout():
     session.clear()
-    return redirect ("/sandbox/saas4ssi")
+    return redirect("/sandbox/saas4ssi")
 
 
 def saas_login(mode):
@@ -86,7 +86,7 @@ def saas_login(mode):
         mode.server == "http://192.168.0.65:3000/"
         client_id = "zpfzzwfstl"
     url = mode.server + "sandbox/op/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/saas4ssi/callback_2"
-    return redirect (url) 
+    return redirect(url) 
 
 
 def saas_login_2(mode):
@@ -97,7 +97,7 @@ def saas_login_2(mode):
         mode.server == "http://192.168.0.65:3000/"
         client_id = "hzohfwaxcp"
     url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/saas4ssi/callback_3"
-    return redirect (url)
+    return redirect(url)
 
 
 def saas_signup(mode):
@@ -107,7 +107,7 @@ def saas_signup(mode):
         mode.server == "http://192.168.0.65:3000/"
         client_id = "nkkxhmxxhw"
     url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/saas4ssi/callback_4"
-    return redirect (url)
+    return redirect(url)
 
 
 def admin(mode):
@@ -139,7 +139,7 @@ def saas_callback(mode):
         session['is_connected'] = True
         db_user_api.create(login_name, data)
         try:
-            message.message("Registritation on Saas Altme of " + login_name , "thierry@altme.io", "New user = " + login_name, mode)
+            message.message("Registration on Saas Altme of " + login_name , "thierry@altme.io", "New user = " + login_name, mode)
         except Exception:
             pass
         return redirect('/sandbox/saas4ssi/menu')
@@ -176,13 +176,12 @@ def saas_callback_4(mode):
         return redirect("/sandbox/saas4ssi")
 
 
-
 # login
 def saas_callback_2():
     if request.args.get("error"):
         logging.warning("access denied")
         session.clear()
-        return redirect ("/sandbox/saas4ssi")
+        return redirect("/sandbox/saas4ssi")
     id_token = request.args['id_token']
     s = id_token.split('.')[1]
     payload = base64.urlsafe_b64decode(s + '=' * (4 - len(s) % 4))
@@ -190,7 +189,7 @@ def saas_callback_2():
     if login_name in admin_list:
         session['login_name'] = "admin"
         session['is_connected'] = True
-        return redirect ('/sandbox/saas4ssi/menu')
+        return redirect('/sandbox/saas4ssi/menu')
     elif db_user_api.read(login_name):
         session['login_name'] = login_name
         session['is_connected'] = True
@@ -220,6 +219,6 @@ def saas_callback_3():
         session['is_connected'] = True
         return redirect('/sandbox/saas4ssi/menu')
     else:
-        logging.warning('erreur, user does not exist')
+        logging.warning('error, user does not exist')
         session.clear()
         return render_template("access_denied.html")

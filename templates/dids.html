@@ -1,48 +1,61 @@
 <!DOCTYPE html>
-<!-- menu.html-->
+<!-- home.html
+last one-->
 <html>
-  <head>
-    {% include 'head.html' %}
 
-   
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/altmeIcon.png">
+    <title>Talao</title>
+    <link rel="stylesheet" href="/static/home.css">
+</head>
 
-  </head>
-  <body>
-      
-    {% include 'saas_nav_bar.html' %}
+<body>
 
-    <div class="text-center mt-5">
+    {% include 'header.html' %}
 
 
-            <div class="row my-5">
-            
-                <div class = "col-8 offset-2">
 
-           <h2 class="mt">We use several DIDs to sign and to issue verifiable credentials. <br>Here is a list of our DIDs : </h2>
-            
-          <h3  class="mt-5">Primary DID</h3>
-
-        <li><h3><strong>did:web:app.altme.io:issuer</strong></h3></li>
-
-        <h3  class="mt-5 mb-3">Secondary DIDs</h3>
-           <h4 class="mt">Tezos (did:tz) : </h4>
-            <strong>did:tz:tz1NyjrTUNxDpPaqNZ84ipGELAcTWYg6s5Du</strong>
-          <h4 class="mt-3">DNS (did:web) : </h4>
-            <strong>did:web:talao.co</strong>
-          <h4 class="mt-3">Ethereum (did:ethr) : </h4>
-            <strong>did:ethr:0x61fb76ff95f11bdbcd94b45b838f95c1c7307dbd</strong>
-
-            </div>
-      </div>
-
+    <div id="mainBox">
+        <div id="titles">
+            <p id="title">We use several DIDs to sign and to issue verifiable credentials</p>
         </div>
-    
-   {% include 'user_footer.html' %}
+        <div id="box2">
+            <div id="divCompliant"><img id="arrowDown" src="/static/img/arrow-down.png">
+                <p id="compliant">Here is a list of our DIDs</p>
+            </div>
+            <div id="didsBox">
+                <div class="didBox">
+                    <p class="didBoxTitle">Primary DID</p>
+                    <p class="didBoxTitle">did:web:app.altme.io:issuer</p>
+                </div>
+                <div class="didBox">
+                    <p class="didBoxTitle">Secondary DIDs</p>
+                    <div id="underDidsBox">
+                        <div class="secondaryDidBox">
+                            <p class="didBoxTitle">Tezos (did:tz) :</p>
+                            <p class="didBoxsubTitle">did:tz:tz1NyjrTUNxDpPaqNZ84ipGELAcTWYg6s5Du</p>
+                        </div>
+                        <div class="secondaryDidBox">
+                            <p class="didBoxTitle">DNS (did:web) :</p>
+                            <p class="didBoxsubTitle">did:web:talao.co</p>
+                        </div>
+                        <div class="secondaryDidBox">
+                            <p class="didBoxTitle">Ethereum (did:ethr) :</p>
+                            <p class="didBoxsubTitle">did:ethr:0x61fb76ff95f11bdbcd94b45b838f95c1c7307dbd</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
-              <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
-              <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
-              <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
-    
-  </body>
+    {% include 'footer.html' %}
+
+
+</body>
+
 </html>

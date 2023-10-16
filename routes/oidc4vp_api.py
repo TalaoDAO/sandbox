@@ -161,14 +161,14 @@ def oidc4vc_authorize(red, mode):
             resp = {"id_token": id_token} 
             logging.info("redirect to application with id-token = %s", id_token)
             return redirect(code_data['redirect_uri'] + sep + urlencode(resp))
-        
+
         else:
             logging.error("session expired")
             resp = {'error': "access_denied"}
             redirect_uri = code_data['redirect_uri']
             session.clear()
             return redirect(redirect_uri + '?' + urlencode(resp)) 
-    
+
     # error in login, exit, clear session
     if 'error' in request.args:
         logging.warning('Error in the login process, redirect to client with error code = %s', request.args['error'])
@@ -298,7 +298,7 @@ def oidc4vc_token(red, mode):
     try:
         code_wallet_data = json.loads(red.get(code + "_wallet_data").decode())
     except Exception:
-        logging.error("redis get problem to get code_ebsi")
+        logging.error("redis get problem to get code_wallet_data")
         return manage_error("invalid_grant")
     id_token = oidc4vc_build_id_token(client_id, code_wallet_data['sub'], data['nonce'], mode)
     logging.info('id_token and access_token sent to client from token endpoint')
@@ -885,6 +885,8 @@ async def oidc4vc_login_endpoint(stream_id, red):
                 aud_status = "failed in vp_token aud"
                 access = False
 
+    access = False
+    
     status_code = 200 if access else 400
 
     if state:
@@ -929,8 +931,8 @@ async def oidc4vc_login_endpoint(stream_id, red):
                     "sub": sub
                     })
     red.setex(stream_id + "_wallet_data", CODE_LIFE, wallet_data)
-    event_data = json.dumps({"stream_id": stream_id})           
-    red.publish('api_ebsi_verifier', event_data)
+    event_data = json.dumps({"stream_id": stream_id})         
+    red.publish('api_oidc4vc_verifier', event_data)
     return jsonify(response), status_code
 
 
@@ -950,12 +952,20 @@ def oidc4vc_login_followup(red):
         stream_id_wallet_data = json.loads(red.get(stream_id + '_wallet_data').decode())
     except Exception:
         logging.error("code expired in follow up")
-        resp = {'code': code, 'error': "access_denied"}
+        resp = {
+            'code': code,
+            'error': "access_denied",
+            'error_description': ""
+        }
         session['verified'] = False
         return redirect('/sandbox/verifier/app/authorize?' + urlencode(resp))
 
     if not stream_id_wallet_data['access']:
-        resp = {'code': code, 'error': 'access_denied'}
+        resp = {
+            'code': code,
+            'error': 'access_denied',
+            'error_description': ""
+        }
         session['verified'] = False
     else:
         session['verified'] = True
@@ -968,7 +978,7 @@ def oidc4vc_login_followup(red):
 def oidc4vc_login_stream(red):
     def login_event_stream(red):
         pubsub = red.pubsub()
-        pubsub.subscribe('api_ebsi_verifier')
+        pubsub.subscribe('api_oidc4vc_verifier')
         for message in pubsub.listen():
             if message['type']=='message':
                 yield 'data: %s\n\n' % message['data'].decode()

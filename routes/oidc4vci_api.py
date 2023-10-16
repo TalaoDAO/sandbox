@@ -1,13 +1,8 @@
 """
 NEW
-
-
 https://issuer.walt.id/issuer-api/default/oidc
-
 EBSI V2 https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html
-
 support Authorization code flow and pre-authorized code flow of OIDC4VCI
-
 """
 from flask import jsonify, request, render_template, Response, redirect, session
 import json
@@ -62,7 +57,6 @@ def init_app(app, red, mode):
     app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/authorize_server/.well-known/openid-configuration", view_func=issuer_authorization_server, methods=["GET"], defaults={"mode": mode},)
     app.add_url_rule("/sandbox/ebsi/issuer/credential_offer_uri/<id>", view_func=issuer_credential_offer_uri, methods=["GET"], defaults={"red": red})
     app.add_url_rule("/sandbox/ebsi/issuer/error_uri", view_func=wallet_error_uri, methods=["GET"])
-    
     return
 
 

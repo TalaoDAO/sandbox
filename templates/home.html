@@ -2,84 +2,101 @@
 <!-- home.html
 last one-->
 <html>
+
 <head>
-    {% include 'head.html' %}
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/altmeIcon.png">
+    <title>Talao</title>
+    <link rel="stylesheet" href="/static/home.css">
 </head>
+
 <body>
 
-    {% include 'saas_nav_bar.html' %} 
+    {% include 'header.html' %}
 
-<div class="container-fluid">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
     <div class="alert alert-{{ category }} alert-dismissible fade show m-0" role="alert">
-            <h5 >{{ message }}</h5>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <h5>{{ message }}</h5>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
             <span aria-hidden="true">&times;</span>
-            </button>
+        </button>
     </div>
-            {% endfor %}
-        {% endif %}
+    {% endfor %}
+    {% endif %}
     {% endwith %}
 
-
-        <br><br><br>
-
-
-        <div class="row mt-5">
-            <div class="col-lg-8 col-sm-12  offset-lg-2 text-center mt-5">
-                <div class="my-2 p-2">                
-                    <h2 style="color: rgb(54, 24, 88); margin-bottom: 0" ><strong>Saas platform </strong>  to integrate verifiable credentials and DIDs in applications and Digital Identity wallets</h2>
-                        <br>(Beta release, not for production project)<br><br>    
-                        <h2 style="color: rgb(54, 24, 88); margin-bottom: 0" >W3C compliant, OIDC4VCI/OIDC4VP/SIOPV2 support</h2>
-                        <br>
-                        <h4>
-                            <li>
-                                JWT and JSON-LD VC/VP
-                            </li>
-                        <li>
-                            Pre authorized code flow and authorization code flow
-                        </li>
-                        <li>
-                            Deferred endpoint
-                        </li>
-                        <li>
-                            VC indentifier (issuance of multiple VC of the same type)
-                        </li>
-                        <li>
-                            Presentation exchange 2.0
-                        </li>
-                        <li>
-                            Support EBSI-V3 and Gaia-X profils
-                        </li>
-                        <li>
-                            Open source
-                        </li>
-
-                    
-                    
-                    
-                    </h4>        
-        
+    <div id="mainBox">
+        <div id="titles">
+            <p id="title">Saas platform to integrate verifiable credentials and DIDs in applications and Digital
+                Identity
+                wallets</p>
+            <p id="subTitle">[ Beta release, not for production project ]</p>
+        </div>
+        <div id="box2">
+            <div id="divCompliant"><img id="arrowDown" src="/static/img/arrow-down.png">
+                <p id="compliant">W3C compliant, OIDC4VCI - OIDC4VP - SIOPV2 support - Open source code </p>
+            </div>
+            <div id="linksBox">
+                <div class="lineLinks">
+                    <a class="link">
+                        <div class="topLineLink">
+                            <p class="topLineP">JWT and JSON-LD VC/VP</p>
+                            <img class="linkImg" src="/static/img/link.png">
+                        </div>
+                        <p class="lowLineP">Support VCs and VPs in both format with P-256, Secp256k1 and Ed25519 keys. Accepts did:key, 
+                            did:web: did:ethr, did:tz, did:ebsi, did:hedera.</p>
+                    </a>
+                    <a class="link">
+                        <div class="topLineLink">
+                            <p class="topLineP">Issuance with pre authorized code flow and authorization code flow</p>
+                            <img class="linkImg" src="/static/img/link.png">
+                        </div>
+                        <p class="lowLineP">Pre authorized code flow with PIN user code at 4 or 6 digits to protect QR code reading.</p>
+                    </a>
+                    <a class="link">
+                        <div class="topLineLink">
+                            <p class="topLineP">Deferred issuance</p>
+                            <img class="linkImg" src="/static/img/link.png">
+                        </div>
+                        <p class="lowLineP">Deferred processus allow VC providers to delay the issuance of their credentials.</p>
+                    </a>
+                </div>
+                <div class="lineLinks">
+                    <a class="link">
+                        <div class="topLineLink">
+                            <p class="topLineP">VC indentifier</p>
+                            <img class="linkImg" src="/static/img/link.png">
+                        </div>
+                        <p class="lowLineP">This is an advanced feature to allow the issuance of multiplce VCs of the same type.</p>
+                    </a>
+                    <a class="link">
+                        <div class="topLineLink">
+                            <p class="topLineP">Presentation exchange 2.0</p>
+                            <img class="linkImg" src="/static/img/link.png">
+                        </div>
+                        <p class="lowLineP">Submission requirements with rules as pick, all, count, min...from groups. Filter type array.</p>
+                    </a>
+                    <a class="link">
+                        <div class="topLineLink">
+                            <p class="topLineP">Ecosystem profils</p>
+                            <img class="linkImg" src="/static/img/link.png">
+                        </div>
+                        <p class="lowLineP">Support EBSI-V3 and Gaia-X profils.</p>
+                    </a>
                 </div>
             </div>
+            <a id="register" href="/sandbox/saas4ssi/signup">REGISTER TO SANDBOX</a>
         </div>
-        <div class="row mt-2 mb-5">
-            <div class="col text-center">
-                <a href="/sandbox/saas4ssi/signup"><button type="button"   class="btn btn-outline-dark mt-2">Get started</button></a></h3>
-            </div>
-        </div>         
-    
-</div>
-                
+    </div>
 
 
+    {% include 'footer.html' %}
 
-{% include 'user_footer.html' %}
 
-              <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
-              <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
-              <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
-  </body>
+</body>
+
 </html>
