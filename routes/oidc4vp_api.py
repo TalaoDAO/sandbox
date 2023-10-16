@@ -702,7 +702,6 @@ async def oidc4vc_login_endpoint(stream_id, red):
     """
     access = True
     qrcode_status = "Unknown"
-    logging.info("headers = %s", request.headers)
 
     try:
         qrcode_status = "ok"
@@ -884,16 +883,12 @@ async def oidc4vc_login_endpoint(stream_id, red):
             else:
                 aud_status = "failed in vp_token aud"
                 access = False
-
-    access = False
     
     status_code = 200 if access else 400
 
     if state:
         state_status = state
-    
-    #status_code = 400
-    
+        
     detailed_response = {
         "created": datetime.timestamp(datetime.now()),
         "qrcode_status": qrcode_status,
