@@ -462,14 +462,16 @@ def presentation_definition_uri(id, red):
 def oidc4vc_login_qrcode(red, mode):
     stream_id = str(uuid.uuid1())
     try:
-        verifier_id = json.loads(red.get(request.args['code']).decode())['client_id']
-        nonce = json.loads(red.get(request.args['code']).decode()).get('nonce')
-        verifier_data = json.loads(read_oidc4vc_verifier(verifier_id))
-        verifier_profile = profile[verifier_data['profile']]
+        code_data = red.get(request.args['code']).decode()
     except Exception:
         logging.error("session expired in login_qrcode")
         return render_template("verifier_oidc/verifier_session_problem.html", message='Session expired')
     
+    verifier_id = json.loads(code_data)['client_id']
+    nonce = json.loads(code_data).get('nonce')   
+    verifier_data = json.loads(read_oidc4vc_verifier(verifier_id))
+    verifier_profile = profile[verifier_data['profile']]
+        
     if verifier_data.get('id_token') and not verifier_data.get('vp_token'):
         response_type = 'id_token'
     elif verifier_data.get('id_token') and verifier_data.get('vp_token'):
@@ -698,7 +700,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
     https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#section-6.2
     
     """
-    access = "ok"
+    access = True
     qrcode_status = "Unknown"
     logging.info("headers = %s", request.headers)
 
@@ -710,7 +712,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
         logging.info('Profile = %s', verifier_data['profile'])
     except Exception:
         qrcode_status = "QR code expired"
-        access = "access_denied"
+        access = False
 
     # prepare the verifier response to wallet
     response_format = "Unknown"
@@ -727,7 +729,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
     id_token_payload = {}
 
     # get id_token, vp_token and presentation_submission
-    if access == "ok":
+    if access:
         vp_token = request.form.get('vp_token')
         id_token = request.form.get('id_token')
         presentation_submission = request.form.get('presentation_submission')
@@ -758,37 +760,37 @@ async def oidc4vc_login_endpoint(stream_id, red):
 
         if not id_token and not vp_token:
             response_format = "invalid request format",
-            access = "access_denied"
+            access = False
     
-    if access == "ok" and not id_token:
+    if access and not id_token:
         id_token_status = "Not received"
     
-    if access == "ok" and not vp_token:
+    if access and not vp_token:
         vp_token_status = "Not received"
     
-    if access == "ok" and not presentation_submission:
+    if access and not presentation_submission:
         presentation_submission_status = "Not received"
         
     # check presentation submission
-    if access == "ok" and vp_token:
+    if access and vp_token:
         if not presentation_submission:
             presentation_submission_status = "Not found"
-            access = "access_denied" 
+            access = False 
         else:
             presentation_submission_status = "ok"
 
-    if access == "ok":
+    if access:
         nonce = data['pattern'].get('nonce')
 
     # check id_token signature
-    if access == "ok" and id_token:
+    if access and id_token:
         try:
             oidc4vc.verif_token(id_token, nonce)
         except Exception:
             id_token_status = "signature check failed"
-            access = "access_denied" 
+            access = False 
     
-    if access == "ok" and id_token:
+    if access and id_token:
         try:
             id_token_payload = oidc4vc.get_payload_from_token(id_token)
             id_token_header = oidc4vc.get_header_from_token(id_token)
@@ -800,15 +802,15 @@ async def oidc4vc_login_endpoint(stream_id, red):
             id_token_nonce = id_token_payload.get('nonce')
         except Exception:
             id_token_status += " id_token invalid format "
-            access = "access_denied" 
+            access = False
         if id_token_sub_jwk:
             subject_syntax_type = "JWK Thumbprint"
         if not id_token_sub_jwk and not id_token_kid:
-            access = "access_denied"
+            access = False
         if id_token_sub_jwk and id_token_kid:
-            access = "access_denied"
+            access = False
         
-    if access == "ok" and id_token:
+    if access and id_token:
         if id_token_kid:
             if id_token_sub != id_token_iss:
                 id_token_status += " id token sub != iss"    
@@ -819,7 +821,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
                 id_token_status += " id token sub != iss"   
                 
     # check vp_token signature
-    if access == 'ok' and vp_token:
+    if access and vp_token:
         if vp_type == "jwt_vp":
             try:
                 oidc4vc.verif_token(vp_token, nonce)
@@ -827,7 +829,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
                 vp_token_payload = oidc4vc.get_payload_from_token(vp_token)
             except Exception:
                 vp_token_status = "signature check failed"
-                access = "access_denied"
+                access = False
         else:
             verifyResult = json.loads(await didkit.verify_presentation(vp_token, "{}"))
             vp_token_status = verifyResult
@@ -835,7 +837,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
     # check VC signature
 
     # check types of vc
-    if access == 'ok' and vp_token:
+    if access and vp_token:
         vc_type = ""
         if vp_type == "jwt_vp":
             vc_list = oidc4vc.get_payload_from_token(vp_token)['vp']["verifiableCredential"]
@@ -857,38 +859,40 @@ async def oidc4vc_login_endpoint(stream_id, red):
                     vc_type += " ldp_vc"
 
     # check nonce and aud in vp_token
-    if access == 'ok' and vp_token:
+    if access and vp_token:
         if vp_type == "ldp_vp":
             vp_sub = json.loads(vp_token)['holder']
             if json.loads(vp_token)['proof'].get('challenge') == nonce:
                 nonce_status = "ok"
             else:
                 nonce_status = "failed in vp_token for challenge "
-                access = "access_denied"
+                access = False
             if json.loads(vp_token)['proof'].get('domain') == data['client_id']:
                 aud_status = "ok"
             else:
                 aud_status = "failed in vp_token for domain "
-                access = "access_denied"
+                access = False
         else:
             vp_sub = vp_token_payload['iss']
             if oidc4vc.get_payload_from_token(vp_token)['nonce'] == nonce:
                 nonce_status = "ok"
             else:
                 nonce_status = "failed in vp_token nonce "
-                access = "access_denied"
+                access = False
             if oidc4vc.get_payload_from_token(vp_token)['aud'] == data['client_id']:
                 aud_status = "ok"
             else:
                 aud_status = "failed in vp_token aud"
-                access = "access_denied"
+                access = False
 
-    status_code = 400 if access == "access_denied" else 200
+    status_code = 200 if access else 400
 
     if state:
         state_status = state
     
-    response = {
+    #status_code = 400
+    
+    detailed_response = {
         "created": datetime.timestamp(datetime.now()),
         "qrcode_status": qrcode_status,
         "state": state_status,
@@ -901,10 +905,18 @@ async def oidc4vc_login_endpoint(stream_id, red):
         "response_format": response_format,
         "id_token_status": id_token_status,
         "vp_token_status": vp_token_status,
-        "access": access,
-        "status_code": status_code    
+        "status_code": status_code,
     }
+    if status_code == 400:
+        response = {
+            "error": "access_denied",
+            "error_description": json.dumps(detailed_response)
+        }
+    else:
+        response = "{}"
+    
     logging.info("response = %s", json.dumps(response, indent=4))
+    logging.info("response detailed = %s", json.dumps(detailed_response, indent=4))
     
     # follow up
     if id_token:
@@ -942,8 +954,8 @@ def oidc4vc_login_followup(red):
         session['verified'] = False
         return redirect('/sandbox/verifier/app/authorize?' + urlencode(resp))
 
-    if stream_id_wallet_data['access'] != 'ok':
-        resp = {'code': code, 'error': stream_id_wallet_data['access']}
+    if not stream_id_wallet_data['access']:
+        resp = {'code': code, 'error': 'access_denied'}
         session['verified'] = False
     else:
         session['verified'] = True
