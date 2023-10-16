@@ -6,32 +6,29 @@ import requests
 import didkit
 from random import randrange
 
-key_wallet =  {"crv":"secp256k1",
-        "d":"lbuGEjEsYQ205boyekj8qdCwB2Uv7L2FwHUNleJj_Z0",
-        "kty":"EC",
-        "x":"AARiMrLNsRka9wMEoSgMnM7BwPug4x9IqLDwHVU-1A4",
-        "y":"vKMstC3TEN3rVW32COQX002btnU70v6P73PMGcUoZQs",
-    "alg": 'ES256K'}
+key_wallet = {
+    "crv": "secp256k1",
+    "d": "lbuGEjEsYQ205boyekj8qdCwB2Uv7L2FwHUNleJj_Z0",
+    "kty": "EC",
+    "x": "AARiMrLNsRka9wMEoSgMnM7BwPug4x9IqLDwHVU-1A4",
+    "y": "vKMstC3TEN3rVW32COQX002btnU70v6P73PMGcUoZQs",
+    "alg": 'ES256K'
+}
     
-
 key = json.dumps(key_wallet)
 issuer_did = didkit.key_to_did("key", key)
-issuer_vm = issuer_did  + "#key-1"
+issuer_vm = issuer_did + "#key-1"
+
 
 def init_app(app,red, mode):
     app.add_url_rule('/sandbox/issuer/ebsiv3_diploma',  view_func=issuer_ebsiv3_diploma, methods=['GET'], defaults={'mode': mode})
-
     app.add_url_rule('/sandbox/issuer/user_pin',  view_func=issuer_user_pin, methods=['GET'], defaults={'mode': mode}) # test 1
-
     app.add_url_rule('/sandbox/issuer/gaia-x',  view_func=issuer_gaiax, methods=['GET'], defaults={'mode': mode}) # test 4
-
     app.add_url_rule('/sandbox/issuer/default',  view_func=issuer_default, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/default_2',  view_func=issuer_default_2, methods=['GET'], defaults={'mode': mode, 'red': red}) # test 5
     app.add_url_rule('/sandbox/issuer/default_2/deferred',  view_func=issuer_default_2_deferred, methods=['GET', 'POST'], defaults={'mode': mode, 'red': 'red'}) # test 5
-
     app.add_url_rule('/sandbox/issuer/default_3',  view_func=issuer_default_3, methods=['GET'], defaults={'mode': mode}) # test 6
     app.add_url_rule('/sandbox/issuer/default_jwt',  view_func=issuer_default_jwt, methods=['GET'], defaults={'mode': mode}) # test 7
-
 
     app.add_url_rule('/sandbox/issuer/ebsiv3',  view_func=issuer_ebsiv3, methods=['GET'], defaults={'mode': mode}) # test 10
     app.add_url_rule('/sandbox/issuer/ebsiv31',  view_func=issuer_ebsiv31, methods=['GET'], defaults={'mode': mode}) # test 8
@@ -41,16 +38,18 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/issuer/callback',  view_func=issuer_callback, methods=['GET'])
 
 
+
 def issuer_callback():
     return jsonify(f"Great ! request = {json.dumps(request.args)}")
 
 
 def issuer_wallet_link(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
-        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/tdiwmpyhzc"
+        issuer_id = "tdiwmpyhzc"
         client_secret = "5972a3b8-45c3-11ee-93f5-0a1628958560"
     else: 
-        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/raamxepqex"
+        issuer_id = "raamxepqex"
         client_secret = "5381c36b-45c2-11ee-ac39-9db132f0e4a1"
     vc = 'EthereumAssociatedAddress'
     with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
@@ -61,9 +60,10 @@ def issuer_wallet_link(mode):
     
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + client_secret
+        'X-API-KEY': client_secret
     }
     data = { 
+        "issuer_id": issuer_id,
         "vc": {vc: credential}, 
         "issuer_state": str(uuid.uuid1()),
         "credential_type": vc,
@@ -71,21 +71,22 @@ def issuer_wallet_link(mode):
         "user_pin_required": True,
         "user_pin": "555555",
         "callback": mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
-        }
+    }
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try:
-        qrcode =  resp.json()['redirect_uri']
-    except:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
         return jsonify("No qr code")
-    return redirect(qrcode) 
+    return redirect(qrcode)
 
 
 def issuer_user_pin(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
-        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/sobosgdtgd"
+        issuer_id = "sobosgdtgd"
         client_secret = "9904f8ee-61f2-11ee-8e05-0a1628958560"
-    else: 
-        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/mjdgqkkmcf"
+    else:
+        issuer_id = "mjdgqkkmcf"
         client_secret = "36f779d3-61f2-11ee-864a-532486291c32"
     vc = 'EthereumAssociatedAddress'
     with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
@@ -96,9 +97,10 @@ def issuer_user_pin(mode):
     
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + client_secret
+        'X-API-KEY': client_secret
     }
     data = { 
+        "issuer_id": issuer_id,
         "vc": {vc: credential}, 
         "issuer_state": str(uuid.uuid1()),
         "credential_type": vc,
@@ -106,23 +108,24 @@ def issuer_user_pin(mode):
         "user_pin_required": True,
         "user_pin": "666666",
         "callback": mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
-        }
-    resp = requests.post(api_endpoint, headers=headers, json = data)
+    }
+    resp = requests.post(api_endpoint, headers=headers, json=data)
     try:
-        qrcode =  resp.json()['redirect_uri']
-    except:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
         return jsonify("No qr code")
     return redirect(qrcode) 
 
 
 def issuer_ebsiv3_diploma(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
-        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/zxhaokccsi"
+        issuer_id = "zxhaokccsi"
         client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
     else: 
-        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/zxhaokccsi"
+        issuer_id = "zxhaokccsi"
         client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
-   
+
     vc = 'VerifiableDiploma'
     with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
         credential = json.loads(f.read())
@@ -134,9 +137,10 @@ def issuer_ebsiv3_diploma(mode):
     
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + client_secret
+        'X-API-KEY': client_secret
     }
     data = { 
+        "issuer_id": issuer_id,
         "vc": {vc: credential}, 
         "issuer_state": str(uuid.uuid1()),
         "credential_type": vc,
@@ -145,29 +149,30 @@ def issuer_ebsiv3_diploma(mode):
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try:
-        qrcode =  resp.json()['redirect_uri']
-    except:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
         return jsonify("No qr code")
     return redirect(qrcode) 
 
 
-
 # Test 8
 def issuer_ebsiv31(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
-        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/zarbjrqrzj"
+        issuer_id = "zarbjrqrzj"
         client_secret = "c755ade2-3b5a-11ee-b7f1-0a1628958560"
     else: 
-        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/nfwvbyacnw"
+        issuer_id = "nfwvbyacnw"
         client_secret = "4f64b6f5-3adf-11ee-a601-b33f6ebca22b"
     
     offer = ['VerifiableDiploma', 'EmailPass']
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + client_secret
+        'X-API-KEY': client_secret
     }
 
     data = { 
+        "issuer_id": issuer_id,
         "vc": build_credential_offered(offer), 
         "issuer_state": str(uuid.uuid1()),
         "credential_type": offer,
@@ -178,27 +183,29 @@ def issuer_ebsiv31(mode):
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try:
         qrcode =  resp.json()['redirect_uri']
-    except:
+    except Exception:
         return jsonify("No qr code")
     return redirect(qrcode) 
-   
+
 
 # Test 10
 def issuer_ebsiv3(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
-        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/pcbrwbvrsi"
+        issuer_id = "pcbrwbvrsi"
         client_secret = "0f4103ef-42c3-11ee-9015-0a1628958560"
     else: 
-        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/kwcdgsspng"
+        issuer_id = "kwcdgsspng"
         client_secret = "6f1dd8a5-42c3-11ee-b096-b5bae73ba948"
     
     offer = ['VerifiableDiploma']
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + client_secret
+        'X-API-KEY': client_secret
     }
-   
+
     data = { 
+        "issuer_id" : issuer_id,
         "vc": build_credential_offered(offer), 
         "issuer_state": str(uuid.uuid1()),
         "credential_type": offer,
@@ -209,30 +216,30 @@ def issuer_ebsiv3(mode):
     
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try:
-        qrcode =  resp.json()['redirect_uri']
-    except:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
         return jsonify("No qr code")
     return redirect(qrcode) 
-
-
 
     
 # test 2 authorization code flow on DEFAULT
 def issuer_default(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
-        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/npwsshblrm"
+        issuer_id = "npwsshblrm"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
     else:       
-        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/npwsshblrm"
+        issuer_id = "npwsshblrm"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
 
     offer = ["VerifiableId"]
 
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + client_secret
+        'X-API-KEY': client_secret
     }
     data = { 
+        "issuer_id": issuer_id,
         "vc": build_credential_offered(offer), 
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": False,
@@ -242,28 +249,30 @@ def issuer_default(mode):
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try:
         qrcode = resp.json()['redirect_uri']
-    except:
+    except Exception:
         return jsonify("No qr code")
     return redirect(qrcode) 
 
 
 # test 5 part 2
 def issuer_default_2_deferred(red, mode): # VC is sent after delay
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
-        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/wzxtwpltvn"
+        issuer_id = "wzxtwpltvn"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
     else:
-        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/omjqeppxps"
+        issuer_id = "omjqeppxps"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
 
     offer = ["EmailPass"]
 
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + client_secret
+        'X-API-KEY': client_secret
     }
     issuer_state = request.form['issuer_state']
     data = { 
+        "issuer_id": issuer_id,
         "deferred_vc": build_credential_offered(offer), 
         "issuer_state": issuer_state,
         "pre-authorized_code": True,
@@ -276,21 +285,23 @@ def issuer_default_2_deferred(red, mode): # VC is sent after delay
 
 # Test 5 part 1
 def issuer_default_2(red, mode): # Test 5 deferred no VC sent
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
-        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/wzxtwpltvn"
+        issuer_id = "wzxtwpltvn"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
     else:       
-        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/omjqeppxps"
+        issuer_id = "omjqeppxps"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
 
     offer = ["EmailPass"]
 
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + client_secret
+        'X-API-KEY': client_secret
     }
     issuer_state = str(randrange(100))
     data = { 
+        "issuer_id": issuer_id,
         "vc": {"EmailPass": {}}, # no VC for deferred
         "issuer_state": issuer_state,
         "pre-authorized_code": True,
@@ -306,20 +317,53 @@ def issuer_default_2(red, mode): # Test 5 deferred no VC sent
 
 
 def issuer_default_3(mode): # Test 6 
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
-        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/cejjvswuep"
+        issuer_id = "cejjvswuep"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
     else:       
-        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/ooroomolyd"
+        issuer_id = "ooroomolyd"
         client_secret = "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"
 
     offer = ["VerifiableId", "PhoneProof"]
 
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + client_secret
+        'X-API-KEY': client_secret
     }
     data = { 
+        "issuer_id": issuer_id,
+        "vc": build_credential_offered(offer), 
+        "issuer_state": str(uuid.uuid1()),
+        "credential_type": offer,
+        "pre-authorized_code": True,
+        "callback": mode.server + 'sandbox/issuer/callback',
+        }
+    resp = requests.post(api_endpoint, headers=headers, json = data)
+    try:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+
+
+def issuer_default_jwt(mode): # Test 7 
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
+    if mode.myenv == 'aws':
+        issuer_id = "grlvzckofy"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    else:       
+        issuer_id = "kivrsduinn"
+        client_secret = "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"
+
+    offer = ["VerifiableId", "PhoneProof"]
+
+    headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': client_secret
+    }
+    data = { 
+        "issuer_id": issuer_id,
         "vc": build_credential_offered(offer), 
         "issuer_state": str(uuid.uuid1()),
         "credential_type": offer,
@@ -334,57 +378,28 @@ def issuer_default_3(mode): # Test 6
     return redirect(qrcode) 
 
 
-def issuer_default_jwt(mode): # Test 7 
-    if mode.myenv == 'aws':
-        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/grlvzckofy"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-    else:       
-        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/kivrsduinn"
-        client_secret = "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"
-
-    offer = ["VerifiableId", "PhoneProof"]
-
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + client_secret
-    }
-    data = { 
-        "vc": build_credential_offered(offer), 
-        "issuer_state": str(uuid.uuid1()),
-        "credential_type": offer,
-        "pre-authorized_code": True,
-        "callback": mode.server + 'sandbox/issuer/callback',
-        }
-    resp = requests.post(api_endpoint, headers=headers, json = data)
-    try:
-        qrcode =  resp.json()['redirect_uri']
-    except:
-        return jsonify("No qr code")
-    return redirect(qrcode) 
-
-
-
 def issuer_gaiax(mode): # test 4
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
-        api_endpoint = "https://talao.co/sandbox/ebsi/issuer/api/mfyttabosy"
+        issuer_id = "mfyttabosy"
         client_secret = "c0ab5d96-3113-11ee-a3e3-0a1628958560"
-    else :
-        api_endpoint = mode.server + "sandbox/ebsi/issuer/api/cqmygbreop"
+    else:
+        issuer_id = "cqmygbreop"
         client_secret = "a71f33f9-3100-11ee-825b-9db9eb02bfb8"
 
     offer = ["EmailPass"]
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + client_secret
+        'X-API-KEY': client_secret
     }
     data = { 
+        "issuer_id": issuer_id,
         "vc": build_credential_offered(offer), 
         "issuer_state": str(uuid.uuid1()),
         "credential_type": offer,
         "pre-authorized_code": True,
         "callback": mode.server + 'sandbox/issuer/callback',
         }
-    print('API data = ', data)
     resp = requests.post(api_endpoint, headers=headers, json=data)
     try:
         qrcode = resp.json()['redirect_uri']

@@ -19,13 +19,13 @@
           <div class="row mb-3">
             <div class="col-lg-10 offset-lg-1 ">
               
-                  <form action="/sandbox/ebsi/issuer/console" method="POST">
+                  <form action="/sandbox/issuer/console" method="POST">
 
                   <div class="card shadow my-5">
                     <div class="card-header py-3">
                       <div class="d-flex justify-content-between">
                         <p style="color:#09060f;" class=" m-0 font-weight-bold">Generate an OIDC4VCI  Issuer for your application 
-                          <a href="https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-extension-parameters-for-to">Standards</a> </p>
+                    </p>
                       
                       </div>
                     </div>
@@ -46,16 +46,8 @@
                             <div class="col">
                               <div class="form-group"><label><strong>Application name</strong><br></label><input class="form-control" type="text" value="{{application_name}}"  name="application_name" ></div>
                             </div>
-                            <div class="col">
-                              {% if session['login_name'] != "admin" %}
-                              <div class="form-group"><label><strong>User</strong><br></label><input readonly class="form-control" type ="text" value="{{user}}" name="user" ></div>
-                              {% else %}
-                              <div class="form-group"><label><strong>User</strong><br></label><input class="form-control" type ="text" value="{{user}}" name="user" ></div>
-                              {% endif %}
-                            </div>
-                            <div class="col">
-                              <div class="form-group"><label><strong>Issuer Id</strong><br></label><input class="form-control" readonly type="text" value="{{client_id}}" ></div>
-                            </div>
+                            
+                            
                         
                         </div> 
                         <div class="form-row">
@@ -65,8 +57,16 @@
                             <div class="col-3">
                               <div class="form-group"><label><strong>Contact email</strong><br></label><input class="form-control" type="email" value="{{contact_email}}" name="contact_email" ></div>
                             </div>
-                              
-                          <div class="col-6">
+                            <div class="col">
+                              {% if session['login_name'] != "admin" %}
+                              <div class="form-group"><label><strong>User (Wallet DID)</strong><br></label><input readonly class="form-control" type ="text" value="{{user}}" name="user" ></div>
+                              {% else %}
+                              <div class="form-group"><label><strong>User (Wallet DID)</strong><br></label><input class="form-control" type ="text" value="{{user}}" name="user" ></div>
+                              {% endif %}
+                            </div>
+                          </div>
+                            <div class="form-row"> 
+                          <div class="col">
                             <div class="form-group"><label><strong>Note</strong><br></label><textarea class="form-control" name="note" >{{note}}</textarea></div>
                           </div>
                         </div>
@@ -77,7 +77,7 @@
                         <div class="card shadow my-3">
                           <div class="card-header py-3">
                             <div class="d-flex justify-content-between">
-                              <p style="color: #09060f;" class="m-0 font-weight-bold">API endpoint, client secret and application callback</p>
+                              <p style="color: #09060f;" class="m-0 font-weight-bold">API credentials <a href="https:/talao.co/sandbox/api/swagger"> (Swagger UI)</a></p>
                             </div>
                           </div>
 
@@ -90,13 +90,15 @@
                           </div>
 
                           <div class="col">
-                            <div class="form-group"><label><strong>Client secret</strong></label><input readonly class="form-control" type="text" value={{client_secret}}></div>
+                            <div class="form-group"><label><strong>issuer_secret</strong></label><input readonly class="form-control" type="text" value={{client_secret}}></div>
                           </div>
+                         
                        
-
-                          <div class="col" >
-                            <div class="form-group"><label><strong>Callback URL of your application (required) </strong></label><input reequired class="form-control" name="callback" type="text" value={{callback}}></div>
+                          <div class="col">
+                            <div class="form-group"><label><strong>issuer_id</strong><br></label><input class="form-control" readonly type="text" value="{{client_id}}" ></div>
                           </div>
+
+                         
         
                         </div>
                         </div>

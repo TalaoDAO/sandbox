@@ -15,7 +15,7 @@ oidc4vc_profile_list = {
 }
 
 
-#OIDC4VC Verifier
+#OIDC4VC Verifier for admin
 oidc4vc_verifier_credential_list = {
     #"DID": "Authentication",
     "None": "None",
@@ -36,13 +36,33 @@ oidc4vc_verifier_credential_list = {
     "Over18": "Over18",
 }
 
+#OIDC4VC Verifier for guest
+guest_oidc4vc_verifier_credential_list = {
+    "None": "None",
+    'VerifiableId':  'Verifiable ID',
+    'EmailPass': 'Email proof',
+    'PhoneProof': 'Phone proof',
+    'WalletCredential': 'Device information',
+    "Over18": "Over 18",
+    "Over15": "Over 15",
+    "Over13": "Over 13",
+    "DefiCompliance": "DeFi compliance",
+    "Liveness": "Proof of humanity"
+}
 
-# issuer
+
+# issuer for admin
 landing_page_style_list = {
     "./issuer_oidc/issuer_qrcode.html": "Style",
     "./issuer_oidc/issuer_qrcode_test.html": "Test",
     "./issuer_oidc/issuer_qrcode_id360.html": "Id360",
     "./issuer_oidc/wallet_link_issuer_qrcode.html": "Wallet link"
+}
+
+# issuer for guest
+guest_landing_page_style_list = {
+    "./issuer_oidc/issuer_qrcode.html": "Style",
+    "./issuer_oidc/issuer_qrcode_test.html": "Test",
 }
 
 
@@ -114,7 +134,7 @@ client_data_pattern_oidc4vc = {
     "credential_requested_3": "DID",
     "credential_requested_4": "DID",
     "landing_page_style": "./issuer_oidc/issuer_qrcode_test.html",
-    "verifier_landing_page_style": "./issuer_oidc/verifier_qrcode_test.html",
+    "verifier_landing_page_style": "./verifier_oidc/verifier_qrcode_test.html",
     "page_title": "Page title",
     "page_subtitle": "Page subtitle",
     "page_description": "Add here a credential description as you would like to see it displayed on the landing page of your app.",

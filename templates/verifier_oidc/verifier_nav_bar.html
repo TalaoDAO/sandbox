@@ -6,7 +6,7 @@
         <a href="https://altme.io"><img  src="/static/img/altme_logo_2.png" style="width: 100px;border-radius:0px;"></a>
       </div>
       <h6 class="text-secondary flex-nowrap ml-auto d-none d-sm-block">
-        <h4 class="d-none d-sm-block"style="color: rgb(54, 24, 88); margin-bottom: 0">Verifier SIOPV2-OIDC4VP : {{session['login_name']}}</h4>
+        <h4 class="d-none d-sm-block"style="color: rgb(54, 24, 88); margin-bottom: 0">Verifier SIOPV2-OIDC4VP : {{session['login_name'][:20] + "..."}}</h4>
       </h6>
       
       <ul class="nav navbar-nav ml-auto d-lg-flex align-items-center" style="flex-direction: row;">
@@ -16,10 +16,10 @@
           <a class="nav-link" style="color: rgb(54, 24, 88); margin-bottom: 0" href="/sandbox/saas4ssi/menu">Menu</a>
         </li> 
         <li class="nav-item active nav-item dropdown d-none d-md-block">
-          <a class="nav-link" style="color: rgb(54, 24, 88); margin-bottom: 0" href="/sandbox/ebsi/verifier/nav/create">Create</a>
+          <a class="nav-link" style="color: rgb(54, 24, 88); margin-bottom: 0" href="/sandbox/verifier/nav/create">Create</a>
         </li>
         <li class="nav-item active nav-item dropdown d-none d-md-block">
-          <a class="nav-link" style="color: rgb(54, 24, 88); margin-bottom: 0" href="/sandbox/ebsi/verifier/console/select">Select</a>
+          <a class="nav-link" style="color: rgb(54, 24, 88); margin-bottom: 0" href="/sandbox/verifier/console/select">Select</a>
         </li>
       
 

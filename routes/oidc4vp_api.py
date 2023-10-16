@@ -700,6 +700,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
     """
     access = "ok"
     qrcode_status = "Unknown"
+    logging.info("headers = %s", request.headers)
 
     try:
         qrcode_status = "ok"

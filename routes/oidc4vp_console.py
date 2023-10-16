@@ -6,7 +6,7 @@ import db_api
 from profile import profile
 import oidc4vc
 import pex
-from oidc4vc_constante import oidc4vc_verifier_credential_list
+from oidc4vc_constante import oidc4vc_verifier_credential_list, guest_oidc4vc_verifier_credential_list
 from oidc4vc_constante import oidc4vc_verifier_landing_page_style_list, oidc4vc_profile_list
 
 logging.basicConfig(level=logging.INFO)
@@ -14,14 +14,14 @@ logging.basicConfig(level=logging.INFO)
 did_selected = 'did:tz:tz2NQkPq3FFA3zGAyG8kLcWatGbeXpHMu7yk'
 
 def init_app(app,red, mode):
-    app.add_url_rule('/sandbox/ebsi/verifier/console/logout',  view_func=oidc4vc_verifier_console_logout, methods = ['GET', 'POST'])
-    app.add_url_rule('/sandbox/ebsi/verifier/console',  view_func=oidc4vc_verifier_console, methods = ['GET', 'POST'], defaults={'mode': mode})
-    app.add_url_rule('/sandbox/ebsi/verifier/console/select',  view_func=oidc4vc_verifier_console_select, methods = ['GET', 'POST'], defaults={'mode': mode})
-    app.add_url_rule('/sandbox/ebsi/verifier/console/advanced',  view_func=oidc4vc_verifier_advanced, methods = ['GET', 'POST'])
+    app.add_url_rule('/sandbox/verifier/console/logout',  view_func=oidc4vc_verifier_console_logout, methods = ['GET', 'POST'])
+    app.add_url_rule('/sandbox/verifier/console',  view_func=oidc4vc_verifier_console, methods = ['GET', 'POST'], defaults={'mode': mode})
+    app.add_url_rule('/sandbox/verifier/console/select',  view_func=oidc4vc_verifier_console_select, methods = ['GET', 'POST'], defaults={'mode': mode})
+    app.add_url_rule('/sandbox/verifier/console/advanced',  view_func=oidc4vc_verifier_advanced, methods = ['GET', 'POST'])
 
     # nav bar option
-    app.add_url_rule('/sandbox/ebsi/verifier/nav/logout',  view_func=oidc4vc_verifier_nav_logout, methods = ['GET'])
-    app.add_url_rule('/sandbox/ebsi/verifier/nav/create',  view_func=oidc4vc_verifier_nav_create, methods = ['GET'], defaults= {'mode': mode})
+    app.add_url_rule('/sandbox/verifier/nav/logout',  view_func=oidc4vc_verifier_nav_logout, methods = ['GET'])
+    app.add_url_rule('/sandbox/verifier/nav/create',  view_func=oidc4vc_verifier_nav_create, methods = ['GET'], defaults= {'mode': mode})
     return
 
     
@@ -35,7 +35,7 @@ def oidc4vc_verifier_nav_logout():
 def oidc4vc_verifier_nav_create(mode):
     if not session.get('is_connected') or not session.get('login_name'):
         return redirect('/sandbox/saas4ssi')
-    return redirect('/sandbox/ebsi/verifier/console?client_id=' + db_api.create_oidc4vc_verifier(mode, user=session['login_name']))
+    return redirect('/sandbox/verifier/console?client_id=' + db_api.create_oidc4vc_verifier(mode, user=session['login_name']))
 
 
 def oidc4vc_verifier_console_logout():
@@ -54,7 +54,6 @@ def oidc4vc_verifier_console_select(mode):
             data_dict = json.loads(data)
             id_token =  "Yes" if data_dict.get('id_token') == 'on' else 'No'
             vp_token =  "Yes" if data_dict.get('vp_token') == 'on' else 'No'
-            group =  "Yes" if data_dict.get('group') == 'on' else 'No'
             curve = json.loads(data_dict['jwk'])['crv']
             if data_dict.get('client_id_as_DID'):
                 client_id = data_dict['did']
@@ -64,22 +63,21 @@ def oidc4vc_verifier_console_select(mode):
                 if data_dict['user'] == "all" or session['login_name'] in [data_dict['user'], "admin"]:
                     verifier = """<tr>
                         <td>""" + data_dict.get('application_name', "") + """</td>
-                        <td>""" + data_dict['user'] + """</td>
+                        <td>""" + data_dict['user'][:20] + """...</td>
                         <td>""" + client_id + """</td>
                         <td>""" + data_dict.get('profile', 'Unknwon') + """</td>
                         <td>""" + id_token + """</td>
                         <td>""" + vp_token + """</td>
-                        <td>""" + group + """</td>
                         <td>""" + curve + """</td>
-                        <td><a href=/sandbox/ebsi/verifier/console?client_id=""" + data_dict['client_id'] + """>""" + data_dict['client_id'] + """</a></td>
+                        <td><a href=/sandbox/verifier/console?client_id=""" + data_dict['client_id'] + """>""" + data_dict['client_id'] + """</a></td>
                     </tr>"""
                     verifier_list += verifier
-            except:
+            except Exception:
                 pass
         return render_template('verifier_oidc/verifier_select.html', verifier_list=verifier_list, login_name=session['login_name']) 
     else:
         if request.form['button'] == "new":
-            return redirect('/sandbox/ebsi/verifier/console?client_id=' + db_api.create_oidc4vc_verifier(mode, user=session['login_name']))
+            return redirect('/sandbox/verifier/console?client_id=' + db_api.create_oidc4vc_verifier(mode, user=session['login_name']))
         elif request.form['button'] == "logout":
             session.clear()
             return redirect('/sandbox/saas4ssi')
@@ -94,7 +92,7 @@ def oidc4vc_verifier_console(mode):
         return redirect('/sandbox/saas4ssi')
     if request.method == 'GET':
         if not request.args.get('client_id'):
-            return redirect('/sandbox/ebsi/verifier/console/select?user=' + session.get('login_name'))
+            return redirect('/sandbox/verifier/console/select?user=' + session.get('login_name'))
         else :
             session['client_id'] = request.args.get('client_id')
         session['client_data'] = json.loads(db_api.read_oidc4vc_verifier(session['client_id']))
@@ -105,27 +103,32 @@ def oidc4vc_verifier_console(mode):
                 verifier_landing_page_style_select +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
                 verifier_landing_page_style_select +=  "<option value=" + key + ">" + value + "</option>"
-
+        
+        if session['login_name'] == "admin":
+            credential_list = oidc4vc_verifier_credential_list
+        else:
+            credential_list = guest_oidc4vc_verifier_credential_list
+            
         vc_select_1 = str()
-        for key, value in oidc4vc_verifier_credential_list.items():
+        for key, value in credential_list.items():
             if key == session['client_data'].get('vc_1', 'DID'):
                 vc_select_1 +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
                 vc_select_1 +=  "<option value=" + key + ">" + value + "</option>"
         vc_select_2 = str()
-        for key, value in oidc4vc_verifier_credential_list.items():
+        for key, value in credential_list.items():
             if key == session['client_data'].get('vc_2', "DID"):
                 vc_select_2 +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
                 vc_select_2 +=  "<option value=" + key + ">" + value + "</option>"
         vc_select_3 = str()
-        for key, value in oidc4vc_verifier_credential_list.items():
+        for key, value in credential_list.items():
             if key == session['client_data'].get('vc_3', "DID"):
                 vc_select_3 +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
                 vc_select_3 +=  "<option value=" + key + ">" + value + "</option>"
         vc_select_4 = str()
-        for key, value in oidc4vc_verifier_credential_list.items():
+        for key, value in credential_list.items():
             if key == session['client_data'].get('vc_4', "DID"):
                 vc_select_4 += "<option selected value=" + key + ">" + value + "</option>"
             else:
@@ -133,26 +136,26 @@ def oidc4vc_verifier_console(mode):
 
         # for group A
         vc_select_5 = str()
-        for key, value in oidc4vc_verifier_credential_list.items():
+        for key, value in credential_list.items():
             if key == session['client_data'].get('vc_5', 'DID'):
                 vc_select_5 += "<option selected value=" + key + ">" + value + "</option>"
             else:
                 vc_select_5 +=  "<option value=" + key + ">" + value + "</option>"
         
         vc_select_6 = str()
-        for key, value in oidc4vc_verifier_credential_list.items():
+        for key, value in credential_list.items():
             if key ==   session['client_data'].get('vc_6', "DID"):
                 vc_select_6 +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
                 vc_select_6 +=  "<option value=" + key + ">" + value + "</option>"
         vc_select_7 = str()
-        for key, value in oidc4vc_verifier_credential_list.items():
+        for key, value in credential_list.items():
             if key ==   session['client_data'].get('vc_7', "DID"):
                 vc_select_7 +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
                 vc_select_7 +=  "<option value=" + key + ">" + value + "</option>"
         vc_select_8 = str()
-        for key, value in oidc4vc_verifier_credential_list.items():
+        for key, value in credential_list.items():
             if key ==   session['client_data'].get('vc_8', "DID"):
                 vc_select_8 +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
@@ -160,26 +163,26 @@ def oidc4vc_verifier_console(mode):
         
         # for group B
         vc_select_9 = str()
-        for key, value in oidc4vc_verifier_credential_list.items():
+        for key, value in credential_list.items():
             if key ==   session['client_data'].get('vc_9', 'DID'):
                 vc_select_9 +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
                 vc_select_9 +=  "<option value=" + key + ">" + value + "</option>"
         
         vc_select_10 = str()
-        for key, value in oidc4vc_verifier_credential_list.items():
+        for key, value in credential_list.items():
             if key ==   session['client_data'].get('vc_10', "DID"):
                 vc_select_10 +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
                 vc_select_10 +=  "<option value=" + key + ">" + value + "</option>"
         vc_select_11 = str()
-        for key, value in oidc4vc_verifier_credential_list.items():
+        for key, value in credential_list.items():
             if key ==   session['client_data'].get('vc_11', "DID"):
                 vc_select_11 +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
                 vc_select_11 +=  "<option value=" + key + ">" + value + "</option>"
         vc_select_12 = str()
-        for key, value in oidc4vc_verifier_credential_list.items():
+        for key, value in credential_list.items():
             if key ==  session['client_data'].get('vc_12', "DID"):
                 vc_select_12 +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
@@ -265,8 +268,8 @@ def oidc4vc_verifier_console(mode):
         else:
             presentation_definition = ""
 
-        authorization_request = mode.server + 'sandbox/ebsi/authorize?client_id=' + session['client_data']['client_id'] + "&scope=openid&response_type=code&redirect_uri=" +  session['client_data']['callback'] 
-        implicit_request = mode.server + 'sandbox/ebsi/authorize?client_id=' + session['client_data']['client_id'] + "&scope=openid&response_type=id_token&redirect_uri=" +  session['client_data']['callback']
+        authorization_request = mode.server + 'sandbox/verifier/app/authorize?client_id=' + session['client_data']['client_id'] + "&scope=openid&response_type=code&redirect_uri=" +  session['client_data']['callback'] 
+        implicit_request = mode.server + 'sandbox/verifier/app/authorize?client_id=' + session['client_data']['client_id'] + "&scope=openid&response_type=id_token&redirect_uri=" +  session['client_data']['callback']
         
         return render_template(
             'verifier_oidc/verifier_console.html',
@@ -288,17 +291,17 @@ def oidc4vc_verifier_console(mode):
             application_name=session['client_data'].get('application_name', ""),
             contact_name=session['client_data'].get('contact_name'),
             contact_email=session['client_data'].get('contact_email'),
-            issuer=mode.server + "sandbox/ebsi",
+            issuer=mode.server + "sandbox/verifier/app",
             client_id=session['client_data']['client_id'],
             client_secret=session['client_data']['client_secret'],
-            token=mode.server + 'sandbox/ebsi/token',
+            token=mode.server + 'sandbox/verifier/app/token',
             page_title=session['client_data']['page_title'],
             note=session['client_data']['note'],
             page_subtitle=session['client_data']['page_subtitle'],
             page_description=session['client_data']['page_description'],
-            authorization=mode.server + 'sandbox/ebsi/authorize',
-            logout=mode.server + 'sandbox/ebsi/logout',
-            userinfo=mode.server + 'sandbox/ebsi/userinfo',
+            authorization=mode.server + 'sandbox/verifier/app/authorize',
+            logout=mode.server + 'sandbox/verifier/app/logout',
+            userinfo=mode.server + 'sandbox/verifier/app/userinfo',
             company_name=session['client_data']['company_name'],
             reason_1=session['client_data'].get('reason_1', ""),
             reason_2=session['client_data'].get('reason_2'),
@@ -324,25 +327,25 @@ def oidc4vc_verifier_console(mode):
         )
     if request.method == 'POST':
         if request.form['button'] == "advanced":
-            return redirect('/sandbox/ebsi/verifier/console/advanced')
+            return redirect('/sandbox/verifier/console/advanced')
         
         elif request.form['button'] == "delete":
             db_api.delete_oidc4vc_verifier( request.form['client_id'])
-            return redirect('/sandbox/ebsi/verifier/console')
+            return redirect('/sandbox/verifier/console')
 
         elif request.form['button'] == "activity":
-            return redirect('/sandbox/ebsi/verifier/console/activity')
+            return redirect('/sandbox/verifier/console/activity')
     
         elif request.form['button'] == "update":    
             if not request.form.get('id_token') and not request.form.get('vp_token'):
                 flash("MUST add an id_token or a vp_token !", "warning")
-                return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
+                return redirect('/sandbox/verifier/console?client_id=' + request.form['client_id'])
             if request.form.get('group_B') and not request.form.get('vp_token') :
                 flash("MUST check vp_token box !", "warning")
-                return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
+                return redirect('/sandbox/verifier/console?client_id=' + request.form['client_id'])
             if request.form.get('group') and not request.form.get('vp_token') :
                 flash("MUST check vp_token box !", "warning")
-                return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
+                return redirect('/sandbox/verifier/console?client_id=' + request.form['client_id'])
             
             session['client_data']['note'] = request.form['note']
             session['client_data']['standalone'] = request.form.get('standalone') 
@@ -395,7 +398,7 @@ def oidc4vc_verifier_console(mode):
                 session['client_data']['group'] = None        
             
             db_api.update_oidc4vc_verifier(request.form['client_id'], json.dumps(session['client_data']))
-            return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
+            return redirect('/sandbox/verifier/console?client_id=' + request.form['client_id'])
 
         elif request.form['button'] == "copy":
             new_client_id =  db_api.create_oidc4vc_verifier(mode,  user=session['login_name'])
@@ -404,7 +407,7 @@ def oidc4vc_verifier_console(mode):
             new_data['client_id'] = new_client_id
             new_data['user'] = session['login_name']
             db_api.update_oidc4vc_verifier(new_client_id, json.dumps(new_data))
-            return redirect('/sandbox/ebsi/verifier/console?client_id=' + new_client_id)
+            return redirect('/sandbox/verifier/console?client_id=' + new_client_id)
 
 
 async def oidc4vc_verifier_advanced():
@@ -436,7 +439,7 @@ async def oidc4vc_verifier_advanced():
     if request.method == 'POST':     
         session['client_data'] = json.loads(db_api.read_oidc4vc_verifier(session['client_id']))
         if request.form['button'] == "back":
-            return redirect('/sandbox/ebsi/verifier/console?client_id=' + request.form['client_id'])
+            return redirect('/sandbox/verifier/console?client_id=' + request.form['client_id'])
 
         if request.form['button'] == "update":
             session['client_data']['profile'] = request.form['profile']
@@ -449,17 +452,17 @@ async def oidc4vc_verifier_advanced():
             
             if request.form['profile'] in ["EBSIV2", "EBSIV3"] and did_method != 'ebsi':
                 flash("This profile requires did:ebsi", "warning")
-                return redirect('/sandbox/ebsi/verifier/console/advanced')
+                return redirect('/sandbox/verifier/console/advanced')
             
             elif request.form['profile'] == "GAIAX" and did_method != 'web':
                 flash("This profile requires did:web", "warning")
-                return redirect('/sandbox/ebsi/verifier/console/advanced')
+                return redirect('/sandbox/verifier/console/advanced')
 
             elif request.form['profile'] == "JWTVC" and did_method not in ['web', 'ion']:
                 flash("This profile requires did:web or did:ion", "warning")
-                return redirect('/sandbox/ebsi/verifier/console/advanced')
+                return redirect('/sandbox/verifier/console/advanced')
             else:
                 session['client_data']['jwk'] = request.form['jwk']
                 db_api.update_oidc4vc_verifier( request.form['client_id'], json.dumps(session['client_data']))
-                return redirect('/sandbox/ebsi/verifier/console/advanced')
+                return redirect('/sandbox/verifier/console/advanced')
         

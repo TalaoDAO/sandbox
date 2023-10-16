@@ -13,27 +13,27 @@
 
     <div class="text-center mt-5">
         <br><br><br>
-        <h1  style="color: rgb(54, 24, 88);"">Choose your Issuer or Verifier</h1>
+        <h1  style="color: rgb(54, 24, 88);"">Create or select your Issuer or Verifier</h1>
         <br><br>
 
-
+        {% if session['login_name'] == 'admin'  %}
         <div class="row my-5">
 
             <div class="col-6 mx-auto">
               <div id="id_qrcode" class="text-center">
-                 <a href="/sandbox/saas4ssi/verifier"> 
-                 <h2><strong>Verifier connector for the Altme wallet</strong></h2>
-                 </a>
-                 <h5>Connect Altme with any application thanks to a connector acting as an OpenID provider for your application.
-                 
-                 <br>The connector supports the OIDC authorization code flow and implicit flow.
-                 <br>All credentials available in Altme can be triggered.
+                <a href="/sandbox/op/console"> 
+                <h2><strong>Verifier connector for the Altme wallet</strong></h2>
+                </a>
+                <h5>Connect Altme with any application thanks to a connector acting as an OpenID provider for your application.
+                
+                <br>The connector supports the OIDC authorization code flow and implicit flow.
+                <br>All credentials available in Altme can be triggered.
                   <br>More than 20 librairies for popular frameworks (Nodejs, Python,  C, Rust, PHP, Go, Ruby, ...) and 
-                 pluggins for CMS as Webflow, Wordpress are available for the client application.
-                 <br><a href="#" onClick="window.open('https://openid.net/certified-open-id-developer-tools/', '_blank')">See OIDC Certified Relying Party librairies</a>
-                 
-                 <br><br><a href="#" onClick="window.open('https://www.miniorange.com/', '_blank')">MiniOrange</a> SSO platform support.</h5>  
-                           
+                pluggins for CMS as Webflow, Wordpress are available for the client application.
+                <br><a href="#" onClick="window.open('https://openid.net/certified-open-id-developer-tools/', '_blank')">See OIDC Certified Relying Party librairies</a>
+                
+                <br><br><a href="#" onClick="window.open('https://www.miniorange.com/', '_blank')">MiniOrange</a> SSO platform support.</h5>  
+                          
               </div>
             </div>
 
@@ -43,21 +43,7 @@
 
  
 
-        {% if session['login_name'] == 'admin'  %}
 
-        <div class="row my-5">
-
-        <div class="col-6 mx-auto">
-          <div id="id_qrcode" class="text-center">
-              <a href="/sandbox/saas4ssi/issuer">           
-                <h3><strong>Issuer with a Webhook for Altme Wallet and Talao Wallet</strong></h3>
-              </a>
-              Web2 or Web3 applications with a backend. More than 20 supported VC. KMS support.
-              Simply add a webhook in your application to receive requested VCs for issuance and export user data.
-              Support of login/password pre authentication method with static password or TOTP.
-          </div> 
-      </div>
-</div>
 {% endif %}
 
 
@@ -66,15 +52,27 @@
     <div class="row my-5">
     <div class="col-6 mx-auto">
       <div id="id_qrcode" class="text-center">
-          <a href="/sandbox/saas4ssi/ebsi/verifier">
-          <h3><strong>SIOPV2-OIDC4VP verifiers for mobile wallets</strong></h3>
+          <a href="/sandbox/verifier/console">
+          <h3><strong>Verifiers for mobile wallets with SIOPV2-OIDC4VP </strong></h3>
           </a>
           This is a bridge between the SIOPv2/OIDC4VP verifier flow and a standard OpenID authorization code flow and implicit flow.
-          For web2 applications with all frameworks (Nodejs, Python, C, Ruby, Java,...) and popular CMS (Webflow, Wordess,...).
-          This verifier supports different profiles as EBSIV2, GAIA-X, ....
-        This verifier accepts EBSI compliant wallets with support for did:ebsi.<br>
+          For web2 applications with all frameworks and popular CMS.
+        This verifier supports EBSI V3 compliant wallets<br>
+        <li>Integration with standard OIDC lib (NodeJS, Python, PHP, C, C+, GO, Ruby,..Webflow, Wordpress,..;)</li>
+        <li>Resquest as a jwt and as an uri</li>
+        <li>Personal definition uri</li>
+        <li>PKCE</li>
+        <li>Client id as a DID or uri</li>
+        <li>JWT and JSON-LD</li>
+        <li>did;web, did:ethr, did:hedera, did:ebsi, did:tz, did:key</li>
+        <li>P-256, secp256k1, Ed25519, RS-256</li>
+        <li>Dedicated external resolver</li>
+        <li>PEX 2.0: rule count, all, array content, string pattern</li>
+        <br>
         <a href="https://openid.net/specs/openid-4-verifiable-presentations-1_0.html">See OIDC4VP standards</a><br>
-        <a href="https://openid.net/specs/openid-connect-self-issued-v2-1_0.html">See SIOPV2 standards</a>
+        <a href="https://openid.net/specs/openid-connect-self-issued-v2-1_0.html">See SIOPV2 standards</a><br>
+        <a href="https://identity.foundation/presentation-exchange/spec/v2.0.0/?ref=blog.identity.foundation">See Presentation Exchange 2.0</a>
+
 
 
       </div> 
@@ -86,29 +84,36 @@
     <div class="row my-5">
     <div class="col-4 mx-auto">
       <div id="id_qrcode" class="text-center">
-        <a href="/sandbox/saas4ssi/ebsi/issuer">
-          <h3><strong>OIDC4VCI issuers for mobile wallets</strong></h3>
+        <a href="/sandbox/issuer/console">
+          <h3><strong>Issuers for mobile wallets with OIDC4VCI</strong></h3>
           </a>
-         This verifier supports different profiles as EBSIV2, GAIAX, ...(In progress)<br>
-         Support of authorization code flow and pre-authorized_code flow <br>
-         <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html">See OIDC4VCI standards</a>
+        This verifier supports different profiles as EBSIV2, GAIAX, ...(In progress)<br>
+        Support of authorization code flow and pre-authorized_code flow <br>
+        <li>Pre authorized code flow</li>
+        <li>Authorized code flow available on in house release</li>
+        <li>Deferred endpoint</li>
+        <li>Credential offer uri</li>
+        <li>PIN code of 6 or 4 digits</li>
+        <li>JWT and JSON-LD</li>
+        <li>did;web, did:ethr, did:hedera, did:ebsi, did:tz, did:key</li>
+        <li>P-256, secp256k1, Ed25519, RS-256</li>
+        <li>Issuance of multiple VCs of the same type</li>
+        <li>Wallet rendering in credential manifest</li>
+        <li>Swagger UI for API</li>  
+        <br>
+        <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html">See OIDC4VCI standards</a><br>
+        <a href="https://identity.foundation/wallet-rendering/">See Wallet rendering standards</a>
+
       </div> 
   </div>
         </div>
 
 
-        {% if session['login_name'] != 'admin'  %}
-        <div class="row mb-4">
-          <div class="col text-center">
-            <a href="/sandbox/saas4ssi/verifier"><button type="button"   class="btn btn-outline-dark ">Select ou create a verifier connector</button></a></h3>
-         </div>
-        </div> 
-        {% endif %}  
 
-           
-       
-   </div>
-   {% include 'user_footer.html' %}
+        
+      
+  </div>
+  {% include 'user_footer.html' %}
               <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
               <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
               <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>

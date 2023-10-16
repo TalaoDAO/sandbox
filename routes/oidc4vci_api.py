@@ -51,14 +51,7 @@ def init_app(app, red, mode):
         defaults={"red": red},
     )
 
-    # api for application
-    app.add_url_rule(
-        "/sandbox/ebsi/issuer/api/<issuer_id>",
-        view_func=issuer_api_endpoint,
-        methods=["POST"],
-        defaults={"red": red, "mode": mode},
-    )
-
+    
     # OIDC4VCI protocol with wallet
     app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/.well-known/openid-configuration", view_func=issuer_openid_configuration, methods=["GET"],defaults={"mode": mode})
     app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/.well-known/openid-credential-issuer",view_func=issuer_openid_configuration, methods=["GET"], defaults={"mode": mode})
@@ -237,176 +230,6 @@ def issuer_authorization_server(issuer_id, mode):
     return jsonify(config)
 
 
-# Customer API
-def issuer_api_endpoint(issuer_id, red, mode):
-    """
-    This API returns the QRcode page URL to redirect user or the QR code by value if the template is managed by the application
-
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer <client_secret>'
-    }
-
-    data = {
-        "vc": OPTIONAL -> { "EmployeeCredendial": {}, ....}, json object, VC as a json-ld not signed { "EmployeeCredendial": [ {"identifier1": {}},  ....}
-        "deferred_vc": CONDITIONAL, REQUIRED in case of 2nd deferred call
-        "issuer_state": REQUIRED, string,
-        "credential_type": REQUIRED -> array or string name of the credentials offered
-        "pre-authorized_code": REQUIRED , bool
-        "user_pin_required": OPTIONAL bool, default is false
-        "user_pin": CONDITIONAL, string, REQUIRED if user_pin_required is True
-        "callback": REQUIRED, string, this the user redirect route at the end of the flow
-        }
-    resp = requests.post(token_endpoint, headers=headers, data = json.dumps(data))
-    return resp.json()
-
-    """
-    # check API format
-    try:
-        token = request.headers["Authorization"]
-        client_secret = token.split(" ")[1]
-    except Exception:
-        return Response(
-            **manage_error("unauthorized", "Unauthorized token", red, mode, status=401)
-        )
-    try:
-        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-    except Exception:
-        return Response(
-            **manage_error("unauthorized", "Unauthorized client_id", red, mode, status=401)
-        )
-    try:
-        issuer_state = request.json["issuer_state"]
-    except Exception:
-        return Response(
-            **manage_error("invalid_request", "issuer_state missing", red, mode, status=401)
-        )
-    try:
-        credential_type = request.json["credential_type"]
-    except Exception:
-        return Response(
-            **manage_error("invalid_request", "credential_type missing", red, mode, status=401)
-        )
-    try:
-        pre_authorized_code = request.json["pre-authorized_code"]
-    except Exception:
-        return Response(
-            **manage_error(
-                "invalid_request", "pre-authorized_code is missing", red, mode, status=401
-            )
-        )
-
-    # check if client_id exists
-    if client_secret != issuer_data["client_secret"]:
-        logging.warning("Client secret is incorrect")
-        return Response(
-            **manage_error(
-                "unauthorized", "Client secret is incorrect", red, mode, status=401
-            )
-        )
-
-    # Check vc and vc_deferred
-    vc = request.json.get("vc")
-    if vc and not request.json.get("callback"):
-        return Response(**manage_error("invalid_request", "callback missing", red, status=401))
-    
-    # Check deferred vc
-    if issuer_data.get("deferred_flow"):
-        deferred_vc = request.json.get("deferred_vc")
-        if vc and deferred_vc:
-            return Response(**manage_error("invalid_request", "deferred_vc and vc not allowed", red, mode, status=401))
-    else:
-        deferred_vc = None
-        
-    # Check if user pin exists
-    if request.json.get("user_pin_required") and not request.json.get("user_pin"):
-        return Response(**manage_error("invalid_request", "User pin is not set", red, mode, status=401))
-    logging.info('user PIN stored =  %s', request.json.get("user_pin"))
-
-    # check if user pin is string
-    if request.json.get("user_pin_required") and request.json.get("user_pin") and not isinstance(request.json.get("user_pin"), str):
-        return Response(
-            **manage_error("invalid_request", "User pin must be string", red, mode, status=401))
-
-    # check if credential offered is supported
-    issuer_profile = profile[issuer_data["profile"]]
-    credential_type = (
-        credential_type if isinstance(credential_type, list) else [credential_type]
-    )
-    for _vc in credential_type:
-        if _vc not in issuer_profile["credentials_types_supported"]:
-            logging.error("Credential not supported -> %s", _vc)
-            return Response(
-                **manage_error("unauthorized", "Credential not supported " + _vc, red, mode, status=401))
-            
-    nonce = str(uuid.uuid1())
-
-    # generate pre-authorized_code as jwt or string
-    if pre_authorized_code:
-        if profile[issuer_data["profile"]].get("pre-authorized_code_as_jwt"):
-            pre_authorized_code = oidc4vc.build_pre_authorized_code(
-                issuer_data["jwk"],
-                "https://self-issued.me/v2",
-                mode.server + "sandbox/ebsi/issuer/" + issuer_id,
-                issuer_data["verification_method"],
-                nonce,
-            )
-        else:
-            pre_authorized_code = str(uuid.uuid1())
-
-    stream_id = str(uuid.uuid1())
-    session_data = {
-        "vc": vc,
-        "nonce": nonce,
-        "stream_id": stream_id,
-        "issuer_id": issuer_id,
-        "issuer_state": request.json.get("issuer_state"),
-        "credential_type": credential_type,
-        "pre-authorized_code": pre_authorized_code,
-        "user_pin_required": request.json.get("user_pin_required"),
-        "user_pin": request.json.get("user_pin"),
-        "callback": request.json.get("callback"),
-        "login": request.json.get("login"),
-    }
-
-    # For deferred API call only VC is stored in redis with issuer_state as key
-    if deferred_vc and red.get(issuer_state):
-        session_data.update(
-            {
-                "deferred_vc": deferred_vc,
-                "deferred_vc_iat": round(datetime.timestamp(datetime.now())),
-                "deferred_vc_exp": round(datetime.timestamp(datetime.now()))
-                + ACCEPTANCE_TOKEN_LIFE,
-            }
-        )
-        red.setex(issuer_state, API_LIFE, json.dumps(session_data))
-        logging.info(
-            "Deferred VC has been issued with issuer_state =  %s", issuer_state
-        )
-    else:
-        # for authorization code flow
-        red.setex(issuer_state, API_LIFE, json.dumps(session_data))
-
-    # for pre authorized code
-    if pre_authorized_code:
-        red.setex(pre_authorized_code, GRANT_LIFE, json.dumps(session_data))
-
-    # for front page management
-    red.setex(stream_id, API_LIFE, json.dumps(session_data))
-    response = {
-        "redirect_uri": mode.server
-        + "sandbox/ebsi/issuer/"
-        + issuer_id
-        + "/"
-        + stream_id
-    }
-    logging.info(
-        "initiate qrcode = %s",
-        mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/" + stream_id,
-    )
-    return jsonify(response)
-
-
 def build_credential_offer(
     issuer_id,
     credential_type,
@@ -576,7 +399,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     )
 
 
-def authorization_error(request, error, error_description, stream_id, red, mode, state=None):
+def authorization_error(error, error_description, stream_id, red, state):
         """
         https://www.rfc-editor.org/rfc/rfc6749.html#page-26
         """
@@ -585,9 +408,6 @@ def authorization_error(request, error, error_description, stream_id, red, mode,
         resp = {
             "error_description": error_description,
             "error": error}
-        
-        # redirect arguments for errors
-        #resp['error_uri'] = error_uri_build(request, error, error_description, mode)
         if state:
             resp["state"] = state
         return urlencode(resp)
@@ -611,26 +431,21 @@ def issuer_authorize(issuer_id, red, mode):
         redirect_uri = request.args["redirect_uri"]
     except Exception:
         return jsonify({"error": "invalid_request"}), 403
-    
-    # TESTING 
-    if issuer_id in ["npwsshblrm", "npwsshblrm"]:
-        print('redirect = ', redirect_uri + '?' + authorization_error(request, 'server_error', 'This is a OIDC4VCI test', stream_id, red, mode, state=state))
-        return redirect(redirect_uri + '?' + authorization_error(request, 'server_error', 'This is a OIDC4VCI test', stream_id, red, mode, state=state)) 
 
     try:
         response_type = request.args["response_type"]
     except Exception:
-        return redirect(redirect_uri + '?' + authorization_error(request, 'invalid_request', 'Response type is missing', stream_id, red, mode, state=state)) 
+        return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Response type is missing', stream_id, red, state)) 
 
     try:
         client_id = request.args["client_id"]  # DID of the issuer
     except Exception:
-        return redirect(redirect_uri + '?' + authorization_error(request, 'invalid_request', 'Client id is missing', stream_id, red, mode, state=state))
+        return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Client id is missing', stream_id, red, state))
     
     try:
         authorization_details = request.args["authorization_details"]
     except Exception:
-        return redirect(redirect_uri + '?' + authorization_error(request, 'invalid_request', 'Authorization details is missing', stream_id, red, mode, state=state))
+        return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Authorization details is missing', stream_id, red, state))
 
     logging.info("redirect_uri = %s", redirect_uri)
     logging.info("code_challenge = %s", code_challenge)
@@ -639,7 +454,7 @@ def issuer_authorize(issuer_id, red, mode):
     logging.info("scope = %s", scope)
     
     if response_type != "code":
-        return redirect(redirect_uri + '?' + authorization_error(request, 'invalid_response_type', 'response_type not supported', stream_id, red, mode, state=state))
+        return redirect(redirect_uri + '?' + authorization_error('invalid_response_type', 'response_type not supported', stream_id, red, state))
 
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
 
@@ -685,6 +500,7 @@ def issuer_token(issuer_id, red, mode):
     https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
     """
     logging.info("token endpoint request = %s", json.dumps(request.form))
+    logging.info("headers = %s", request.headers)
     
     # error response https://datatracker.ietf.org/doc/html/rfc6749#section-4.2.2.1
     grant_type = request.form.get("grant_type")

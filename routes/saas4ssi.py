@@ -31,15 +31,7 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/saas4ssi/callback_3',  view_func=saas_callback_3, methods=['GET', 'POST']) # login with ebsi v3 
 
     app.add_url_rule('/sandbox/saas4ssi/logout',  view_func=saas_logout, methods = ['GET', 'POST'])
-    app.add_url_rule('/sandbox/saas4ssi/webhook',  view_func=default_webhook, methods = ['POST'])
-    
-    # access to issuers and verifiers
-    app.add_url_rule('/sandbox/saas4ssi/verifier',  view_func=saas_verifier, methods=['GET', 'POST'])
-    app.add_url_rule('/sandbox/saas4ssi/issuer',  view_func=saas_issuer, methods=['GET', 'POST'])
-    app.add_url_rule('/sandbox/saas4ssi/beacon',  view_func=saas_beacon, methods=['GET', 'POST'])
-    app.add_url_rule('/sandbox/saas4ssi/beacon/verifier',  view_func=saas_beacon_verifier, methods=['GET', 'POST'])
-    app.add_url_rule('/sandbox/saas4ssi/ebsi/verifier',  view_func=saas_ebsi_verifier, methods=['GET', 'POST'])
-    app.add_url_rule('/sandbox/saas4ssi/ebsi/issuer',  view_func=saas_ebsi_issuer, methods=['GET', 'POST'])
+   # app.add_url_rule('/sandbox/saas4ssi/webhook',  view_func=default_webhook, methods = ['POST'])
 
     # test
     app.add_url_rule('/sandbox/issuer/oidc/test',  view_func=issuer_oidc_test, methods=['GET', 'POST'])
@@ -57,10 +49,11 @@ def verifier_oidc_test():
     return render_template('verifier_oidc/wallet_verifier_test.html')
 
 
+"""
 def default_webhook():
     data = request.get_json()   
     return jsonify('ok')
-
+"""
 
 def saas_home():
     if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
@@ -68,11 +61,6 @@ def saas_home():
     else:
         logging.info('remote IP = %s', request.environ['HTTP_X_FORWARDED_FOR'])  # if behind a proxy
     return render_template("home.html")
-
-"""
-def verifier():
-    return render_template("home.html")
-"""
 
 
 def dids():
@@ -235,40 +223,3 @@ def saas_callback_3():
         logging.warning('erreur, user does not exist')
         session.clear()
         return render_template("access_denied.html")
-
-
-def saas_verifier():
-    if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/sandbox/saas4ssi')
-    else:
-        return redirect('/sandbox/op/console/select')
-
-
-def saas_issuer():
-    if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/sandbox/saas4ssi')
-    return redirect('/sandbox/op/issuer/console/select')
-
-
-def saas_beacon():
-    if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/sandbox/saas4ssi')
-    return redirect('/sandbox/op/beacon/console/select')
-
-
-def saas_beacon_verifier():
-    if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/sandbox/saas4ssi')
-    return redirect('/sandbox/op/beacon/verifier/console/select')
-
-
-def saas_ebsi_verifier():
-    if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/sandbox/saas4ssi')
-    return redirect('/sandbox/ebsi/verifier/console/select')
-
-
-def saas_ebsi_issuer():
-    if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/sandbox/saas4ssi')
-    return redirect('/sandbox/ebsi/issuer/console/select')

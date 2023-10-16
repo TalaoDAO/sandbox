@@ -248,11 +248,11 @@ def verif_token(token, nonce, aud=None):
     logging.info("call oidc4vc module")
     header = get_header_from_token(token)
     payload = get_payload_from_token(token)
-    if nonce:
-        if payload['nonce'] != nonce:
-            raise Exception("Nonce is incorrect")
+    if nonce and payload.get('nonce') != nonce:
+        raise Exception("nonce is incorrect")
     if aud and payload.get('aud') != aud:
-        raise Exception("Aud is incorrect")
+        raise Exception("aud is incorrect")
+    
     if header.get('jwk'):
         if isinstance(header['jwk'], str):
             header['jwk'] = json.loads(header['jwk'])
@@ -269,7 +269,6 @@ def verif_token(token, nonce, aud=None):
     issuer_key = jwk.JWK(**dict_key)
     a.validate(issuer_key)
     return True
-
 
 
 def get_payload_from_token(token) -> dict:
@@ -308,7 +307,7 @@ def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce):
         'iat': datetime.timestamp(datetime.now()),
         'aud': aud # Credential Issuer URL
     }  
-    token = jwt.JWT(header=header,claims=payload, algs=[alg(key)])
+    token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
     token.make_signed_token(signer_key)
     return token.serialize()
 
@@ -330,7 +329,7 @@ def verification_method(did, key): # = kid
     return did + '#' + thumb_print
 
 
-def resolve_did_web(did) ->str:
+def resolve_did_web(did) -> str:
     """
     get DID dcomuent for the did:web
     """
@@ -341,7 +340,7 @@ def resolve_did_web(did) ->str:
     try:
         while did.split(':')[i]:
             url = url + '/' +  did.split(':')[i]
-            i+= 1
+            i += 1
     except Exception:
         pass
     url = url + '/did.json'
@@ -352,7 +351,8 @@ def resolve_did_web(did) ->str:
     return r.json()
 
 
-def did_resolve_lp( did):
+
+def did_resolve_lp(did):
     #for legal person  did:ebsi and did:web
     #API v3   Get DID document with EBSI API
     #https://api-pilot.ebsi.eu/docs/apis/did-registry/latest#/operations/get-did-registry-v3-identifier
@@ -378,25 +378,25 @@ def did_resolve_lp( did):
 
 
 def get_issuer_registry_data(did):
-  """
-  API v3
-  https://api-pilot.ebsi.eu/docs/apis/trusted-issuers-registry/latest#/operations/get-trusted-issuers-registry-v3-issuers-issuer
-  """
-  try:
-    url = 'https://api-pilot.ebsi.eu/trusted-issuers-registry/v3/issuers/' + did
-    r = requests.get(url) 
-  except:
-    logging.error('cannot access API')
-    return 
-  if 399 < r.status_code < 500:
-    logging.warning('return API code = %s', r.status_code)
-    return
-  try: 
-    body = r.json()['attributes'][0]['body']
-    return base64.urlsafe_b64decode(body).decode()
-  except:
-    logging.error('registry data in invalid format')
-    return
+    """
+    API v3
+    https://api-pilot.ebsi.eu/docs/apis/trusted-issuers-registry/latest#/operations/get-trusted-issuers-registry-v3-issuers-issuer
+    """
+    try:
+        url = 'https://api-pilot.ebsi.eu/trusted-issuers-registry/v3/issuers/' + did
+        r = requests.get(url) 
+    except Exception:
+        logging.error('cannot access API')
+        return 
+    if 399 < r.status_code < 500:
+        logging.warning('return API code = %s', r.status_code)
+        return
+    try: 
+        body = r.json()['attributes'][0]['body']
+        return base64.urlsafe_b64decode(body).decode()
+    except Exception:
+        logging.error('registry data in invalid format')
+        return
 
 
 ########################## TEST VECTORS
