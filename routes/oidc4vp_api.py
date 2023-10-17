@@ -885,6 +885,12 @@ async def oidc4vc_login_endpoint(stream_id, red):
                 access = False
     
     status_code = 200 if access else 400
+    
+    # Testing
+    if verifier_id in ["zvuzyxjhjk", "rkubsscrkt"]:
+        print("Test case error ")
+        status_code = 400
+        access = False
 
     if state:
         state_status = state

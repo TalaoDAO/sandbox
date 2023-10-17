@@ -1,7 +1,12 @@
 <div id="header">
     <img id="logoNavBar" src="/static/img/icon.png">
+
     <div id="navBar">
+
         {% if not session['is_connected'] %}
+
+        <a class="nav-link" style="color:white" href="/sandbox/saas4ssi/admin">a</a>
+
         <a class="nav-link" href="/sandbox/saas4ssi">Home</a>
         {% else %}
         <a class="nav-link" href="/sandbox/saas4ssi/menu">Menu</a>

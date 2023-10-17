@@ -20,7 +20,7 @@ last one-->
     {% if messages %}
     {% for category, message in messages %}
     <div class="alert alert-{{ category }} alert-dismissible fade show m-0" role="alert">
-        <h5>{{ message }}</h5>
+        <h4 style="color:red;">{{ message }}</h4>
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
