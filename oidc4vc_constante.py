@@ -51,7 +51,7 @@ guest_oidc4vc_verifier_credential_list = {
 }
 
 
-# issuer for admin
+# issuer qrcode page for admin
 landing_page_style_list = {
     "./issuer_oidc/issuer_qrcode.html": "Style",
     "./issuer_oidc/issuer_qrcode_test.html": "Test",
@@ -59,28 +59,33 @@ landing_page_style_list = {
     "./issuer_oidc/wallet_link_issuer_qrcode.html": "Wallet link"
 }
 
-# issuer for guest
+# issuer qrcode page for guest
 guest_landing_page_style_list = {
     "./issuer_oidc/issuer_qrcode.html": "Style",
     "./issuer_oidc/issuer_qrcode_test.html": "Test",
 }
 
 
-# verifier
+# verifier qrcode page for amdin
 oidc4vc_verifier_landing_page_style_list = {
-    "./verifier_oidc/verifier_qrcode_2.html": "Style 2",
+    "./verifier_oidc/verifier_qrcode_2.html": "Style",
     "./verifier_oidc/verifier_qrcode_test.html": "Test",
     "./verifier_oidc/diploma_verifier.html": "Diplome Tezos Ebsi"
-
 }
 
+# verifier qrcode page for guest
+guest_oidc4vc_verifier_landing_page_style_list = {
+    "./verifier_oidc/verifier_qrcode_2.html": "Style",
+    "./verifier_oidc/verifier_qrcode_test.html": "Test",
+}
 
+"""
 pre_authorized_code_list = {
     'none': "None",
     'pac': 'Pre authorized code',
     'pac_pin': 'Pre authorized code + PIN code'
 }
-
+"""
 
 client_data_pattern_oidc4vc = {
     "profile": "DEFAULT",

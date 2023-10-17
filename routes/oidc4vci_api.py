@@ -699,8 +699,7 @@ async def issuer_credential(issuer_id, red, mode):
             "issuer_state": access_token_data["issuer_state"],
             "credential_type": credential_type,
             "c_nonce": str(uuid.uuid1()),
-            "c_nonce_expires_at": datetime.timestamp(datetime.now())
-            + ACCEPTANCE_TOKEN_LIFE,
+            "c_nonce_expires_at": datetime.timestamp(datetime.now()) + ACCEPTANCE_TOKEN_LIFE,
         }
         red.setex(
             acceptance_token, ACCEPTANCE_TOKEN_LIFE, json.dumps(acceptance_token_data)
@@ -776,7 +775,6 @@ async def issuer_credential(issuer_id, red, mode):
     red.setex(access_token, ACCESS_TOKEN_LIFE, json.dumps(access_token_data))
     headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
     return Response(response=json.dumps(payload), headers=headers)
-
 
 
 async def issuer_deferred(issuer_id, red, mode):
@@ -878,19 +876,15 @@ def oidc_issuer_stream(red):
     return Response(event_stream(red), headers=headers)
 
 
-async def sign_credential(
-    credential, wallet_did, issuer_did, issuer_key, issuer_vm, c_nonce, format
-):
+async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer_vm, c_nonce, format, duration=365):
     credential["id"] = "urn:uuid:" + str(uuid.uuid1())
     credential["credentialSubject"]["id"] = wallet_did
     credential["issuer"] = issuer_did
     credential["issued"] = f"{datetime.now().replace(microsecond=0).isoformat()}Z"
     credential["issuanceDate"] = datetime.now().replace(microsecond=0).isoformat() + "Z"
     credential["validFrom"] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-    credential["expirationDate"] = (
-        datetime.now() + timedelta(days=365)
-    ).isoformat() + "Z"
-    credential["validUntil"] = (datetime.now() + timedelta(days=365)).isoformat() + "Z"
+    credential["expirationDate"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
+    credential["validUntil"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
     if format in ["jwt_vc", "jwt_vc_json", "jwt_vc_json-ld"]:
         credential_signed = oidc4vc.sign_jwt_vc(
             credential, issuer_vm, issuer_key, c_nonce

@@ -7,7 +7,7 @@ from profile import profile
 import oidc4vc
 import pex
 from oidc4vc_constante import oidc4vc_verifier_credential_list, guest_oidc4vc_verifier_credential_list
-from oidc4vc_constante import oidc4vc_verifier_landing_page_style_list, oidc4vc_profile_list
+from oidc4vc_constante import oidc4vc_verifier_landing_page_style_list, oidc4vc_profile_list, guest_oidc4vc_verifier_landing_page_style_list
 
 logging.basicConfig(level=logging.INFO)
 
@@ -93,12 +93,17 @@ def oidc4vc_verifier_console(mode):
     if request.method == 'GET':
         if not request.args.get('client_id'):
             return redirect('/sandbox/verifier/console/select?user=' + session.get('login_name'))
-        else :
+        else:
             session['client_id'] = request.args.get('client_id')
         session['client_data'] = json.loads(db_api.read_oidc4vc_verifier(session['client_id']))
         
+        if session['login_name'] == 'admin':
+            verifier_page_list = oidc4vc_verifier_landing_page_style_list
+        else:
+            verifier_page_list = guest_oidc4vc_verifier_landing_page_style_list
+            
         verifier_landing_page_style_select = str()
-        for key, value in oidc4vc_verifier_landing_page_style_list.items():
+        for key, value in verifier_page_list.items():
             if key == session['client_data'].get('verifier_landing_page_style'):
                 verifier_landing_page_style_select +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
