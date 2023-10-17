@@ -915,6 +915,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
             "error": "access_denied",
             "error_description": json.dumps(detailed_response)
         }
+    # TEST
     elif verifier_id in ["novanyhlhs", "uxcdccjhmq"]:
         response = {
             "redirect_uri": "https://altme.io",
