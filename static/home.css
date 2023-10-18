@@ -175,15 +175,18 @@ body {
     border-radius: 8px;
 
 }
-.altmeTheme{
+
+.altmeTheme {
     border-color: #330080;
     color: var(--Brand---Purple-default, #330080);
 
 }
-.talaoTheme{
+
+.talaoTheme {
     border-color: #1EAADC;
     color: #1EAADC;
 }
+
 #downloadNavBarP {
     padding-top: 4px;
     /* CTA - 14 - bold */
@@ -553,4 +556,95 @@ p {
     background: var(--White, #FFF);
     padding: 24px;
     width: 450px;
+}
+
+.titleCardPlayground {
+    color: var(--Black, #14171C);
+    font-family: RobotoBold;
+    font-size: 18px;
+    font-style: normal;
+    line-height: 24px;
+    /* 133.333% */
+}
+
+.lineBigBox {
+    display: flex;
+    flex-direction: row;
+    gap: 48px;
+    justify-content: space-between;
+    width: 100%;
+}
+
+#bigBox {
+    width: 78.3vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 50px;
+}
+
+.cardBox {
+    display: flex;
+    flex-direction: column;
+    width: calc(calc(100% - 96px) / 3);
+    max-width: 400px;
+    align-items: center;
+    gap: 16px;
+}
+
+.cardPlayground {
+    width: 100%;
+    max-height: 240px;
+}
+
+#signatureImage {
+    max-height: 216px;
+    padding: 12px 54px;
+    background-color: white;
+    border-radius: 24px;
+}
+
+.lineCardBox {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    gap: 8px;
+}
+
+#toolsBox {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    justify-content: flex-start;
+    margin-bottom: 60px;
+}
+
+.toolsLink {
+    border-radius: 16px;
+    border: 1px solid var(--swatch-100, #DCDDDF);
+    background: var(--White, #FFF);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 24px;
+    width: calc(50% - 60px);
+    text-decoration: none;
+}
+
+#toolsUnderBox {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.toolsP {
+    color: var(--Brand---Purple-default, #330080);
+
+    font-family: HelveticaBold;
+    font-size: 24px;
+    font-style: normal;
+    line-height: 32px;
+    /* 133.333% */
+    letter-spacing: -0.25px;
 }
