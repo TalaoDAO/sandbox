@@ -337,7 +337,7 @@ def oidc4vc_token(red, mode):
     if code_wallet_data['vp_type'] == 'ldp_vp':
         vp = code_wallet_data['vp_token_payload']
     else:
-        vp = code_wallet_data['vp_token_payload']['vp']
+        vp = code_wallet_data['vp_token_payload'].get('vp')
     id_token = oidc4vc_build_id_token(client_id, code_wallet_data['sub'], data['nonce'], vp, mode)
     logging.info('id_token and access_token sent to client from token endpoint')
     access_token = str(uuid.uuid1())
@@ -454,9 +454,11 @@ def client_metadata_uri(id, red):
 
 
 def build_client_metadata(client_id, redirect_uri) -> dict:
+    print('client id = ', client_id)
     try:
         verifier_data = json.loads(read_oidc4vc_verifier(client_id))
     except Exception:
+        print('issue')
         return
     return {
         'subject_syntax_types_supported': [
@@ -632,7 +634,8 @@ def oidc4vc_login_qrcode(red, mode):
             
         # client_metadata_uri
         id = str(uuid.uuid1())
-        client_metadata = build_client_metadata(client_id, redirect_uri)
+        client_metadata = build_client_metadata(verifier_id, redirect_uri)
+        print('client metadata = ', client_metadata)
         red.setex(id, QRCODE_LIFE, json.dumps(client_metadata))
         authorization_request['client_metadata_uri'] = mode.server + "sandbox/verifier/wallet/client_metadata_uri/" + id
         
