@@ -1,130 +1,103 @@
 <!DOCTYPE html>
-<!-- wallet_test.html -->
 <html>
 
 <head>
-    {% include 'head.html' %}
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/altmeIcon.png">
+    <title>Talao</title>
+    <link rel="stylesheet" href="/static/home.css">
 </head>
 
-<body id="page-top" >
-    <div id="wrapper">
-        <div class="d-flex flex-column" id="content-wrapper">
-            <div id="content" >
-                {% include 'saas_nav_bar.html' %}
-                <div class="container-fluid my-5">
-
-                
-        
-                    <div class="text-center">
-                        <h4>Wallet Tests for OIDC4VP SIOPV2 compliance</h4>
+<body>
+    {% include 'header.html' %}
+    <div id="mainBox">
+        <p id="title">Wallet Tests for OIDC4VP SIOPV2 compliance</p>
+        <div id="divCompliant">
+            <img id="arrowDown" src="/static/img/arrow-down.png">
+            <p id="compliant">Here is a list of wallet test</p>
+        </div>
+        <div id="testBox">
+            <div class="testColumn">
+                <a class="test" href="/sandbox/verifier/tezos-ebsi">
+                    <div class="topLineLink">
+                        <p class="testP">Application TEZOS-EBSI</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-                    <div class="row my-5">
-                        
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/verifier/tezos-ebsi">
-                                <br>Application TEZOS-EBSI</strong></a>
-                            </div>
-                        </div>
-
-                       
-                       
-                     
-                        
+                    <p class="testDescription">Web site</p>
+                </a>
+                <a class="test" href="/sandbox/verifier/default_2">
+                    <div class="topLineLink">
+                        <p class="testP">Profile DEFAULT Test #4</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-
-                    <div class="row my-5">
-                        
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/verifier/default">
-                                <br>#3 Profile DEFAULT</strong></a>
-                            </div>
-                        </div>
-
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/verifier/default_2">
-                                <br>#4 Profile DEFAULT</strong></a>
-                            </div>
-                        </div>
-
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/verifier/default_3">
-                                <br>#5 Profile DEFAULT</strong></a>
-                            </div>
-                        </div>
-                        
+                    <p class="testDescription">deferred VC number = None</p>
+                </a>
+                <a class="test" href="/sandbox/verifier/gaiax">
+                    <div class="topLineLink">
+                        <p class="testP">Profile GAIA-X #9</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-
-
-
-                    <div class="row my-5">
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/verifier/gaiax">
-                                <br>#9 Profile GAIA-X</strong></a>
-                            </div>
-                        </div> 
-
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/verifier/gaiax_2">
-                                <br>#10 Profile GAIA-X</strong></a>
-                            </div>
-                        </div>
-
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/verifier/gaiax_3">
-                                <br>#11 Profile GAIA-X</strong></a>
-                            </div>
-                        </div>
-                        
+                    <p class="testDescription">deferred VC number = None</p>
+                </a>
+                <a class="test" href="/sandbox/verifier/gaiax_3">
+                    <div class="topLineLink">
+                        <p class="testP">Profile GAIA-X #11</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-                    
-                    <div class="row my-5">
-
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/verifier/ebsiv3">
-                                <br>#12 Profile EBSI-V3</strong></a><br>
-                                vp_token for compliance test
-                            </div>
-                        </div>
-    
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/verifier/ebsiv3_2">
-                                <br>#13 Profile EBSI-V3</strong></a><br>
-                                Id token for compliance test
-                            </div>
-                        </div>
-
+                    <p class="testDescription">ebsi issuer</p>
+                </a>
+                <a class="test" href="/sandbox/verifier/ebsiv3_2">
+                    <div class="topLineLink">
+                        <p class="testP">Profile EBSI v3 #13</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-
-
-
-          
-
-                </div>
+                    <p class="testDescription">Id token for compliance test</p>
+                </a>
+                <a class="test" href="">
+                    <div class="topLineLink">
+                        <p class="testP">Test</p><img class="linkImg" src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">Description</p>
+                </a>
+            </div>
+            <div class="testColumn">
+                <a class="test" href="/sandbox/verifier/default">
+                    <div class="topLineLink">
+                        <p class="testP">Profile DEFAULT Test #3</p><img class="linkImg" src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">deferred VC number = None</p>
+                </a>
+                <a class="test" href="/sandbox/verifier/default_3">
+                    <div class="topLineLink">
+                        <p class="testP">Profile DEFAULT Test #5</p><img class="linkImg" src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">deferred VC number = None</p>
+                </a>
+                <a class="test" href="/sandbox/verifier/gaiax_2">
+                    <div class="topLineLink">
+                        <p class="testP">Profile GAIA-X #10</p><img class="linkImg" src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">deferred VC number = None</p>
+                </a>
+                <a class="test" href="/sandbox/verifier/ebsiv3">
+                    <div class="topLineLink">
+                        <p class="testP">Profile EBSI v3 #12</p><img class="linkImg" src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">vp_token for compliance test</p>
+                </a>
+                <a class="test" href="">
+                    <div class="topLineLink">
+                        <p class="testP">Test</p><img class="linkImg" src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">Description</p>
+                </a>
+                <a class="test" href="">
+                    <div class="topLineLink">
+                        <p class="testP">Test</p><img class="linkImg" src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">Description</p>
+                </a>
             </div>
         </div>
     </div>
-                                {% include 'user_footer.html' %}
-
-    <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
-    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='in_progress_button.js') }}"></script>
-    <script src="{{ url_for('static', filename='encryption.js') }}"></script>
-
-    <script>
-        function goBack() {
-          window.history.back();
-        }
-    </script>
+    {% include 'footer.html' %}
 
 </body>
 

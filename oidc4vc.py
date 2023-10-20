@@ -128,10 +128,12 @@ def sign_jwt_vc(vc, issuer_vm, issuer_key, nonce):
             'nonce': nonce,
             'iat': datetime.timestamp(datetime.now()),
             'jti': vc['id'],
-            'sub': vc['credentialSubject']['id']
         }
-    except Exception:
-        return  
+    except Exception as e:
+        logging.info("jwt signing error = %s", str(e))
+        return
+    if vc['credentialSubject'].get('id'):
+        payload['sub'] = vc['credentialSubject']['id']
     expiration_date = datetime.fromisoformat(vc['expirationDate'][:-1])
     payload['exp'] = datetime.timestamp(expiration_date)
     issuance_date = datetime.fromisoformat(vc['issuanceDate'][:-1])

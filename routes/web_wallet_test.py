@@ -182,64 +182,52 @@ def test_direct_offer(red, mode) :
     
     elif VC_filename == "EmployeeCredential.jsonld" :
         filename = "./credential_manifest/EmployeeCredential_credential_manifest.json"
-
     elif VC_filename == "TezVoucher_1.jsonld" :
         filename = "./credential_manifest/voucher_credential_manifest.json"
-
     elif VC_filename == "compellio_ticket.jsonld" :
         filename = "./credential_manifest/compellio_ticket_cm.json"
-    
     elif VC_filename == "AragoPass.jsonld" :
         filename = "./credential_manifest/AragoPass_credential_manifest.json"
-    
     elif VC_filename == "CustomType.jsonld" :
         filename = "./credential_manifest/CustomType_credential_manifest.json"
-
     elif VC_filename == "GamerPass.jsonld" :
         filename = "./credential_manifest/GamerPass_credential_manifest.json"
-
     elif VC_filename == "LoyaltyCard.jsonld" :
         filename = "./credential_manifest/LoyaltyCard_credential_manifest.json"
-    
     elif VC_filename == "PCDSAgentCertificate.jsonld" :
         filename = "./credential_manifest/PCDSAgentCertificate_credential_manifest.json"
-    
     elif VC_filename == "Test.jsonld" :
         filename = "./credential_manifest/Test_credential_manifest.json"
-
     elif VC_filename == "MembershipCard_1.jsonld" :
         filename = "./credential_manifest/MembershipCard_1_credential_manifest.json"
-    
     elif VC_filename == "Nationality.jsonld" :
         filename = "./credential_manifest/nationality_credential_manifest.json"
-    
     elif VC_filename == "DefiCompliance.jsonld" :
         filename = "./credential_manifest/defi_credential_manifest.json"
-    
     elif VC_filename == "StudentCard.jsonld" :
         filename = "./credential_manifest/StudentCard_credential_manifest.json"
-    
-    else : 
+    else: 
         filename = None
         credential_manifest = "{}" 
     logging.info('filename = %s %s', filename, VC_filename)
-    if filename :
+    if filename:
         with open(filename, "r") as f:
             credential_manifest = f.read()
     
     credentialOffer['credential_manifest'] = json.loads(credential_manifest)
-    id =  str(uuid.uuid1())
+    id = str(uuid.uuid1())
     url = mode.server + "sandbox/wallet_credential/" + id + '?issuer=' + did_selected
     deeplink_talao = mode.deeplink_talao + 'app/download?' + urlencode({'uri' : url })
     deeplink_altme = mode.deeplink_altme + 'app/download?' + urlencode({'uri' : url })
     red.setex(id, 180, json.dumps(credentialOffer))
-    return render_template('credential_offer_qr_2.html',
-                                url=url,
-                                deeplink=deeplink_talao,
-                                altme_deeplink=deeplink_altme,
-                                id=id,
-                                credential_manifest = json.dumps(credentialOffer['credential_manifest'],indent=4),
-                                )
+    return render_template(
+        'credential_offer_qr_2.html',
+        url=url,
+        deeplink=deeplink_talao,
+        altme_deeplink=deeplink_altme,
+        id=id,
+        credential_manifest = json.dumps(credentialOffer['credential_manifest'],indent=4),
+    )
 
 
 def test_credentialOffer_qrcode(red, mode) :
@@ -253,7 +241,7 @@ def test_credentialOffer_qrcode(red, mode) :
         dir_list = dir_list_calculate()
         path = "context"
         html_string = str()
-        for filename in dir_list :
+        for filename in dir_list:
             try :
                 credential = credential_from_filename("context", filename)
                 credential['issuer'] = ""
@@ -272,7 +260,7 @@ def test_credentialOffer_qrcode(red, mode) :
                         <br><button  type"submit" > Generate QR code for a Credential Offer</button>
                     </form>
                     <hr>"""
-            except :
+            except Exception:
                 logging.warning("credential mal formaté %s", filename)
                 pass
         html_string = """<html><head>{% include 'head.html' %}</head>
@@ -286,19 +274,19 @@ def test_credentialOffer_qrcode(red, mode) :
                             <script src="{{ url_for('static', filename='in_progress_button.js') }}"></script>
                         </body></html>"""
 
-        return render_template_string (html_string,simulator="Issuer simulator") 
+        return render_template_string(html_string, simulator="Issuer simulator") 
     else :   
         path = request.form['path']   
         if request.form['did_select'].split(':')[1] == 'web' :
             did_selected = request.form['did_select']
             did_issuer = 'did:web:talao.co'
-        else :
+        else:
             did_issuer = request.form['did_select']
         filename = request.form['filename']
-        try : 
+        try: 
             credential = credential_from_filename(path, filename)
-        except :
-            return redirect ('/playground')
+        except Exception:
+            return redirect('/playground')
         credential['issuanceDate'] = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
         credential['expirationDate'] =  (datetime.now() + timedelta(days= 365)).isoformat() + "Z"
         credential['credentialSubject']['id'] = "did:..."
@@ -313,14 +301,15 @@ def test_credentialOffer_qrcode(red, mode) :
         deeplink_talao = mode.deeplink_talao + 'app/download?' + urlencode({'uri' : url })
         deeplink_altme = mode.deeplink_altme + 'app/download?' + urlencode({'uri' : url })
         red.setex(credential['id'], 180, json.dumps(credentialOffer))
-        return render_template('credential_offer_qr.html',
-                                url=url,
-                                deeplink=deeplink_talao,
-                                altme_deeplink=deeplink_altme,
-                                id=credential['id'],
-                                credentialOffer=json.dumps(credentialOffer, indent=4),
-                                simulator='Verifier Simulator' 
-                                )
+        return render_template(
+            'credential_offer_qr.html',
+            url=url,
+            deeplink=deeplink_talao,
+            altme_deeplink=deeplink_altme,
+            id=credential['id'],
+            credentialOffer=json.dumps(credentialOffer, indent=4),
+            simulator='Verifier Simulator' 
+        )
 
 
 def test_credential_display():  
@@ -344,9 +333,9 @@ def test_credential_display():
 
 
 async def test_credentialOffer_endpoint(id, red):
-    try : 
+    try: 
         credentialOffer = red.get(id).decode()
-    except :
+    except Exception:
         logging.error("red.get(id) error")
         return jsonify('server error'), 500
     # wallet GET
@@ -354,44 +343,49 @@ async def test_credentialOffer_endpoint(id, red):
         return Response(json.dumps(credentialOffer, separators=(':', ':')),
                         headers={ "Content-Type" : "application/json"},
                         status=200)
-                        
+    
     # wallet POST
-    else :
+    else:
         credential =  json.loads(credentialOffer)['credentialPreview']
         red.delete(id)
-      
         credential['credentialSubject']['id'] = request.form['subject_id']
 
         global did_selected
         if  credential["issuer"][:8] == "did:ebsi" :
             logging.info("ebsi signer")
             signed_credential = oidc4vc.lp_sign(credential, Secp256kr, credential["issuer"])
-        else :
+        else:
             if did_selected == 'did:web:talao.co#key-1' :
                 signed_credential = vc_signature.sign(credential, Secp256kr, "did:web:talao.co") 
             elif did_selected == 'did:web:talao.co#key-3' :
                 signed_credential = vc_signature.sign(credential, Secp256kr, "did:web:talao.co", P256=P256)
             elif did_selected == 'did:web:talao.co#key-4' :
                 signed_credential = vc_signature.sign(credential, Secp256kr, "did:web:talao.co", Ed25519=Ed25519)
-            elif did_selected == DID_TZ1 :
+            elif did_selected == DID_TZ1:
                 didkit_options = {
                     "proofPurpose": "assertionMethod",
                     "verificationMethod": await didkit.key_to_verification_method('tz', Ed25519)
                     }
-                signed_credential =  await didkit.issue_credential(
-                json.dumps(credential),
-                didkit_options.__str__().replace("'", '"'),
-                Ed25519)
-            else :
+                try:
+                    signed_credential =  await didkit.issue_credential(
+                    json.dumps(credential),
+                    didkit_options.__str__().replace("'", '"'),
+                    Ed25519
+                    )
+                except Exception:
+                    return jsonify("{}"), 400
+            else:
                 signed_credential = vc_signature.sign(credential, Secp256kr, credential['issuer'])
         
         # send event to client agent to go forward
-        data = json.dumps({
-                            'id' : id,
-                            'check' : 'success',
-                            'scope' : '',
-                            'signed_credential' : signed_credential
-                            })
+        data = json.dumps(
+            {
+                'id': id,
+                'check': 'success',
+                'scope': '',
+                'signed_credential': signed_credential
+            }
+        )
         red.publish('wallet_test', data)
         return jsonify(signed_credential)
         

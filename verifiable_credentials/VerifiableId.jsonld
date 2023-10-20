@@ -31,7 +31,6 @@
     "issued": "2022-12-20T14:25:22Z",
     "credentialSubject": {
       "type" : "VerifiableId",
-      "id": "did:ebsi:zmSKef6zQZDC66MppKLHou9zCwjYE4Fwar7NSVy2c7aya",
       "personalIdentifier": "IT/DE/1234",
       "familyName": "Castafiori",
       "firstName": "Bianca",

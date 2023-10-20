@@ -3,140 +3,129 @@
 <html>
 
 <head>
-    {% include 'head.html' %}
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/altmeIcon.png">
+    <title>Talao</title>
+    <link rel="stylesheet" href="/static/home.css">
 </head>
 
-<body id="page-top" >
-    <div id="wrapper">
-        <div class="d-flex flex-column" id="content-wrapper">
-            <div id="content" >
-                {% include 'saas_nav_bar.html' %}
-                <div class="container-fluid my-5">
+<body>
 
-                
-        
-                    <div class="text-center">
-                        <h4>Wallet Tests for OIDC4VCI compliance</h4>
+    {% include 'header.html' %}
+    <div id="mainBox">
+
+        <p id="title">Wallet Tests for OIDC4VCI compliance</p>
+        <div id="divCompliant">
+            <img id="arrowDown" src="/static/img/arrow-down.png">
+            <p id="compliant">Here is a list of wallet test</p>
+        </div>
+        <div id="testBox">
+            <div class="testColumn">
+                <a class="test" href="/sandbox/issuer/ebsiv3_diploma">
+                    <div class="topLineLink">
+                        <p class="testP">EBSI Diploma (V3)</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-                    <div class="row my-5">
-                        
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/issuer/ebsiv3_diploma">
-                                <br>EBSI Diploma (V3)</strong></a> <!-- Test 1-->
-                            </div>
-                        </div>
-                    
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/issuer/user_pin">
-                                <br>Test #1 Issuer with user PIN</strong></a> <!-- Test 1-->
-                            </div>
-                        </div>
-
-                            
+                    <p class="testDescription">Web site</p>
+                </a>
+                <a class="test" href="/sandbox/issuer/user_pin">
+                    <div class="topLineLink">
+                        <p class="testP">Issuer User PIN</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-
-
-                    <div class="row my-5">
-                        
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/issuer/gaia-x">
-                                <br>#4 Profile GAIA-X</strong></a>
-                            </div>
-                        </div>
+                    <p class="testDescription">deferred VC number = None</p>
+                </a>
+                <a class="test" href="/sandbox/issuer/default_3">
+                    <div class="topLineLink">
+                        <p class="testP">Profile DEFAULT Test #6</p><img class="linkImg" src="/static/img/link.png">
                     </div>
+                    <p class="testDescription">deferred VC number = None</p>
+                </a>
+                <a class="test" href="/sandbox/issuer/wallet_link">
+                    <div class="topLineLink">
+                        <p class="testP">Profile DEFAULT Wallet-link</p><img class="linkImg" src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">ebsi issuer</p>
+                </a>
+                <a class="test" href="/sandbox/issuer/ebsiv31">
+                    <div class="topLineLink">
+                        <p class="testP">Profile EBSI v3 #8</p><img class="linkImg" src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">Id token for compliance test</p>
+                </a>
+                <form class="test" action="/sandbox/issuer/default_2/deferred" method="post">
 
 
-                        <div class="row my-5">
-
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/issuer/default_2">
-                                <br></strong>#5 Profile DEFAULT (deferred VC)</a>
-                        
-                            <form action="/sandbox/issuer/default_2/deferred" method="post">
-                            
-                                <br>
-                                Deferred VC number :  <input type="text" name="issuer_state"><br><br>
-                                <a href="/sandbox/issuer/default_2/deferred"><button  class="btn btn-primary btn-sm" style="background-color: #09060f;" type="submit">Provide deferred VC</button></a>
-                            </form> 
-                        </div>
-                        </div>
-
-                        
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/issuer/default">
-                                <br></strong>#2 Profile DEFAULT</a><br>
-                                authorization code flow
-                            </div>
-                        </div>
+                    <p class="testP">Deferred VC number</p>
+                    <div id="divFormTest">
+                        <input type="text" name="issuer_state" placeholder="VC number">
+                        <a href="/sandbox/issuer/default_2/deferred">
+                            <button id="submitDeffered" type="submit">PROVIDE DEFFERED VC</button>
+                        </a>
                     </div>
 
-                    <div class="row my-5">
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/issuer/default_3">
-                                <br>#6 Profile DEFAULT</strong></a>
-                            </div>
-                        </div>     
+                </form>
 
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/issuer/default_jwt">
-                                <br>#7 Profile DEFAULT JWT</strong></a>
-                            </div>
-                        </div>   
-                        
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/issuer/wallet_link">
-                                <br>#11 Profile  Default wallet-link</strong></a>
-                            </div>
-                        </div>
-
-
+            </div>
+            <div class="testColumn">
+                <a class="test" href="/sandbox/issuer/gaia-x">
+                    <div class="topLineLink">
+                        <p class="testP">Profile GAIA-X</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-        
-
-                    <div class="row my-5">
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/issuer/ebsiv3">
-                                <br>#10 Profile EBSI V3</strong></a><br>
-                                authorization code flow
-                            </div>
-                        </div>  
-                        <div class="col mt-4">
-                            <div id="id_qrcode" class="text-center">
-                                <a href="/sandbox/issuer/ebsiv31">
-                                <br>#8 Profile EBSI-V3</strong></a>
-                            </div>
-                        </div>  
-                     
-
-
+                    <p class="testDescription">deferred VC number = None</p>
+                </a>
+                <a class="test" href="/sandbox/issuer/default">
+                    <div class="topLineLink">
+                        <p class="testP">Profile DEFAULT Test #2</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-
-          
-
-                </div>
+                    <p class="testDescription">deferred VC number = None</p>
+                </a>
+                <a class="test" href="/sandbox/issuer/default_2">
+                    <div class="topLineLink">
+                        <p class="testP">Profile DEFAULT Test #5 (deferred VC)</p><img class="linkImg"
+                            src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">deferred VC number = None</p>
+                </a>
+                <a class="test" href="/sandbox/issuer/default_jwt">
+                    <div class="topLineLink">
+                        <p class="testP">Profile DEFAULT Test #7 ( JWT )</p><img class="linkImg"
+                            src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">vp_token for compliance test</p>
+                </a>
+                <a class="test" href="/sandbox/issuer/ebsiv3">
+                    <div class="topLineLink">
+                        <p class="testP">Profile EBSI v3 #10</p><img class="linkImg" src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">Description</p>
+                </a>
+                <a class="test" href="">
+                    <div class="topLineLink">
+                        <p class="testP">Test</p><img class="linkImg" src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">Description</p>
+                </a>
             </div>
         </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </div>
-                                {% include 'user_footer.html' %}
 
-    <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
-    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+    {% include 'footer.html' %}
 
-    <script>
-        function goBack() {
-          window.history.back();
-        }
-    </script>
 
 </body>
 

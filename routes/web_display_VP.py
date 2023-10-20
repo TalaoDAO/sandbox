@@ -38,7 +38,7 @@ def test_display_VP_qrcode(mode):
     url = mode.server + 'sandbox/VP_presentation/' + stream_id +'?issuer=' + did_selected
     deeplink_talao = mode.deeplink_talao + 'app/download?' + urlencode({'uri' : url })
     deeplink_altme = mode.deeplink_altme + 'app/download?' + urlencode({'uri' : url })
-    return render_template('VP_presentation_qr.html',
+    return render_template('vp_presentation_qr.html',
 							url=url,
                             deeplink=deeplink_talao,
                             altme_deeplink=deeplink_altme,
