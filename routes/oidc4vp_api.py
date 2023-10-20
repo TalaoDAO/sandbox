@@ -708,7 +708,7 @@ def oidc4vc_login_qrcode(red, mode):
         authorization_request=json.dumps(authorization_request, indent=4),
         url_json=json.dumps(authorization_request_displayed, indent=4),
         presentation_definition=json.dumps(presentation_definition, indent=4),
-        client_metadata=json.dumps(build_client_metadata(client_id, redirect_uri), indent=4),
+        client_metadata=json.dumps(build_client_metadata(verifier_id, redirect_uri), indent=4),
         deeplink_talao=deeplink_talao,
         deeplink_altme=deeplink_altme,
         stream_id=stream_id,
