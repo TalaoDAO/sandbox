@@ -878,7 +878,8 @@ def oidc_issuer_stream(red):
 
 async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer_vm, c_nonce, format, duration=365):
     credential["id"] = "urn:uuid:" + str(uuid.uuid1())
-    credential["credentialSubject"]["id"] = wallet_did
+    if wallet_did:
+        credential["credentialSubject"]["id"] = wallet_did
     credential["issuer"] = issuer_did
     credential["issued"] = f"{datetime.now().replace(microsecond=0).isoformat()}Z"
     credential["issuanceDate"] = datetime.now().replace(microsecond=0).isoformat() + "Z"
