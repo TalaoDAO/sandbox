@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/static/img/altmeIcon.png">
+  <title>Talao</title>
+  <link rel="stylesheet" href="/static/home.css">
+</head>
+
+<body>
+  {% include 'header.html' %}
+  <div id="mainBox">
+    <p id="title">Display your VP and VC</p>
+    <div id="displayBox">
+      <div class="qrcodeBox">
+        <div id="divCompliant">
+          <img id="arrowDown" src="/static/img/arrow-down.png">
+          <p id="compliant">Scan the QRCode below with your wallet (Talao or Altme)</p>
+        </div>
+        <img src="{{ qrcode(url) }}" class="qrcode">
+      </div>
+      <div class="qrcodeBox">
+        <div id="divCompliant">
+          <img id="arrowDown" src="/static/img/arrow-down.png">
+          <p id="compliant">Scan the QRCode below with your wallet camera</p>
+        </div>
+        <img src="{{ qrcode(altme_deeplink) }}" class="qrcode">
+      </div>
+    </div>
+  </div>
+
+  {% include 'footer.html' %}
+
+
+
+
+  <script>
+    var source = new EventSource('/sandbox/VP_presentation_stream');
+    console.log(source);
+    source.onmessage = function (event) {
+      const result = JSON.parse(event.data)
+      if (result.message == 'ok' & result.stream_id == '{{stream_id}}') {
+        window.location.href = '/sandbox/VP_presentation_display?stream_id=' + result.stream_id;
+      }
+      if (result.message != 'ok' & result.stream_id == '{{stream_id}}') {
+        window.location.href = '/sandbox/VP_presentation_display?message=' + result.message;
+      }
+    };
+  </script>
+</body>
+
+</html>
