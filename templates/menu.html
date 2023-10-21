@@ -19,34 +19,30 @@ last one-->
 
 
     <div id="mainBox">
-        <p id="title">Create or select your Issuer or Verifier</p>
+        <p id="title">Create or select your connectors</p>
         <div id="consoleBox">
             <div class="consoleColumn">
                 <a class="linkConsole" href="/sandbox/verifier/console">
                     <div class="topLineLink">
-                        <p class="consoleP">Verifiers for mobile wallets </p><img class="linkImg"
+                        <p class="consoleP">Verify credentials presented by mobile wallets</p><img class="linkImg"
                             src="/static/img/link.png">
                     </div>
                     <div class="linesConsole">
-                        <p class="lineConsole">- SIOPv2/OIDC4VP implementation</p>
-                        <p class="lineConsole">- Support EBSI V3 compliant wallets</p>
-                        <p class="lineConsole">- ARF type 2 compliance</p>
-                        <p class="lineConsole">- Integration with standard OIDC lib (NodeJS, Python, PHP, C, C+, GO,
-                            Ruby,..Webflow, Wordpress,..;)</p>
-                        <p class="lineConsole">- Resquest as a jwt and as an uri</p>
-                        <p class="lineConsole">- Personal definition uri</p>
-                        <p class="lineConsole">- PKCE</p>
-                        <p class="lineConsole">- Client id as a DID or uri</p>
-                        <p class="lineConsole">- JWT and JSON-LD</p>
-                        <p class="lineConsole">- did;web, did:ethr, did:hedera, did:ebsi, did:tz, did:key</p>
-                        <p class="lineConsole">- P-256, secp256k1, Ed25519, RS-256</p>
-                        <p class="lineConsole">- Dedicated external resolver</p>
-                        <p class="lineConsole">- PEX 2.0: rule count, all, array content, string pattern</p>
+                        <p class="lineConsole">It is a bridge between a standard OIDC client application and a digital identity wallet.
+                        <p class="lineConsole">Integration can be achieved with any framework (NodeJS, Python, PHP, C, C+, GO,
+                            Ruby,..Webflow, Wordpress,..;) with the help of a standard OIDC client lib.</p>
+                        <p class="lineConsole">All parameters are managed through the console of the platform, so developer only need to setup
+                            the issuer, client_id and client_secret parameters in their code.</p>
+                        <p class="lineConsole">Implementation time for POC : a couple of hours.</p>
 
 
                     </div>
                 </a>
                 <div class="seeDiv">
+                    <a class="seeA" href="https://openid.net/certified-open-id-developer-tools/">
+                        <p class="testP">See OIDC client lib </p>
+                        <img class="linkImg" src="/static/img/link.png">
+                    </a>
                     <a class="seeA" href="https://openid.net/specs/openid-4-verifiable-presentations-1_0.html">
                         <p class="testP">See OIDC4VP standards </p>
                         <img class="linkImg" src="/static/img/link.png">
@@ -66,24 +62,16 @@ last one-->
             <div class="consoleColumn">
                 <a class="linkConsole" href="/sandbox/issuer/console">
                     <div class="topLineLink">
-                        <p class="consoleP">Issuers for mobile wallets</p><img class="linkImg"
+                        <p class="consoleP">Issue credentials to mobile wallets</p><img class="linkImg"
                             src="/static/img/link.png">
                     </div>
                     <div class="linesConsole">
-                        <p class="lineConsole">- OIDC4VCI implementation</p>
-                        <p class="lineConsole">- Support different profiles as EBSI V3, GAIAX, ..</p>
-                        <p class="lineConsole">- Support of authorization code flow and pre-authorized_code flow </p>
-                        <p class="lineConsole">- Pre authorized code flow</p>
-                        <p class="lineConsole">- Authorized code flow available on in house release</p>
-                        <p class="lineConsole">- Deferred endpoint</p>
-                        <p class="lineConsole">- Credential offer uri</p>
-                        <p class="lineConsole">- PIN code of 6 or 4 digits</p>
-                        <p class="lineConsole">- JWT and JSON-LD</p>
-                        <p class="lineConsole">- did;web, did:ethr, did:hedera, did:ebsi, did:tz, did:key</p>
-                        <p class="lineConsole">- P-256, secp256k1, Ed25519, RS-256</p>
-                        <p class="lineConsole">- Issuance of multiple VCs of the same type</p>
-                        <p class="lineConsole">- Wallet rendering in credential manifest</p>
-                        <p class="lineConsole">- Swagger UI for API</p>
+                        <p class="lineConsole">Issuance of credentials is done through a unique call to an API and a redirect of the user browser.</p>
+                        <p class="lineConsole">Through the API developers will provide the main VC data and some options.</p>
+                        <p class="lineConsole">Other parameters are setup through the console of the platform.</p>
+                        <p class="lineConsole">A swagger UI is available with example.</p>
+                        <p class="lineConsole">Implementation time for POC : 1 to 2 days.</p>
+
 
 
                     </div>
@@ -96,6 +84,11 @@ last one-->
                     <a class="seeA" href="https://identity.foundation/wallet-rendering/">
                         <p class="testP">See Wallet rendering
                             standards</p>
+                        <img class="linkImg" src="/static/img/link.png">
+                    </a>
+                    <a class="seeA" href="/sandbox/api/swagger">
+                        <p class="testP">See swagger UI
+                            </p>
                         <img class="linkImg" src="/static/img/link.png">
                     </a>
 

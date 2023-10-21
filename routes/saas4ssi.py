@@ -1,10 +1,11 @@
-from flask import jsonify, request, render_template, redirect, session, flash
+from flask import jsonify, request, render_template, redirect, session, flash, send_file
 import base64
 import json
 import db_user_api
 import op_constante
 import logging
 import message
+from werkzeug.utils import secure_filename
 
 logging.basicConfig(level=logging.INFO)
 
@@ -13,6 +14,8 @@ admin_list = ["thierry.thevenet@talao.io", "nicolas.muller@talao.io", "hugo@altm
 
 
 def init_app(app,red, mode):
+    
+    #@app.add_url_rule('/sandbox/static/<filename>', methods=['GET'])
 
     app.add_url_rule('/sandbox/saas4ssi',  view_func=saas_home, methods=['GET', 'POST'])
     app.add_url_rule('/sandbox/saas4ssi/dids',  view_func=dids, methods=['GET'])
@@ -22,11 +25,9 @@ def init_app(app,red, mode):
 
     app.add_url_rule('/sandbox/saas4ssi/signup',  view_func=saas_signup, methods=['GET', 'POST'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/saas4ssi/admin',  view_func=admin, methods=['GET', 'POST'], defaults={'mode': mode})
-    #app.add_url_rule('/sandbox/saas4ssi/callback',  view_func=saas_callback, methods=['GET', 'POST'], defaults={'mode': mode}) # signup
     app.add_url_rule('/sandbox/saas4ssi/callback_4',  view_func=saas_callback_4, methods=['GET', 'POST'], defaults={'mode': mode}) # signup ebsi v3
 
     
-    #app.add_url_rule('/sandbox/saas4ssi/callback_2',  view_func=saas_callback_2, methods=['GET', 'POST']) # login
     app.add_url_rule('/sandbox/saas4ssi/callback_3',  view_func=saas_callback_3, methods=['GET', 'POST']) # login with ebsi v3 
 
     app.add_url_rule('/sandbox/saas4ssi/logout',  view_func=saas_logout, methods = ['GET', 'POST'])
@@ -37,6 +38,14 @@ def init_app(app,red, mode):
     return
 
 
+"""
+def serve_static(filename: str):
+    filename = secure_filename(filename)
+    try:
+        return send_file('./static/' + filename, download_name=filename)
+    except FileNotFoundError:
+        return jsonify("not found"), 404
+"""
 
 def issuer_oidc_test():
     return render_template('issuer_oidc/wallet_issuer_test.html')
@@ -46,11 +55,6 @@ def verifier_oidc_test():
     return render_template('verifier_oidc/wallet_verifier_test.html')
 
 
-"""
-def default_webhook():
-    data = request.get_json()   
-    return jsonify('ok')
-"""
 
 def saas_home():
     if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
@@ -107,33 +111,6 @@ def admin(mode):
     else:
         return redirect("/sandbox/saas4ssi")
 
-"""
-# Register
-def saas_callback(mode):
-    if request.args.get("error"):
-        logging.warning("access denied")
-        session.clear()
-        return redirect("/sandbox/saas4ssi")
-    id_token = request.args['id_token']
-    s = id_token.split('.')[1]
-    payload = base64.urlsafe_b64decode(s + '=' * (4 - len(s) % 4)) 
-    login_name = json.loads(payload.decode())['email']
-    if not db_user_api.read(login_name):
-        data = op_constante.user
-        data["did"] = json.loads(payload.decode())['sub']
-        data['login_name'] = session['login_name'] = login_name
-        session['is_connected'] = True
-        db_user_api.create(login_name, data)
-        try:
-            message.message("Registration on Saas Altme of " + login_name , "thierry@altme.io", "New user = " + login_name, mode)
-        except Exception:
-            pass
-        return redirect('/sandbox/saas4ssi/menu')
-    else:
-        logging.warning('user already exists')
-        flash("You are already registered, you can login !", "warning")
-        return redirect("/sandbox/saas4ssi")
-"""
 
 # Register with EBSI v3
 def saas_callback_4(mode):
@@ -161,30 +138,6 @@ def saas_callback_4(mode):
         flash("You are already registered, you can login !", "warning")
         return redirect("/sandbox/saas4ssi")
 
-"""
-# login
-def saas_callback_2():
-    if request.args.get("error"):
-        logging.warning("access denied")
-        session.clear()
-        return redirect("/sandbox/saas4ssi")
-    id_token = request.args['id_token']
-    s = id_token.split('.')[1]
-    payload = base64.urlsafe_b64decode(s + '=' * (4 - len(s) % 4))
-    login_name = json.loads(payload.decode())['email']
-    if login_name in admin_list:
-        session['login_name'] = "admin"
-        session['is_connected'] = True
-        return redirect('/sandbox/saas4ssi/menu')
-    elif db_user_api.read(login_name):
-        session['login_name'] = login_name
-        session['is_connected'] = True
-        return redirect('/sandbox/saas4ssi/menu')
-    else:
-        logging.warning('error, user does not exist')
-        session.clear()
-        return render_template("access_denied.html")
-""" 
     
 # login
 def saas_callback_3():

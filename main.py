@@ -1,7 +1,7 @@
 import os
 import time
 import markdown
-from flask import Flask, redirect, request, render_template_string, request, jsonify, Response
+from flask import Flask, redirect, request, render_template_string, request, jsonify, Response, send_from_directory
 from flask_session import Session
 from flask_mobility import Mobility
 from datetime import timedelta, datetime
@@ -48,8 +48,15 @@ mode = environment.currentMode(mychain, myenv)
 # Redis init red = redis.StrictRedis()
 red = redis.Redis(host='localhost', port=6379, db=0)
 
+
 # Framework Flask and Session setup
-app = Flask(__name__)
+#app = Flask(__name__)
+
+app = Flask(__name__,
+            static_url_path='/static') 
+
+
+
 app.jinja_env.globals['Version'] = "0.3.0"
 app.jinja_env.globals['Created'] = time.ctime(os.path.getctime('main.py'))
 app.config['SESSION_PERMANENT'] = True
