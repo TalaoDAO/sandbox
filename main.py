@@ -175,7 +175,7 @@ authorizations = {
 
 api = Api(
     app,
-    doc='/sandbox/api/swagger',
+    doc='/api/swagger',
     authorizations=authorizations,
     contact='contact@talao.io',
     description="API description for the Altme OIDC4VCI issuer.\n",
