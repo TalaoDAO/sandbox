@@ -1,11 +1,13 @@
-from flask import redirect, jsonify, request
+from flask import redirect, jsonify, request, render_template
 from datetime import datetime, timedelta
 import json
 import uuid
 import requests
 import didkit
 from random import randrange
+import db_api
 
+"""
 key_wallet = {
     "crv": "secp256k1",
     "d": "lbuGEjEsYQ205boyekj8qdCwB2Uv7L2FwHUNleJj_Z0",
@@ -18,32 +20,116 @@ key_wallet = {
 key = json.dumps(key_wallet)
 issuer_did = didkit.key_to_did("key", key)
 issuer_vm = issuer_did + "#key-1"
+"""
+
 
 
 def init_app(app,red, mode):
-    app.add_url_rule('/sandbox/issuer/ebsiv3_diploma',  view_func=issuer_ebsiv3_diploma, methods=['GET'], defaults={'mode': mode})
-    app.add_url_rule('/sandbox/issuer/user_pin',  view_func=issuer_user_pin, methods=['GET'], defaults={'mode': mode}) # test 1
-    app.add_url_rule('/sandbox/issuer/gaia-x',  view_func=issuer_gaiax, methods=['GET'], defaults={'mode': mode}) # test 4
-    app.add_url_rule('/sandbox/issuer/default',  view_func=issuer_default, methods=['GET'], defaults={'mode': mode})
-    app.add_url_rule('/sandbox/issuer/default_2',  view_func=issuer_default_2, methods=['GET'], defaults={'mode': mode, 'red': red}) # test 5
-    app.add_url_rule('/sandbox/issuer/default_2/deferred',  view_func=issuer_default_2_deferred, methods=['GET', 'POST'], defaults={'mode': mode, 'red': 'red'}) # test 5
-    app.add_url_rule('/sandbox/issuer/default_3',  view_func=issuer_default_3, methods=['GET'], defaults={'mode': mode}) # test 6
-    app.add_url_rule('/sandbox/issuer/default_jwt',  view_func=issuer_default_jwt, methods=['GET'], defaults={'mode': mode}) # test 7
-
-    app.add_url_rule('/sandbox/issuer/ebsiv3',  view_func=issuer_ebsiv3, methods=['GET'], defaults={'mode': mode}) # test 10
-    app.add_url_rule('/sandbox/issuer/ebsiv31',  view_func=issuer_ebsiv31, methods=['GET'], defaults={'mode': mode}) # test 8
-
-    app.add_url_rule('/sandbox/issuer/wallet_link',  view_func=issuer_wallet_link, methods=['GET'], defaults={'mode': mode}) # test 8
-
+    app.add_url_rule('/sandbox/issuer/test_1',  view_func=test_1, methods=['GET'], defaults={'mode': mode})
+    app.add_url_rule('/sandbox/issuer/test_2',  view_func=test_2, methods=['GET'], defaults={'mode': mode})
+    app.add_url_rule('/sandbox/issuer/test_3',  view_func=test_3, methods=['GET'], defaults={'mode': mode}) 
+    app.add_url_rule('/sandbox/issuer/test_4',  view_func=test_4, methods=['GET'], defaults={'mode': mode}) 
+    app.add_url_rule('/sandbox/issuer/test_5',  view_func=test_5, methods=['GET'], defaults={'mode': mode}) 
+    app.add_url_rule('/sandbox/issuer/test_6_1',  view_func=test_6_1, methods=['GET', 'POST'], defaults={'mode': mode, 'red': 'red'})
+    app.add_url_rule('/sandbox/issuer/test_6_2',  view_func=test_6_2, methods=['GET', 'POST'], defaults={'mode': mode, 'red': 'red'})
+    app.add_url_rule('/sandbox/issuer/test_7',  view_func=test_7, methods=['GET'], defaults={'mode': mode}) 
+    app.add_url_rule('/sandbox/issuer/test_8',  view_func=test_8, methods=['GET'], defaults={'mode': mode})
+    
+    app.add_url_rule('/sandbox/issuer/test_10',  view_func=test_10, methods=['GET'], defaults={'mode': mode})
+    app.add_url_rule('/sandbox/issuer/test_11',  view_func=test_11, methods=['GET'], defaults={'mode': mode})
+    
     app.add_url_rule('/sandbox/issuer/callback',  view_func=issuer_callback, methods=['GET'])
+    # test
+    app.add_url_rule('/sandbox/issuer/oidc/test',  view_func=issuer_oidc_test, methods=['GET', 'POST'], defaults={"mode": mode})
 
+    return
+
+
+
+
+def issuer_oidc_test(mode):
+    if mode.myenv == 'aws':
+        issuer_id_test_1 = "zxhaokccsi"
+        issuer_id_test_2 = "sobosgdtgd"
+        issuer_id_test_3 = "cejjvswuep"
+        issuer_id_test_4 = "tdiwmpyhzc"
+        issuer_id_test_5 = "zarbjrqrzj"
+        issuer_id_test_6 = "wzxtwpltvn"
+        issuer_id_test_7 = "mfyttabosy"
+        issuer_id_test_8 = "npwsshblrm"
+        
+        issuer_id_test_10 = "grlvzckofy"
+        issuer_id_test_11 = "kwcdgsspng"
+
+
+    else:
+        issuer_id_test_1 = "zxhaokccsi"
+        issuer_id_test_2 = "mjdgqkkmcf"
+        issuer_id_test_3 = "ooroomolyd"
+        issuer_id_test_4 = "raamxepqex"
+        issuer_id_test_5 = "nfwvbyacnw"
+        issuer_id_test_6 = "omjqeppxps"
+        issuer_id_test_7 = "cqmygbreop"
+        issuer_id_test_8 = "npwsshblrm"
+        
+        issuer_id_test_10 = "kivrsduinn"
+        issuer_id_test_11 = "kwcdgsspng"
+
+        
+
+    title_test_1 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_1))["page_title"]
+    subtitle_test_1 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_1))["page_subtitle"]
+    title_test_2 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_2))["page_title"]
+    subtitle_test_2 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_2))["page_subtitle"]
+    title_test_3 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_3))["page_title"]
+    subtitle_test_3 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_3))["page_subtitle"]
+    title_test_4 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_4))["page_title"]
+    subtitle_test_4 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_4))["page_subtitle"]
+    title_test_5 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_5))["page_title"]
+    subtitle_test_5 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_5))["page_subtitle"]
+    title_test_6 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_6))["page_title"]
+    subtitle_test_6 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_6))["page_subtitle"]
+    title_test_7 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_7))["page_title"]
+    subtitle_test_7 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_7))["page_subtitle"]
+    title_test_8 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_8))["page_title"]
+    subtitle_test_8 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_8))["page_subtitle"]
+    
+    title_test_10 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_10))["page_title"]
+    subtitle_test_10 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_10))["page_subtitle"]
+    title_test_11 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_11))["page_title"]
+    subtitle_test_11 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_11))["page_subtitle"]
+
+    return render_template(
+        'issuer_oidc/wallet_issuer_test.html',
+        title_test_1=title_test_1,
+        subtitle_test_1=subtitle_test_1,
+        title_test_2=title_test_2,
+        subtitle_test_2=subtitle_test_2,
+        title_test_3=title_test_3,
+        subtitle_test_3=subtitle_test_3,
+        title_test_4=title_test_4,
+        subtitle_test_4=subtitle_test_4,
+        title_test_5=title_test_5,
+        subtitle_test_5=subtitle_test_5,
+        title_test_6=title_test_6,
+        subtitle_test_6=subtitle_test_6,
+        title_test_7=title_test_7,
+        subtitle_test_7=subtitle_test_7,
+        title_test_8=title_test_8,
+        subtitle_test_8=subtitle_test_8,
+        
+        title_test_10=title_test_10,
+        subtitle_test_10=subtitle_test_10,
+        title_test_11=title_test_11,
+        subtitle_test_11=subtitle_test_11
+    )
 
 
 def issuer_callback():
     return jsonify(f"Great ! request = {json.dumps(request.args)}")
 
 
-def issuer_wallet_link(mode):
+def test_4(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "tdiwmpyhzc"
@@ -80,7 +166,7 @@ def issuer_wallet_link(mode):
     return redirect(qrcode)
 
 
-def issuer_user_pin(mode):
+def test_2(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "sobosgdtgd"
@@ -88,7 +174,7 @@ def issuer_user_pin(mode):
     else:
         issuer_id = "mjdgqkkmcf"
         client_secret = "36f779d3-61f2-11ee-864a-532486291c32"
-    vc = 'EthereumAssociatedAddress'
+    vc = 'EmailPass'
     with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
         credential = json.loads(f.read())
     credential['id'] = "urn:uuid:" + str(uuid.uuid4())
@@ -117,7 +203,7 @@ def issuer_user_pin(mode):
     return redirect(qrcode) 
 
 
-def issuer_ebsiv3_diploma(mode):
+def test_1(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "zxhaokccsi"
@@ -155,8 +241,7 @@ def issuer_ebsiv3_diploma(mode):
     return redirect(qrcode) 
 
 
-# Test 8
-def issuer_ebsiv31(mode):
+def test_5(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "zarbjrqrzj"
@@ -188,8 +273,7 @@ def issuer_ebsiv31(mode):
     return redirect(qrcode) 
 
 
-# Test 10
-def issuer_ebsiv3(mode):
+def test_11(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "pcbrwbvrsi"
@@ -222,8 +306,7 @@ def issuer_ebsiv3(mode):
     return redirect(qrcode) 
 
     
-# test 2 authorization code flow on DEFAULT
-def issuer_default(mode):
+def test_8(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "npwsshblrm"
@@ -254,8 +337,7 @@ def issuer_default(mode):
     return redirect(qrcode) 
 
 
-# test 5 part 2
-def issuer_default_2_deferred(red, mode): # VC is sent after delay
+def test_6_2(red, mode): # VC is sent after delay
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "wzxtwpltvn"
@@ -283,8 +365,7 @@ def issuer_default_2_deferred(red, mode): # VC is sent after delay
     return redirect('/sandbox/issuer/oidc/test')
 
 
-# Test 5 part 1
-def issuer_default_2(red, mode): # Test 5 deferred no VC sent
+def test_6_1(red, mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "wzxtwpltvn"
@@ -313,10 +394,10 @@ def issuer_default_2(red, mode): # Test 5 deferred no VC sent
         qrcode =  resp.json()['redirect_uri']
     except Exception:
         return jsonify("No qr code")
-    return redirect(qrcode +'?issuer_state=' + issuer_state) 
+    return redirect(qrcode + '?issuer_state=' + issuer_state) 
 
 
-def issuer_default_3(mode): # Test 6 
+def test_3(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "cejjvswuep"
@@ -347,7 +428,7 @@ def issuer_default_3(mode): # Test 6
     return redirect(qrcode) 
 
 
-def issuer_default_jwt(mode): # Test 7 
+def test_10(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "grlvzckofy"
@@ -378,7 +459,7 @@ def issuer_default_jwt(mode): # Test 7
     return redirect(qrcode) 
 
 
-def issuer_gaiax(mode): # test 4
+def test_7(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "mfyttabosy"

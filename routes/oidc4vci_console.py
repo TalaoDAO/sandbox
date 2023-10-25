@@ -1,4 +1,4 @@
-from flask import  request, render_template, redirect, session, jsonify, flash
+from flask import  request, render_template, redirect, session
 import json
 import logging
 import copy
@@ -6,7 +6,6 @@ import db_api
 from oidc4vc_constante import  landing_page_style_list, oidc4vc_profile_list, guest_landing_page_style_list
 
 import oidc4vc
-import issuer_activity_db_api
 
 logging.basicConfig(level=logging.INFO)
 
@@ -84,8 +83,7 @@ def oidc4vc_issuer_console(mode):
         session['client_data'] = json.loads(db_api.read_oidc4vc_issuer(session['client_id']))
 
         issuer_landing_page_select = str()
-        
-        if session['login_name'] == 'amdin':
+        if session['login_name'] == 'admin':
             page_style_list = landing_page_style_list
         else:
             page_style_list = guest_landing_page_style_list

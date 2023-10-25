@@ -31,28 +31,10 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/saas4ssi/callback_3',  view_func=saas_callback_3, methods=['GET', 'POST']) # login with ebsi v3 
 
     app.add_url_rule('/sandbox/saas4ssi/logout',  view_func=saas_logout, methods = ['GET', 'POST'])
-    # test
-    app.add_url_rule('/sandbox/issuer/oidc/test',  view_func=issuer_oidc_test, methods=['GET', 'POST'])
-    app.add_url_rule('/sandbox/verifier/oidc/test',  view_func=verifier_oidc_test, methods=['GET', 'POST'])
 
     return
 
 
-"""
-def serve_static(filename: str):
-    filename = secure_filename(filename)
-    try:
-        return send_file('./static/' + filename, download_name=filename)
-    except FileNotFoundError:
-        return jsonify("not found"), 404
-"""
-
-def issuer_oidc_test():
-    return render_template('issuer_oidc/wallet_issuer_test.html')
-
-
-def verifier_oidc_test():
-    return render_template('verifier_oidc/wallet_verifier_test.html')
 
 
 

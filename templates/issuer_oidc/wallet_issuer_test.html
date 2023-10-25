@@ -23,88 +23,94 @@
         </div>
         <div id="testBox">
             <div class="testColumn">
-                <a class="test" href="/sandbox/issuer/ebsiv3_diploma">
+                <a class="test" href="/sandbox/issuer/test_1">
                     <div class="topLineLink">
-                        <p class="testP">EBSI Diploma (V3)</p><img class="linkImg" src="/static/img/link.png">
+                        <p class="testP">Test #1 {{title_test_1}}</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-                    <p class="testDescription">Web site</p>
+                    <p class="testDescription">{{subtitle_test_1}}</p>
                 </a>
-                <a class="test" href="/sandbox/issuer/user_pin">
+                <a class="test" href="/sandbox/issuer/test_2">
                     <div class="topLineLink">
-                        <p class="testP">Issuer User PIN</p><img class="linkImg" src="/static/img/link.png">
+                        <p class="testP">Test #2 {{title_test_2}}</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-                    <p class="testDescription">deferred VC number = None</p>
+                    <p class="testDescription">{{subtitle_test_2}}</p>
                 </a>
-                <a class="test" href="/sandbox/issuer/default_3">
+                <a class="test" href="/sandbox/issuer/test_3">
                     <div class="topLineLink">
-                        <p class="testP">Profile DEFAULT Test #6</p><img class="linkImg" src="/static/img/link.png">
+                        <p class="testP">Test #3 {{title_test_3}}</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-                    <p class="testDescription">deferred VC number = None</p>
+                    <p class="testDescription">{{subtitle_test_3}}</p>
                 </a>
-                <a class="test" href="/sandbox/issuer/wallet_link">
+                <a class="test" href="/sandbox/issuer/test_4">
                     <div class="topLineLink">
-                        <p class="testP">Profile DEFAULT Wallet-link</p><img class="linkImg" src="/static/img/link.png">
+                        <p class="testP">Test #4 {{title_test_4}}</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-                    <p class="testDescription">ebsi issuer</p>
+                    <p class="testDescription">{{subtitle_test_4}}</p>
                 </a>
-                <a class="test" href="/sandbox/issuer/ebsiv31">
+
+                <a class="test" href="/sandbox/issuer/test_5">
                     <div class="topLineLink">
-                        <p class="testP">Profile EBSI v3 #8</p><img class="linkImg" src="/static/img/link.png">
+                        <p class="testP">Test #5 {{title_test_5}}</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-                    <p class="testDescription">Id token for compliance test</p>
+                    <p class="testDescription">{{subtitle_test_5}}</p>
                 </a>
-                <form class="test" action="/sandbox/issuer/default_2/deferred" method="post">
 
 
-                    <p class="testP">Deferred VC number</p>
+                <a class="test" href="/sandbox/issuer/test_6_1">
+                    <div class="topLineLink">
+                    <p class="testP">Test #6 {{title_test_6}}</p><img class="linkImg" src="/static/img/link.png">
+                </div>
+                    <p class="testDescription">{{subtitle_test_6}}</p>
+                </a>
+                    <form class="test" action="/sandbox/issuer/test_6_2" method="post">
+
                     <div id="divFormTest">
                         <input type="text" name="issuer_state" placeholder="VC number">
-                        <a href="/sandbox/issuer/default_2/deferred">
-                            <button id="submitDeffered" type="submit">PROVIDE DEFFERED VC</button>
-                        </a>
+                            <button id="submitDeffered" type="submit">SEND DEFFERED VC</button>
                     </div>
 
                 </form>
+            
 
             </div>
             <div class="testColumn">
-                <a class="test" href="/sandbox/issuer/gaia-x">
+                <a class="test" href="/sandbox/issuer/test_7">
                     <div class="topLineLink">
-                        <p class="testP">Profile GAIA-X</p><img class="linkImg" src="/static/img/link.png">
+                        <p class="testP">Test #7 {{title_test_7}}</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-                    <p class="testDescription">deferred VC number = None</p>
+                    <p class="testDescription">{{subtitle_test_7}}</p>
                 </a>
-                <a class="test" href="/sandbox/issuer/default">
+                <a class="test" href="/sandbox/issuer/test_8">
                     <div class="topLineLink">
-                        <p class="testP">Profile DEFAULT Test #2</p><img class="linkImg" src="/static/img/link.png">
+                        <p class="testP">Test #8 {{title_test_8}}</p><img class="linkImg" src="/static/img/link.png">
                     </div>
-                    <p class="testDescription">deferred VC number = None</p>
-                </a>
-                <a class="test" href="/sandbox/issuer/default_2">
-                    <div class="topLineLink">
-                        <p class="testP">Profile DEFAULT Test #5 (deferred VC)</p><img class="linkImg"
-                            src="/static/img/link.png">
-                    </div>
-                    <p class="testDescription">deferred VC number = None</p>
-                </a>
-                <a class="test" href="/sandbox/issuer/default_jwt">
-                    <div class="topLineLink">
-                        <p class="testP">Profile DEFAULT Test #7 ( JWT )</p><img class="linkImg"
-                            src="/static/img/link.png">
-                    </div>
-                    <p class="testDescription">vp_token for compliance test</p>
-                </a>
-                <a class="test" href="/sandbox/issuer/ebsiv3">
-                    <div class="topLineLink">
-                        <p class="testP">Profile EBSI v3 #10</p><img class="linkImg" src="/static/img/link.png">
-                    </div>
-                    <p class="testDescription">Description</p>
+                    <p class="testDescription">{{subtitle_test_8}}</p>
                 </a>
                 <a class="test" href="">
                     <div class="topLineLink">
-                        <p class="testP">Test</p><img class="linkImg" src="/static/img/link.png">
+                        <p class="testP">Test #9 {{title_test_9}}</p><img class="linkImg"
+                            src="/static/img/link.png">
                     </div>
-                    <p class="testDescription">Description</p>
+                    <p class="testDescription">{{subtitle_test_9}}</p>
+                </a>
+                <a class="test" href="/sandbox/issuer/test_10">
+                    <div class="topLineLink">
+                        <p class="testP">Test #10 {{title_test_10}}</p><img class="linkImg"
+                            src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">{{subtitle_test_10}}</p>
+                </a>
+                <a class="test" href="/sandbox/issuer/test_11">
+                    <div class="topLineLink">
+                        <p class="testP">Test #11 {{title_test_11}}</p><img class="linkImg" src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">{{subtitle_test_11}}</p>
+                </a>
+                <a class="test" href="">
+                    <div class="topLineLink">
+                        <p class="testP">Test #12 {{title_test_12}}</p><img class="linkImg" src="/static/img/link.png">
+                    </div>
+                    <p class="testDescription">{{subtitle_test_12}}</p>
                 </a>
             </div>
         </div>

@@ -15,6 +15,15 @@ def init_app(app,red, mode):
 
     app.add_url_rule('/sandbox/verifier/ebsiv3_2',  view_func=verifier_ebsiv3_2, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/verifier/callback',  view_func=verifier_callback, methods=['GET'])   
+    
+    # Test
+    app.add_url_rule('/sandbox/verifier/oidc/test',  view_func=verifier_oidc_test, methods=['GET', 'POST'])
+
+
+
+
+def verifier_oidc_test():
+    return render_template('verifier_oidc/wallet_verifier_test.html')
 
 
 def verifier_tezos_ebsi(mode): # Tezos EBSI
