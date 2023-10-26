@@ -1,4 +1,4 @@
-from flask import jsonify,  redirect, request
+from flask import jsonify,  redirect, request, render_template
 
 
 def init_app(app,red, mode):
@@ -18,8 +18,6 @@ def init_app(app,red, mode):
     
     # Test
     app.add_url_rule('/sandbox/verifier/oidc/test',  view_func=verifier_oidc_test, methods=['GET', 'POST'])
-
-
 
 
 def verifier_oidc_test():
