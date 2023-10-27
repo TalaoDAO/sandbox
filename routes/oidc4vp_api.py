@@ -454,11 +454,9 @@ def client_metadata_uri(id, red):
 
 
 def build_client_metadata(client_id, redirect_uri) -> dict:
-    print('client id = ', client_id)
     try:
         verifier_data = json.loads(read_oidc4vc_verifier(client_id))
     except Exception:
-        print('issue')
         return
     return {
         'subject_syntax_types_supported': [
@@ -605,7 +603,8 @@ def oidc4vc_login_qrcode(red, mode):
     # general authorization request
     authorization_request = { 
         "response_type": response_type,
-        "state": str(uuid.uuid1())  # unused
+        "state": str(uuid.uuid1()),  # unused
+        "redirect_uri": redirect_uri
     }
     
     if response_type == 'id_token':
@@ -628,7 +627,6 @@ def oidc4vc_login_qrcode(red, mode):
         # client_metadata_uri
         id = str(uuid.uuid1())
         client_metadata = build_client_metadata(verifier_id, redirect_uri)
-        print('client metadata = ', client_metadata)
         red.setex(id, QRCODE_LIFE, json.dumps(client_metadata))
         authorization_request['client_metadata_uri'] = mode.server + "sandbox/verifier/wallet/client_metadata_uri/" + id
         
