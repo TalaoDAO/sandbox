@@ -10,10 +10,12 @@
               "id": "@id",
               "type": "@type",
               "schema" : "https://schema.org/",
-              "personalIdentifier": "schema:identifier",
               "familyName": "schema:lastName",
               "firstName": "schema:firstName",
-              "dateOfBirth" : "schema:birthDate"
+              "dateOfBirth" : "schema:birthDate",
+              "idRecto": "schema:image",
+              "idVerso": "schema:image"
+
 
          }
       }
@@ -31,7 +33,6 @@
     "issued": "2022-12-20T14:25:22Z",
     "credentialSubject": {
       "type" : "VerifiableId",
-      "personalIdentifier": "IT/DE/1234",
       "familyName": "Castafiori",
       "firstName": "Bianca",
       "dateOfBirth": "1930-10-01"

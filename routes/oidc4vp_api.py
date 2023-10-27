@@ -613,13 +613,6 @@ def oidc4vc_login_qrcode(red, mode):
     else:
         authorization_request['response_mode'] = 'direct_post'
     
-    # TEST 10 TODO
-    if verifier_id not in ["ejqwxtjdlu", "zkzkwshdns"]:    
-        if response_type == 'vp_token' and verifier_data['profile'] != "EBSI-V3":
-            authorization_request['response_uri'] = redirect_uri
-        else:
-            authorization_request['redirect_uri'] = redirect_uri
-    
     # Set client_id, use W3C DID identifier for client_id "on" ou None
     if not verifier_data.get('client_id_as_DID'):
         client_id = redirect_uri
@@ -951,12 +944,6 @@ async def oidc4vc_login_endpoint(stream_id, red):
         response = {
             "error": "access_denied",
             "error_description": json.dumps(detailed_response)
-        }
-    # TEST
-    elif verifier_id in ["novanyhlhs", "uxcdccjhmq"]:
-        response = {
-            "redirect_uri": "https://altme.io",
-            "response_code": "1223456789"
         }
     else:
         response = "{}"

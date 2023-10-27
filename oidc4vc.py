@@ -139,7 +139,7 @@ def sign_jwt_vc(vc, issuer_vm, issuer_key, nonce):
     issuance_date = datetime.fromisoformat(vc['issuanceDate'][:-1])
     payload['nbf'] = datetime.timestamp(issuance_date)
     payload['vc'] = vc
-    token = jwt.JWT(header=header,claims=payload, algs=[alg(issuer_key)])
+    token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
     return token.serialize()
 
