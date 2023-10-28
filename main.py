@@ -1,7 +1,7 @@
 import os
 import time
 import markdown
-from flask import Flask, redirect, request, render_template_string, request, jsonify, Response, send_from_directory
+from flask import Flask, redirect, request, render_template_string, request, jsonify, Response, render_template
 from flask_session import Session
 from flask_mobility import Mobility
 from datetime import timedelta, datetime
@@ -16,6 +16,7 @@ import uuid
 import oidc4vc
 from profile import profile
 import db_api
+from device_detector import SoftwareDetector
 
 
 # Basic protocole
@@ -54,7 +55,6 @@ red = redis.Redis(host='localhost', port=6379, db=0)
 
 app = Flask(__name__,
             static_url_path='/static') 
-
 
 
 app.jinja_env.globals['Version'] = "0.3.0"
@@ -153,7 +153,7 @@ def build_credential_offered(offer):
         credential_offered[vc] = credential
     return credential_offered
 
-
+@app.route('/md_file', methods=['GET'])
 @app.route('/sandbox/md_file', methods=['GET'])
 def md_file():
     # https://dev.to/mrprofessor/rendering-markdown-from-flask-1l41
@@ -214,7 +214,7 @@ response = api.model(
 )
 
 
-@ns.route("/oidc4vc/issuer/api", endpoint='acx_issuer')
+@ns.route("/oidc4vc/issuer/api", endpoint='issuer')
 class Issuer(Resource):
     @api.response(200, 'Success')
     @api.doc(responses={401: 'unauthorized'})
@@ -374,6 +374,136 @@ class Issuer(Resource):
             mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/" + stream_id,
         )
         return jsonify(response)
+
+
+@app.route('/login', methods=['GET']) 
+@app.route('/', methods=['GET']) 
+def login2():
+    return redirect('/sandbox')
+
+
+# Google universal link
+@app.route('/.well-known/assetlinks.json' , methods=['GET']) 
+def assetlinks(): 
+    document = json.load(open('assetlinks.json', 'r'))
+    return jsonify(document)
+
+
+# Apple universal link
+@app.route('/.well-known/apple-app-site-association' , methods=['GET']) 
+def apple_app_site_association(): 
+    document = json.load(open('apple-app-site-association', 'r'))
+    return jsonify(document)
+
+
+# .well-known DID API 
+@app.route('/.well-known/did-configuration.json', methods=['GET'])
+def well_known_did_configuration():
+    document = json.load(open('well_known_did_configuration.jsonld', 'r'))
+    headers = {
+        "Content-Type" : "application/did+ld+json",
+        "Cache-Control": "no-cache"
+    }
+    return Response(json.dumps(document), headers=headers)
+
+
+
+@app.route('/device_detector' , methods=['GET']) 
+def device_detector():
+    ua = request.headers.get('User-Agent')
+    device = SoftwareDetector(ua).parse()
+    logging.info(device.os_name())
+    if device.os_name() == "Android":
+        return redirect("https://play.google.com/store/apps/details?id=co.talao.wallet")
+    else:
+        return redirect("https://apps.apple.com/fr/app/talao-wallet/id1582183266?platform=iphone")
+
+
+# .well-known DID API
+@app.route('/.well-known/did.json', methods=['GET'], defaults={'mode' : mode})
+@app.route('/did.json', methods=['GET'])
+def well_known_did():
+    """
+    did:web:talao.co
+    https://w3c-ccg.github.io/did-method-web/
+    https://identity.foundation/.well-known/resources/did-configuration/#LinkedDomains
+    """
+    DidDocument = did_doc()
+    headers = {
+        "Content-Type" : "application/did+ld+json",
+        "Cache-Control" : "no-cache"
+    }
+    return Response(json.dumps(DidDocument), headers=headers)
+
+
+def did_doc():
+    return {
+        "@context": 
+            [
+                "https://www.w3.org/ns/did/v1",
+                {
+                    "@id": "https://w3id.org/security#publicKeyJwk",
+                    "@type": "@json"
+                }
+            ],
+            "id": "did:web:talao.co",
+            "verificationMethod":
+                [
+                    {
+                        "id": "did:web:talao.co#key-1",
+                        "type": "JwsVerificationKey2020",
+                        "controller": "did:web:talao.co",
+                        "publicKeyJwk": {
+                            "e":"AQAB",
+                            "kid": "did:web:talao.co#key-1",
+                            "kty": "RSA",
+                            "n": "mIPHiLUlfIwj9udZARJg5FlyXuqMsyGHucbA-CqpJh98_17Qvd51SAdg83UzuCihB7LNYXEujnzEP5J5mAWsrTi0G3CRFk-pU_TmuY8p57M_NXvB1EJsOrjuki5HmcybzfkJMtHydD7gVotPoe-W4f8TxWqB54ve4YiFczG6A43yB3lLCYZN2wEWfwKD_FcaC3wKWdHFxqLkrulD4pVZQ_DwMNuf2XdCvEzpC33ZsU3DB6IxtcSbVejGCyq5EXroIh1-rp6ZPuCGExg8CjiLehsWvOmBac9wO74yfo1IF6PIrQQNkFA3vL2YWjp3k8SO0PAaUMF44orcUI_OOHXYLw"
+                        }
+                    },
+                    {
+                        "id": "did:web:talao.co#key-2",
+                        "type": "JwsVerificationKey2020",
+                        "controller": "did:web:talao.co",
+                        "publicKeyJwk": {
+                            "crv": "P-256",
+                            "kty": "EC",
+                            "x": "Bls7WaGu_jsharYBAzakvuSERIV_IFR2tS64e5p_Y_Q",
+                            "y": "haeKjXQ9uzyK4Ind1W4SBUkR_9udjjx1OmKK4vl1jko"
+                        }
+                    },
+                    {
+                        "id": "did:web:talao.co#key-3",
+                        "type": "JwsVerificationKey2020",
+                        "controller": "did:web:talao.co",
+                        "publicKeyJwk": {
+                            "crv": "Ed25519",
+                            "kty": "OKP",
+                            "x": "FUoLewH4w4-KdaPH2cjZbL--CKYxQRWR05Yd_bIbhQo"
+                        }
+                    },
+                ],
+            "authentication" : [
+                "did:web:talao.co#key-1",
+            ],
+            "assertionMethod" : [
+                "did:web:talao.co#key-1",
+                "did:web:talao.co#key-2",
+                "did:web:talao.co#key-3"
+            ],
+            "keyAgreement" : [
+                "did:web:talao.co#key-3"
+            ],
+            "capabilityInvocation":[
+                "did:web:talao.co#key-1"
+            ],
+            "service": [
+                {
+                    "id": 'did:web:talao.co#domain-1',
+                    "type": 'LinkedDomains',
+                    "serviceEndpoint": "https://talao.co"
+                }
+            ]
+        }
 
 
 # MAIN entry point for test
