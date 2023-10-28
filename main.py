@@ -29,6 +29,7 @@ from routes import test_issuer_oidc4vc
 from routes import test_verifier_oidc4vc
 from routes import  web_wallet_test
 from routes import web_display_VP
+from routes import counter
 
 
 API_LIFE = 5000
@@ -79,6 +80,8 @@ oidc4vci_console.init_app(app, red, mode)
 oidc4vci_api.init_app(app, red, mode)
 # MAIN functions
 saas4ssi.init_app(app, red, mode)
+counter.init_app(app, mode)
+
 # TEST
 web_display_VP.init_app(app, red, mode)
 web_wallet_test.init_app(app, red, mode)

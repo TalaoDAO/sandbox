@@ -49,7 +49,7 @@ def init_app(app, red, mode):
     app.add_url_rule('/sandbox/verifier/app/.well-known/openid-configuration', view_func=oidc4vc_openid_configuration, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/verifier/app/jwks.json', view_func=oidc4vc_jwks, methods=['GET'])
     
-    # endpoints for siopv2 wallet
+    # endpoints for wallet
     app.add_url_rule('/sandbox/verifier/wallet',  view_func=oidc4vc_login_qrcode, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/sandbox/verifier/wallet/.well-known/openid-configuration',  view_func=wallet_openid_configuration, methods = ['GET'])
 
@@ -58,7 +58,6 @@ def init_app(app, red, mode):
     app.add_url_rule('/sandbox/verifier/wallet/client_metadata_uri/<id>',  view_func=client_metadata_uri, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/sandbox/verifier/wallet/presentation_definition_uri/<id>',  view_func=presentation_definition_uri, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/sandbox/verifier/wallet/followup',  view_func=oidc4vc_login_followup, methods=['GET'], defaults={'red': red})
-
     app.add_url_rule('/sandbox/verifier/wallet/stream',  view_func=oidc4vc_login_stream, defaults={ 'red': red})
     return
     
@@ -985,7 +984,7 @@ def oidc4vc_login_followup(red):
         resp = {
             'code': code,
             'error': "access_denied",
-            'error_description': ""
+            'error_description': "Session expired"
         }
         session['verified'] = False
         return redirect('/sandbox/verifier/app/authorize?' + urlencode(resp))

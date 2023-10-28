@@ -15,6 +15,7 @@ import db_api
 import oidc4vc
 from profile import profile
 import pkce
+import requests
 
 logging.basicConfig(level=logging.INFO)
 
@@ -773,6 +774,16 @@ async def issuer_credential(issuer_id, red, mode):
     # update nonce in access token for next VC request
     access_token_data["c_nonce"] = payload["c_nonce"]
     red.setex(access_token, ACCESS_TOKEN_LIFE, json.dumps(access_token_data))
+    
+    # update counter for verifiable id
+    if issuer_id in ["vqzljjitre", "lbeuegiasm"]:
+        data = {
+            "vc": "verifiableid",
+            "count": "1"
+            }
+        requests.post(mode.server + 'sandbox/counter/update', data=data)
+
+    # send VC
     headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
     return Response(response=json.dumps(payload), headers=headers)
 
