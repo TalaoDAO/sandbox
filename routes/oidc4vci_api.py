@@ -781,7 +781,7 @@ async def issuer_credential(issuer_id, red, mode):
             "vc": "verifiableid",
             "count": "1"
             }
-        requests.post(mode.server + 'sandbox/counter/update', data=data)
+        requests.post('https://issuer.talao.co/counter/update', data=data)
 
     # send VC
     headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
