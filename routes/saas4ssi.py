@@ -16,8 +16,10 @@ admin_list = ["thierry.thevenet@talao.io", "nicolas.muller@talao.io", "hugo@altm
 def init_app(app,red, mode):
     
     #@app.add_url_rule('/sandbox/static/<filename>', methods=['GET'])
-
+    app.add_url_rule('/',  view_func=saas_home, methods=['GET', 'POST'])
+    app.add_url_rule('/sandbox',  view_func=saas_home, methods=['GET', 'POST'])
     app.add_url_rule('/sandbox/saas4ssi',  view_func=saas_home, methods=['GET', 'POST'])
+    
     app.add_url_rule('/sandbox/saas4ssi/dids',  view_func=dids, methods=['GET'])
     app.add_url_rule('/sandbox/saas4ssi/menu',  view_func=saas_menu, methods=['GET', 'POST'])
     

@@ -376,12 +376,6 @@ class Issuer(Resource):
         return jsonify(response)
 
 
-@app.route('/login', methods=['GET']) 
-@app.route('/', methods=['GET']) 
-def login2():
-    return redirect('/sandbox')
-
-
 # Google universal link
 @app.route('/.well-known/assetlinks.json' , methods=['GET']) 
 def assetlinks(): 
