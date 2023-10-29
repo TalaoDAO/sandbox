@@ -480,7 +480,6 @@ def build_client_metadata(client_id, redirect_uri) -> dict:
             'ES256K',
             'ES256',
             'EdDSA',
-            'RS256',
         ], 
         'client_name': 'Talao-Altme Verifier',
         "logo_uri": "https://altme.io/",
@@ -603,14 +602,15 @@ def oidc4vc_login_qrcode(red, mode):
     authorization_request = { 
         "response_type": response_type,
         "state": str(uuid.uuid1()),  # unused
-        "redirect_uri": redirect_uri
     }
     
     if response_type == 'id_token':
         authorization_request['response_mode'] = 'post'
+        authorization_request['redirect_uri'] = redirect_uri
     else:
         authorization_request['response_mode'] = 'direct_post'
-    
+        authorization_request['response_uri'] = redirect_uri
+
     # Set client_id, use W3C DID identifier for client_id "on" ou None
     if not verifier_data.get('client_id_as_DID'):
         client_id = redirect_uri
@@ -651,7 +651,7 @@ def oidc4vc_login_qrcode(red, mode):
     # SIOPV2
     if 'id_token' in response_type:
         authorization_request['scope'] = 'openid'       
-        authorization_request['registration'] = json.dumps(json.load(open('siopv2_config.json', 'r')))           
+        authorization_request['registration'] = json.dumps(json.load(open('siopv2_config.json', 'r'))) # TODO 
 
 
     # manage request_uri as jwt

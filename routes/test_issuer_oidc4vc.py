@@ -3,24 +3,8 @@ from datetime import datetime, timedelta
 import json
 import uuid
 import requests
-import didkit
 from random import randrange
 import db_api
-
-"""
-key_wallet = {
-    "crv": "secp256k1",
-    "d": "lbuGEjEsYQ205boyekj8qdCwB2Uv7L2FwHUNleJj_Z0",
-    "kty": "EC",
-    "x": "AARiMrLNsRka9wMEoSgMnM7BwPug4x9IqLDwHVU-1A4",
-    "y": "vKMstC3TEN3rVW32COQX002btnU70v6P73PMGcUoZQs",
-    "alg": 'ES256K'
-}
-    
-key = json.dumps(key_wallet)
-issuer_did = didkit.key_to_did("key", key)
-issuer_vm = issuer_did + "#key-1"
-"""
 
 
 
@@ -34,13 +18,14 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/issuer/test_6_2',  view_func=test_6_2, methods=['GET', 'POST'], defaults={'mode': mode, 'red': 'red'})
     app.add_url_rule('/sandbox/issuer/test_7',  view_func=test_7, methods=['GET'], defaults={'mode': mode}) 
     app.add_url_rule('/sandbox/issuer/test_8',  view_func=test_8, methods=['GET'], defaults={'mode': mode})
-    
+    app.add_url_rule('/sandbox/issuer/test_9',  view_func=test_9, methods=['GET'], defaults={'mode': mode})
+
     app.add_url_rule('/sandbox/issuer/test_10',  view_func=test_10, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_11',  view_func=test_11, methods=['GET'], defaults={'mode': mode})
     
     app.add_url_rule('/sandbox/issuer/callback',  view_func=issuer_callback, methods=['GET'])
     # test
-    app.add_url_rule('/sandbox/issuer/oidc/test',  view_func=issuer_oidc_test, methods=['GET', 'POST'], defaults={"mode": mode})
+    app.add_url_rule('/issuer/oidc/test',  view_func=issuer_oidc_test, methods=['GET', 'POST'], defaults={"mode": mode})
 
     return
 
@@ -57,11 +42,9 @@ def issuer_oidc_test(mode):
         issuer_id_test_6 = "wzxtwpltvn"
         issuer_id_test_7 = "mfyttabosy"
         issuer_id_test_8 = "npwsshblrm"
-        
+        issuer_id_test_9 = "pexkhrzlmj"
         issuer_id_test_10 = "grlvzckofy"
         issuer_id_test_11 = "pcbrwbvrsi"
-
-
     else:
         issuer_id_test_1 = "zxhaokccsi"
         issuer_id_test_2 = "mjdgqkkmcf"
@@ -71,7 +54,7 @@ def issuer_oidc_test(mode):
         issuer_id_test_6 = "omjqeppxps"
         issuer_id_test_7 = "cqmygbreop"
         issuer_id_test_8 = "npwsshblrm"
-        
+        issuer_id_test_9 = "beguvsaeox"
         issuer_id_test_10 = "kivrsduinn"
         issuer_id_test_11 = "kwcdgsspng"
 
@@ -93,7 +76,8 @@ def issuer_oidc_test(mode):
     subtitle_test_7 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_7))["page_subtitle"]
     title_test_8 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_8))["page_title"]
     subtitle_test_8 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_8))["page_subtitle"]
-    
+    title_test_9 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_9))["page_title"]
+    subtitle_test_9 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_9))["page_subtitle"]
     title_test_10 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_10))["page_title"]
     subtitle_test_10 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_10))["page_subtitle"]
     title_test_11 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_11))["page_title"]
@@ -117,7 +101,8 @@ def issuer_oidc_test(mode):
         subtitle_test_7=subtitle_test_7,
         title_test_8=title_test_8,
         subtitle_test_8=subtitle_test_8,
-        
+        title_test_9=title_test_9,
+        subtitle_test_9=subtitle_test_9,
         title_test_10=title_test_10,
         subtitle_test_10=subtitle_test_10,
         title_test_11=title_test_11,
@@ -179,7 +164,7 @@ def test_2(mode):
         credential = json.loads(f.read())
     credential['id'] = "urn:uuid:" + str(uuid.uuid4())
     credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-    credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
+    credential['expirationDate'] = (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
     
     headers = {
         'Content-Type': 'application/json',
@@ -423,6 +408,54 @@ def test_3(mode):
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try:
         qrcode = resp.json()['redirect_uri']
+    except Exception:
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+
+
+def test_9(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
+    if mode.myenv == 'aws':
+        issuer_id = "pexkhrzlmj"
+        client_secret = "7f888504-6ab4-11ee-938e-0a1628958560"
+    else:       
+        issuer_id = "beguvsaeox"
+        client_secret = "72155eb7-3b5b-11ee-a601-b33f6ebca22b"
+    headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': client_secret
+    }
+    emailpass_1 = build_credential("EmailPass")
+    emailpass_1["credentialSubject"]["email"] = "emai_1@gmail.com"
+    emailpass_2 = build_credential("EmailPass")
+    emailpass_2["credentialSubject"]["email"] = "emai_2@gmail.com"
+    vc = [
+            {
+                "type": "EmailPass",
+                "types": ["VerifiableCredentials", "EmailPass"],
+                "list": [
+                    {
+                        "identifier": "emailpass_test_1",
+                        "value": emailpass_1
+                    },
+                    {
+                        "identifier": "emailpass_test_2",
+                        "value": emailpass_2
+                    }
+                ]
+            }
+    ]
+    data = { 
+        "issuer_id": issuer_id,
+        "vc": vc, 
+        "issuer_state": str(uuid.uuid1()),
+        "credential_type": ["EmailPass"],
+        "pre-authorized_code": True,
+        "callback": mode.server + 'sandbox/issuer/callback',
+        }
+    resp = requests.post(api_endpoint, headers=headers, json=data)
+    try:
+        qrcode =  resp.json()['redirect_uri']
     except Exception:
         return jsonify("No qr code")
     return redirect(qrcode) 

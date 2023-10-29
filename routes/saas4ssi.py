@@ -1,11 +1,10 @@
-from flask import jsonify, request, render_template, redirect, session, flash, send_file
+from flask import request, render_template, redirect, session, flash
 import base64
 import json
 import db_user_api
-import op_constante
+import oidc4vc_constante
 import logging
 import message
-from werkzeug.utils import secure_filename
 
 logging.basicConfig(level=logging.INFO)
 
@@ -93,7 +92,7 @@ def admin(mode):
         session['login_name'] = 'admin'
         return render_template("menu.html", login_name=session["login_name"])
     else:
-        return redirect("/sandbox/saas4ssi")
+        return redirect("/")
 
 
 # Register with EBSI v3
@@ -107,28 +106,25 @@ def saas_callback_4(mode):
     payload = base64.urlsafe_b64decode(s + '=' * (4 - len(s) % 4)) 
     login_name = json.loads(payload.decode())['sub']
     if not db_user_api.read(login_name):
-        data = op_constante.user
+        data = oidc4vc_constante.user
         data["did"] = json.loads(payload.decode())['sub']
         data['login_name'] = session['login_name'] = login_name
         session['is_connected'] = True
         db_user_api.create(login_name, data)
-        try:
-            message.message("Registration on Saas Altme of " + login_name , "thierry@altme.io", "New user = " + login_name, mode)
-        except Exception:
-            pass
+        message.message("Registration on Saas Altme of " + login_name, "thierry@altme.io", "New user = " + login_name, mode)
         return redirect('/sandbox/saas4ssi/menu')
     else:
         logging.warning('user already exists')
         flash("You are already registered, you can login !", "warning")
         return redirect("/sandbox/saas4ssi")
 
-    
+  
 # login
 def saas_callback_3():
     if request.args.get("error"):
         logging.warning("access denied")
         session.clear()
-        return redirect("/sandbox/saas4ssi")
+        return redirect("/")
     id_token = request.args['id_token']
     s = id_token.split('.')[1]
     payload = base64.urlsafe_b64decode(s + '=' * (4 - len(s) % 4))

@@ -11,27 +11,27 @@ logging.basicConfig(level=logging.INFO)
 
 
 def init_app(app, red, mode):
-    app.add_url_rule('/sandbox/issuer/console/logout', view_func=oidc4vc_nav_logout, methods=['GET', 'POST'])
-    app.add_url_rule('/sandbox/issuer/console', view_func=oidc4vc_issuer_console, methods=['GET', 'POST'], defaults={'mode': mode})
-    app.add_url_rule('/sandbox/issuer/console/select', view_func=oidc4vc_issuer_select, methods=['GET', 'POST'])
-    app.add_url_rule('/sandbox/issuer/console/advanced', view_func=oidc4vc_issuer_advanced, methods=['GET', 'POST'])
-    #app.add_url_rule('/sandbox/issuer/preview_presentation/<stream_id>', view_func=oidc4vc_issuer_preview_presentation_endpoint, methods=['GET', 'POST'],  defaults={'red': red})
+    app.add_url_rule('/issuer/console/logout', view_func=oidc4vc_nav_logout, methods=['GET', 'POST'])
+    app.add_url_rule('/issuer/console', view_func=oidc4vc_issuer_console, methods=['GET', 'POST'], defaults={'mode': mode})
+    app.add_url_rule('/issuer/console/select', view_func=oidc4vc_issuer_select, methods=['GET', 'POST'])
+    app.add_url_rule('/issuer/console/advanced', view_func=oidc4vc_issuer_advanced, methods=['GET', 'POST'])
+    #app.add_url_rule('/issuer/preview_presentation/<stream_id>', view_func=oidc4vc_issuer_preview_presentation_endpoint, methods=['GET', 'POST'],  defaults={'red': red})
     # nav bar option
-    app.add_url_rule('/sandbox/issuer/nav/logout',  view_func=oidc4vc_nav_logout, methods=['GET'])
-    app.add_url_rule('/sandbox/issuer/nav/create',  view_func=oidc4vc_nav_create, methods=['GET'], defaults= {'mode': mode})
+    app.add_url_rule('/issuer/nav/logout',  view_func=oidc4vc_nav_logout, methods=['GET'])
+    app.add_url_rule('/issuer/nav/create',  view_func=oidc4vc_nav_create, methods=['GET'], defaults= {'mode': mode})
     return
 
 
 def oidc4vc_nav_logout():
     if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/sandbox/saas4ssi')
+        return redirect('/saas4ssi')
     session.clear()
-    return redirect('/sandbox/saas4ssi')
+    return redirect('/saas4ssi')
 
 
 def oidc4vc_issuer_select():
     if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/sandbox/saas4ssi')
+        return redirect('/saas4ssi')
     my_list = db_api.list_oidc4vc_issuer()
     issuer_list = str()
     for issuer_data in my_list:
@@ -44,7 +44,7 @@ def oidc4vc_issuer_select():
                 <td>""" + data_dict.get('application_name', "unknown") + """</td>
                 <td>""" + data_dict.get('user', "unknown")[:20] + """...</td>
                 <td>""" +  data_dict['profile'] + """</td>
-                <td><a href=/sandbox/issuer/console?client_id=""" + client_id + """>""" + client_id + """</a></td>
+                <td><a href=/issuer/console?client_id=""" + client_id + """>""" + client_id + """</a></td>
                 <td>""" + data_dict['did'] + """</td> 
                 <td>""" + vm + """</td> 
                 <td>""" + curve + """</td>
@@ -55,8 +55,8 @@ def oidc4vc_issuer_select():
     
 def oidc4vc_nav_create(mode):
     if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/sandbox/saas4ssi')
-    return redirect('/sandbox/issuer/console?client_id=' + db_api.create_oidc4vc_issuer(mode,  user=session['login_name']))
+        return redirect('/saas4ssi')
+    return redirect('/issuer/console?client_id=' + db_api.create_oidc4vc_issuer(mode,  user=session['login_name']))
 
 """   
 def oidc4vc_issuer_preview_presentation_endpoint(stream_id, red):
@@ -74,10 +74,10 @@ def oidc4vc_issuer_preview_presentation_endpoint(stream_id, red):
 def oidc4vc_issuer_console(mode):
     global reason
     if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/sandbox/saas4ssi')
+        return redirect('/saas4ssi')
     if request.method == 'GET':
         if not request.args.get('client_id'):
-            return redirect('/sandbox/issuer/console/select')
+            return redirect('/issuer/console/select')
         else:
             session['client_id'] = request.args.get('client_id')
         session['client_data'] = json.loads(db_api.read_oidc4vc_issuer(session['client_id']))
@@ -120,7 +120,7 @@ def oidc4vc_issuer_console(mode):
     if request.method == 'POST':
         if request.form['button'] == "delete":
             db_api.delete_oidc4vc_issuer( request.form['client_id'])
-            return redirect('/sandbox/issuer/console')
+            return redirect('/issuer/console')
         else:
             session['client_data']['contact_name'] = request.form['contact_name']
             session['client_data']['user'] = request.form['user']
@@ -140,17 +140,17 @@ def oidc4vc_issuer_console(mode):
             session['client_data']['mobile_message'] = request.form['mobile_message'] 
             
             if request.form['button'] == "preview":
-                return redirect('/sandbox/issuer/console/preview')
+                return redirect('/issuer/console/preview')
 
             if request.form['button'] == "activity":
-                return redirect('/sandbox/issuer/console/activity')
+                return redirect('/issuer/console/activity')
             
             if request.form['button'] == "advanced":
-                return redirect('/sandbox/issuer/console/advanced')
+                return redirect('/issuer/console/advanced')
             
             if request.form['button'] == "update":
                 db_api.update_oidc4vc_issuer(request.form['client_id'], json.dumps(session['client_data']))
-                return redirect('/sandbox/issuer/console?client_id=' + request.form['client_id'])
+                return redirect('/issuer/console?client_id=' + request.form['client_id'])
 
             if request.form['button'] == "copy":
                 new_client_id = db_api.create_oidc4vc_issuer(mode,  user=session['login_name'])
@@ -159,13 +159,13 @@ def oidc4vc_issuer_console(mode):
                 new_data['client_id'] = new_client_id
                 new_data['user'] = session['login_name']
                 db_api.update_oidc4vc_issuer(new_client_id, json.dumps(new_data))
-                return redirect('/sandbox/issuer/console?client_id=' + new_client_id)
+                return redirect('/issuer/console?client_id=' + new_client_id)
 
 
 async def oidc4vc_issuer_advanced():
     global reason
     if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/sandbox/saas4ssi')
+        return redirect('/saas4ssi')
     if request.method == 'GET':
         session['client_data'] = json.loads(db_api.read_oidc4vc_issuer(session['client_id']))
         oidc4vc_profile_select = str()
@@ -193,7 +193,7 @@ async def oidc4vc_issuer_advanced():
     if request.method == 'POST':     
         session['client_data'] = json.loads(db_api.read_oidc4vc_issuer(session['client_id']))
         if request.form['button'] == "back":
-            return redirect('/sandbox/issuer/console?client_id=' + request.form['client_id'])
+            return redirect('/issuer/console?client_id=' + request.form['client_id'])
 
         if request.form['button'] == "update":
             session['client_data']['profile'] = request.form['profile']
@@ -201,4 +201,4 @@ async def oidc4vc_issuer_advanced():
             session['client_data']['verification_method'] = request.form['verification_method']
             session['client_data']['jwk'] = request.form['jwk']
             db_api.update_oidc4vc_issuer(request.form['client_id'], json.dumps(session['client_data']))
-            return redirect('/sandbox/issuer/console/advanced')
+            return redirect('/issuer/console/advanced')

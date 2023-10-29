@@ -20,7 +20,7 @@ from device_detector import SoftwareDetector
 
 
 # Basic protocole
-from routes import verifier_console, api_verifier
+#from routes import verifier_console, api_verifier
 from routes import saas4ssi
 # OIDC4VC
 from routes import oidc4vp_api, oidc4vp_console
@@ -68,9 +68,9 @@ app.config['SECRET_KEY'] = "sandbox" + mode.password
 app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["jpeg", "jpg", "png", "gif"]
 
 # BASIC wallet protocol
-api_verifier.init_app(app, red, mode)
+#api_verifier.init_app(app, red, mode)
 #api_issuer.init_app(app, red, mode)
-verifier_console.init_app(app, red, mode)
+#verifier_console.init_app(app, red, mode)
 #issuer_console.init_app(app, red, mode)
 # OIDC4VC wallet
 oidc4vp_console.init_app(app, red, mode)

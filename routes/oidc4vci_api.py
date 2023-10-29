@@ -46,18 +46,17 @@ def init_app(app, red, mode):
         methods=["GET"],
         defaults={"red": red},
     )
-
     
     # OIDC4VCI protocol with wallet
-    app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/.well-known/openid-configuration", view_func=issuer_openid_configuration, methods=["GET"],defaults={"mode": mode})
-    app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/.well-known/openid-credential-issuer",view_func=issuer_openid_configuration, methods=["GET"], defaults={"mode": mode})
-    app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/authorize", view_func=issuer_authorize, methods=["GET", "POST"], defaults={"red": red, "mode": mode})
-    app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/token", view_func=issuer_token, methods=["POST"], defaults={"red": red, "mode": mode},)
-    app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/credential", view_func=issuer_credential, methods=["POST"], defaults={"red": red, "mode": mode})
-    app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/deferred", view_func=issuer_deferred, methods=["POST"], defaults={"red": red, "mode": mode},)
-    app.add_url_rule("/sandbox/ebsi/issuer/<issuer_id>/authorize_server/.well-known/openid-configuration", view_func=issuer_authorization_server, methods=["GET"], defaults={"mode": mode},)
-    app.add_url_rule("/sandbox/ebsi/issuer/credential_offer_uri/<id>", view_func=issuer_credential_offer_uri, methods=["GET"], defaults={"red": red})
-    app.add_url_rule("/sandbox/ebsi/issuer/error_uri", view_func=wallet_error_uri, methods=["GET"])
+    app.add_url_rule("/issuer/<issuer_id>/.well-known/openid-configuration", view_func=issuer_openid_configuration, methods=["GET"],defaults={"mode": mode})
+    app.add_url_rule("/issuer/<issuer_id>/.well-known/openid-credential-issuer",view_func=issuer_openid_configuration, methods=["GET"], defaults={"mode": mode})
+    app.add_url_rule("/issuer/<issuer_id>/authorize", view_func=issuer_authorize, methods=["GET", "POST"], defaults={"red": red, "mode": mode})
+    app.add_url_rule("/issuer/<issuer_id>/token", view_func=issuer_token, methods=["POST"], defaults={"red": red, "mode": mode},)
+    app.add_url_rule("/issuer/<issuer_id>/credential", view_func=issuer_credential, methods=["POST"], defaults={"red": red, "mode": mode})
+    app.add_url_rule("/issuer/<issuer_id>/deferred", view_func=issuer_deferred, methods=["POST"], defaults={"red": red, "mode": mode},)
+    app.add_url_rule("/issuer/<issuer_id>/authorize_server/.well-known/openid-configuration", view_func=issuer_authorization_server, methods=["GET"], defaults={"mode": mode},)
+    app.add_url_rule("/issuer/credential_offer_uri/<id>", view_func=issuer_credential_offer_uri, methods=["GET"], defaults={"red": red})
+    app.add_url_rule("/issuer/error_uri", view_func=wallet_error_uri, methods=["GET"])
     return
 
 
@@ -102,7 +101,7 @@ def error_uri_build(request, error, error_description, mode):
         "error": error,
         "error_description": error_description
     }
-    return mode.server + 'sandbox/ebsi/issuer/error_uri?' + urlencode(data)
+    return mode.server + 'issuer/error_uri?' + urlencode(data)
 
 
 def manage_error(error, error_description, red, mode, request=None, stream_id=None, status=400):
@@ -163,7 +162,8 @@ def oidc(issuer_id, mode):
                 }
             )
         if _vc.get("id"):
-            oidc_data["id"] = _vc["id"]
+            oidc_data["scope"] = _vc["id"]  
+            oidc_data["id"] = _vc["id"]   #TODO to be removed
         if _vc.get("trust_framework"):
             oidc_data["trust_framework"] = _vc["trust_framework"]
         cs.append(oidc_data)
@@ -173,9 +173,9 @@ def oidc(issuer_id, mode):
     openid_configuration = {}
     openid_configuration.update(
         {
-            "credential_issuer": mode.server + "sandbox/ebsi/issuer/" + issuer_id,
-            "credential_endpoint": mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/credential",
-            "deferred_credential_endpoint": mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/deferred",
+            "credential_issuer": mode.server + "issuer/" + issuer_id,
+            "credential_endpoint": mode.server + "issuer/" + issuer_id + "/credential",
+            "deferred_credential_endpoint": mode.server + "issuer/" + issuer_id + "/deferred",
             "credentials_supported": cs
         }
     )
@@ -186,7 +186,7 @@ def oidc(issuer_id, mode):
         ]
     if issuer_profile.get("batch_credential_endpoint_support"):
         openid_configuration["batch_credential_endpoint"] = (
-            mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/batch"
+            mode.server + "issuer/" + issuer_id + "/batch"
         )
 
     # setup credential manifest as optional
@@ -206,11 +206,11 @@ def oidc(issuer_id, mode):
 
     # setup authorization server
     if issuer_profile.get("authorization_server_support"):
-        openid_configuration["authorization_server"] = mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/authorize_server"
+        openid_configuration["authorization_server"] = mode.server + "issuer/" + issuer_id + "/authorize_server"
     else:
         authorization_server_config = json.load(open("authorization_server_config.json"))
-        openid_configuration["authorization_endpoint"] = mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/authorize"
-        openid_configuration["token_endpoint"] = mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/token"
+        openid_configuration["authorization_endpoint"] = mode.server + "issuer/" + issuer_id + "/authorize"
+        openid_configuration["token_endpoint"] = mode.server + "issuer/" + issuer_id + "/token"
         openid_configuration.update(authorization_server_config)
     return openid_configuration
 
@@ -218,8 +218,8 @@ def oidc(issuer_id, mode):
 def issuer_authorization_server(issuer_id, mode):
     authorization_server_config = json.load(open("authorization_server_config.json"))
     config = {
-        "authorization_endpoint": mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/authorize",
-        "token_endpoint": f"{mode.server}sandbox/ebsi/issuer/{issuer_id}/token"
+        "authorization_endpoint": mode.server + "issuer/" + issuer_id + "/authorize",
+        "token_endpoint": f"{mode.server}issuer/{issuer_id}/token"
     }
     config.update(authorization_server_config)
     return jsonify(config)
@@ -242,7 +242,7 @@ def build_credential_offer(
         if len(credential_type) == 1:
             credential_type = credential_type[0]
         offer = {
-            "issuer": f"{mode.server}sandbox/ebsi/issuer/{issuer_id}",
+            "issuer": f"{mode.server}issuer/{issuer_id}",
             "credential_type": credential_type,
         }
         if pre_authorized_code:
@@ -253,7 +253,7 @@ def build_credential_offer(
     # new OIDC4VCI standard with  credentials as an array ofjson objects (EBSI-V3)
     elif profile[issuer_profile].get("credentials_as_json_object_array"):
         offer = {
-            "credential_issuer": f"{mode.server}sandbox/ebsi/issuer/{issuer_id}",
+            "credential_issuer": f"{mode.server}issuer/{issuer_id}",
             "credentials": [],
         }
         if pre_authorized_code:
@@ -284,7 +284,7 @@ def build_credential_offer(
     # new OIDC4VCI standard with  credentials as an array of strings
     else:
         offer = {
-            "credential_issuer": f'{mode.server}sandbox/ebsi/issuer/{issuer_id}',
+            "credential_issuer": f'{mode.server}issuer/{issuer_id}',
             "credentials": credential_type,
         }
         if pre_authorized_code:
@@ -357,7 +357,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     if issuer_data.get("credential_offer_uri"):
         id = str(uuid.uuid1())
         credential_offer_uri = (
-            f"{mode.server}sandbox/ebsi/issuer/credential_offer_uri/{id}"
+            f"{mode.server}issuer/credential_offer_uri/{id}"
         )
         red.setex(id, GRANT_LIFE, json.dumps(offer))
         logging.info("credential offer uri =%s", credential_offer_uri)
@@ -463,7 +463,7 @@ def issuer_authorize(issuer_id, red, mode):
         code = oidc4vc.build_pre_authorized_code(
             issuer_data["jwk"],
             "https://self-issued.me/v2",
-            mode.server + "sandbox/ebsi/issuer/" + issuer_id,
+            mode.server + "issuer/" + issuer_id,
             issuer_data["verification_method"],
             nonce,
         )
@@ -560,17 +560,30 @@ def issuer_token(issuer_id, red, mode):
             types = vc_type["types"]
             vc_list = vc_type["list"]
             identifiers = [one_vc["identifier"] for one_vc in vc_list]
+            """
             authorization_details.append(
                 {
                     "type": "openid_credential",
                     "locations": [
-                        f"{mode.server}/sandbox/ebsi/issuer/api/{issuer_id}"
+                        f"{mode.server}/issuer/api/{issuer_id}"
                     ],
                     "format": "jwt_vc",
                     "types": types,
                     "identifiers": identifiers,
                 }
             )
+            """
+            authorization_details.append(
+                {
+                    "type": "openid_credential",
+                    "format": "jwt_vc",
+                    "credential_definition": {
+                        "type": types
+                    },
+                    "credential_identifiers": identifiers,
+                }
+            )
+            
         endpoint_response["authorization_details"] = authorization_details
     logging.info("token endpoint response = %s", endpoint_response)
 
@@ -615,10 +628,9 @@ async def issuer_credential(issuer_id, red, mode):
     # Check request
     try:
         result = request.json
-        vc_format = result["format"]
     except Exception:
         return Response(**manage_error("invalid_request", "Invalid request format", red, mode, request=request, stream_id=stream_id))
-
+    vc_format = result.get("format")
     proof = result.get("proof")
     if proof:
         proof_type = result["proof"]["proof_type"]
@@ -640,16 +652,13 @@ async def issuer_credential(issuer_id, red, mode):
         if vc_format == 'ldp_vc':
             return Response(**manage_error("access_denied", "Issuer does not support Bearer credential in ldp_vc format", red, mode, request=request, stream_id=stream_id))
         
-    identifier = result.get("identifier")
+    identifier = result.get("credential_identifier")
     logging.info("identifier = %s", identifier)
     logging.info("credential request = %s", request.json)
 
     # check credential request format
     if not identifier and isinstance(access_token_data["vc"], list):
-        return Response(
-            **manage_error("unsupported_credential_type","identifier for multiple VC issuance expected", red, mode, request=request, stream_id=stream_id,
-            )
-        )
+        return Response(**manage_error("unsupported_credential_type","identifier for multiple VC issuance expected", red, mode, request=request, stream_id=stream_id))
 
     # Get credential type requested
     if result.get("types"):
@@ -667,20 +676,6 @@ async def issuer_credential(issuer_id, red, mode):
     else:
         return Response(**manage_error("invalid_request", "Invalid request format, type(s) is missing", red, mode, request=request, stream_id=stream_id))
     logging.info("credential type requested = %s", credential_type)
-
-    # check credential format requested
-    logging.info("proof format requested = %s", vc_format)
-    if vc_format not in ["jwt_vc", "jwt_vc_json", "jwt_vc_json-ld", "ldp_vc"]:
-        return Response(
-            **manage_error(
-                "invalid_or_missing_proof",
-                "The proof format is invalid",
-                red,
-                mode,
-                request=request,
-                stream_id=stream_id,
-            )
-        )
 
     iss = proof_payload.get("iss") if proof else None
 
@@ -817,7 +812,7 @@ async def issuer_deferred(issuer_id, red, mode):
         deferred_data = json.loads(red.get(issuer_state).decode())
         credential = deferred_data["deferred_vc"][credential_type]
     except Exception:
-        return Response(**manage_error("invalid_token", "Credential is not available yet", red, mode, request=request, status=404))
+        return Response(**manage_error("issuance_pending", "Credential is not available yet", red, mode, request=request, status=404))
 
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
 
