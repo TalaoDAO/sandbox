@@ -432,6 +432,7 @@ def test_9(mode):
     vc = [
             {
                 "type": "EmailPass",
+                "vc_format": "ldp_vc",
                 "types": ["VerifiableCredentials", "EmailPass"],
                 "list": [
                     {
@@ -447,7 +448,7 @@ def test_9(mode):
     ]
     data = { 
         "issuer_id": issuer_id,
-        "vc": vc, 
+        "vc": vc,
         "issuer_state": str(uuid.uuid1()),
         "credential_type": ["EmailPass"],
         "pre-authorized_code": True,

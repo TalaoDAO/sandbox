@@ -162,8 +162,10 @@ def oidc(issuer_id, mode):
                 }
             )
         if _vc.get("id"):
-            oidc_data["scope"] = _vc["id"]  
-            oidc_data["id"] = _vc["id"]   #TODO to be removed
+            if issuer_data["profile"] == "GAIA-X":
+                oidc_data["id"] = _vc["id"]
+            else:
+                oidc_data["scope"] = _vc["id"]
         if _vc.get("trust_framework"):
             oidc_data["trust_framework"] = _vc["trust_framework"]
         cs.append(oidc_data)
@@ -433,7 +435,8 @@ def issuer_authorize(issuer_id, red, mode):
         return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Response type is missing', stream_id, red, state)) 
 
     try:
-        client_id = request.args["client_id"]  # DID of the issuer
+        client_id = request.args["client_id"]  # client_id of the wallet
+        logging.info("client_id of the wallet = %s", client_id)
     except Exception:
         return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Client id is missing', stream_id, red, state))
     
@@ -472,7 +475,7 @@ def issuer_authorize(issuer_id, red, mode):
 
     code_data = {
         "credential_type": credential_type,
-        "client_id": client_id,  # DID of the issuer
+        #"client_id": client_id,  # DID of the wallet
         "issuer_id": issuer_id,
         "issuer_state": issuer_state,
         "state": state,
@@ -560,19 +563,6 @@ def issuer_token(issuer_id, red, mode):
             types = vc_type["types"]
             vc_list = vc_type["list"]
             identifiers = [one_vc["identifier"] for one_vc in vc_list]
-            """
-            authorization_details.append(
-                {
-                    "type": "openid_credential",
-                    "locations": [
-                        f"{mode.server}/issuer/api/{issuer_id}"
-                    ],
-                    "format": "jwt_vc",
-                    "types": types,
-                    "identifiers": identifiers,
-                }
-            )
-            """
             authorization_details.append(
                 {
                     "type": "openid_credential",
@@ -654,7 +644,12 @@ async def issuer_credential(issuer_id, red, mode):
         
     identifier = result.get("credential_identifier")
     logging.info("identifier = %s", identifier)
+    
     logging.info("credential request = %s", request.json)
+
+    # check identifier vs format
+    if identifier and vc_format:
+        return Response(**manage_error("invalid_request", "format not to be present if identifier is used", red, mode, request=request, stream_id=stream_id))
 
     # check credential request format
     if not identifier and isinstance(access_token_data["vc"], list):
@@ -728,21 +723,13 @@ async def issuer_credential(issuer_id, red, mode):
             if one_type["type"] == credential_type:
                 for one_credential in one_type["list"]:
                     if one_credential["identifier"] == identifier:
+                        vc_format = one_type["vc_format"]
                         credential = one_credential["value"]
                         found = True
                         break
                 break
         if not found:
-            return Response(
-                **manage_error(
-                    "unsupported_credential_type",
-                    "The credential identifier is not found",
-                    red,
-                    mode,
-                    request=request,
-                    stream_id=stream_id,
-                )
-            )
+            return Response(**manage_error("unsupported_credential_type", "Credential identifier is not found", red, mode, request=request, stream_id=stream_id,))
 
     credential_signed = await sign_credential(
         credential,

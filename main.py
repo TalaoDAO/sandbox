@@ -315,7 +315,6 @@ class Issuer(Resource):
                 return Response(**api_manage_error("unauthorized", "Credential not supported " + _vc, status=401))
             
         nonce = str(uuid.uuid1())
-
         # generate pre-authorized_code as jwt or string
         if pre_authorized_code:
             if profile[issuer_data["profile"]].get("pre-authorized_code_as_jwt"):
