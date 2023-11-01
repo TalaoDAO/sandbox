@@ -58,8 +58,6 @@ def issuer_oidc_test(mode):
         issuer_id_test_10 = "kivrsduinn"
         issuer_id_test_11 = "kwcdgsspng"
 
-        
-
     title_test_1 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_1))["page_title"]
     subtitle_test_1 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_1))["page_subtitle"]
     title_test_2 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_2))["page_title"]
@@ -426,9 +424,9 @@ def test_9(mode):
         'X-API-KEY': client_secret
     }
     emailpass_1 = build_credential("EmailPass")
-    emailpass_1["credentialSubject"]["email"] = "emai_1@gmail.com"
+    emailpass_1["credentialSubject"]["email"] = "email_1@gmail.com"
     emailpass_2 = build_credential("EmailPass")
-    emailpass_2["credentialSubject"]["email"] = "emai_2@gmail.com"
+    emailpass_2["credentialSubject"]["email"] = "email_2@gmail.com"
     vc = [
             {
                 "type": "EmailPass",
@@ -436,11 +434,11 @@ def test_9(mode):
                 "types": ["VerifiableCredentials", "EmailPass"],
                 "list": [
                     {
-                        "identifier": "emailpass_test_1",
+                        "identifier": emailpass_1['id'],
                         "value": emailpass_1
                     },
                     {
-                        "identifier": "emailpass_test_2",
+                        "identifier": emailpass_2['id'],
                         "value": emailpass_2
                     }
                 ]
@@ -456,7 +454,7 @@ def test_9(mode):
         }
     resp = requests.post(api_endpoint, headers=headers, json=data)
     try:
-        qrcode =  resp.json()['redirect_uri']
+        qrcode = resp.json()['redirect_uri']
     except Exception:
         return jsonify("No qr code")
     return redirect(qrcode) 

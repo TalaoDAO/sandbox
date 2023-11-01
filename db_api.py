@@ -5,11 +5,11 @@ import sqlite3
 import random 
 import string
 from jwcrypto import jwk
-from op_constante import client_data_pattern
 from oidc4vc_constante import client_data_pattern_oidc4vc
 
 logging.basicConfig(level=logging.INFO)
 
+"""
 def create_verifier(mode, user=None, method="ethr"):
     return create('verifier.db', user, mode, method)
 def update_verifier(client_id, data):
@@ -31,18 +31,6 @@ def list_issuer():
     return list('issuer.db')
 def delete_issuer(client_id):
     return delete(client_id, 'issuer.db')
-
-""""
-def update_beacon_verifier(client_id, data):
-    return update(client_id, data, 'beacon_verifier.db')
-def read_beacon_verifier(client_id):
-    return read(client_id, 'beacon_verifier.db')
-def list_beacon_verifier():
-    return list('beacon_verifier.db')
-def delete_beacon_verifier(client_id):
-    return delete(client_id, 'beacon_verifier.db')
-def create_beacon_verifier(mode, user=None, method="ethr"):
-    return create_b('beacon_verifier.db', user, mode, method)
 """
 
 def update_oidc4vc_verifier(client_id, data):
@@ -67,20 +55,7 @@ def delete_oidc4vc_issuer(client_id):
 def create_oidc4vc_issuer(mode, user=None, method="ethr"):
     return create('ebsi_issuer.db', user, mode, method)
 
-
 """
-def update_beacon(client_id, data):
-    return update(client_id, data, 'beacon.db')
-def read_beacon(client_id):
-    return read(client_id, 'beacon.db')
-def list_beacon():
-    return list('beacon.db')
-def delete_beacon(client_id):
-    return delete(client_id, 'beacon.db')
-def create_beacon(mode, user=None, method="ethr"):
-    return create_b('beacon.db', user, mode, method)
-"""
-
 def create_b(db, user, mode, method):
     letters = string.ascii_lowercase
     data = client_data_pattern
@@ -108,14 +83,11 @@ def create_b(db, user, mode, method):
     conn.commit()
     conn.close()
     return data['client_id']
-
+"""
 
 def create(db, user, mode, method):
     letters = string.ascii_lowercase
-    if db in ['ebsi_issuer.db', 'ebsi_verifier.db']:
-        data = client_data_pattern_oidc4vc
-    else:
-        data = client_data_pattern
+    data = client_data_pattern_oidc4vc
     data['client_id'] = ''.join(random.choice(letters) for i in range(10))
     data['tezid_proof_type'] = "urn:uuid:" + str(uuid.uuid1())
     data['client_secret'] = str(uuid.uuid1())
@@ -142,7 +114,6 @@ def create(db, user, mode, method):
     conn.commit()
     conn.close()
     return data['client_id']
-
 
 
 def update(client_id, data, db):
