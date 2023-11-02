@@ -496,8 +496,6 @@ def issuer_token(issuer_id, red, mode):
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-token-endpoint
     https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
     """
-    logging.info("token endpoint request = %s", json.dumps(request.form))
-    logging.info("headers = %s", request.headers)
     
     # error response https://datatracker.ietf.org/doc/html/rfc6749#section-4.2.2.1
     grant_type = request.form.get("grant_type")
