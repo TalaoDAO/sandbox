@@ -298,7 +298,7 @@ def test_8(mode):
         issuer_id = "npwsshblrm"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
 
-    offer = ["VerifiableId"]
+    offer = ["VerifiableId", "EmailPass"]
 
     headers = {
         'Content-Type': 'application/json',

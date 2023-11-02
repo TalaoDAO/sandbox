@@ -423,6 +423,7 @@ def issuer_authorize(issuer_id, red, mode):
     code_challenge_method = request.args.get("code_challenge_method")
     client_metadata = request.args.get("client_metadata")
     state = request.args.get("state")  # wallet state
+    authorization_details = request.args.get("authorization_details")
     
     try:
         redirect_uri = request.args["redirect_uri"]
@@ -440,10 +441,6 @@ def issuer_authorize(issuer_id, red, mode):
     except Exception:
         return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Client id is missing', stream_id, red, state))
     
-    try:
-        authorization_details = request.args["authorization_details"]
-    except Exception:
-        return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Authorization details is missing', stream_id, red, state))
 
     logging.info("redirect_uri = %s", redirect_uri)
     logging.info("code_challenge = %s", code_challenge)
@@ -475,7 +472,9 @@ def issuer_authorize(issuer_id, red, mode):
 
     code_data = {
         "credential_type": credential_type,
-        #"client_id": client_id,  # DID of the wallet
+        "client_id": client_id,
+        "scope": scope,
+        "authorization_details": authorization_details,
         "issuer_id": issuer_id,
         "issuer_state": issuer_state,
         "state": state,
