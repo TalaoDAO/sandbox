@@ -207,11 +207,15 @@ def resolve_did(vm) -> dict:
     logging.info('vm = %s', vm)
     did = vm.split('#')[0]
     # try did for ebsi v3
-    jwk = resolve_wallet_did_ebsi_v3(did)
+    try:
+        jwk = resolve_wallet_did_ebsi_v3(did)
+    except Exception:
+        jwk = None
     if jwk:
         logging.info('wallet jwk EBSI-V3= %s', jwk)
         return json.loads(jwk)
-    
+    elif did.split(':')[1] == "jwk":
+        return json.loads(base64.urlsafe_b64decode(did.split('did:jwk:')[1]))
     elif did.split(':')[1] == "web":
         logging.info("did:web")
         did_document = resolve_did_web(did)
@@ -229,6 +233,7 @@ def resolve_did(vm) -> dict:
             logging.error('cannot access to Talao Universal Resolver for %s', vm)
             return
         did_document = r.json()
+        print("did document = ", did_document)
         for verificationMethod in did_document['didDocument']['verificationMethod']:
             if vm == verificationMethod['id'] or '#' + vm.split('#')[1] == verificationMethod['id']:
                 jwk = verificationMethod.get('publicKeyJwk')
@@ -254,13 +259,13 @@ def verif_token(token, nonce, aud=None):
         raise Exception("nonce is incorrect")
     if aud and payload.get('aud') != aud:
         raise Exception("aud is incorrect")
-    
     if header.get('jwk'):
         if isinstance(header['jwk'], str):
             header['jwk'] = json.loads(header['jwk'])
         dict_key = header['jwk']
     elif header.get('kid'):
         dict_key = resolve_did(header['kid'])
+        print('dict key = ', dict_key)
         if not dict_key:
             raise Exception("Cannot get public key with kid")
     elif payload.get('sub_jwk'):
@@ -268,6 +273,7 @@ def verif_token(token, nonce, aud=None):
     else:
         raise Exception("Cannot resolve public key")
     a = jwt.JWT.from_jose_token(token)
+    logging.info("exit oidc4vc")
     issuer_key = jwk.JWK(**dict_key)
     a.validate(issuer_key)
     return True

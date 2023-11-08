@@ -344,8 +344,7 @@ def test_6_2(red, mode): # VC is sent after delay
         "credential_type": offer,
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
-    print(resp.status_code)
-    return redirect('/sandbox/issuer/oidc/test')
+    return redirect('/issuer/oidc/test')
 
 
 def test_6_1(red, mode):

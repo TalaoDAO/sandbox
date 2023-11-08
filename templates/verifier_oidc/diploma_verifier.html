@@ -142,11 +142,11 @@
         </footer>
     </div>
     <script>
-        var source = new EventSource('/sandbox/verifier/wallet/stream');
+        var source = new EventSource('/verifier/wallet/stream');
         source.onmessage = function (event) {
         const result = JSON.parse(event.data)
         if (result.stream_id == '{{stream_id}}' ){
-          window.location.href='/sandbox/verifier/wallet/followup?stream_id=' + result.stream_id;
+          window.location.href='/verifier/wallet/followup?stream_id=' + result.stream_id;
           }
         };
       </script>

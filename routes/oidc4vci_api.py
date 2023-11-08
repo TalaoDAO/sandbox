@@ -496,7 +496,7 @@ def issuer_token(issuer_id, red, mode):
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-token-endpoint
     https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
     """
-    
+    logging.info('token endoint request')
     # error response https://datatracker.ietf.org/doc/html/rfc6749#section-4.2.2.1
     grant_type = request.form.get("grant_type")
     if not grant_type:
@@ -584,7 +584,6 @@ def issuer_token(issuer_id, red, mode):
     }
 
     red.setex(access_token, ACCESS_TOKEN_LIFE, json.dumps(access_token_data))
-
     headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
     return Response(response=json.dumps(endpoint_response), headers=headers)
 
@@ -609,7 +608,6 @@ async def issuer_credential(issuer_id, red, mode):
     # to manage followup screen
     stream_id = access_token_data.get("stream_id")
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-    logging.info("Profile = %s", issuer_data["profile"])
     # issuer_profile = profile[issuer_data['profile']]
 
     # Check request
@@ -619,6 +617,7 @@ async def issuer_credential(issuer_id, red, mode):
         return Response(**manage_error("invalid_request", "Invalid request format", red, mode, request=request, stream_id=stream_id))
     vc_format = result.get("format")
     proof = result.get("proof")
+    logging.info('wallet request = %s', result)
     if proof:
         proof_type = result["proof"]["proof_type"]
         proof = result["proof"]["jwt"]
@@ -641,7 +640,6 @@ async def issuer_credential(issuer_id, red, mode):
         
     identifier = result.get("credential_identifier")
     logging.info("identifier = %s", identifier)
-    
     logging.info("credential request = %s", request.json)
 
     # check identifier vs format
@@ -672,7 +670,6 @@ async def issuer_credential(issuer_id, red, mode):
     iss = proof_payload.get("iss") if proof else None
 
     # deferred use case
-    
     if issuer_data.get("deferred_flow"):
         acceptance_token = str(uuid.uuid1())
         payload = {
@@ -694,8 +691,6 @@ async def issuer_credential(issuer_id, red, mode):
         )
         headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
         return Response(response=json.dumps(payload), headers=headers)
-
-    logging.info("credential type = %s", credential_type)
 
     if not identifier:
         logging.info("1 VC of the same type")

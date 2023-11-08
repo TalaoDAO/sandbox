@@ -23,6 +23,7 @@ import oidc4vc
 from profile import profile
 import pex
 import didkit
+#import sms
 
 logging.basicConfig(level=logging.INFO)
 
@@ -50,15 +51,14 @@ def init_app(app, red, mode):
     app.add_url_rule('/sandbox/verifier/app/jwks.json', view_func=oidc4vc_jwks, methods=['GET'])
     
     # endpoints for wallet
-    app.add_url_rule('/sandbox/verifier/wallet',  view_func=oidc4vc_login_qrcode, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
-    app.add_url_rule('/sandbox/verifier/wallet/.well-known/openid-configuration',  view_func=wallet_openid_configuration, methods = ['GET'])
-
-    app.add_url_rule('/sandbox/verifier/wallet/endpoint/<stream_id>',  view_func=oidc4vc_login_endpoint, methods=['POST'],  defaults={'red': red}) # redirect_uri for PODST
-    app.add_url_rule('/sandbox/verifier/wallet/request_uri/<id>',  view_func=oidc4vc_request_uri, methods=['GET'], defaults={'red': red})
-    app.add_url_rule('/sandbox/verifier/wallet/client_metadata_uri/<id>',  view_func=client_metadata_uri, methods=['GET'], defaults={'red': red})
-    app.add_url_rule('/sandbox/verifier/wallet/presentation_definition_uri/<id>',  view_func=presentation_definition_uri, methods=['GET'], defaults={'red': red})
-    app.add_url_rule('/sandbox/verifier/wallet/followup',  view_func=oidc4vc_login_followup, methods=['GET'], defaults={'red': red})
-    app.add_url_rule('/sandbox/verifier/wallet/stream',  view_func=oidc4vc_login_stream, defaults={ 'red': red})
+    app.add_url_rule('/verifier/wallet',  view_func=oidc4vc_login_qrcode, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/verifier/wallet/.well-known/openid-configuration',  view_func=wallet_openid_configuration, methods = ['GET'])
+    app.add_url_rule('/verifier/wallet/endpoint/<stream_id>',  view_func=oidc4vc_login_endpoint, methods=['POST'],  defaults={'red': red}) # redirect_uri for PODST
+    app.add_url_rule('/verifier/wallet/request_uri/<id>',  view_func=oidc4vc_request_uri, methods=['GET'], defaults={'red': red})
+    app.add_url_rule('/verifier/wallet/client_metadata_uri/<id>',  view_func=client_metadata_uri, methods=['GET'], defaults={'red': red})
+    app.add_url_rule('/verifier/wallet/presentation_definition_uri/<id>',  view_func=presentation_definition_uri, methods=['GET'], defaults={'red': red})
+    app.add_url_rule('/verifier/wallet/followup',  view_func=oidc4vc_login_followup, methods=['GET'], defaults={'red': red})
+    app.add_url_rule('/verifier/wallet/stream',  view_func=oidc4vc_login_stream, defaults={ 'red': red})
     return
     
 
@@ -80,12 +80,13 @@ def oidc4vc_build_id_token(client_id, sub, nonce, vp, mode):
     # https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
     payload = {
         "iss": mode.server + 'sandbox/verifier/app',
-        "nonce": nonce,
         "iat": datetime.timestamp(datetime.now()),
         "aud": client_id,
         "exp": datetime.timestamp(datetime.now()) + 1000,
         "sub": sub,
     }
+    if nonce:
+        payload['nonce'] = nonce
     if vp:
         if isinstance(vp['verifiableCredential'], dict):
             vc_list = [vp['verifiableCredential']]
@@ -258,7 +259,7 @@ def oidc4vc_authorize(red, mode):
     code = str(uuid.uuid1())
     red.setex(code, CODE_LIFE, json.dumps(data))
     resp = {'code': code}
-    return redirect('/sandbox/verifier/wallet?code=' + code)
+    return redirect('/verifier/wallet?code=' + code)
 
 
 # token endpoint for customer application
@@ -596,7 +597,7 @@ def oidc4vc_login_qrcode(red, mode):
         prez.add_format_jwt_vc()
 
     nonce = nonce or str(uuid.uuid1())
-    redirect_uri = mode.server + "sandbox/verifier/wallet/endpoint/" + stream_id
+    redirect_uri = mode.server + "verifier/wallet/endpoint/" + stream_id
     
     # general authorization request
     authorization_request = { 
@@ -627,7 +628,7 @@ def oidc4vc_login_qrcode(red, mode):
         id = str(uuid.uuid1())
         client_metadata = build_client_metadata(verifier_id, redirect_uri)
         red.setex(id, QRCODE_LIFE, json.dumps(client_metadata))
-        authorization_request['client_metadata_uri'] = mode.server + "sandbox/verifier/wallet/client_metadata_uri/" + id
+        authorization_request['client_metadata_uri'] = mode.server + "verifier/wallet/client_metadata_uri/" + id
         
         # client_id_scheme
         if verifier_data.get('client_id_as_DID'):
@@ -644,7 +645,7 @@ def oidc4vc_login_qrcode(red, mode):
         if verifier_data.get('presentation_definition_uri'):
             id = str(uuid.uuid1())
             red.setex(id, QRCODE_LIFE, json.dumps(presentation_definition))        
-            authorization_request['presentation_definition_uri'] = mode.server + 'sandbox/verifier/wallet/presentation_definition_uri/' + id
+            authorization_request['presentation_definition_uri'] = mode.server + 'verifier/wallet/presentation_definition_uri/' + id
             if authorization_request.get('presentation_definition'):
                 del authorization_request['presentation_definition']
         
@@ -668,7 +669,7 @@ def oidc4vc_login_qrcode(red, mode):
         red.setex(id, QRCODE_LIFE, json.dumps(request_as_jwt))
         authorization_request_displayed = { 
             "client_id": client_id,
-            "request_uri": mode.server + "sandbox/verifier/wallet/request_uri/" + id 
+            "request_uri": mode.server + "verifier/wallet/request_uri/" + id 
         }
     else:
         if 'vp_token' not in response_type and verifier_data.get('request_parameter_supported'):
@@ -692,6 +693,11 @@ def oidc4vc_login_qrcode(red, mode):
     deeplink_altme = mode.deeplink_altme + 'app/download/authorize?' + urlencode(authorization_request_displayed)
     logging.info("weblink for same device flow = %s", deeplink_altme)
     qrcode_page = verifier_data.get('verifier_landing_page_style')
+    scope = json.loads(code_data)['scope'][0]
+    #if scope.split(':')[0] == 'SMS':
+    #    phone = scope.split(':')[1]
+    #    sms.send_code(phone, deeplink_altme, mode)
+    #    logging.info("SMS link sent to %s", phone)
     return render_template(
         qrcode_page,
         url=url,

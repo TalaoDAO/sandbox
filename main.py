@@ -342,7 +342,7 @@ class Issuer(Resource):
             "callback": request.json.get("callback"),
             "login": request.json.get("login"),
         }
-
+        print("vc in main API = ", vc)
         # For deferred API call only VC is stored in redis with issuer_state as key
         if deferred_vc and red.get(issuer_state):
             session_data.update(

@@ -139,13 +139,13 @@ def verifier_test_4(mode):
         return redirect(url)
 
 
-def verifier_test_5(mode): # Test 9
+def verifier_test_5(mode):
     if request.method == 'GET':
         if mode.myenv == 'aws':
             client_id = "xpkhvsemfd"
         else:
             client_id = "iddznwujyy"
-        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=SMS:33607182594&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect(url)
 
 

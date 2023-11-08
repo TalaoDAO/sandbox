@@ -20,7 +20,7 @@
             <p id="title">{{page_title}}</p>
 
 
-            <form id="form" action="/sandbox/verifier/wallet?code={{code}}" method="POST">
+            <form id="form" action="/verifier/wallet?code={{code}}" method="POST">
                 <select id="selectForm" name="prefix">
                     <option class="optionForm" value="openid-vc://">openid-vc://</option>
                     <option class="optionForm" value="openid://">openid://</option>
@@ -47,11 +47,11 @@
 
 
     <script>
-        var source = new EventSource('/sandbox/verifier/wallet/stream');
+        var source = new EventSource('/verifier/wallet/stream');
         source.onmessage = function (event) {
             const result = JSON.parse(event.data)
             if (result.stream_id == '{{stream_id}}') {
-                window.location.href = '/sandbox/verifier/wallet/followup?stream_id=' + result.stream_id;
+                window.location.href = '/verifier/wallet/followup?stream_id=' + result.stream_id;
             }
         };
     </script>
