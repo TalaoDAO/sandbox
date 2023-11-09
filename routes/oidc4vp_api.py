@@ -458,34 +458,11 @@ def build_client_metadata(client_id, redirect_uri) -> dict:
         verifier_data = json.loads(read_oidc4vc_verifier(client_id))
     except Exception:
         return
-    return {
-        'subject_syntax_types_supported': [
-            "did:key",
-            "did:ebsi",
-            "did:tz",
-            "did:key",
-            "did:ethr",
-            "did:polygonid",
-            "did:pkh",
-            "did:hedera",
-            "did:web"
-        ], 
-        'redirect_uris': [redirect_uri],
-        'request_parameter_supported': bool(
-            verifier_data.get('request_parameter_supported')
-        ),
-        'request_uri_parameter_supported': bool(
-            verifier_data.get('request_uri_parameter_supported')
-        ),
-        'cryptographic_suites_supported': [
-            'ES256K',
-            'ES256',
-            'EdDSA',
-        ], 
-        'client_name': 'Talao-Altme Verifier',
-        "logo_uri": "https://altme.io/",
-        "contacts": ["contact@talao.io"]
-    }
+    client_metadata = json.load(open('client_metadata.json', 'r')) 
+    client_metadata['request_uri_parameter_supported'] = bool(verifier_data.get('request_uri_parameter_supported'))
+    client_metadata['request_parameter_supported'] = bool(verifier_data.get('request_parameter_supported'))
+    client_metadata['redirect_uris'] = [redirect_uri]
+    return client_metadata
 
 
 def presentation_definition_uri(id, red):
@@ -656,7 +633,7 @@ def oidc4vc_login_qrcode(red, mode):
     if 'id_token' in response_type:
         authorization_request['scope'] = 'openid'
         if 'vp_token' not in response_type:   
-            authorization_request['registration'] = json.load(open('siopv2_config.json', 'r')) 
+            authorization_request['registration'] = build_client_metadata(client_id, redirect_uri) 
 
 
     # manage request_uri as jwt

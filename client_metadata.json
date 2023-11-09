@@ -9,10 +9,6 @@
   "response_modes_supported": [
     "query"
   ],
-  "grant_types_supported": [
-    "authorization_code",
-    "urn:ietf:params:oauth:grant-type:pre-authorized_code"
-  ],
   "subject_types_supported": [
     "public"
   ],
@@ -28,16 +24,6 @@
     "EdDSA",
     "RS256"
   ],
-  "request_parameter_supported": true,
-  "request_uri_parameter_supported": true,
-  "token_endpoint_auth_methods_supported": [
-    "private_key_jwt"
-  ],
-  "request_authentication_methods_supported": {
-    "authorization_endpoint": [
-      "request_object"
-    ]
-  },
   "vp_formats": {
     "jwt_vp": {
       "alg_values_supported": [
@@ -61,13 +47,8 @@
     "did:ebsi",
     "did:tz",
     "did:pkh",
-    "did:hedera",
-    "did:ion",
     "did:key",
-    "did:polygonid",
-    "did:ethr",
-    "did:sol",
-    "did:web"
+    "did:ethr"
   ],
   "subject_syntax_types_discriminations": [
     "did:key:jwk_jcs-pub",
@@ -80,9 +61,8 @@
     "gaia-x"
   ],
   "id_token_types_supported": [
-    "subject_signed_id_token",
-    "attester_signed_id_token"
+    "subject_signed_id_token"
   ],
   "client_purpose": "Verify VC",
-  "client_name": "Altme Verify Credential Verifier platform"
+  "client_name": "Altme Verifier platform"
 }
