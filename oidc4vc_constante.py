@@ -98,6 +98,7 @@ client_data_pattern_oidc4vc = {
     "request_parameter_supported": None, 
     "request_uri_parameter_supported": 'on',
     "credential_offer_uri": None,
+    "client_metadata_uri": None,
     "presentation_definition_uri": None,
     "filter_type_array": None,
     "deferred_flow": None,

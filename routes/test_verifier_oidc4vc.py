@@ -39,7 +39,7 @@ def verifier_oidc_test(mode):
         verifier_id_test_11 = ""
     else:
         verifier_id_test_1 = "rxukghiksb"
-        verifier_id_test_2 = "ybbiskyifx"
+        verifier_id_test_2 = "paqqladucu"
         verifier_id_test_3 = "ybbiskyifx"
         verifier_id_test_4 = "gbypcbxtum"
         verifier_id_test_5 = "iddznwujyy"

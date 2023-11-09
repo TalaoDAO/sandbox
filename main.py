@@ -20,7 +20,6 @@ from device_detector import SoftwareDetector
 
 
 # Basic protocole
-#from routes import verifier_console, api_verifier
 from routes import saas4ssi
 # OIDC4VC
 from routes import oidc4vp_api, oidc4vp_console
@@ -28,7 +27,7 @@ from routes import oidc4vci_api, oidc4vci_console
 # for testing purpose
 from routes import test_issuer_oidc4vc
 from routes import test_verifier_oidc4vc
-from routes import  web_wallet_test
+from routes import web_wallet_test
 from routes import web_display_VP
 
 
@@ -57,7 +56,7 @@ app = Flask(__name__,
             static_url_path='/static') 
 
 
-app.jinja_env.globals['Version'] = "0.3.0"
+app.jinja_env.globals['Version'] = "0.3.1"
 app.jinja_env.globals['Created'] = time.ctime(os.path.getctime('main.py'))
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_COOKIE_NAME'] = 'altme_talao'
@@ -67,11 +66,6 @@ app.config['SESSION_FILE_THRESHOLD'] = 100
 app.config['SECRET_KEY'] = "sandbox" + mode.password
 app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["jpeg", "jpg", "png", "gif"]
 
-# BASIC wallet protocol
-#api_verifier.init_app(app, red, mode)
-#api_issuer.init_app(app, red, mode)
-#verifier_console.init_app(app, red, mode)
-#issuer_console.init_app(app, red, mode)
 # OIDC4VC wallet
 oidc4vp_console.init_app(app, red, mode)
 oidc4vp_api.init_app(app, red, mode)

@@ -624,11 +624,14 @@ def oidc4vc_login_qrcode(red, mode):
     if 'vp_token' in response_type:
         authorization_request['nonce'] = nonce 
             
-        # client_metadata_uri
-        id = str(uuid.uuid1())
+        # client_metadata
         client_metadata = build_client_metadata(verifier_id, redirect_uri)
-        red.setex(id, QRCODE_LIFE, json.dumps(client_metadata))
-        authorization_request['client_metadata_uri'] = mode.server + "verifier/wallet/client_metadata_uri/" + id
+        if verifier_data.get('client_metadata_uri'):
+            id = str(uuid.uuid1())
+            red.setex(id, QRCODE_LIFE, json.dumps(client_metadata))
+            authorization_request['client_metadata_uri'] = mode.server + "verifier/wallet/client_metadata_uri/" + id
+        else:
+            authorization_request['client_metadata'] = client_metadata
         
         # client_id_scheme
         if verifier_data.get('client_id_as_DID'):
@@ -651,8 +654,9 @@ def oidc4vc_login_qrcode(red, mode):
         
     # SIOPV2
     if 'id_token' in response_type:
-        authorization_request['scope'] = 'openid'       
-        authorization_request['registration'] = json.dumps(json.load(open('siopv2_config.json', 'r'))) # TODO 
+        authorization_request['scope'] = 'openid'
+        if 'vp_token' not in response_type:   
+            authorization_request['registration'] = json.load(open('siopv2_config.json', 'r')) 
 
 
     # manage request_uri as jwt

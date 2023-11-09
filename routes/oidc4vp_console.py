@@ -290,6 +290,7 @@ def oidc4vc_verifier_console(mode):
             group_B="checked" if session['client_data'].get('group_B') else "",
             filter_type_array="checked" if session['client_data'].get('filter_type_array') else "" ,
             presentation_definition_uri="checked" if session['client_data'].get('presentation_definition_uri') else "" ,
+            client_metadata_uri="checked" if session['client_data'].get('client_metadata_uri') else "",
             request_uri_parameter_supported="checked" if session['client_data'].get('request_uri_parameter_supported') else "" ,
             request_parameter_supported="" if not session['client_data'].get('request_parameter_supported') else "checked" ,
             standalone="" if not session['client_data'].get('standalone')  else "checked" ,
@@ -362,6 +363,7 @@ def oidc4vc_verifier_console(mode):
             session['client_data']['group_B'] = request.form.get('group_B') 
             session['client_data']['filter_type_array'] = request.form.get('filter_type_array') 
             session['client_data']['presentation_definition_uri'] = request.form.get('presentation_definition_uri') 
+            session['client_data']['client_metadata_uri'] = request.form.get('client_metadata_uri')
             session['client_data']['request_uri_parameter_supported'] = request.form.get('request_uri_parameter_supported') 
             session['client_data']['request_parameter_supported'] = request.form.get('request_parameter_supported') 
             session['client_data']['application_name'] = request.form['application_name']
