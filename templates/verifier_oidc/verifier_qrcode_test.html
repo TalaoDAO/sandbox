@@ -38,7 +38,8 @@
               </div>
               <br>
             <form action="/verifier/wallet?code={{code}}" method="POST">
-              <div class="form-group"><select class="custom-select form-select-lg mb-3" aria-label=".form-select-lg example" name="prefix"  >
+              <div class="text-center">
+             <div class="form-group col-4 offset-4"><select class="custom-select form-select-lg mb-3" aria-label=".form-select-lg example" name="prefix"  >
                 <option value="openid-vc://">openid-vc://</option>
                 <option value="openid://">openid://</option>
                 <option value="siopv2://">siopv2://</option>
@@ -47,17 +48,18 @@
 
                 <div class="col"><button style="background-color: #09060f;"  class="btn btn-primary btn-sm" name="button" value="update" type="submit">Refresh</button></div>
             </div>
+          </div>
               </form>
             </div>
 
           </div>
               <div class="text-center mt-5">
-              <h2>URL</h2><br>
+              <h2>URL encoded with scheme</h2><br>
               <textarea rows="10" cols="150">{{url}}</textarea>
               </div>
 
               <div class="text-center mt-5">
-                <h2>URL JSON</h2><br>
+                <h2>URL content JSON format</h2><br>
                 <textarea rows="15" cols="150">{{url_json|safe}}</textarea>
 
                 
@@ -69,18 +71,18 @@
 
 
                 <div class="text-center mt-5">
-                  <h2>Authorization request</h2><br>
+                  <h2>Authorization request JSON format</h2><br>
                   <textarea rows="20" cols="150">{{authorization_request|safe}}</textarea>
                   </div>
 
 
                 <div class="text-center mt-5">
-                  <h2>Presentation Definition</h2><br>
+                  <h2>presentation_definition</h2><br>
                   <textarea rows="20" cols="150">{{presentation_definition|safe}}</textarea>
                   </div>
 
                 <div class="text-center mt-5">
-                <h2>Client metadata</h2><br>
+                <h2>client_metadata / registration</h2><br>
                 <textarea rows="10" cols="150">{{client_metadata|safe}}</textarea>
                 </div>
 

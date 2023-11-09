@@ -457,7 +457,8 @@ def build_client_metadata(client_id, redirect_uri) -> dict:
     try:
         verifier_data = json.loads(read_oidc4vc_verifier(client_id))
     except Exception:
-        return
+        logging.warning("client metadata failed to build")
+        return {}
     client_metadata = json.load(open('client_metadata.json', 'r')) 
     client_metadata['request_uri_parameter_supported'] = bool(verifier_data.get('request_uri_parameter_supported'))
     client_metadata['request_parameter_supported'] = bool(verifier_data.get('request_parameter_supported'))
@@ -633,7 +634,7 @@ def oidc4vc_login_qrcode(red, mode):
     if 'id_token' in response_type:
         authorization_request['scope'] = 'openid'
         if 'vp_token' not in response_type:   
-            authorization_request['registration'] = build_client_metadata(client_id, redirect_uri) 
+            authorization_request['registration'] = build_client_metadata(verifier_id, redirect_uri) 
 
 
     # manage request_uri as jwt
@@ -667,7 +668,7 @@ def oidc4vc_login_qrcode(red, mode):
     red.setex(stream_id, QRCODE_LIFE, json.dumps(data))
 
     if 'vp_token' not in response_type:
-        presentation_definition = {"N/A": "N/A"}
+        presentation_definition = None
         
     url = prefix + '?' + urlencode(authorization_request_displayed)
     deeplink_talao = mode.deeplink_talao + 'app/download/authorize?' + urlencode(authorization_request_displayed)
