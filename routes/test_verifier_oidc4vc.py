@@ -1,4 +1,4 @@
-from flask import jsonify,  redirect, request, render_template
+from flask import jsonify,  redirect, request, render_template, redirect
 import json
 import db_api
 
@@ -21,7 +21,8 @@ def init_app(app,red, mode):
  
     
     app.add_url_rule('/sandbox/verifier/callback',  view_func=verifier_callback, methods=['GET'])   
-    app.add_url_rule('/sandbox/verifier/callback2',  view_func=verifier_callback2, methods=['GET'])   
+    app.add_url_rule('/sandbox/verifier/callback2',  view_func=verifier_callback2, methods=['GET'], defaults={'mode': mode})   
+    app.add_url_rule('/sandbox/verifier/callback2_1',  view_func=verifier_callback2_1, methods=['GET'])   
 
     
     # Test
@@ -201,10 +202,14 @@ def verifier_test_10(mode):
         url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback2"
         return redirect(url)
 
+
 def verifier_callback():
     return jsonify(request.args)
 
 
-def verifier_callback2():
+def verifier_callback2(mode):
+    return redirect('/sandbox/verifier/app/logout' + '?post_logout_redirect_uri=' + mode.server + "sandbox/verifier/callback2_1")
+
+
+def verifier_callback2_1():
     return render_template('face2face.html')
-    
