@@ -193,15 +193,15 @@ def verifier_test_9(mode):
         url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect(url)
 
+
 def verifier_test_10(mode):
-    session.clear()
-    if request.method == 'GET':
-        if mode.myenv == 'aws':
-            client_id = "qixvcqlwbq"
-        else:
-            client_id = "ifdpawlhsw"
-        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback2"
-        return redirect(url)
+    session['verified'] = False
+    if mode.myenv == 'aws':
+        client_id = "qixvcqlwbq"
+    else:
+        client_id = "ifdpawlhsw"
+    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback2"
+    return redirect(url)
 
 
 def verifier_callback():
