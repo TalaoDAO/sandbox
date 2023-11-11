@@ -39,7 +39,7 @@ def verifier_oidc_test(mode):
         verifier_id_test_7 = "feyfeamejt"
         verifier_id_test_8 = "novanyhlhs"
         verifier_id_test_9 = "rkubsscrkt"
-        verifier_id_test_10 = ""
+        verifier_id_test_10 = "qixvcqlwbq"
         verifier_id_test_11 = ""
     else:
         verifier_id_test_1 = "rxukghiksb"
@@ -195,7 +195,7 @@ def verifier_test_9(mode):
 def verifier_test_10(mode):
     if request.method == 'GET':
         if mode.myenv == 'aws':
-            client_id = ""
+            client_id = "qixvcqlwbq"
         else:
             client_id = "ifdpawlhsw"
         url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback2"
