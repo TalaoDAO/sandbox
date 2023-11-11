@@ -8,23 +8,14 @@ import logging
 from datetime import datetime
 import didkit # VC signature sdk
 from components import message, sms
-
-# console logger
 logging.basicConfig(level=logging.INFO)
 
-
-ACCESS_TOKEN_LIFE = 180 # sec access token is not used 
-QRCODE_LIFE = 5 * 60  # sec
 CODE_LIFE = 5 * 60 # sec
 
 TRUSTED_ISSUERS = [
     'did:web:site.ageproofpoc.dns.id360docaposte.com:certificates'
 ]
-
-
-CONTACT = 'healthcheck@jeprouvemonage.fr'
 WEBLINK = "https://app.jeprouvemonage.fr/jpma"
-EMAIL_MESSAGE = "Erreur 500 sur verifier de prod"
 
 
 def init_app(app, red, mode):
@@ -49,32 +40,32 @@ def ciba(red, mode):
         elif phone_to and not email_to:
             wallet_message(phone_to, stream_id, red, mode)
         else:
+            stream_id = str(uuid.uuid1())
             return render_template('ciba.html', stream_id=stream_id)
         return render_template('ciba_wait.html', stream_id=stream_id)
 
 
 def wallet_message(to, stream_id, red, mode):
     pattern = {
-                'type': 'VerifiablePresentationRequest',
-                'query': [
-                    {
-                        'type': 'QueryByExample',
-                        'credentialQuery': []
-                    }
-                ]
-            }
-    pattern['query'][0]['credentialQuery'].append(
+        'type': 'VerifiablePresentationRequest',
+        'query': [
             {
-                'example': 
-                    {'type': 'AgeOver18'},
-                'reason': 'Ciba experimentation' 
-            }) 
+                'type': 'QueryByExample',
+                'credentialQuery': []
+            }
+        ]
+    }
+    pattern['query'][0]['credentialQuery'].append(
+        {
+            'example': 
+                {'type': 'AgeOver18'},
+            'reason': 'Ciba experimentation' 
+        }
+    )
     pattern['challenge'] = stream_id
     pattern['domain'] = mode.server
-    data = { 
-        'pattern': pattern,
-    }
-    red.setex(stream_id, QRCODE_LIFE, json.dumps(data))
+    data = {'pattern': pattern}
+    red.setex(stream_id, CODE_LIFE, json.dumps(data))
     url = f'{mode.server}ciba/wallet/presentation/{stream_id}'
     deeplink_jpma = f'{WEBLINK}?' + urlencode({'uri': url})
     if to[:3] == "+33":
@@ -91,8 +82,8 @@ async def presentation(stream_id, red, mode):
         value = json.dumps({
             'access': 'access_denied',
             'user': credential['credentialSubject']['id']
-            })
-        red.setex(stream_id + '_DIDAuth', CODE_LIFE, value)
+        })
+        red.setex(stream_id + '_data', CODE_LIFE, value)
         event_data = json.dumps({'stream_id': stream_id})           
         red.publish('ciba', event_data)
         logging.error(msg)
@@ -105,24 +96,17 @@ async def presentation(stream_id, red, mode):
             value = json.dumps({
                 'access': 'access_denied',
                 'user': 'unknown'
-                })
+            })
             event_data = json.dumps({'stream_id': stream_id})           
             red.publish('ciba', event_data)
-            logging.warning('QR code expired, return 408 to wallet and display error page to desktop')
+            logging.warning('link expired, return 408 to wallet and display error page to desktop')
             return jsonify('REQUEST_TIMEOUT'), 408
-        
         return jsonify(my_pattern)
 
     if request.method == 'POST':  
-        # Content-Type: multipart/form-data; boundary=--dio-boundary-0879526566 
-        
-        # get verifiable presentation
         presentation = request.form['presentation']
-
         result_presentation = await didkit.verify_presentation(presentation, '{}')
         logging.info('check presentation with didkit.verify = %s', result_presentation )
-
-        # If the user refuses to present his credential, wallet sends back an empty presentation
         credential = json.loads(presentation).get('verifiableCredential')
         
         if not credential:
@@ -150,11 +134,11 @@ async def presentation(stream_id, red, mode):
         
         # store data in redis
         value = json.dumps({
-                    'access': 'ok',
-                    'vp': json.loads(presentation),
-                    'user': json.loads(presentation)['holder'],
-                    'issuer': credential['issuer']
-                    })
+            'access': 'ok',
+            'vp': json.loads(presentation),
+            'user': json.loads(presentation)['holder'],
+            'issuer': credential['issuer']
+        })
         red.setex(stream_id + '_data', CODE_LIFE, value)
         event_data = json.dumps({'stream_id': stream_id})           
         red.publish('ciba', event_data)        
@@ -173,9 +157,6 @@ def followup(red, mode):
 
 
 def ciba_stream(red, mode):
-    """
-    Push data to front -> event stream
-    """
     def login_event_stream(red):
         pubsub = red.pubsub()
         pubsub.subscribe('ciba')

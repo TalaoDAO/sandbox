@@ -69,6 +69,7 @@ guest_landing_page_style_list = {
 # verifier qrcode page for amdin
 oidc4vc_verifier_landing_page_style_list = {
     "./verifier_oidc/verifier_qrcode_2.html": "Style",
+    "./verifier_oidc/verifier_qrcode_only.html": "QR code only",
     "./verifier_oidc/verifier_qrcode_test.html": "Test",
     "./verifier_oidc/diploma_verifier.html": "Diplome Tezos Ebsi"
 }
