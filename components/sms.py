@@ -4,7 +4,6 @@ https://ssl.smsapi.com/#/payments/transfer/success
 
 from smsapi.client import SmsApiComClient
 from smsapi.exception import SmsApiException
-from flask_babel import _
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -14,7 +13,7 @@ def send_code(phone, code, mode) :
 	token = mode.sms_token
 	try :
 		client = SmsApiComClient(access_token=token)
-		send_results = client.sms.send(to=phone, message=_("# Your verification code is : ") + code)
+		send_results = client.sms.send(to=phone, message="# Your verification code is : " + code)
 		for result in send_results :
 			logging.info('result =  %s %s %s', result.id, result.points, result.error)
 			return True
@@ -26,7 +25,7 @@ def check_phone(phone, mode) :
 	token = mode.sms_token
 	try:
 		client = SmsApiComClient(access_token=token)
-		client.sms.send(to=phone, message=_("Your phone number has been verified."))
+		client.sms.send(to=phone, message="Your phone number has been verified.")
 		return True
 	except SmsApiException as e:
 		logging.error('sms api message = %s', e.message)
