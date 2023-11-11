@@ -16,8 +16,8 @@
     <div class="container">
         
         <div class="row mt-5">
-            <div class="col-6 offset-3">
-                <h1>Site web client ou call center</h1>
+            <div class="col-8 offset-2">
+                <h1>Site web client, call center, presentiel</h1>
             </div>
         </div>
 
@@ -28,14 +28,14 @@
                                 <div class="m-5">
                                     <div class="text-center"><h4 class="text-dark mb-4" >Saisissez un email ou un numéro de téléphone</h4></div>
 
-                                    <p>Vous recevrez un lien pour ouvrir votre application mobile</p>
+                                    <p>Un lien sera envoyé pour ouvrir l'application mobile de preuve d'age.</p>
 
                                     <form name="form" class="user" action="/ciba" method="post">
                                         <div hidden class="form-group"><input class="form-control" type="text" name="stream_id" value={{stream_id}} style="color: rgb(133,135,150);"></div>
 
                                         <div class="form-group"><input class="form-control" type="email" placeholder="email"  name="email_to" style="color: rgb(133,135,150);"></div>
                                         ou
-                                        <div class="form-group"><input class="form-control" type="phone" placeholder="téléphone"  name="phone_to" style="color: rgb(133,135,150);"></div>
+                                        <div class="form-group"><input class="form-control" type="phone" placeholder="téléphone (+33...)"  name="phone_to" style="color: rgb(133,135,150);"></div>
 
                                         <button  style="background-color: #500bf5;" class="btn btn-block text-white border rounded btn-user" type="submit">Suivant</button>
                                     </form>
