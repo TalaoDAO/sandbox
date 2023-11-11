@@ -44,10 +44,12 @@ def ciba(red, mode):
         email_to = request.form['email_to']
         phone_to = request.form['phone_to']
         stream_id = request.form['stream_id']
-        if email_to:
+        if email_to and not phone_to:
             wallet_message(email_to, stream_id, red, mode)
-        else:
+        elif phone_to and not email_to:
             wallet_message(phone_to, stream_id, red, mode)
+        else:
+            return render_template('ciba.html', stream_id=stream_id)
         return render_template('ciba_wait.html', stream_id=stream_id)
 
 
@@ -75,13 +77,11 @@ def wallet_message(to, stream_id, red, mode):
     red.setex(stream_id, QRCODE_LIFE, json.dumps(data))
     url = f'{mode.server}ciba/wallet/presentation/{stream_id}'
     deeplink_jpma = f'{WEBLINK}?' + urlencode({'uri': url})
-    print('deeplink = ', deeplink_jpma)
-    print('to = ', to)
     if to[:3] == "+33":
-        print('send SMS')
+        logging.info('send SMS')
         sms.send_code(to, deeplink_jpma, mode)
     else:
-        print('send email')
+        logging.info('send email')
         message.message('JPMA link', to, deeplink_jpma, mode)
     return
 
