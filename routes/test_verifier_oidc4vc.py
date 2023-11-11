@@ -1,4 +1,4 @@
-from flask import jsonify,  redirect, request, render_template, redirect
+from flask import jsonify,  redirect, request, render_template, redirect, session
 import json
 import db_api
 
@@ -194,6 +194,7 @@ def verifier_test_9(mode):
         return redirect(url)
 
 def verifier_test_10(mode):
+    session.clear()
     if request.method == 'GET':
         if mode.myenv == 'aws':
             client_id = "qixvcqlwbq"
