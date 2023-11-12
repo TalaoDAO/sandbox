@@ -23,7 +23,9 @@ def init_app(app, red, mode):
     app.add_url_rule('/jpma2jpma/wallet/presentation/<stream_id>',  view_func=jpma2jpma_presentation, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/jpma2jpma/wallet/followup',  view_func=jpma2jpma_followup, methods=['GET'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/jpma2jpma/wallet/stream', view_func=jpma2jpma_stream, methods=['GET'], defaults={'red': red, 'mode': mode})
-    app.add_url_rule('/jpma2jpma', view_func=jpma2jpma, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+    #app.add_url_rule('/jpma2jpma', view_func=jpma2jpma, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/face2face', view_func=jpma2jpma, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+
     return
 
 
