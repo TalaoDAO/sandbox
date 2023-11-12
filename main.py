@@ -31,7 +31,7 @@ from routes import web_wallet_test
 from routes import web_display_VP
 
 from routes import ciba
-
+from routes import jpma2jpma
 
 API_LIFE = 5000
 #ACCESS_TOKEN_LIFE = 1000
@@ -81,7 +81,9 @@ web_display_VP.init_app(app, red, mode)
 web_wallet_test.init_app(app, red, mode)
 test_issuer_oidc4vc.init_app(app, red, mode)
 test_verifier_oidc4vc.init_app(app, red, mode)
+
 ciba.init_app(app, red, mode)
+jpma2jpma.init_app(app, red, mode)
 
 
 sess = Session()

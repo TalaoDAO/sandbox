@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!-- op_verifier_qrcopde2-->
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/altmeIcon.png">
+    <title>Talao</title>
+    <link rel="stylesheet" href="/static/home.css">
+</head>
+
+<body>
+
+    <div id="mainBox">
+        <div id="boxVerifier1">
+
+            <p id="title">{{page_title}}</p>
+
+
+        
+        </div>
+
+        <div id="boxVerifier2">
+
+            <div id="divCompliantVerifier">
+                <p id="compliant">{{page_subtitle}}</p>
+            </div>
+            <img  src="{{ qrcode(url) }}"  height="300" width="300">
+            <p>{{qrcode_message}}</p>
+            <a href={{landing_page_url}}>{{landing_page_url}} </a>
+        </div>
+
+    </div>
+    {% include 'footer.html' %}
+
+
+    <script>
+        var source = new EventSource('/jpma2jpma/wallet/stream');
+        source.onmessage = function (event) {
+            const result = JSON.parse(event.data)
+            if (result.stream_id == '{{stream_id}}') {
+                window.location.href = '/jpma2jpma/wallet/followup?stream_id=' + result.stream_id;
+            }
+        };
+    </script>
+</body>
+
+</html>
