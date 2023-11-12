@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/img/altmeIcon.png">
-    <title>Test jpma2jpma</title>
+    <title>Test face2face</title>
     <link rel="stylesheet" href="/static/home.css">
 </head>
 
@@ -36,11 +36,11 @@
 
 
     <script>
-        var source = new EventSource('/jpma2jpma/wallet/stream');
+        var source = new EventSource('/face2face/wallet/stream');
         source.onmessage = function (event) {
             const result = JSON.parse(event.data)
             if (result.stream_id == '{{stream_id}}') {
-                window.location.href = '/jpma2jpma/wallet/followup?stream_id=' + result.stream_id;
+                window.location.href = '/face2face/wallet/followup?stream_id=' + result.stream_id;
             }
         };
     </script>

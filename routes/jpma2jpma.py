@@ -20,17 +20,16 @@ WEBLINK = "https://app.jeprouvemonage.fr/jpma"
 
 def init_app(app, red, mode):
     # endpoints for OpenId customer application
-    app.add_url_rule('/jpma2jpma/wallet/presentation/<stream_id>',  view_func=jpma2jpma_presentation, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
-    app.add_url_rule('/jpma2jpma/wallet/followup',  view_func=jpma2jpma_followup, methods=['GET'], defaults={'red': red, 'mode': mode})
-    app.add_url_rule('/jpma2jpma/wallet/stream', view_func=jpma2jpma_stream, methods=['GET'], defaults={'red': red, 'mode': mode})
-    #app.add_url_rule('/jpma2jpma', view_func=jpma2jpma, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
-    app.add_url_rule('/face2face', view_func=jpma2jpma, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/face2face/wallet/presentation/<stream_id>',  view_func=face2face_presentation, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/face2face/wallet/followup',  view_func=face2face_followup, methods=['GET'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/face2face/wallet/stream', view_func=face2face_stream, methods=['GET'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/face2face', view_func=face2face, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
 
     return
 
 
 
-def jpma2jpma(red, mode):
+def face2face(red, mode):
     stream_id = str(uuid.uuid1())
     pattern = {
         'type': 'VerifiablePresentationRequest',
@@ -45,18 +44,18 @@ def jpma2jpma(red, mode):
         {
             'example': 
                 {'type': 'AgeOver18'},
-            'reason': 'jpma2jpma experimentation' 
+            'reason': 'face2face experimentation' 
         }
     )
     pattern['challenge'] = stream_id
     pattern['domain'] = mode.server
     data = {'pattern': pattern}
     red.setex(stream_id, CODE_LIFE, json.dumps(data))
-    url = f'{mode.server}jpma2jpma/wallet/presentation/{stream_id}'
+    url = f'{mode.server}face2face/wallet/presentation/{stream_id}'
     return render_template("./verifier_oidc/verifier_qrcode_only_jpma.html", url=url, stream_id=stream_id)
 
 
-async def jpma2jpma_presentation(stream_id, red, mode):
+async def face2face_presentation(stream_id, red, mode):
     def manage_error(msg, code=403):
         value = json.dumps({
             'access': 'access_denied',
@@ -64,7 +63,7 @@ async def jpma2jpma_presentation(stream_id, red, mode):
         })
         red.setex(stream_id + '_data', CODE_LIFE, value)
         event_data = json.dumps({'stream_id': stream_id})           
-        red.publish('jpma2jpma', event_data)
+        red.publish('face2face', event_data)
         logging.error(msg)
         return jsonify(msg), code
     
@@ -77,7 +76,7 @@ async def jpma2jpma_presentation(stream_id, red, mode):
                 'user': 'unknown'
             })
             event_data = json.dumps({'stream_id': stream_id})           
-            red.publish('jpma2jpma', event_data)
+            red.publish('face2face', event_data)
             logging.warning('link expired, return 408 to wallet and display error page to desktop')
             return jsonify('REQUEST_TIMEOUT'), 408
         return jsonify(my_pattern)
@@ -95,7 +94,7 @@ async def jpma2jpma_presentation(stream_id, red, mode):
             })
             red.setex(stream_id + '_data', CODE_LIFE, value)
             event_data = json.dumps({'stream_id': stream_id})           
-            red.publish('jpma2jpma', event_data)
+            red.publish('face2face', event_data)
             logging.warning('User refuses, return 401 to wallet and display error page to desktop')
             return jsonify('REQUEST_TIMEOUT'), 401
 
@@ -120,11 +119,11 @@ async def jpma2jpma_presentation(stream_id, red, mode):
         })
         red.setex(stream_id + '_data', CODE_LIFE, value)
         event_data = json.dumps({'stream_id': stream_id})           
-        red.publish('jpma2jpma', event_data)        
+        red.publish('face2face', event_data)        
         return jsonify('ok')
 
 
-def jpma2jpma_followup(red, mode):
+def face2face_followup(red, mode):
     stream_id = request.args.get('stream_id')
     stream_id_data = json.loads(red.get(stream_id + '_data').decode())
     if stream_id_data['access'] != 'ok':
@@ -132,10 +131,10 @@ def jpma2jpma_followup(red, mode):
     return render_template('face2face.html')
 
 
-def jpma2jpma_stream(red, mode):
+def face2face_stream(red, mode):
     def login_event_stream(red):
         pubsub = red.pubsub()
-        pubsub.subscribe('jpma2jpma')
+        pubsub.subscribe('face2face')
         for pub_message in pubsub.listen():
             if pub_message['type'] == 'message':
                 yield 'data: %s\n\n' % pub_message['data'].decode()
