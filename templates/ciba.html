@@ -15,27 +15,23 @@
 
     <div class="container">
         
-        <div class="row mt-5">
-            <div class="col-8 offset-2">
-                <h1>Site web client, call center, presentiel</h1>
-            </div>
-        </div>
+       
 
         <div class="row ">
-            <div class="col-6 offset-3">
-                <div class="card shadow o-hidden border-0 my-5" style="color: rgb(133,135,150);">
+            <div class="col-6 offset-3 mt-5">
+                <div class="card shadow o-hidden border-0 mt-5" style="color: rgb(133,135,150);">
                     <div class="card-body p-0">
                                 <div class="m-5">
-                                    <div class="text-center"><h4 class="text-dark mb-4" >Saisissez un email ou un numéro de téléphone</h4></div>
+                                    <div class="text-center"><h4 class="text-dark mb-4" >Enter a user email or phone number</h4></div>
 
-                                    <p>Un lien sera envoyé pour ouvrir l'application mobile de preuve d'age.</p>
+                                    <p>User will receive a link to transfer her age proof</p>
 
-                                    <form name="form" class="user" action="/ciba" method="post">
+                                    <form name="form" class="user" action="{{route}}" method="post">
                                         <div hidden class="form-group"><input class="form-control" type="text" name="stream_id" value={{stream_id}} style="color: rgb(133,135,150);"></div>
 
                                         <div class="form-group"><input class="form-control" type="email" placeholder="email"  name="email_to" style="color: rgb(133,135,150);"></div>
                                         ou
-                                        <div class="form-group"><input class="form-control" type="phone" placeholder="téléphone (+33...)"  name="phone_to" style="color: rgb(133,135,150);"></div>
+                                        <div class="form-group"><input class="form-control" type="phone" placeholder="Phone (+33...)"  name="phone_to" style="color: rgb(133,135,150);"></div>
 
                                         <button  style="background-color: #500bf5;" class="btn btn-block text-white border rounded btn-user" type="submit">Suivant</button>
                                     </form>

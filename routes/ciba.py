@@ -12,10 +12,8 @@ logging.basicConfig(level=logging.INFO)
 
 CODE_LIFE = 5 * 60 # sec
 
-TRUSTED_ISSUERS = [
-    'did:web:site.ageproofpoc.dns.id360docaposte.com:certificates'
-]
-WEBLINK = "https://app.jeprouvemonage.fr/jpma"
+WEBLINK = 'https://app.jeprouvemonage.fr/jpma'
+WEBLINK_ALTME = 'https://app.altme.io/app/download'
 
 
 def init_app(app, red, mode):
@@ -23,29 +21,41 @@ def init_app(app, red, mode):
     app.add_url_rule('/ciba/wallet/presentation/<stream_id>',  view_func=presentation, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/ciba/wallet/followup',  view_func=followup, methods=['GET'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/ciba/wallet/stream', view_func=ciba_stream, methods=['GET'], defaults={'red': red, 'mode': mode})
-    app.add_url_rule('/ciba', view_func=ciba, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/ciba', view_func=ciba, methods=['GET', 'POST'], defaults={'wallet': 'JPMA', 'red': red, 'mode': mode})
+    app.add_url_rule('/altme/ciba', view_func=ciba, methods=['GET', 'POST'], defaults={'wallet': 'Altme', 'red': red, 'mode': mode})
+
     return
 
 
-def ciba(red, mode):
+def ciba(wallet, red, mode):
     if request.method == 'GET':
         stream_id = str(uuid.uuid1())
-        return render_template('ciba.html', stream_id=stream_id)
+        if wallet == 'JPMA':
+            route = "/ciba"
+        else:
+            route = "/altme/ciba"    
+        return render_template('ciba.html', route=route, stream_id=stream_id)
     else:
         email_to = request.form['email_to']
         phone_to = request.form['phone_to']
         stream_id = request.form['stream_id']
         if email_to and not phone_to:
-            wallet_message(email_to, stream_id, red, mode)
+            wallet_message(email_to, stream_id, wallet, red, mode)
         elif phone_to and not email_to:
-            wallet_message(phone_to, stream_id, red, mode)
+            wallet_message(phone_to, stream_id, wallet, red, mode)
         else:
             stream_id = str(uuid.uuid1())
-            return render_template('ciba.html', stream_id=stream_id)
+            return render_template('ciba.html', route=route, stream_id=stream_id)
         return render_template('ciba_wait.html', stream_id=stream_id)
+    
 
-
-def wallet_message(to, stream_id, red, mode):
+def wallet_message(to, stream_id, wallet, red, mode):
+    if wallet =="JPMA" :
+        weblink = WEBLINK
+        vc_type = 'AgeOver18'
+    else:
+        weblink = WEBLINK_ALTME
+        vc_type = 'Over18'
     pattern = {
         'type': 'VerifiablePresentationRequest',
         'query': [
@@ -58,7 +68,7 @@ def wallet_message(to, stream_id, red, mode):
     pattern['query'][0]['credentialQuery'].append(
         {
             'example': 
-                {'type': 'AgeOver18'},
+                {'type': vc_type},
             'reason': 'Ciba experimentation' 
         }
     )
@@ -67,13 +77,13 @@ def wallet_message(to, stream_id, red, mode):
     data = {'pattern': pattern}
     red.setex(stream_id, CODE_LIFE, json.dumps(data))
     url = f'{mode.server}ciba/wallet/presentation/{stream_id}'
-    deeplink_jpma = f'{WEBLINK}?' + urlencode({'uri': url})
+    deeplink = weblink + '?' + urlencode({'uri': url})
     if to[:3] == "+33":
         logging.info('send SMS')
-        sms.send_code(to, deeplink_jpma, mode)
+        sms.send_code(to, deeplink, mode)
     else:
         logging.info('send email')
-        message.message('JPMA link', to, deeplink_jpma, mode)
+        message.message('Prove your are Over 18 yo', to, deeplink, mode)
     return
 
 
@@ -127,9 +137,7 @@ async def presentation(stream_id, red, mode):
             return manage_error('holder does not match subject.id')
         if (credential.get('expirationDate') <  datetime.now().replace(microsecond=0).isoformat() + 'Z'):
             return manage_error('credential expired')
-        if credential['issuer'] not in TRUSTED_ISSUERS:
-            return manage_error('Issuer not in trusted list')
-        if credential['credentialSubject']['type'] not in ['AgeOver18', 'AgeOver15']:
+        if credential['credentialSubject']['type'] not in ['AgeOver18', 'AgeOver15', 'Over18']:
             return manage_error('VC type does not match')
         
         # store data in redis
