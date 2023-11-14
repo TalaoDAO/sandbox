@@ -50,7 +50,8 @@ def ciba(wallet, red, mode):
     
 
 def wallet_message(to, stream_id, wallet, red, mode):
-    if wallet =="JPMA" :
+    print('wallet = ', wallet)
+    if wallet == "JPMA" :
         weblink = WEBLINK
         vc_type = 'AgeOver18'
     else:
