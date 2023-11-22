@@ -27,7 +27,8 @@
   "request_parameter_supported": true,
   "request_uri_parameter_supported": true,
   "token_endpoint_auth_methods_supported": [
-    "private_key_jwt"
+    "client_secret_basic",
+    "none"
   ],
   "request_authentication_methods_supported": {
     "authorization_endpoint": [
@@ -60,9 +61,9 @@
     "did:pkh",
     "did:hedera",
     "did:key",
-    "did:polygonid",
     "did:ethr",
-    "did:web"
+    "did:web",
+    "did:jwk"
   ],
   "subject_syntax_types_discriminations": [
     "did:key:jwk_jcs-pub",
@@ -75,7 +76,6 @@
     "gaia-x"
   ],
   "id_token_types_supported": [
-    "subject_signed_id_token",
-    "attester_signed_id_token"
+    "subject_signed_id_token"
   ]
 }

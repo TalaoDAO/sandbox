@@ -54,7 +54,7 @@ def init_app(app, red, mode):
     app.add_url_rule("/issuer/<issuer_id>/token", view_func=issuer_token, methods=["POST"], defaults={"red": red, "mode": mode},)
     app.add_url_rule("/issuer/<issuer_id>/credential", view_func=issuer_credential, methods=["POST"], defaults={"red": red, "mode": mode})
     app.add_url_rule("/issuer/<issuer_id>/deferred", view_func=issuer_deferred, methods=["POST"], defaults={"red": red, "mode": mode},)
-    app.add_url_rule("/issuer/<issuer_id>/authorize_server/.well-known/openid-configuration", view_func=issuer_authorization_server, methods=["GET"], defaults={"mode": mode},)
+    app.add_url_rule("/issuer/<issuer_id>/authorize_server/.well-known/openid-configuration", view_func=authorization_server_openid_configuration, methods=["GET"], defaults={"mode": mode},)
     app.add_url_rule("/issuer/credential_offer_uri/<id>", view_func=issuer_credential_offer_uri, methods=["GET"], defaults={"red": red})
     app.add_url_rule("/issuer/error_uri", view_func=wallet_error_uri, methods=["GET"])
     return
@@ -128,11 +128,13 @@ def manage_error(error, error_description, red, mode, request=None, stream_id=No
     return {"response": json.dumps(payload), "status": status, "headers": headers}
 
 
+# issuer openid configuraion endpoint 
 def issuer_openid_configuration(issuer_id, mode):
     doc = oidc(issuer_id, mode)
     return jsonify(doc) if doc else (jsonify("Not found"), 404)
 
 
+# for wallet
 def oidc(issuer_id, mode):
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
@@ -147,7 +149,8 @@ def oidc(issuer_id, mode):
         oidc_data = {
             "format": _vc.get("format", "missing, contact@talao.co"),
             "types": _vc.get("types", "missing, contact@talao.co"),
-            "display": _vc.get("display", "missing, contact@talao.co"),
+            "display": _vc.get("display", "missing, contact@talao.co")
+          
         }
         if issuer_data["profile"] != "EBSI-V3":
             oidc_data.update(
@@ -172,8 +175,8 @@ def oidc(issuer_id, mode):
 
     # general section
     # https://www.rfc-editor.org/rfc/rfc8414.html#page-4
-    openid_configuration = {}
-    openid_configuration.update(
+    issuer_openid_configuration = {}
+    issuer_openid_configuration.update(
         {
             "credential_issuer": mode.server + "issuer/" + issuer_id,
             "credential_endpoint": mode.server + "issuer/" + issuer_id + "/credential",
@@ -183,13 +186,9 @@ def oidc(issuer_id, mode):
     )
 
     if issuer_profile.get("service_documentation"):
-        openid_configuration["service_documentation"] = issuer_profile[
+        issuer_openid_configuration["service_documentation"] = issuer_profile[
             "service_documentation"
         ]
-    if issuer_profile.get("batch_credential_endpoint_support"):
-        openid_configuration["batch_credential_endpoint"] = (
-            mode.server + "issuer/" + issuer_id + "/batch"
-        )
 
     # setup credential manifest as optional
     # https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-server-metadata
@@ -204,20 +203,22 @@ def oidc(issuer_id, mode):
                 cm.append(cm_to_add)
             except Exception:
                 logging.warning("credential manifest not found for %s", _vc)
-        openid_configuration["credential_manifests"] = cm
+        issuer_openid_configuration["credential_manifests"] = cm
 
-    # setup authorization server
+    # setup authorization server if needed
     if issuer_profile.get("authorization_server_support"):
-        openid_configuration["authorization_server"] = mode.server + "issuer/" + issuer_id + "/authorize_server"
+        issuer_openid_configuration["authorization_server"] = mode.server + "issuer/" + issuer_id + "/authorize_server"
     else:
         authorization_server_config = json.load(open("authorization_server_config.json"))
-        openid_configuration["authorization_endpoint"] = mode.server + "issuer/" + issuer_id + "/authorize"
-        openid_configuration["token_endpoint"] = mode.server + "issuer/" + issuer_id + "/token"
-        openid_configuration.update(authorization_server_config)
-    return openid_configuration
+        issuer_openid_configuration.update(authorization_server_config)
+        issuer_openid_configuration["authorization_endpoint"] = mode.server + "issuer/" + issuer_id + "/authorize"
+        issuer_openid_configuration["token_endpoint"] = mode.server + "issuer/" + issuer_id + "/token"
+
+    return issuer_openid_configuration
 
 
-def issuer_authorization_server(issuer_id, mode):
+# authorization server endpoint
+def authorization_server_openid_configuration(issuer_id, mode):
     authorization_server_config = json.load(open("authorization_server_config.json"))
     config = {
         "authorization_endpoint": mode.server + "issuer/" + issuer_id + "/authorize",

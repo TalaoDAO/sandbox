@@ -16,6 +16,10 @@ supported signature: https://ec.europa.eu/digital-building-blocks/wikis/display/
 """
 
 
+#issuer_did = 'did:jwk:' + base64.urlsafe_b64encode(json.dumps(issuer_public_key).replace(" ", "").encode()).decode()
+
+
+
 def generate_key(curve):
     """
 alg value https://www.rfc-editor.org/rfc/rfc7518#page-6

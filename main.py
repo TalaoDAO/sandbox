@@ -375,6 +375,11 @@ class Issuer(Resource):
         return jsonify(response)
 
 
+@app.route('/app/download' , methods=['GET']) 
+def app_download() :
+    return render_template('app_download.html')
+
+
 # Google universal link
 @app.route('/.well-known/assetlinks.json' , methods=['GET']) 
 def assetlinks(): 
