@@ -377,7 +377,7 @@ class Issuer(Resource):
 
 @app.route('/app/download' , methods=['GET']) 
 def app_download() :
-    return render_template('app_download.html')
+    return render_template('app_download/app_download.html')
 
 
 # Google universal link

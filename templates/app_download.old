@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<!-- app_download.html -->
+<!-- AltMe app_download.html -->
 <html>
 
 <head>
-    {% include 'head.html' %}
+    {% include 'app_download/head.html' %}
 </head>
 
 <body id="page-top" >
     <div id="wrapper">
         <div class="d-flex flex-column" id="content-wrapper">
             <div id="content" >
-                {% include 'guest_nav_bar_2.html' %}
+                {% include 'app_download/nav_bar.html' %}
 
                 <div class="container">
                     <div class="row mt-5">
@@ -20,8 +20,8 @@
                                     <img src="/static/img/7.png" class="card-img-top" alt="...">
                                     <div class="card-body">
                                         <div class="text-center">
-                                            <h5 class="card-title">{{_('The Talao SSI wallet is not installed on your phone')}}</h5>
-                                            <p class="card-text">{{_('Download the app')}}</p>
+                                            <h5 class="card-title">The wallet is not installed on your phone</h5>
+                                            <p class="card-text">Download the app</p>
                                             <div class="col mt-4">
                                                 <div id="logo" class="text-center">
                                                 </div>
@@ -43,7 +43,7 @@
             </div>
         </div>
     </div>
-     {% include 'user_footer.html' %}  
+     {% include 'app_download/footer.html' %}  
 
     <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
@@ -53,10 +53,10 @@
 		var isMobile = /iPhone|iPad/i.test(navigator.userAgent);
 		var element = document.getElementById('logo');
 		if (isMobile) {
-            element.innerHTML = '<a href="https://apps.apple.com/fr/app/talao-wallet/id1582183266?platform=iphone"><img  src="/static/img/apple-appstore-badge.svg"  style="width: 200px;border-radius:0px;"></a>'
+            element.innerHTML = '<a href="https://apps.apple.com/fr/app/altme/id1633216869"><img  src="/static/img/apple-appstore-badge.svg"  style="width: 200px;border-radius:0px;"></a>'
 
 		} else {
-			element.innerHTML = ' <a href="https://play.google.com/store/apps/details?id=co.talao.wallet&hl=fr_FR"><img  src="/static/img/google-play-badge.svg"  style="width: 200px;border-radius:0px;"></a>'
+			element.innerHTML = ' <a href="https://play.google.com/store/apps/details?id=co.altme.alt.me.altme"><img  src="/static/img/google-play-badge.svg"  style="width: 200px;border-radius:0px;"></a>'
 ;
 		}
 	</script>
