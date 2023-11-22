@@ -342,7 +342,6 @@ class Issuer(Resource):
             "callback": request.json.get("callback"),
             "login": request.json.get("login"),
         }
-        print("vc in main API = ", vc)
         # For deferred API call only VC is stored in redis with issuer_state as key
         if deferred_vc and red.get(issuer_state):
             session_data.update(
@@ -380,14 +379,14 @@ def app_download() :
     return render_template('app_download/app_download.html')
 
 
-# Google universal link
+# Google universal link for Talao wallet
 @app.route('/.well-known/assetlinks.json' , methods=['GET']) 
 def assetlinks(): 
     document = json.load(open('assetlinks.json', 'r'))
     return jsonify(document)
 
 
-# Apple universal link
+# Apple universal link for Talao wallet
 @app.route('/.well-known/apple-app-site-association' , methods=['GET']) 
 def apple_app_site_association(): 
     document = json.load(open('apple-app-site-association', 'r'))
