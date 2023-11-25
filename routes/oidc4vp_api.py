@@ -12,7 +12,7 @@ from flask import request, render_template, redirect
 from flask import session, Response, jsonify
 import json
 import uuid
-from urllib.parse import urlencode
+from urllib.parse import urlencode, quote
 import logging
 import base64
 from datetime import datetime
@@ -601,6 +601,8 @@ def oidc4vc_login_qrcode(red, mode):
     # OIDC4VP
     if 'vp_token' in response_type:
         authorization_request['nonce'] = nonce 
+        presentation_definition = prez.get()
+        authorization_request['aud'] = 'https://self-issued.me/v2'
             
         # client_metadata
         client_metadata = build_client_metadata(verifier_id, redirect_uri)
@@ -608,34 +610,24 @@ def oidc4vc_login_qrcode(red, mode):
             id = str(uuid.uuid1())
             red.setex(id, QRCODE_LIFE, json.dumps(client_metadata))
             authorization_request['client_metadata_uri'] = mode.server + "verifier/wallet/client_metadata_uri/" + id
-        else:
-            authorization_request['client_metadata'] = client_metadata
         
         # client_id_scheme
         if verifier_data.get('client_id_as_DID'):
             authorization_request['client_id_scheme'] = 'did'
         else:
             authorization_request['client_id_scheme'] = 'redirect_uri'
-        
-        # presentation_definition
-        presentation_definition = prez.get()
-        authorization_request['presentation_definition'] = presentation_definition   # TODO
-        authorization_request['aud'] = 'https://self-issued.me/v2'   #TODO implies wallet profile 
 
         # presentation_definition_uri
         if verifier_data.get('presentation_definition_uri'):
             id = str(uuid.uuid1())
             red.setex(id, QRCODE_LIFE, json.dumps(presentation_definition))        
             authorization_request['presentation_definition_uri'] = mode.server + 'verifier/wallet/presentation_definition_uri/' + id
-            if authorization_request.get('presentation_definition'):
-                del authorization_request['presentation_definition']
         
     # SIOPV2
     if 'id_token' in response_type:
         authorization_request['scope'] = 'openid'
         if 'vp_token' not in response_type:   
             authorization_request['registration'] = build_client_metadata(verifier_id, redirect_uri) 
-
 
     # manage request_uri as jwt
     request_as_jwt = build_jwt_request(
@@ -669,8 +661,16 @@ def oidc4vc_login_qrcode(red, mode):
 
     if 'vp_token' not in response_type:
         presentation_definition = None
-        
+
+    # QR code prepararion
     url = prefix + '?' + urlencode(authorization_request_displayed)
+    if not verifier_data.get('client_metadata_uri'):
+        url = url + '&client_metadata=' + quote(json.dumps(client_metadata))
+        authorization_request['client_metadata'] = client_metadata
+    if not verifier_data.get('presentation_definition_uri'):
+        url = url + '&presentation_definition=' + quote(json.dumps(presentation_definition))
+        authorization_request['presentation_definition'] = presentation_definition
+
     deeplink_talao = mode.deeplink_talao + 'app/download/authorize?' + urlencode(authorization_request_displayed)
     deeplink_altme = mode.deeplink_altme + 'app/download/authorize?' + urlencode(authorization_request_displayed)
     logging.info("weblink for same device flow = %s", deeplink_altme)

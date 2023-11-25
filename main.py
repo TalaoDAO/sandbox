@@ -58,7 +58,7 @@ app = Flask(__name__,
             static_url_path='/static') 
 
 
-app.jinja_env.globals['Version'] = "0.3.1"
+app.jinja_env.globals['Version'] = "0.3.2"
 app.jinja_env.globals['Created'] = time.ctime(os.path.getctime('main.py'))
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_COOKIE_NAME'] = 'altme_talao'
@@ -376,7 +376,7 @@ class Issuer(Resource):
 
 @app.route('/app/download' , methods=['GET']) 
 def app_download() :
-    return render_template('app_download/app_download.html')
+    return render_template('app_download/talao_app_download.html')
 
 
 # Google universal link for Talao wallet
