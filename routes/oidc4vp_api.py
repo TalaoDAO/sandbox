@@ -55,7 +55,7 @@ def init_app(app, red, mode):
     app.add_url_rule('/verifier/wallet/.well-known/openid-configuration',  view_func=wallet_openid_configuration, methods = ['GET'])
     app.add_url_rule('/verifier/wallet/endpoint/<stream_id>',  view_func=oidc4vc_login_endpoint, methods=['POST'],  defaults={'red': red}) # redirect_uri for PODST
     app.add_url_rule('/verifier/wallet/request_uri/<id>',  view_func=oidc4vc_request_uri, methods=['GET'], defaults={'red': red})
-    app.add_url_rule('/verifier/wallet/client_metadata_uri/<id>',  view_func=client_metadata_uri, methods=['GET'], defaults={'red': red})
+    app.add_url_rule('/verifier/wallet/client_metadata_uri/<id>',  view_func=wallet_metadata_uri, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/verifier/wallet/presentation_definition_uri/<id>',  view_func=presentation_definition_uri, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/verifier/wallet/followup',  view_func=oidc4vc_login_followup, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/verifier/wallet/stream',  view_func=oidc4vc_login_stream, defaults={ 'red': red})
@@ -444,26 +444,26 @@ def build_jwt_request(key, kid, iss, aud, request) -> str:
     return token.serialize()
 
 
-def client_metadata_uri(id, red):
+def wallet_metadata_uri(id, red):
     #  https://openid.net/specs/openid-connect-registration-1_0.html
     try:
-        client_metadata = json.loads(red.get(id).decode())
+        wallet_metadata = json.loads(red.get(id).decode())
     except Exception:
         return jsonify('Request timeout'), 408
-    return jsonify(client_metadata)
+    return jsonify(wallet_metadata)
 
 
-def build_client_metadata(client_id, redirect_uri) -> dict:
+def build_wallet_metadata(client_id, redirect_uri) -> dict:
     try:
         verifier_data = json.loads(read_oidc4vc_verifier(client_id))
     except Exception:
-        logging.warning("client metadata failed to build")
+        logging.warning("wallet metadata failed to build")
         return {}
-    client_metadata = json.load(open('client_metadata.json', 'r')) 
-    client_metadata['request_uri_parameter_supported'] = bool(verifier_data.get('request_uri_parameter_supported'))
-    client_metadata['request_parameter_supported'] = bool(verifier_data.get('request_parameter_supported'))
-    client_metadata['redirect_uris'] = [redirect_uri]
-    return client_metadata
+    wallet_metadata = json.load(open('wallet_metadata.json', 'r')) 
+    wallet_metadata['request_uri_parameter_supported'] = bool(verifier_data.get('request_uri_parameter_supported'))
+    wallet_metadata['request_parameter_supported'] = bool(verifier_data.get('request_parameter_supported'))
+    wallet_metadata['redirect_uris'] = [redirect_uri]
+    return wallet_metadata
 
 
 def presentation_definition_uri(id, red):
@@ -597,6 +597,7 @@ def oidc4vc_login_qrcode(red, mode):
         client_id = verifier_data['did']
     
     authorization_request['client_id'] = client_id
+    wallet_metadata = build_wallet_metadata(verifier_id, redirect_uri)
 
     # OIDC4VP
     if 'vp_token' in response_type:
@@ -604,11 +605,10 @@ def oidc4vc_login_qrcode(red, mode):
         presentation_definition = prez.get()
         authorization_request['aud'] = 'https://self-issued.me/v2'
             
-        # client_metadata
-        client_metadata = build_client_metadata(verifier_id, redirect_uri)
+        # client_metadata uri
         if verifier_data.get('client_metadata_uri'):
             id = str(uuid.uuid1())
-            red.setex(id, QRCODE_LIFE, json.dumps(client_metadata))
+            red.setex(id, QRCODE_LIFE, json.dumps(wallet_metadata))
             authorization_request['client_metadata_uri'] = mode.server + "verifier/wallet/client_metadata_uri/" + id
         
         # client_id_scheme
@@ -627,7 +627,7 @@ def oidc4vc_login_qrcode(red, mode):
     if 'id_token' in response_type:
         authorization_request['scope'] = 'openid'
         if 'vp_token' not in response_type:   
-            authorization_request['registration'] = build_client_metadata(verifier_id, redirect_uri) 
+            authorization_request['registration'] = wallet_metadata
 
     # manage request_uri as jwt
     request_as_jwt = build_jwt_request(
@@ -665,8 +665,8 @@ def oidc4vc_login_qrcode(red, mode):
     # QR code prepararion
     url = prefix + '?' + urlencode(authorization_request_displayed)
     if not verifier_data.get('client_metadata_uri'):
-        url = url + '&client_metadata=' + quote(json.dumps(client_metadata))
-        authorization_request['client_metadata'] = client_metadata
+        url = url + '&client_metadata=' + quote(json.dumps(wallet_metadata))
+        authorization_request['client_metadata'] = wallet_metadata
     if not verifier_data.get('presentation_definition_uri'):
         url = url + '&presentation_definition=' + quote(json.dumps(presentation_definition))
         authorization_request['presentation_definition'] = presentation_definition
@@ -675,7 +675,10 @@ def oidc4vc_login_qrcode(red, mode):
     deeplink_altme = mode.deeplink_altme + 'app/download/authorize?' + urlencode(authorization_request_displayed)
     logging.info("weblink for same device flow = %s", deeplink_altme)
     qrcode_page = verifier_data.get('verifier_landing_page_style')
-    scope = json.loads(code_data)['scope'][0]
+    logging.info("qrcode qize = %s", len(url))
+    if len(url) > 2900:
+        return jsonify("This QR code is too big, use request uri")
+    # scope = json.loads(code_data)['scope'][0]
     #if scope.split(':')[0] == 'SMS':
     #    phone = scope.split(':')[1]
     #    sms.send_code(phone, deeplink_altme, mode)
@@ -686,7 +689,7 @@ def oidc4vc_login_qrcode(red, mode):
         authorization_request=json.dumps(authorization_request, indent=4),
         url_json=json.dumps(authorization_request_displayed, indent=4),
         presentation_definition=json.dumps(presentation_definition, indent=4),
-        client_metadata=json.dumps(build_client_metadata(verifier_id, redirect_uri), indent=4),
+        client_metadata=json.dumps(wallet_metadata, indent=4),
         deeplink_talao=deeplink_talao,
         deeplink_altme=deeplink_altme,
         stream_id=stream_id,
