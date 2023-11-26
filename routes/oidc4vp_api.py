@@ -610,6 +610,8 @@ def oidc4vc_login_qrcode(red, mode):
             id = str(uuid.uuid1())
             red.setex(id, QRCODE_LIFE, json.dumps(wallet_metadata))
             authorization_request['client_metadata_uri'] = mode.server + "verifier/wallet/client_metadata_uri/" + id
+        else:
+            authorization_request['client_metadata'] = wallet_metadata
         
         # client_id_scheme
         if verifier_data.get('client_id_as_DID'):
@@ -622,6 +624,8 @@ def oidc4vc_login_qrcode(red, mode):
             id = str(uuid.uuid1())
             red.setex(id, QRCODE_LIFE, json.dumps(presentation_definition))        
             authorization_request['presentation_definition_uri'] = mode.server + 'verifier/wallet/presentation_definition_uri/' + id
+        else:
+            authorization_request['presentation_definition'] = presentation_definition
         
     # SIOPV2
     if 'id_token' in response_type:
@@ -664,10 +668,10 @@ def oidc4vc_login_qrcode(red, mode):
 
     # QR code prepararion
     url = prefix + '?' + urlencode(authorization_request_displayed)
-    if not verifier_data.get('client_metadata_uri'):
+    if not verifier_data.get('client_metadata_uri') and not verifier_data.get('request_uri_parameter_supported'):
         url = url + '&client_metadata=' + quote(json.dumps(wallet_metadata))
         authorization_request['client_metadata'] = wallet_metadata
-    if not verifier_data.get('presentation_definition_uri'):
+    if not verifier_data.get('presentation_definition_uri') and not verifier_data.get('request_uri_parameter_supported'):
         url = url + '&presentation_definition=' + quote(json.dumps(presentation_definition))
         authorization_request['presentation_definition'] = presentation_definition
 
