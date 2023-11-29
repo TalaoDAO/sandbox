@@ -417,7 +417,7 @@ def device_detector():
 
 
 # .well-known DID API
-@app.route('/.well-known/did.json', methods=['GET'], defaults={'mode' : mode})
+@app.route('/.well-known/did.json', methods=['GET'])
 @app.route('/did.json', methods=['GET'])
 def well_known_did():
     """

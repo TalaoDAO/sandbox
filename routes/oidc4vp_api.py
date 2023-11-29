@@ -643,7 +643,7 @@ def oidc4vc_login_qrcode(red, mode):
     if 'vp_token' not in response_type:
         presentation_definition = None
 
-    # QR code prepararion    
+    # Request for uri    
     if 'vp_token' in response_type:
         if not verifier_data.get('client_metadata_uri'):
             if verifier_data.get('request_uri_parameter_supported'):
@@ -670,7 +670,7 @@ def oidc4vc_login_qrcode(red, mode):
         authorization_request
     )
 
-     # authorization_request_displayed
+    # QRCode preparation with authorization_request_displayed
     if verifier_data.get('request_uri_parameter_supported'):
         id = str(uuid.uuid1())
         red.setex(id, QRCODE_LIFE, json.dumps(request_as_jwt))
@@ -697,29 +697,29 @@ def oidc4vc_login_qrcode(red, mode):
         if not verifier_data.get('request_uri_parameter_supported'):
             url = url + '&registration=' + quote(json.dumps(wallet_metadata))
     
-    
+    # get request uri jwt
     try:
         r = requests.get(authorization_request_displayed['request_uri'])
-        request_uri = r.content.decode()
+        request_uri_jwt = r.content.decode()
     except:
-        request_uri =""
-    print('authorization_request = ', authorization_request)
+        request_uri_jwt =""
 
-    deeplink_talao = mode.deeplink_talao + 'app/download/authorize?' + urlencode(authorization_request_displayed)
     deeplink_altme = mode.deeplink_altme + 'app/download/authorize?' + urlencode(authorization_request_displayed)
     logging.info("weblink for same device flow = %s", deeplink_altme)
     qrcode_page = verifier_data.get('verifier_landing_page_style')
+    
+    # test qrcode size
     logging.info("qrcode qize = %s", len(url))
     if len(url) > 2900:
         return jsonify("This QR code is too big, use request uri")
+    
     return render_template(
         qrcode_page,
         url=url,
-        request_uri=request_uri,
+        request_uri=request_uri_jwt,
         url_json= unquote(url),
         presentation_definition=json.dumps(presentation_definition, indent=4),
         client_metadata=json.dumps(wallet_metadata, indent=4),
-        deeplink_talao=deeplink_talao,
         deeplink_altme=deeplink_altme,
         stream_id=stream_id,
         title=verifier_data['title'],
