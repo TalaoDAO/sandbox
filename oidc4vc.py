@@ -237,7 +237,6 @@ def resolve_did(vm) -> dict:
             logging.error('cannot access to Talao Universal Resolver for %s', vm)
             return
         did_document = r.json()
-        print("did document = ", did_document)
         for verificationMethod in did_document['didDocument']['verificationMethod']:
             if vm == verificationMethod['id'] or '#' + vm.split('#')[1] == verificationMethod['id']:
                 jwk = verificationMethod.get('publicKeyJwk')

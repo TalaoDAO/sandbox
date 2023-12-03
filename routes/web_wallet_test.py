@@ -64,7 +64,6 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox/credentialOffer_back',  view_func=test_credentialOffer_back, methods = ['GET'])
     app.add_url_rule('/sandbox/wallet_credential/<id>',  view_func=test_credentialOffer_endpoint, methods = ['GET', 'POST'], defaults={'red' :red})
     app.add_url_rule('/sandbox/offer_stream',  view_func=offer_stream, methods = ['GET', 'POST'], defaults={'red' :red})
-    #app.add_url_rule('/sandbox/display',  view_func=test_credential_display, methods = ['GET', 'POST'])
     app.add_url_rule('/sandbox/direct_offer',  view_func=test_direct_offer, methods = ['GET'], defaults={'red' :red, 'mode' : mode})
 
     # Test QueryByExample test
@@ -77,8 +76,7 @@ def init_app(app,red, mode) :
     app.add_url_rule('/sandbox',  view_func=sandbox, methods = ['GET', 'POST'])
     app.add_url_rule('/sandbox/playground',  view_func=playground, methods = ['GET', 'POST'])
     
-    # test NFT
-    app.add_url_rule('/sandbox/playground/nft',  view_func=nft, methods = ['GET', 'POST'], defaults={ 'mode' : mode})
+   
 
     global registry_repo
     g = Github(mode.github)
@@ -97,23 +95,6 @@ def playground() :
     else :
         nationality = request.form['nationality']
         return redirect("/sandbox/direct_offer?VC=Nationality.jsonld&nationality=" + nationality)
-
-
-def nft(mode):
-    """
-    test du verifier qui mint des token de compliance
-    """
-    url =  'https://issuer.talao.co/verifier/defi/get_link'
-    headers = {
-        'api-key' : '000',
-        'client_id' : "000",
-        'chain' : 'binance',
-        'test' : 'True'
-    }
-    r = requests.post(url, headers=headers)
-    if not r.json()['link'] :
-        return jsonify("Incorrect API call")
-    return render_template('mint_nft_qrcode.html', url=r.json()['link'])
 
 
 ######################### Credential Offer ###########
@@ -136,7 +117,10 @@ def test_direct_offer(red, mode) :
     try :
         credential = credential_from_filename("context", VC_filename)
     except :
-        return jsonify("Verifiable Credential not found"), 500
+        try:
+            credential = json.load(open("verifiable_credentials/" + VC_filename, 'r'))
+        except Exception:
+            return jsonify("Verifiable Credential not found"), 401
     if request.args.get('method') == "ethr" :
         credential['issuer'] = DID_ETHR
     elif request.args.get('method') == "key" :
@@ -149,7 +133,6 @@ def test_direct_offer(red, mode) :
     credential['id'] = "urn:uuid:" + str(uuid.uuid1())
 
     if VC_filename == "VerifiableDiploma.jsonld" :
-        #credential["issuer"] ="did:ebsi:zdRvvKbXhVVBsXhatjuiBhs"
         credential["issuer"] = did_selected
         credential["issued"] = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
         credential["validFrom"] = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
@@ -169,11 +152,12 @@ def test_direct_offer(red, mode) :
             "expires" : (datetime.now() + OFFER_DELAY).replace(microsecond=0).isoformat() + "Z"
         }
     
-    print("VC filename = ", VC_filename)
     if VC_filename == "TezLoyaltyCard_1.jsonld" :
         filename = "./credential_manifest/loyaltycard_credential_manifest.json"
     
     # Add credential manifest for some VC
+    elif VC_filename == "AscsMemberCredential.json" :
+        filename = "./credential_manifest/AscsMemberCredential_credential_manifest.json"
     elif VC_filename == "VerifiableDiploma.jsonld" :
         filename = "./credential_manifest/VerifiableDiploma_credential_manifest.json"
     
@@ -216,7 +200,7 @@ def test_direct_offer(red, mode) :
     
     credentialOffer['credential_manifest'] = json.loads(credential_manifest)
     id = str(uuid.uuid1())
-    url = mode.server + "sandbox/wallet_credential/" + id + '?issuer=' + did_selected
+    url = mode.server + "sandbox/wallet_credential/" + id   # +  '?issuer=' + did_selected
     deeplink_talao = mode.deeplink_talao + 'app/download?' + urlencode({'uri' : url })
     deeplink_altme = mode.deeplink_altme + 'app/download?' + urlencode({'uri' : url })
     red.setex(id, 180, json.dumps(credentialOffer))
@@ -226,7 +210,7 @@ def test_direct_offer(red, mode) :
         deeplink=deeplink_talao,
         altme_deeplink=deeplink_altme,
         id=id,
-        credential_manifest = json.dumps(credentialOffer['credential_manifest'],indent=4),
+        credential_offer = json.dumps(credentialOffer,indent=4),
     )
 
 
