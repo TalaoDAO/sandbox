@@ -47,7 +47,7 @@
 
                       <div class="form-row">   
 
-                              <div class="col-4">
+                              <div class="col-6">
                                 <div class="form-group"><label><strong>OIDC4VC profile</strong></label>
                                   <select name="profile" class="form-control">
                                   <option value="">--Please choose an option--</option>
@@ -56,15 +56,56 @@
                               </div>  
                              
     
-                            <div class="col-4">
+                            <div class="col-3">
                               <div class="form-group"><label><strong>Issuer DID (input DID if needed)</strong><br></label><input class="form-control" type="text"  name = "did" value="{{did}}"></div>
                             </div>
 
-                            <div class="col-4">
+                            <div class="col-3">
                               <div class="form-group"><label><strong>Verification method (input if needed)</strong><br></label><input class="form-control" type="text"  name = "verification_method" value="{{verification_method}}"></div>
                             </div>
 
                       </div>
+
+                      <div class="card shadow mb-3">
+                      <div class="card-header py-3">
+                        <div class="d-flex justify-content-between">
+                          <p style="color: #09060f;" class="m-0 font-weight-bold">CUSTOM Profile specific parameters</p>
+                        
+                        </div>
+                      </div>
+                      <div class="card-body">
+
+                      <div class="form-row">   
+
+                        <div class="col-4">
+                          <div class="form-group"><label><strong>OIDC4VCI draft</strong></label>
+                            <select name="oidc4vci_draft" class="form-control">
+                            <option value="">--Please choose an option--</option>
+                           {{oidc4vci_draft_select|safe}}
+                            </select></div>
+                        </div>  
+
+                        <div class="col-4">
+                          <div class="form-group"><label><strong>VC Format</strong></label>
+                            <select name="vc_format" class="form-control">
+                            <option value="">--Please choose an option--</option>
+                           {{vc_format_select|safe}}
+                            </select></div>
+                        </div>  
+
+                        <div class="col-4">
+                          <div class="form-check"><label><strong>Credential manifest support</strong></label><br>
+                            <div class="text-center">
+                            <input class="form-check-input" type="checkbox" {{credential_manifest_support}} name="credential_manifest_support" id="flexCheckDefault_1">
+                              </div>
+                          </div>
+                        </div>
+
+                        </div>
+                      </div> 
+                      </div>
+                    
+               
 
                       <div class="form-row">
                               <div class="col">

@@ -5,13 +5,38 @@ user = {
     "client_id": []
 }
 
+vc_format = {
+    "jwt_vc_json-ld": "jwt_vc_json-ld",
+    "ldp_vc": "ldp_vc",
+    "vc+sd-jwt": "vc+sd-jwt implementation in progress"
+}
+
+oidc4vci_draft = {
+      "5": "draft 5",
+    "10": "draft 10",
+    "11": "draft 11",
+    "13": "draft 13 implementation in progress"
+}
+
+oidc4vp_draft = {
+    "10": "draft 10",
+    "13": "draft 13",
+     "18": "draft 18"
+}
+
+siopv2_draft = {
+    "12": "draft 12",
+}
 
 oidc4vc_profile_list = {
     'DEFAULT': 'DEFAULT JSON-LD',
     'DEFAULT-JWT': 'DEFAULT JWT',
     'GAIA-X': 'GAIA-X projects',
-    'EBSI-V3': 'EBSI V3 compliance',
-    'HEDERA': 'Greencypher project'
+    'EBSI-V3': 'EBSI',
+    #'HEDERA': 'Greencypher project',
+    #'GAIN-POC': 'GAIN POC openid, implementation in progress',
+    'DIIP': 'Dutch Blockchain Coalition, implementation in progress',
+     'CUSTOM': 'CUSTOM profile',
 }
 
 
@@ -90,6 +115,11 @@ pre_authorized_code_list = {
 
 client_data_pattern_oidc4vc = {
     "profile": "DEFAULT",
+    "oidc4vciDraft" : "11",
+    "siopv2Draft": "12",
+    "oidc4vpDraft": "18",
+    "vc_format": "ldp_vc",
+    "credential_manifest_support": 'on',
     "pkce": None,
     "id_token": "on",
     "client_id_as_DID": "on",  # for siopv2 request

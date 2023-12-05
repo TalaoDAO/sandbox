@@ -12,7 +12,7 @@ from flask import request, render_template, redirect
 from flask import session, Response, jsonify
 import json
 import uuid
-from urllib.parse import urlencode, quote, parse_qs, urlparse, unquote
+from urllib.parse import urlencode, quote, unquote
 import logging
 import base64
 from datetime import datetime
@@ -25,8 +25,6 @@ import pex
 import didkit
 import requests
 
-#import sms
-
 logging.basicConfig(level=logging.INFO)
 
 # customer application 
@@ -35,7 +33,6 @@ CODE_LIFE = 2000
 
 # wallet
 QRCODE_LIFE = 2000
-
 
 # OpenID key of the OP for customer application
 RSA_KEY_DICT = json.load(open("keys.json", "r"))['RSA_key']
@@ -56,9 +53,9 @@ def init_app(app, red, mode):
     app.add_url_rule('/verifier/wallet',  view_func=oidc4vc_login_qrcode, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/verifier/wallet/.well-known/openid-configuration',  view_func=wallet_openid_configuration, methods = ['GET'])
     app.add_url_rule('/verifier/wallet/endpoint/<stream_id>',  view_func=oidc4vc_login_endpoint, methods=['POST'],  defaults={'red': red}) # redirect_uri for PODST
-    app.add_url_rule('/verifier/wallet/request_uri/<id>',  view_func=oidc4vc_request_uri, methods=['GET'], defaults={'red': red})
-    app.add_url_rule('/verifier/wallet/client_metadata_uri/<id>',  view_func=wallet_metadata_uri, methods=['GET'], defaults={'red': red})
-    app.add_url_rule('/verifier/wallet/presentation_definition_uri/<id>',  view_func=presentation_definition_uri, methods=['GET'], defaults={'red': red})
+    app.add_url_rule('/verifier/wallet/request_uri/<stream_id>',  view_func=oidc4vc_request_uri, methods=['GET'], defaults={'red': red})
+    app.add_url_rule('/verifier/wallet/client_metadata_uri/<verifier_id>',  view_func=wallet_metadata_uri, methods=['GET'], defaults={'red': red})
+    app.add_url_rule('/verifier/wallet/presentation_definition_uri/<verifier_id>',  view_func=presentation_definition_uri, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/verifier/wallet/followup',  view_func=oidc4vc_login_followup, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/verifier/wallet/stream',  view_func=oidc4vc_login_stream, defaults={ 'red': red})
     return
@@ -446,10 +443,10 @@ def build_jwt_request(key, kid, iss, aud, request) -> str:
     return token.serialize()
 
 
-def wallet_metadata_uri(id, red):
+def wallet_metadata_uri(verifier_id, red):
     #  https://openid.net/specs/openid-connect-registration-1_0.html
     try:
-        wallet_metadata = json.loads(red.get(id).decode())
+        wallet_metadata = json.loads(red.get("client_metadata_" + verifier_id).decode())
     except Exception:
         return jsonify('Request timeout'), 408
     return jsonify(wallet_metadata)
@@ -468,9 +465,9 @@ def build_wallet_metadata(client_id, redirect_uri) -> dict:
     return wallet_metadata
 
 
-def presentation_definition_uri(id, red):
+def presentation_definition_uri(verifier_id, red):
     try:
-        presentation_definition = json.loads(red.get(id).decode())
+        presentation_definition = json.loads(red.get("presentation_definition_" + verifier_id).decode())
     except Exception:
         return jsonify('Request timeout'), 408
     return jsonify(presentation_definition)
@@ -609,9 +606,8 @@ def oidc4vc_login_qrcode(red, mode):
             
         # client_metadata uri
         if verifier_data.get('client_metadata_uri'):
-            id = str(uuid.uuid1())
-            red.setex(id, QRCODE_LIFE, json.dumps(wallet_metadata))
-            client_metadata_uri = mode.server + "verifier/wallet/client_metadata_uri/" + id
+            red.setex("client_metadata_" + verifier_id, QRCODE_LIFE, json.dumps(wallet_metadata))
+            client_metadata_uri = mode.server + "verifier/wallet/client_metadata_uri/" + verifier_id
         
         # client_id_scheme
         if verifier_data.get('client_id_as_DID'):
@@ -621,15 +617,12 @@ def oidc4vc_login_qrcode(red, mode):
 
         # presentation_definition_uri
         if verifier_data.get('presentation_definition_uri'):
-            id = str(uuid.uuid1())
-            red.setex(id, QRCODE_LIFE, json.dumps(presentation_definition))        
-            presentation_definition_uri = mode.server + 'verifier/wallet/presentation_definition_uri/' + id
+            red.setex("presentation_definition_" + verifier_id, QRCODE_LIFE, json.dumps(presentation_definition))        
+            presentation_definition_uri = mode.server + 'verifier/wallet/presentation_definition_uri/' + verifier_id
         
     # SIOPV2
     if 'id_token' in response_type:
         authorization_request['scope'] = 'openid'
-
-    
 
     # store data
     data = { 
@@ -672,11 +665,10 @@ def oidc4vc_login_qrcode(red, mode):
 
     # QRCode preparation with authorization_request_displayed
     if verifier_data.get('request_uri_parameter_supported'):
-        id = str(uuid.uuid1())
-        red.setex(id, QRCODE_LIFE, json.dumps(request_as_jwt))
+        red.setex("request_uri_" + stream_id, QRCODE_LIFE, json.dumps(request_as_jwt))
         authorization_request_displayed = { 
             "client_id": client_id,
-            "request_uri": mode.server + "verifier/wallet/request_uri/" + id 
+            "request_uri": mode.server + "verifier/wallet/request_uri/" + stream_id 
         }
     else:
         if 'vp_token' not in response_type and verifier_data.get('request_parameter_supported'):
@@ -730,13 +722,13 @@ def oidc4vc_login_qrcode(red, mode):
     )
     
 
-def oidc4vc_request_uri(id, red):
+def oidc4vc_request_uri(stream_id, red):
     """
     Request by uri
     https://www.rfc-editor.org/rfc/rfc9101.html
     """
     try:
-        payload = red.get(id).decode().replace('"', '')
+        payload = red.get("request_uri_" + stream_id).decode().replace('"', '')
     except Exception:
         return jsonify("Request timeout"), 408
     headers = { "Content-Type": "application/oauth-authz-req+jwt",

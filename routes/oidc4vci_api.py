@@ -211,8 +211,9 @@ def oidc(issuer_id, mode):
     else:
         authorization_server_config = json.load(open("authorization_server_config.json"))
         issuer_openid_configuration.update(authorization_server_config)
-        issuer_openid_configuration["authorization_endpoint"] = mode.server + "issuer/" + issuer_id + "/authorize"
-        issuer_openid_configuration["token_endpoint"] = mode.server + "issuer/" + issuer_id + "/token"
+        if issuer_data["profile"] != "DIIP":
+            issuer_openid_configuration["authorization_endpoint"] = mode.server + "issuer/" + issuer_id + "/authorize"
+            issuer_openid_configuration["token_endpoint"] = mode.server + "issuer/" + issuer_id + "/token"
 
     return issuer_openid_configuration
 
@@ -228,20 +229,12 @@ def authorization_server_openid_configuration(issuer_id, mode):
     return jsonify(config)
 
 
-def build_credential_offer(
-    issuer_id,
-    credential_type,
-    pre_authorized_code,
-    issuer_state,
-    issuer_profile,
-    vc,
-    user_pin_required,
-    mode,
-):
-    #  https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-pre-authorized-code-flow
-
-    # Old same as EBSIV2 but without schema
-    if issuer_profile == "GAIA-X":
+def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state, vc, user_pin_required, mode):
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    issuer_profile = issuer_data['profile']
+    #if issuer_profile == "GAIA-X":
+    if issuer_data.get("oidc4vciDraft") == "5" or profile[issuer_profile]["oidc4vciDraft"] == "5":
+        #  https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-pre-authorized-code-flow
         if len(credential_type) == 1:
             credential_type = credential_type[0]
         offer = {
@@ -252,6 +245,25 @@ def build_credential_offer(
             offer["pre-authorized_code"] = pre_authorized_code
             if user_pin_required:
                 offer["user_pin_required"]: True
+    
+    elif issuer_data.get("oidc4vciDraft") == "13" or profile[issuer_profile]["oidc4vciDraft"] == "13":
+        # https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html
+        offer = {
+            "credential_issuer": f'{mode.server}issuer/{issuer_id}',
+            "credentials": credential_type,
+        }
+        if pre_authorized_code:
+            offer["grants"] = {
+                "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
+                    "pre-authorized_code": pre_authorized_code
+                }
+            }
+            if user_pin_required:
+                offer["grants"][
+                    "urn:ietf:params:oauth:grant-type:pre-authorized_code"
+                ].update({"user_pin_required": True})
+        else:
+            offer["grants"] = {"authorization_code": {"issuer_state": issuer_state}}
 
     # new OIDC4VCI standard with  credentials as an array ofjson objects (EBSI-V3)
     elif profile[issuer_profile].get("credentials_as_json_object_array"):
@@ -331,30 +343,17 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     user_pin_required = session_data["user_pin_required"]
     issuer_state = session_data["issuer_state"]
     vc = session_data["vc"]
+    offer = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state, vc, user_pin_required, mode)
+
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     data_profile = profile[issuer_data["profile"]]
-    offer = build_credential_offer(
-        issuer_id,
-        credential_type,
-        pre_authorized_code,
-        issuer_state,
-        issuer_data["profile"],
-        vc,
-        user_pin_required,
-        mode,
-    )
-
     # credential offer is passed by value
-    if issuer_data["profile"] not in ["GAIA-X"]:
-        url_to_display = (
-            data_profile["oidc4vci_prefix"]
-            + "?"
-            + urlencode({"credential_offer": json.dumps(offer)})
-        )
-        json_url = {"credential_offer": offer}
-    else:
+    if issuer_data.get("oidc4vciDraft") == "5" or data_profile["oidc4vciDraft"] == "5":
         url_to_display = data_profile["oidc4vci_prefix"] + "?" + urlencode(offer)
         json_url = offer
+    else :    
+        url_to_display = data_profile["oidc4vci_prefix"] + "?" + urlencode({"credential_offer": json.dumps(offer)})
+        json_url = {"credential_offer": offer}
 
     # credential offer is passed by reference : credential offer uri
     if issuer_data.get("credential_offer_uri"):
