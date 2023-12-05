@@ -46,7 +46,7 @@ def issuer_oidc_test(mode):
         issuer_id_test_9 = "pexkhrzlmj"
         issuer_id_test_10 = "grlvzckofy"
         issuer_id_test_11 = "pcbrwbvrsi"
-        issuer_id_test_12 = ""
+        issuer_id_test_12 = "avzzyxzxkp"
     else:
         issuer_id_test_1 = "zxhaokccsi"
         issuer_id_test_2 = "mjdgqkkmcf"
