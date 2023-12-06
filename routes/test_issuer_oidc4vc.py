@@ -417,7 +417,7 @@ def test_3(mode):
     return redirect(qrcode) 
 
 
-def test_9(mode):
+def test_9(mode): # multiple VC of the same type
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "pexkhrzlmj"
@@ -436,7 +436,7 @@ def test_9(mode):
     vc = [
             {
                 "type": "EmailPass",
-                "vc_format": "ldp_vc",
+                "vc_format": "jwt_vc_json-ld",
                 "types": ["VerifiableCredentials", "EmailPass"],
                 "list": [
                     {
@@ -459,6 +459,7 @@ def test_9(mode):
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json=data)
+    print('issuer vc = ', vc)
     try:
         qrcode = resp.json()['redirect_uri']
     except Exception:

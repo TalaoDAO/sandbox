@@ -12,9 +12,9 @@ vc_format = {
 }
 
 oidc4vci_draft = {
-      "5": "draft 5",
-    "10": "draft 10",
+    "8": "draft 8",
     "11": "draft 11",
+    "12": "draft 12 implementation in progress",
     "13": "draft 13 implementation in progress"
 }
 
@@ -33,6 +33,7 @@ oidc4vc_profile_list = {
     'DEFAULT-JWT': 'DEFAULT JWT',
     'GAIA-X': 'GAIA-X projects',
     'EBSI-V3': 'EBSI',
+    'DEFAULT-VC-JWT-OIDC4VCI12': 'DEFAULT JWT and draft 12',
     #'HEDERA': 'Greencypher project',
     #'GAIN-POC': 'GAIN POC openid, implementation in progress',
     'DIIP': 'Dutch Blockchain Coalition, implementation in progress',
