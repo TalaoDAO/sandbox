@@ -249,7 +249,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
             if user_pin_required:
                 offer["user_pin_required"]: True
     
-    elif int(issuer_data.get("oidc4vciDraft", "11")) >= 11 or int(profile_data["oidc4vciDraft"]) >= 11:
+    elif (int(issuer_data.get("oidc4vciDraft", "11")) >= 11 or int(profile_data["oidc4vciDraft"]) >= 11) and not profile_data["credentials_as_json_object_array"] :
         # https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html
         offer = {
             "credential_issuer": f'{mode.server}issuer/{issuer_id}',
@@ -296,7 +296,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                             "types": supported_vc["types"],
                         }
                     )
-                if vc.get("trust_framework"):
+                if supported_vc.get("trust_framework"):
                     offer["trust_framework"] = supported_vc["trust_framework"]
 
     # new OIDC4VCI standard with  credentials as an array of strings
