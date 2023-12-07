@@ -350,7 +350,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     data_profile = profile[issuer_data["profile"]]
     # credential offer is passed by value
-    if issuer_data.get("oidc4vciDraft") == "5" or data_profile["oidc4vciDraft"] == "5":
+    if issuer_data.get("oidc4vciDraft", "11") == "8" or data_profile["oidc4vciDraft"] == "8":
         url_to_display = data_profile["oidc4vci_prefix"] + "?" + urlencode(offer)
         json_url = offer
     else :    
@@ -653,22 +653,20 @@ async def issuer_credential(issuer_id, red, mode):
     if result.get("credential_identifier"): # draft = 12 or above
         credential_identifier = result.get("credential_identifier")
         logging.info("credential identifier = %s", credential_identifier)
-    elif result.get("types"): # draft > 8 or above
-        found = False
+    elif result.get("types"): # draft = 11 and above
         for vc_type in result["types"]:
             if vc_type not in ["VerifiableCredential", "VerifiableAttestation"]:
                 credential_type = vc_type
                 logging.info("credential type = %s", credential_type)
-                found = True
                 break
-        if not found:
+        if not credential_type:
             return Response(
                 **manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
     elif result.get("type"): # draft = 8 or below 
         credential_type = result["type"]
         logging.info("credential type = %s", credential_type)
     else:
-        return Response(**manage_error("invalid_request", "Invalid request format, type(s) is missing", red, mode, request=request, stream_id=stream_id))
+        return Response(**manage_error("invalid_request", "Invalid request format", red, mode, request=request, stream_id=stream_id))
 
     iss = proof_payload.get("iss") if proof else None
 
