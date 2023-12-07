@@ -9,8 +9,8 @@
 }
 
 #draw {
-    width: 447.49px;
-    height: 449.19px;
+    width: 450px;
+    margin-top: 150px;
     flex: none;
     order: 0;
     flex-grow: 0;
@@ -1835,6 +1835,7 @@ a {
         width: 80%;
     }
     #draw{
+    	margin-top: unset;
         width: 90%;
         height: initial;
     }

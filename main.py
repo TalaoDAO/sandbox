@@ -283,7 +283,6 @@ class Issuer(Resource):
             return Response(**api_manage_error("unauthorized", "Client secret is incorrect", status=401))
 
         # Check vc and vc_deferred
-        vc = None
         vc = request.json.get("vc")
         if vc and not request.json.get("callback"):
             return Response(**api_manage_error("invalid_request", "callback missing"))
