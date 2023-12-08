@@ -170,7 +170,7 @@ def oidc(issuer_id, mode):
                 oidc_data["id"] = _vc["id"]
             else:
                 oidc_data["scope"] = _vc["id"]
-                oidc_data["id"] = _vc["id"] # to be removed
+                #oidc_data["id"] = _vc["id"] # to be removed
         if _vc.get("trust_framework"):
             oidc_data["trust_framework"] = _vc["trust_framework"]
         cs.append(oidc_data)
@@ -598,7 +598,7 @@ async def issuer_credential(issuer_id, red, mode):
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-credential-endpoint
 
     """
-    logging.info("credential endpoint request %s", json.dumps(request.json))
+    logging.info("credential endpoint request %s", json.dumps(request.json, indent=4))
     # Check access token
     try:
         access_token = request.headers["Authorization"].split()[1]
