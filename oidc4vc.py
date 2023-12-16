@@ -5,6 +5,9 @@ import base58
 import json
 from datetime import datetime
 import logging
+import math
+import hashlib
+from random import randbytes
 logging.basicConfig(level=logging.INFO)
 
 """
@@ -148,12 +151,12 @@ def sign_jwt_vc(vc, issuer_vm, issuer_key, nonce):
     return token.serialize()
 
 
-"""
-For Wallet
-Build and sign verifiable presentation as vp_token
-Ascii is by default in the json string 
-"""
 def sign_jwt_vp(vc, audience, holder_vm, holder_did, nonce, vp_id, holder_key):
+    """
+    For Wallet
+    Build and sign verifiable presentation as vp_token
+    Ascii is by default in the json string 
+    """
     holder_key = json.loads(holder_key) if isinstance(holder_key, str) else holder_key
     signer_key = jwk.JWK(**holder_key) 
     header = {
@@ -183,6 +186,55 @@ def sign_jwt_vp(vc, audience, holder_vm, holder_did, nonce, vp_id, holder_key):
     token = jwt.JWT(header=header,claims=payload, algs=[alg(holder_key)])
     token.make_signed_token(signer_key)
     return token.serialize()
+
+
+def salt():
+    return base64.urlsafe_b64encode(randbytes(16)).decode().replace("=", "")
+
+
+def hash(text):
+    m = hashlib.sha256()
+    m.update(text.encode())
+    return base64.urlsafe_b64encode(m.digest()).decode().replace("=", "")
+
+
+def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key):
+    """
+    https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-01.html
+
+    GAIN POC https://gist.github.com/javereec/48007399d9876d71f523145da307a7a3
+    """
+    issuer_key = json.loads(issuer_key) if isinstance(issuer_key, str) else issuer_key
+    _sd = []
+    _disclosure = ""
+    for claim in [ attribute for attribute in unsecured.keys() if attribute != "vct"]:
+        contents = json.dumps([salt(), claim, unsecured[claim]])
+        disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
+        _disclosure += "~" + disclosure 
+        _sd.append(hash(disclosure))
+    signer_key = jwk.JWK(**issuer_key)
+    pub_key = json.loads(signer_key.export(private_key=False) )
+    print("pub key = ", pub_key)
+    pub_key['kid'] = signer_key.thumbprint()
+    header = {
+        'typ':"vc+sd-jwt",
+        'kid':  pub_key['kid'],
+        'alg': 'ES256'
+    }
+    payload = {
+        'iss': issuer,
+        'iat': math.ceil(datetime.timestamp(datetime.now())),
+        'exp': math.ceil(datetime.timestamp(datetime.now())) + 10000,
+        "_sd_alg": "sha256",
+        "cnf": {
+            "jwk": subject_key
+        },
+        "_sd" : _sd,
+        "vct" : unsecured['vct'],
+    }
+    token = jwt.JWT(header=header, claims=payload, algs=['ES256'])
+    token.make_signed_token(signer_key)
+    return token.serialize() + _disclosure
 
 
 def build_pre_authorized_code(key, wallet_did, issuer_did, issuer_vm, nonce):

@@ -17,6 +17,7 @@ from profile import profile
 import pkce
 import requests
 import copy
+from jwcrypto import jwk
 
 logging.basicConfig(level=logging.INFO)
 
@@ -58,6 +59,10 @@ def init_app(app, red, mode):
     app.add_url_rule("/issuer/<issuer_id>/authorize_server/.well-known/openid-configuration", view_func=authorization_server_openid_configuration, methods=["GET"], defaults={"mode": mode},)
     app.add_url_rule("/issuer/credential_offer_uri/<id>", view_func=issuer_credential_offer_uri, methods=["GET"], defaults={"red": red})
     app.add_url_rule("/issuer/error_uri", view_func=wallet_error_uri, methods=["GET"])
+    
+    app.add_url_rule("/issuer/<issuer_id>/.well-known/jwt-vc-issuer",view_func=openid_jwt_vc_issuer_configuration, methods=["GET"], defaults={"mode": mode})
+    app.add_url_rule("/issuer/<issuer_id>/jwks", view_func=issuer_jwks, methods=["GET", "POST"])
+
     return
 
 
@@ -170,7 +175,10 @@ def oidc(issuer_id, mode):
                 oidc_data["id"] = _vc["id"]
             else:
                 oidc_data["scope"] = _vc["id"]
-                #oidc_data["id"] = _vc["id"] # to be removed
+        
+        if _vc.get("scope"):
+            oidc_data["scope"] = _vc["scope"]
+
         if _vc.get("trust_framework"):
             oidc_data["trust_framework"] = _vc["trust_framework"]
         cs.append(oidc_data)
@@ -216,8 +224,16 @@ def oidc(issuer_id, mode):
         if issuer_data["profile"] != "DIIP":
             issuer_openid_configuration["authorization_endpoint"] = mode.server + "issuer/" + issuer_id + "/authorize"
             issuer_openid_configuration["token_endpoint"] = mode.server + "issuer/" + issuer_id + "/token"
-
     return issuer_openid_configuration
+
+
+# jwt vc issuer openid configuration
+def openid_jwt_vc_issuer_configuration(issuer_id, mode):
+    config = {
+        "issuer" : mode.server + "issuer/" + issuer_id,
+        "jwks_uri" : mode.server + "issuer/" + issuer_id + "/jwks"
+    }
+    return  jsonify(config)
 
 
 # authorization server endpoint
@@ -225,10 +241,24 @@ def authorization_server_openid_configuration(issuer_id, mode):
     authorization_server_config = json.load(open("authorization_server_config.json"))
     config = {
         "authorization_endpoint": mode.server + "issuer/" + issuer_id + "/authorize",
-        "token_endpoint": f"{mode.server}issuer/{issuer_id}/token"
+        "token_endpoint": mode.server + "issuer/" + issuer_id + "/token"
     }
     config.update(authorization_server_config)
     return jsonify(config)
+
+
+def thumbprint(key):
+    signer_key = jwk.JWK(**key) 
+    return signer_key.thumbprint()
+
+
+# jwks endpoint
+def issuer_jwks(issuer_id):
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    pub_key = copy.copy(json.loads(issuer_data["jwk"]))
+    del pub_key['d']
+    pub_key['kid'] = thumbprint(pub_key)
+    return jsonify({"keys" : [pub_key]})
 
 
 def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state, user_pin_required, mode):
@@ -498,7 +528,7 @@ def issuer_token(issuer_id, red, mode):
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-token-endpoint
     https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
     """
-    logging.info('token endoint request')
+    logging.info('token endoint request %s', request.form)
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
 
@@ -557,6 +587,11 @@ def issuer_token(issuer_id, red, mode):
         "token_type": "Bearer",
         "expires_in": ACCESS_TOKEN_LIFE,
     }
+    if issuer_profile == "GAIN-POC":
+        endpoint_response.update({
+            "scope": None,
+            "refresh_token": str(uuid.uuid1())
+        })
     
     # authorization_details in cvase of multiple VC of the same type
     authorization_details = []
@@ -642,16 +677,21 @@ async def issuer_credential(issuer_id, red, mode):
             logging.warning("proof of ownership error = %s", e)
             return Response(**manage_error("access_denied", "Proof of key ownership, signature verification error : " + str(e), red, mode, request=request, stream_id=stream_id))
         proof_payload = oidc4vc.get_payload_from_token(proof)
+        proof_header = oidc4vc.get_header_from_token(proof)
+        wallet_jwk = proof_header.get('jwk') # GAIN POC
     else:
         logging.warning('No proof available -> Bearer credential')
         proof_payload = None
+        wallet_jwk = None
         if vc_format == 'ldp_vc':
             return Response(**manage_error("access_denied", "Issuer does not support Bearer credential in ldp_vc format", red, mode, request=request, stream_id=stream_id))
 
     # Get credential type requested
     credential_identifier = None
     credential_type = None
-    if result.get("credential_identifier"): # draft = 12 or above
+    if result.get("credential_definition"): # GAIN-POC, draft 13
+        credential_type = result['credential_definition'].get('type') 
+    elif result.get("credential_identifier"): # draft = 12 
         credential_identifier = result.get("credential_identifier")
         logging.info("credential identifier = %s", credential_identifier)
     elif result.get("types"): # draft = 11 and above
@@ -723,6 +763,8 @@ async def issuer_credential(issuer_id, red, mode):
         issuer_data["verification_method"],
         access_token_data["c_nonce"],
         vc_format,
+        issuer=f"{mode.server}issuer/{issuer_id}",
+        wallet_jwk=wallet_jwk
     )
     logging.info("credential signed sent to wallet = %s", credential_signed)
 
@@ -746,7 +788,6 @@ async def issuer_credential(issuer_id, red, mode):
             "c_nonce_expires_in": C_NONCE_LIFE,
         }
 
-    print(payload)
     # update nonce in access token for next VC request
     access_token_data["c_nonce"] = c_nonce
     red.setex(access_token, ACCESS_TOKEN_LIFE, json.dumps(access_token_data))
@@ -806,6 +847,7 @@ async def issuer_deferred(issuer_id, red, mode):
         issuer_data["verification_method"],
         acceptance_token_data["c_nonce"],
         acceptance_token_data["format"],
+        issuer=f"{mode.server}issuer/{issuer_id}"
     )
     if not credential_signed:
         return Response(**manage_error("internal_error", "Credential signature failed due to format", red, mode, request=request, status=404))
@@ -863,7 +905,9 @@ def oidc_issuer_stream(red):
     return Response(event_stream(red), headers=headers)
 
 
-async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer_vm, c_nonce, format, duration=365):
+async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer_vm, c_nonce, format, duration=365, issuer=None, wallet_jwk=None):
+    if format == "vc+sd-jwt":
+        return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk)
     credential["id"] = "urn:uuid:" + str(uuid.uuid1())
     if wallet_did:
         credential["credentialSubject"]["id"] = wallet_did
@@ -874,9 +918,8 @@ async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer
     credential["expirationDate"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
     credential["validUntil"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
     if format in ["jwt_vc", "jwt_vc_json", "jwt_vc_json-ld"]:
-        credential_signed = oidc4vc.sign_jwt_vc(
-            credential, issuer_vm, issuer_key, c_nonce
-        )
+        credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm, issuer_key, c_nonce)
+   
     else:  #  proof_format == 'ldp_vc':
         try: 
             didkit_options = {

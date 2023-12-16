@@ -35,9 +35,9 @@ oidc4vc_profile_list = {
     'EBSI-V3': 'EBSI',
     'DEFAULT-VC-JWT-OIDC4VCI12': 'DEFAULT JWT and draft 12',
     #'HEDERA': 'Greencypher project',
-    #'GAIN-POC': 'GAIN POC openid, implementation in progress',
+    'GAIN-POC': 'GAIN POC openid, implementation in progress',
     'DIIP': 'Dutch Blockchain Coalition, implementation in progress',
-     'CUSTOM': 'CUSTOM profile',
+    'CUSTOM': 'CUSTOM profile',
 }
 
 
@@ -95,6 +95,7 @@ guest_landing_page_style_list = {
 # verifier qrcode page for amdin
 oidc4vc_verifier_landing_page_style_list = {
     "./verifier_oidc/verifier_qrcode_2.html": "Style",
+    "./verifier_oidc/verifier_qrcode_wallet_provider.html": "Wallet provider",
     "./verifier_oidc/verifier_qrcode_only.html": "QR code only",
     "./verifier_oidc/verifier_qrcode_test.html": "Test",
     "./verifier_oidc/diploma_verifier.html": "Diplome Tezos Ebsi"

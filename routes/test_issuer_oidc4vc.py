@@ -305,18 +305,18 @@ def test_8(mode):
         issuer_id = "npwsshblrm"
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
 
-    offer = ["VerifiableId", "EmailPass"]
-
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
     }
+    with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
+                credential = json.loads(f.read())
     data = { 
         "issuer_id": issuer_id,
-        "vc": build_credential_offered(offer), 
+        "vc": {"IdentityCredential" : credential}, 
         "issuer_state": str(uuid.uuid1()),
-        "pre-authorized_code": False,
-        "credential_type": offer,
+        "pre-authorized_code": True,
+        "credential_type": ['IdentityCredential'],
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)

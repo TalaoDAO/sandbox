@@ -662,6 +662,54 @@ profile = {
             'credential_manifest_support': False,
             'service_documentation': 'We use JSON-LD VC and VP and last release of the specs.',
         },
+         'GAIN-POC':
+        {
+            'oidc4vciDraft' : "13",
+            'siopv2Draft': "12",
+            'oidc4vpDraft': "18",
+            'vc_format': "vc+sd-jwt",
+            'verifier_vp_type': 'jwt_vp',
+            'oidc4vci_prefix': 'openid-credential-offer://' ,
+            'authorization_server_support': False,
+            'credentials_as_json_object_array': False,
+            'siopv2_prefix': 'openid-vc://',
+            'oidc4vp_prefix': 'openid-vc://',
+            'credentials_types_supported': ['IdentityCredential'],
+            "credentials_supported": {
+                "IdentityCredential": {
+                    "format": "vc+sd-jwt",
+                    "scope": "identity_credential",
+                    "cryptographic_binding_methods_supported": [
+                        "jwk",
+                        "x5c"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256",
+                        "ES384",
+                        "ES512",
+                        "ES256K"
+                    ],
+                    "credential_definition": {
+                        "vct": "https://credentials.example.com/identity_credential"
+                    },
+                    "proof_types_supported": [
+                        "jwt",
+                        "cwt"
+                    ],
+                    "display": [
+                        {
+                            "name": "Identity Credential"
+                        }
+                    ]
+                }
+            },
+            'grant_types_supported': [
+                'authorization_code',
+                'urn:ietf:params:oauth:grant-type:pre-authorized_code'
+            ],
+            'schema_for_type': False,
+            'credential_manifest_support': False
+        },
     'GAIA-X':
         {
             'oidc4vciDraft' : "8",
