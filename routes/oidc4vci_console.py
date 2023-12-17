@@ -174,21 +174,7 @@ async def oidc4vc_issuer_advanced():
             if key ==  session['client_data'].get('profile', "DEFAULT"):
                 oidc4vc_profile_select +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
-                oidc4vc_profile_select += "<option value=" + key + ">" + value + "</option>"      
-
-        oidc4vci_draft_select = str()
-        for key, value in oidc4vci_draft.items():
-            if key ==  session['client_data'].get("oidc4vciDraft", "11"):
-                oidc4vci_draft_select +=  "<option selected value=" + key + ">" + value + "</option>"
-            else:
-                oidc4vci_draft_select += "<option value=" + key + ">" + value + "</option>"   
-
-        vc_format_select = str()
-        for key, value in vc_format.items():
-            if key ==  session['client_data'].get("vc_format", "ldp_vc"):
-                vc_format_select +=  "<option selected value=" + key + ">" + value + "</option>"
-            else:
-                vc_format_select += "<option value=" + key + ">" + value + "</option>"    
+                oidc4vc_profile_select += "<option value=" + key + ">" + value + "</option>"          
 
         did = session['client_data'].get('did', "")
         did_document = oidc4vc.did_resolve_lp(did)
@@ -203,8 +189,6 @@ async def oidc4vc_issuer_advanced():
             oidc4vc_profile_select=oidc4vc_profile_select,
             did=session['client_data'].get('did', ""),
             did_document=json.dumps(did_document, indent=4),
-            oidc4vci_draft_select=oidc4vci_draft_select,
-            vc_format_select=vc_format_select
         )
         
     if request.method == 'POST':     
@@ -216,15 +200,6 @@ async def oidc4vc_issuer_advanced():
             session['client_data']['profile'] = request.form['profile']
             session['client_data']['did'] = request.form['did']
             session['client_data']['verification_method'] = request.form['verification_method']
-            session['client_data']['jwk'] = request.form['jwk']
-            if session['client_data']['profile'] == "CUSTOM":
-                session['client_data']['oidc4vciDraft'] = request.form.get('oidc4vci_draft')
-                session['client_data']['vc_format'] = request.form.get('vc_format')
-                session['client_data']['credential_manifest_support'] = request.form.get('credential_manifest_support')
-            else:
-                issuer_profile = profile[request.form['profile']]
-                session['client_data']['oidc4vciDraft'] = issuer_profile['oidc4vciDraft']
-                session['client_data']['vc_format'] = issuer_profile['vc_format']
-                session['client_data']['credential_manifest_support'] = issuer_profile['credential_manifest_support']
+            session['client_data']['jwk'] = request.form['jwk']           
             db_api.update_oidc4vc_issuer(request.form['client_id'], json.dumps(session['client_data']))
             return redirect('/issuer/console/advanced')

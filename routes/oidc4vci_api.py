@@ -150,41 +150,9 @@ def oidc(issuer_id, mode):
         return
 
     # Credentials_supported section
-    cs = []
-    for _vc in issuer_profile.get("credentials_supported"):
-        oidc_data = {
-            "format": _vc.get("format", "missing, contact@talao.co"),
-            "types": _vc.get("types", "missing, contact@talao.co"),
-            "display": _vc.get("display", "missing, contact@talao.co")
-          
-        }
-        if issuer_data["profile"] != "EBSI-V3":
-            oidc_data.update(
-                {
-                    "cryptographic_binding_methods_supported": _vc.get(
-                        "cryptographic_binding_methods_supported",
-                        "missing, contact@talao.co",
-                    ),
-                    "cryptographic_suites_supported": _vc.get(
-                        "cryptographic_suites_supported", "missing, contact@talao.co"
-                    ),
-                }
-            )
-        if _vc.get("id"):
-            if int(issuer_profile['oidc4vciDraft']) <= 11:
-                oidc_data["id"] = _vc["id"]
-            else:
-                oidc_data["scope"] = _vc["id"]
-        
-        if _vc.get("scope"):
-            oidc_data["scope"] = _vc["scope"]
-
-        if _vc.get("trust_framework"):
-            oidc_data["trust_framework"] = _vc["trust_framework"]
-        cs.append(oidc_data)
-
+    cs = issuer_profile.get("credentials_supported")
+   
     # general section
-    # https://www.rfc-editor.org/rfc/rfc8414.html#page-4
     issuer_openid_configuration = {}
     issuer_openid_configuration.update(
         {
@@ -194,11 +162,6 @@ def oidc(issuer_id, mode):
             "credentials_supported": cs
         }
     )
-
-    if issuer_profile.get("service_documentation"):
-        issuer_openid_configuration["service_documentation"] = issuer_profile[
-            "service_documentation"
-        ]
 
     # setup credential manifest as optional
     # https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-server-metadata
@@ -266,7 +229,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
     issuer_profile = issuer_data['profile']
     profile_data = profile[issuer_profile]
 
-    if issuer_data.get("oidc4vciDraft", "11") == "8" or profile_data["oidc4vciDraft"] == "8":
+    if profile_data["oidc4vciDraft"] == "8":
         #  https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-pre-authorized-code-flow
         if len(credential_type) == 1:
             credential_type = credential_type[0]
@@ -279,27 +242,8 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
             if user_pin_required:
                 offer["user_pin_required"]: True
     
-    elif (int(issuer_data.get("oidc4vciDraft", "11")) >= 11 or int(profile_data["oidc4vciDraft"]) >= 11) and not profile_data["credentials_as_json_object_array"] :
-        # https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html
-        offer = {
-            "credential_issuer": f'{mode.server}issuer/{issuer_id}',
-            "credentials": credential_type,
-        }
-        if pre_authorized_code:
-            offer["grants"] = {
-                "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
-                    "pre-authorized_code": pre_authorized_code
-                }
-            }
-            if user_pin_required:
-                offer["grants"][
-                    "urn:ietf:params:oauth:grant-type:pre-authorized_code"
-                ].update({"user_pin_required": True})
-        else:
-            offer["grants"] = {"authorization_code": {"issuer_state": issuer_state}}
-
     # new OIDC4VCI standard with credentials as an array ofjson objects (EBSI-V3)
-    elif profile_data["credentials_as_json_object_array"]:
+    elif int(profile_data["oidc4vciDraft"]) >= 11 and profile_data["credentials_as_json_object_array"] :
         offer = {
             "credential_issuer": f"{mode.server}issuer/{issuer_id}",
             "credentials": [],
@@ -329,8 +273,9 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                 if supported_vc.get("trust_framework"):
                     offer["trust_framework"] = supported_vc["trust_framework"]
 
-    # new OIDC4VCI standard with  credentials as an array of strings
+    # OIDC4VCI standard with credentials as an array of string
     else:
+        # https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html
         offer = {
             "credential_issuer": f'{mode.server}issuer/{issuer_id}',
             "credentials": credential_type,
@@ -346,7 +291,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                     "urn:ietf:params:oauth:grant-type:pre-authorized_code"
                 ].update({"user_pin_required": True})
         else:
-            offer["grants"] = {"authorization_code": {"issuer_state": issuer_state}}
+            offer["grants"] = {"authorization_code": {"issuer_state": issuer_state}}                
     return offer
 
 
@@ -593,7 +538,7 @@ def issuer_token(issuer_id, red, mode):
             "refresh_token": str(uuid.uuid1())
         })
     
-    # authorization_details in cvase of multiple VC of the same type
+    # authorization_details in case of multiple VC of the same type
     authorization_details = []
     if int(issuer_profile['oidc4vciDraft']) >= 12 and isinstance(vc, list):
         for vc_type in vc:
@@ -603,7 +548,7 @@ def issuer_token(issuer_id, red, mode):
             authorization_details.append(
                 {
                     "type": "openid_credential",
-                    "format": "jwt_vc",
+                    "format": "jwt_vc_json",
                     "credential_definition": {
                         "type": types
                     },
@@ -917,6 +862,7 @@ async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer
     credential["validFrom"] = datetime.now().replace(microsecond=0).isoformat() + "Z"
     credential["expirationDate"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
     credential["validUntil"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
+    # jwt_vc format is used for ebsi V3 only with draft 10
     if format in ["jwt_vc", "jwt_vc_json", "jwt_vc_json-ld"]:
         credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm, issuer_key, c_nonce)
    

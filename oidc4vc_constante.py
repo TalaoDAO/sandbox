@@ -28,15 +28,16 @@ siopv2_draft = {
     "12": "draft 12",
 }
 
+
 oidc4vc_profile_list = {
-    'DEFAULT': 'DEFAULT JSON-LD',
-    'DEFAULT-JWT': 'DEFAULT JWT',
-    'GAIA-X': 'GAIA-X projects',
-    'EBSI-V3': 'EBSI',
-    'DEFAULT-VC-JWT-OIDC4VCI12': 'DEFAULT JWT and draft 12',
+    'DEFAULT': 'DEFAULT JSON-LD OIDC4VCI draft 11',
+    'DEFAULT-JWT': 'DEFAULT JWT OIDC4VCI draft 11',
+    'GAIA-X': 'GAIA-X projects OIDC4VCI draft 8',
+    'EBSI-V3': 'EBSI OIDC4VCI Draft 11',
     #'HEDERA': 'Greencypher project',
-    'GAIN-POC': 'GAIN POC openid, implementation in progress',
+    'GAIN-POC': 'GAIN POC openid, SD-JWT implementation in progress',
     'DIIP': 'Dutch Blockchain Coalition, implementation in progress',
+    'DEFAULT-VC-JWT-OIDC4VCI12' : 'JWT-VC with OIDC4VCI draft 12',
     'CUSTOM': 'CUSTOM profile',
 }
 
