@@ -721,20 +721,12 @@ async def issuer_credential(issuer_id, red, mode):
 
     # Transfer VC
     c_nonce = str(uuid.uuid1())
-    if issuer_data['profile'] == 'DIIP':
-        payload = {
-            'credentialPreview' : credential,
-            'jwt' : credential_signed,
-        }
-        payload.update(credential)
-    else:
-
-        payload = {
-            "format": vc_format,
-            "credential": credential_signed,  # string or json depending on the format
-            "c_nonce": c_nonce,
-            "c_nonce_expires_in": C_NONCE_LIFE,
-        }
+    payload = {
+        "format": vc_format,
+        "credential": credential_signed,  # string or json depending on the format
+        "c_nonce": c_nonce,
+        "c_nonce_expires_in": C_NONCE_LIFE,
+    }
 
     # update nonce in access token for next VC request
     access_token_data["c_nonce"] = c_nonce
