@@ -70,10 +70,7 @@
     "did:ebsi:v1"
   ],
   "subject_trust_frameworks_supported": [
-    "ebsi",
-    "greencypher",
-    "default",
-    "gaia-x"
+    "ebsi"
   ],
   "id_token_types_supported": [
     "subject_signed_id_token"

@@ -262,6 +262,8 @@ profile = {
             "oidc4vci_prefix": "openid-credential-offer://" ,
             "authorization_server_support": False,
             "credentials_as_json_object_array": False,
+            "schema_for_type": False,
+            "credential_manifest_support": False,
             "siopv2_prefix": "openid-vc://",
             "oidc4vp_prefix": "openid-vc://",
             "credentials_types_supported": ["EmployeeCredential",  "EthereumAssociatedAddress", "VerifiableId", "EmailPass", "PhoneProof"],
@@ -385,10 +387,7 @@ profile = {
             "grant_types_supported": [
                 "authorization_code",
                 "urn:ietf:params:oauth:grant-type:pre-authorized_code"
-            ],
-            "schema_for_type": False,
-            "credential_manifest_support": True,
-            "service_documentation": "We use JSON-LD VC and VP and last release of the specs.",
+            ]
         },
     "DEFAULT-VC-JWT-OIDC4VCI12":
         {

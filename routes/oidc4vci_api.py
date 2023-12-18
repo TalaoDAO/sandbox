@@ -605,9 +605,12 @@ async def issuer_credential(issuer_id, red, mode):
         return Response(**manage_error("invalid_request", "Invalid request format", red, mode, request=request, stream_id=stream_id))
     logging.info('wallet request = %s', result)
 
+    # check vc format (draft 11)
+    vc_format = result.get("format")
+    print("format in credential request = ", vc_format)
+
     # check proof 
     proof = result.get("proof")
-    vc_format = result.get("format")
     if proof:
         proof_type = result["proof"]["proof_type"]
         proof = result["proof"]["jwt"]
@@ -851,6 +854,7 @@ def oidc_issuer_stream(red):
 
 
 async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer_vm, c_nonce, format, duration=365, issuer=None, wallet_jwk=None):
+    print("format to sign = ", format)
     if format == "vc+sd-jwt":
         return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk)
     credential["id"] = "urn:uuid:" + str(uuid.uuid1())

@@ -240,7 +240,7 @@ def test_5(mode):
         issuer_id = "nfwvbyacnw"
         client_secret = "4f64b6f5-3adf-11ee-a601-b33f6ebca22b"
     
-    offer = ['VerifiableDiploma', 'EmailPass']
+    offer = ['VerifiableId', 'EmailPass']
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
