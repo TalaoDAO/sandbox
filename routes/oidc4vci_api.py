@@ -473,7 +473,7 @@ def issuer_token(issuer_id, red, mode):
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-token-endpoint
     https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
     """
-    logging.info('token endoint request %s', request.form)
+    logging.info('token endoint request %s', json.dumps(request.form, indent=4))
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
 
@@ -488,7 +488,6 @@ def issuer_token(issuer_id, red, mode):
     if grant_type == "urn:ietf:params:oauth:grant-type:pre-authorized_code":
         code = request.form.get("pre-authorized_code")
         user_pin = request.form.get("user_pin")
-        logging.info("user_pin received = %s", user_pin)
     elif grant_type == "authorization_code":
         code = request.form.get("code")
     else:
@@ -497,7 +496,15 @@ def issuer_token(issuer_id, red, mode):
         return Response(**manage_error("invalid_request", "Request format is incorrect, code is missing", red, mode, request=request))
 
     # TODO check code verifier
-    logging.info("code = %s", code)
+
+    # check client_authentication
+    if request.form.get("client_id"):
+        logging.info('client_secret_post')
+    if request.headers.get('Authorization'):
+        logging.info('client_secret_basic')
+    if request.form.get('assertion'):
+        logging.info('client_secret_jwy')
+    
 
     # Code expired
     try:
@@ -603,7 +610,6 @@ async def issuer_credential(issuer_id, red, mode):
         result = request.json
     except Exception:
         return Response(**manage_error("invalid_request", "Invalid request format", red, mode, request=request, stream_id=stream_id))
-    logging.info('wallet request = %s', result)
 
     # check vc format (draft 11)
     vc_format = result.get("format")

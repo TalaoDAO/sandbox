@@ -28,6 +28,8 @@
   "request_uri_parameter_supported": true,
   "token_endpoint_auth_methods_supported": [
     "client_secret_basic",
+    "client_secret_post",
+    "client_secret_jwt",
     "none"
   ],
   "request_authentication_methods_supported": {

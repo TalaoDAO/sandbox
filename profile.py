@@ -405,10 +405,12 @@ profile = {
             "credentials_supported": {
                 "EmployeeCredential": {
                     "format": "jwt_vc_json",
-                    "types": [
-                        "VerifiableCredential",
-                        "EmployeeCredential"
-                    ],
+                    "credential_definition":{
+                        "type": [
+                            "VerifiableCredential",
+                            "EmployeeCredential"
+                        ],
+                    },
                     "cryptographic_binding_methods_supported": [
                         "DID"
                     ],
@@ -427,10 +429,12 @@ profile = {
                 },
                 "EthereumAssociatedAddress": {
                     "format": "jwt_vc_json",
-                    "types": [
-                        "VerifiableCredential",
-                        "EthereumAssociatedAddress"
-                    ],
+                    "credential_definition" : {
+                        "types": [
+                            "VerifiableCredential",
+                            "EthereumAssociatedAddress"
+                        ],
+                    },
                     "cryptographic_binding_methods_supported": [
                         "DID"
                     ],
@@ -449,10 +453,12 @@ profile = {
                 },
                 "VerifiableId": {
                     "format": "jwt_vc_json",
-                    "types": [
-                        "VerifiableCredential",
-                        "VerifiableId"
-                    ],
+                    "credential_definition": {
+                        "type": [
+                            "VerifiableCredential",
+                            "VerifiableId"
+                        ]
+                    },
                     "cryptographic_binding_methods_supported": [
                         "DID"
                     ],
@@ -471,10 +477,12 @@ profile = {
                 },
                 "EmailPass" :{
                     "format": "jwt_vc_json",
-                    "types": [
-                        "VerifiableCredential",
-                        "EmailPass"
-                    ],
+                    "credential_deifnition" : {
+                        "type": [
+                            "VerifiableCredential",
+                            "EmailPass"
+                        ]
+                    },
                     "cryptographic_binding_methods_supported": [
                         "DID"
                     ],
@@ -493,10 +501,12 @@ profile = {
                 },
                 "PhoneProof": {
                     "format": "jwt_vc_json",
-                    "types": [
-                        "VerifiableCredential",
-                        "PhoneProof"
-                    ],
+                    "credential_definition": {
+                        "type": [
+                            "VerifiableCredential",
+                            "PhoneProof"
+                        ]
+                    },
                     "cryptographic_binding_methods_supported": [
                         "DID"
                     ],
