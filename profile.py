@@ -4,7 +4,7 @@ profile = {
             "oidc4vciDraft" : "10",
             "siopv2Draft": "12",
             "oidc4vpDraft": "13",
-            "vc_format": "jwt_vc_json-ld",
+            "vc_format": "jwt_vc",
             "verifier_vp_type": "jwt_vp",
             "authorization_server_support": True,
             "credentials_as_json_object_array": True,
@@ -257,7 +257,7 @@ profile = {
             "oidc4vciDraft" : "11",
             "siopv2Draft": "12",
             "oidc4vpDraft": "18",
-            "vc_format": "jwt_vc_json-ld",
+            "vc_format": "jwt_vc_json",
             "verifier_vp_type": "jwt_vp",
             "oidc4vci_prefix": "openid-credential-offer://" ,
             "authorization_server_support": False,
@@ -265,14 +265,10 @@ profile = {
             "siopv2_prefix": "openid-vc://",
             "oidc4vp_prefix": "openid-vc://",
             "credentials_types_supported": ["EmployeeCredential",  "EthereumAssociatedAddress", "VerifiableId", "EmailPass", "PhoneProof"],
-            "trust_framework": {
-                "name": "default",
-                "type": "Accredition"
-            },
             "credentials_supported": [
                 {
                     "id": "EmployeeCredential",
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "EmployeeCredential"
@@ -295,7 +291,7 @@ profile = {
                 },
                 {
                     "id": "EthereumAssociatedAddress",
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "EthereumAssociatedAddress"
@@ -318,7 +314,7 @@ profile = {
                 },
                 {
                     "id": "VerifiableId",
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "VerifiableId"
@@ -341,7 +337,7 @@ profile = {
                 },
                 {
                     "id": "EmailPass",
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "EmailPass"
@@ -364,7 +360,7 @@ profile = {
                 },
                 {
                     "id": "PhoneProof",
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "PhoneProof"
@@ -399,7 +395,7 @@ profile = {
             "oidc4vciDraft" : "12",
             "siopv2Draft": "12",
             "oidc4vpDraft": "18",
-            "vc_format": "jwt_vc_json-ld",
+            "vc_format": "jwt_vc_json",
             "verifier_vp_type": "jwt_vp",
             "oidc4vci_prefix": "openid-credential-offer://" ,
             "authorization_server_support": False,
@@ -407,13 +403,9 @@ profile = {
             "siopv2_prefix": "openid-vc://",
             "oidc4vp_prefix": "openid-vc://",
             "credentials_types_supported": ["EmployeeCredential",  "EthereumAssociatedAddress", "VerifiableId", "EmailPass", "PhoneProof"],
-            "trust_framework": {
-                "name": "default",
-                "type": "Accredition"
-            },
             "credentials_supported": {
                 "EmployeeCredential": {
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "EmployeeCredential"
@@ -435,7 +427,7 @@ profile = {
                     ]
                 },
                 "EthereumAssociatedAddress": {
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "EthereumAssociatedAddress"
@@ -457,7 +449,7 @@ profile = {
                     ]
                 },
                 "VerifiableId": {
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "VerifiableId"
@@ -479,7 +471,7 @@ profile = {
                     ]
                 },
                 "EmailPass" :{
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "EmailPass"
@@ -501,7 +493,7 @@ profile = {
                     ]
                 },
                 "PhoneProof": {
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "PhoneProof"
@@ -535,7 +527,7 @@ profile = {
             "oidc4vciDraft" : "11",
             "siopv2Draft": "12",
             "oidc4vpDraft": "18",
-            "vc_format": "jwt_vc_json-ld",
+            "vc_format": "jwt_vc_json",
             "verifier_vp_type": "jwt_vp",
             "oidc4vci_prefix": "openid-credential-offer://" ,
             "authorization_server_support": False,
@@ -546,7 +538,7 @@ profile = {
             "credentials_supported": [
                 {
                     "id": "EmployeeCredential",
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "EmployeeCredential"
@@ -567,7 +559,7 @@ profile = {
                 },
                 {
                     "id": "EthereumAssociatedAddress",
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "EthereumAssociatedAddress"
@@ -587,7 +579,7 @@ profile = {
                 },
                 {
                     "id": "VerifiableId",
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "VerifiableId"
@@ -607,7 +599,7 @@ profile = {
                 },
                 {
                     "id": "EmailPass",
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "EmailPass"
@@ -627,7 +619,7 @@ profile = {
                 },
                 {
                     "id": "PhoneProof",
-                    "format": "jwt_vc_json-ld",
+                    "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "PhoneProof"
@@ -798,7 +790,7 @@ profile = {
             "siopv2Draft": "12",
             "oidc4vpDraft": "18",
             "verifier_vp_type": "jwt_vp",
-            "vc_format": "jwt_vc_json-ld",
+            "vc_format": "jwt_vc_json",
             "oidc4vci_prefix": "openid-credential-offer-hedera://",
             "authorization_server_support": False,
             "credentials_as_json_object_array": False,
@@ -818,7 +810,7 @@ profile = {
             "credentials_supported": [
                 {
                     "id": "CetProject",
-                    "vc_format": "jwt_vc_json-ld",
+                    "vc_format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "CetProject"
@@ -834,7 +826,7 @@ profile = {
                 },
                 {
                     "id": "GntProject",
-                    "vc_format": "jwt_vc_json-ld",
+                    "vc_format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "GntProject"
@@ -850,7 +842,7 @@ profile = {
                 },
                 {
                     "id": "Gnt+Project",
-                    "vc_format": "jwt_vc_json-ld",
+                    "vc_format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "Gnt+Project"
@@ -866,7 +858,7 @@ profile = {
                 },
                 {
                     "id": "SdgtProject",
-                    "vc_format": "jwt_vc_json-ld",
+                    "vc_format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "SdgtProject"
@@ -882,7 +874,7 @@ profile = {
                 },
                  {
                     "id": "RetProject",
-                    "vc_format": "jwt_vc_json-ld",
+                    "vc_format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "RetProject"
@@ -898,7 +890,7 @@ profile = {
                 },
                  {
                     "id": "HotProject",
-                    "vc_format": "jwt_vc_json-ld",
+                    "vc_format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "HotProject"
@@ -914,7 +906,7 @@ profile = {
                 },
                  {
                     "id": "XctProject",
-                    "vc_format": "jwt_vc_json-ld",
+                    "vc_format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "XctProject"
@@ -930,7 +922,7 @@ profile = {
                 },
                 {
                     "id": "VerifiableId",
-                    "vc_format": "jwt_vc_json-ld",
+                    "vc_format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "VerifiableId"
@@ -946,7 +938,7 @@ profile = {
                 },
                 {
                     "id": "GreencypherPass",
-                    "vc_format": "jwt_vc_json-ld",
+                    "vc_format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
                         "GreencypherPass"
