@@ -869,7 +869,7 @@ async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer
     # jwt_vc format is used for ebsi V3 only with draft 10
     if format in ["jwt_vc", "jwt_vc_json", "jwt_vc_json-ld"]:
         print("credential to sign = ", credential)
-        credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm, issuer_key, c_nonce, issuer, jti, wallet_did)
+        credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm, issuer_key, c_nonce, issuer_did, jti, wallet_did)
     else:  #  proof_format == 'ldp_vc':
         try: 
             didkit_options = {
