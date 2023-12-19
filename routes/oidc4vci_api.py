@@ -495,16 +495,16 @@ def issuer_token(issuer_id, red, mode):
     if not code:
         return Response(**manage_error("invalid_request", "Request format is incorrect, code is missing", red, mode, request=request))
 
-    # TODO check code verifier
-
-    # check client_authentication
-    if request.form.get("client_id"):
-        logging.info('client_secret_post')
+    # display client_authentication method
     if request.headers.get('Authorization'):
-        logging.info('client_secret_basic')
-    if request.form.get('assertion'):
-        logging.info('client_secret_jwy')
-    
+        client_authentication_method = "client_secret_basic"
+    elif request.form.get("client_id"):
+        client_authentication_method = "client_secret_post"
+    elif request.form.get('assertion'):
+        client_authentication_method = "client_secret_jwt)"
+    else:
+        client_authentication_method = "none"
+    logging.info("client authentication method = ", client_authentication_method)
 
     # Code expired
     try:
@@ -514,23 +514,21 @@ def issuer_token(issuer_id, red, mode):
     
     stream_id = data['stream_id']
     
-    # user PIN missing
-    if data.get("user_pin_required") and not user_pin:
-        return Response(**manage_error("invalid_request", "User pin is missing", red, mode, request=request, stream_id=stream_id))
-    
-    # wrong code verifier
+    # check code verifier
     if grant_type == "authorization_code" and int(issuer_profile['oidc4vciDraft']) >= 10:
         code_verifier = request.form.get("code_verifier")
         code_challenge_calculated = pkce.get_code_challenge(code_verifier)
         if code_challenge_calculated != data['code_challenge']:
             return Response(**manage_error("access_denied", "Code verifier is incorrect", red, mode, request=request, stream_id=stream_id, status=404))
             
-    # wrong PIN
+    # PIN code
+    if data.get("user_pin_required") and not user_pin:
+        return Response(**manage_error("invalid_request", "User pin is missing", red, mode, request=request, stream_id=stream_id))
     logging.info('user_pin = %s', data.get("user_pin"))
     if data.get("user_pin_required") and data.get("user_pin") != user_pin:
         return Response(**manage_error("access_denied", "User pin is incorrect", red, mode, request=request, stream_id=stream_id, status=404))
 
-    # token response
+    # token endpoint response
     access_token = str(uuid.uuid1())
     vc = data.get("vc")
     endpoint_response = {
@@ -717,7 +715,7 @@ async def issuer_credential(issuer_id, red, mode):
         issuer_data["verification_method"],
         access_token_data["c_nonce"],
         vc_format,
-        issuer=f"{mode.server}issuer/{issuer_id}",
+        f"{mode.server}issuer/{issuer_id}",
         wallet_jwk=wallet_jwk
     )
     logging.info("credential signed sent to wallet = %s", credential_signed)
@@ -793,7 +791,7 @@ async def issuer_deferred(issuer_id, red, mode):
         issuer_data["verification_method"],
         acceptance_token_data["c_nonce"],
         acceptance_token_data["format"],
-        issuer=f"{mode.server}issuer/{issuer_id}"
+        f"{mode.server}issuer/{issuer_id}"
     )
     if not credential_signed:
         return Response(**manage_error("internal_error", "Credential signature failed due to format", red, mode, request=request, status=404))
@@ -851,23 +849,27 @@ def oidc_issuer_stream(red):
     return Response(event_stream(red), headers=headers)
 
 
-async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer_vm, c_nonce, format, duration=365, issuer=None, wallet_jwk=None):
+async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer_vm, c_nonce, format, issuer, duration=365, wallet_jwk=None):
     print("format to sign = ", format)
+    jti = "urn:uuid:" + str(uuid.uuid1())
     if format == "vc+sd-jwt":
         return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk)
-    credential["id"] = "urn:uuid:" + str(uuid.uuid1())
-    if wallet_did:
-        credential["credentialSubject"]["id"] = wallet_did
-    credential["issuer"] = issuer_did
-    credential["issued"] = f"{datetime.now().replace(microsecond=0).isoformat()}Z"
-    credential["issuanceDate"] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-    credential["validFrom"] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-    credential["expirationDate"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
-    credential["validUntil"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
+    elif format in ['lp_vc', 'jwt_vc_json-ld']:
+        credential["id"] = jti
+        if wallet_did:
+            credential["credentialSubject"]["id"] = wallet_did
+        credential['issuer'] = issuer_did
+        credential['issued'] = f"{datetime.now().replace(microsecond=0).isoformat()}Z"
+        credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+        credential['validFrom'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+        credential['expirationDate'] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
+        credential["validUntil"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
+    elif format == 'jwt_vc_json':
+        credential = clean_jwt_vc_json(credential)
     # jwt_vc format is used for ebsi V3 only with draft 10
     if format in ["jwt_vc", "jwt_vc_json", "jwt_vc_json-ld"]:
-        credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm, issuer_key, c_nonce)
-   
+        print("credential to sign = ", credential)
+        credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm, issuer_key, c_nonce, issuer, jti, wallet_did)
     else:  #  proof_format == 'ldp_vc':
         try: 
             didkit_options = {
@@ -888,3 +890,37 @@ async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer
         logging.info("signature check with didkit = %s", result)
         credential_signed = json.loads(credential_signed)
     return credential_signed
+
+
+def clean_jwt_vc_json(credential):
+    vc = copy.copy(credential)
+    vc['@context'] = [ "https://www.w3.org/2018/credentials/v1"]
+    try:
+        del vc['issuer']
+    except:
+        pass
+    try:
+        del vc['issued']
+    except:
+        pass
+    try:
+        del vc['id']
+    except:
+        pass
+    try:
+        del vc['issuanceDate']
+    except:
+        pass
+    try:
+        del vc['expirationDate']
+    except:
+        pass
+    try:
+        del vc['validFrom']
+    except:
+        pass
+    try:
+        del vc['validUntil']
+    except:
+        pass
+    return vc

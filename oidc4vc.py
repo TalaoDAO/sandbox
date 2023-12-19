@@ -114,7 +114,7 @@ def pub_key(key):
     return Key.export_public(as_dict=True)
     
 
-def sign_jwt_vc(vc, issuer_vm, issuer_key, nonce):
+def sign_jwt_vc(vc, issuer_vm, issuer_key, nonce, iss, jti, wallet_did):
     """
     For issuer
     https://jwcrypto.readthedocs.io/en/latest/jwk.html
@@ -131,20 +131,25 @@ def sign_jwt_vc(vc, issuer_vm, issuer_key, nonce):
     }
     try:
         payload = {
-            'iss': vc['issuer'],
+            'iss': iss,
             'nonce': nonce,
-            'iat': datetime.timestamp(datetime.now()),
-            'jti': vc['id'],
+            'iat': math.floor(datetime.timestamp(datetime.now())),
+            'jti': jti,
+            'sub': wallet_did
         }
     except Exception as e:
         logging.info("jwt signing error = %s", str(e))
         return
-    if vc['credentialSubject'].get('id'):
-        payload['sub'] = vc['credentialSubject']['id']
-    expiration_date = datetime.fromisoformat(vc['expirationDate'][:-1])
-    payload['exp'] = datetime.timestamp(expiration_date)
-    issuance_date = datetime.fromisoformat(vc['issuanceDate'][:-1])
-    payload['nbf'] = datetime.timestamp(issuance_date)
+    try:
+        expiration_date = math.floor(datetime.fromisoformat(vc['expirationDate'][:-1]))
+        payload['exp'] = datetime.timestamp(expiration_date)
+    except:
+        payload['exp'] = payload['iat'] + 365*24*60*60
+    try:
+        issuance_date = math.floor(datetime.fromisoformat(vc['issuanceDate'][:-1]))
+        payload['nbf'] = datetime.timestamp(issuance_date)
+    except:
+        payload['nbf'] = payload['iat']
     payload['vc'] = vc
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
