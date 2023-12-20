@@ -9,6 +9,8 @@ profile = {
             "authorization_server_support": True,
             "credentials_as_json_object_array": True,
             "pre-authorized_code_as_jwt": True,
+            "schema_for_type": False,
+            "credential_manifest_support": False,
             "oidc4vci_prefix": "openid-credential-offer://",
             "siopv2_prefix": "openid-vc://",
             "oidc4vp_prefix": "openid-vc://",
@@ -85,9 +87,8 @@ profile = {
                         "ES384",
                         "RS256"
                     ],
-                    "id": "VerifiableId",
-                        "display": [
-                            {
+                    "display": [
+                        {
                             "name": "Verifiable Id",
                             "locale": "en-GB"
                             }
@@ -107,9 +108,7 @@ profile = {
                 "name": "ebsi",
                 "type": "Accreditation",
                 "uri": "TIR link towards accreditation"
-            },
-            "schema_for_type": False,
-            "credential_manifest_support": False
+            }
         },
     "DEFAULT":
         {
@@ -121,6 +120,8 @@ profile = {
             "oidc4vci_prefix": "openid-credential-offer://" ,
             "authorization_server_support": False,
             "credentials_as_json_object_array": False,
+            "schema_for_type": False,
+            "credential_manifest_support": True,
             "siopv2_prefix": "openid-vc://",
             "oidc4vp_prefix": "openid-vc://",
             "credentials_types_supported": ["EmployeeCredential",  "EthereumAssociatedAddress", "VerifiableId", "EmailPass", "PhoneProof"],
@@ -147,7 +148,7 @@ profile = {
                     ],
                     "display": [
                         {
-                            "name": "EmployeeCredential",
+                            "name": "Employee Credential",
                             "locale": "en-GB"
                         }
                     ]
@@ -170,7 +171,7 @@ profile = {
                     ],
                     "display": [
                         {
-                            "name": "EthereumAssociatedAddress",
+                            "name": "Ethereum Associated Address",
                             "locale": "en-GB"
                         }
                     ]
@@ -248,9 +249,7 @@ profile = {
             "grant_types_supported": [
                 "authorization_code",
                 "urn:ietf:params:oauth:grant-type:pre-authorized_code"
-            ],
-            "schema_for_type": False,
-            "credential_manifest_support": True
+            ]
         },
     "DEFAULT-JWT":
         {
@@ -819,7 +818,7 @@ profile = {
             "credentials_supported": [
                 {
                     "id": "CetProject",
-                    "vc_format": "jwt_vc_json",
+                    "vc_format": "jwt_vc_json-ld",
                     "types": [
                         "VerifiableCredential",
                         "CetProject"

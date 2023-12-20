@@ -243,7 +243,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                 offer["user_pin_required"]: True
     
     # new OIDC4VCI standard with credentials as an array ofjson objects (EBSI-V3)
-    elif int(profile_data["oidc4vciDraft"]) >= 11 and profile_data["credentials_as_json_object_array"] :
+    elif int(profile_data["oidc4vciDraft"]) >= 10 and profile_data["credentials_as_json_object_array"] :
         offer = {
             "credential_issuer": f"{mode.server}issuer/{issuer_id}",
             "credentials": [],
@@ -473,7 +473,8 @@ def issuer_token(issuer_id, red, mode):
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-token-endpoint
     https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
     """
-    logging.info('token endoint request %s', json.dumps(request.form, indent=4))
+    logging.info('token endoint header %s', request.headers)
+    logging.info('token endoint form %s', json.dumps(request.form, indent=4))
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
 
@@ -504,7 +505,7 @@ def issuer_token(issuer_id, red, mode):
         client_authentication_method = "client_secret_jwt)"
     else:
         client_authentication_method = "none"
-    logging.info("client authentication method = ", client_authentication_method)
+    logging.info("client authentication method = %s", client_authentication_method)
 
     # Code expired
     try:
@@ -691,6 +692,8 @@ async def issuer_credential(issuer_id, red, mode):
     if not credential_identifier:
         logging.info("Only one VC of the same type")
         try:
+            print(credential_type)
+            print(access_token_data["vc"])
             credential = access_token_data["vc"][credential_type]
         except Exception:
             # send event to front to go forward callback and send credential to wallet
@@ -850,25 +853,24 @@ def oidc_issuer_stream(red):
 
 
 async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer_vm, c_nonce, format, issuer, duration=365, wallet_jwk=None):
-    print("format to sign = ", format)
-    jti = "urn:uuid:" + str(uuid.uuid1())
-    if format == "vc+sd-jwt":
+    jti = 'urn:uuid:' + str(uuid.uuid1())
+    if format == 'vc+sd-jwt':
         return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk)
-    elif format in ['lp_vc', 'jwt_vc_json-ld']:
+    elif format in ['ldp_vc', 'jwt_vc_json-ld']:
         credential["id"] = jti
         if wallet_did:
-            credential["credentialSubject"]["id"] = wallet_did
+            credential['credentialSubject']['id'] = wallet_did
         credential['issuer'] = issuer_did
         credential['issued'] = f"{datetime.now().replace(microsecond=0).isoformat()}Z"
         credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
         credential['validFrom'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
         credential['expirationDate'] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
         credential["validUntil"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
-    elif format == 'jwt_vc_json':
+    elif format in ['jwt_vc_json', 'jwt_vc']:
         credential = clean_jwt_vc_json(credential)
     # jwt_vc format is used for ebsi V3 only with draft 10
-    if format in ["jwt_vc", "jwt_vc_json", "jwt_vc_json-ld"]:
-        print("credential to sign = ", credential)
+    if format in ['jwt_vc', 'jwt_vc_json', 'jwt_vc_json-ld']:
+        logging.info("credential to sign = %s", credential)
         credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm, issuer_key, c_nonce, issuer_did, jti, wallet_did)
     else:  #  proof_format == 'ldp_vc':
         try: 

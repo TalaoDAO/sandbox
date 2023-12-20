@@ -312,7 +312,6 @@ def verif_token(token, nonce, aud=None):
     raise exception if problem
     https://jwcrypto.readthedocs.io/en/latest/jwt.html#jwcrypto.jwt.JWT.validate
     """
-    logging.info("call oidc4vc module")
     header = get_header_from_token(token)
     payload = get_payload_from_token(token)
     if nonce and payload.get('nonce') != nonce:
@@ -333,7 +332,6 @@ def verif_token(token, nonce, aud=None):
     else:
         raise Exception("Cannot resolve public key")
     a = jwt.JWT.from_jose_token(token)
-    logging.info("exit oidc4vc")
     issuer_key = jwk.JWK(**dict_key)
     a.validate(issuer_key)
     return True
