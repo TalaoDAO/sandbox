@@ -561,7 +561,7 @@ profile = {
                     "display": [
                         {
                             "name": "EmployeeCredential",
-                            "locale": "en-GB"
+                            "locale": "en-US"
                         }
                     ]
                 },
@@ -581,7 +581,7 @@ profile = {
                     "display": [
                         {
                             "name": "EthereumAssociatedAddress",
-                            "locale": "en-GB"
+                            "locale": "en-US"
                         }
                     ]
                 },
@@ -601,7 +601,7 @@ profile = {
                     "display": [
                         {
                             "name": "Verifiable Id",
-                            "locale": "en-GB"
+                            "locale": "en-US"
                         }
                     ]
                 },
@@ -621,7 +621,7 @@ profile = {
                     "display": [
                         {
                             "name": "EmailPass",
-                            "locale": "en-GB"
+                            "locale": "en-US"
                         }
                     ]
                 },
@@ -641,7 +641,7 @@ profile = {
                     "display": [
                         {
                             "name": "Proof of phone number",
-                            "locale": "en-GB"
+                            "locale": "en-US"
                         }
                     ]
                 }

@@ -134,22 +134,14 @@ def sign_jwt_vc(vc, issuer_vm, issuer_key, nonce, iss, jti, wallet_did):
             'iss': iss,
             'nonce': nonce,
             'iat': math.floor(datetime.timestamp(datetime.now())),
+            'nbf': math.floor(datetime.timestamp(datetime.now())),
+            'exp': math.floor(datetime.timestamp(datetime.now())) + 365*24*60*60, 
             'jti': jti,
             'sub': wallet_did
         }
     except Exception as e:
         logging.info("jwt signing error = %s", str(e))
         return
-    try:
-        expiration_date = math.floor(datetime.fromisoformat(vc['expirationDate'][:-1]))
-        payload['exp'] = datetime.timestamp(expiration_date)
-    except:
-        payload['exp'] = payload['iat'] + 365*24*60*60
-    try:
-        issuance_date = math.floor(datetime.fromisoformat(vc['issuanceDate'][:-1]))
-        payload['nbf'] = datetime.timestamp(issuance_date)
-    except:
-        payload['nbf'] = payload['iat']
     payload['vc'] = vc
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
@@ -324,7 +316,6 @@ def verif_token(token, nonce, aud=None):
         dict_key = header['jwk']
     elif header.get('kid'):
         dict_key = resolve_did(header['kid'])
-        print('dict key = ', dict_key)
         if not dict_key:
             raise Exception("Cannot get public key with kid")
     elif payload.get('sub_jwk'):

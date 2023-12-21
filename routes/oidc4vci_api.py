@@ -612,7 +612,7 @@ async def issuer_credential(issuer_id, red, mode):
 
     # check vc format (draft 11)
     vc_format = result.get("format")
-    print("format in credential request = ", vc_format)
+    logging.info("format in credential request = %s", vc_format)
 
     # check proof 
     proof = result.get("proof")
@@ -692,8 +692,6 @@ async def issuer_credential(issuer_id, red, mode):
     if not credential_identifier:
         logging.info("Only one VC of the same type")
         try:
-            print(credential_type)
-            print(access_token_data["vc"])
             credential = access_token_data["vc"][credential_type]
         except Exception:
             # send event to front to go forward callback and send credential to wallet
