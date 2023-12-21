@@ -912,6 +912,10 @@ def clean_jwt_vc_json(credential):
     except:
         pass
     try:
+        del vc['credentialSubject']['id']
+    except:
+        pass
+    try:
         del vc['expirationDate']
     except:
         pass
