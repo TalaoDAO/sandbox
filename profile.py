@@ -35,7 +35,8 @@ profile = {
                     "display": [
                         {
                             "name": "Verifiable diploma",
-                            "locale": "en-GB"
+                            "locale": "en-GB",
+                            "description": "This the official EBSI VC Diploma"
                         }
                     ],
                     "trust_framework": {
@@ -62,6 +63,7 @@ profile = {
                     "display": [
                         {
                             "name": "Email proof",
+                            "description": "This is a verifiable credential",
                             "locale": "en-GB"
                         }
                     ],
@@ -90,6 +92,7 @@ profile = {
                     "display": [
                         {
                             "name": "Verifiable Id",
+                            "description": "This is a verifiable credential",
                             "locale": "en-GB"
                             }
                         ],
@@ -286,6 +289,7 @@ profile = {
                     "display": [
                         {
                             "name": "EmployeeCredential",
+                            "description": "This is a verifiable credential",
                             "locale": "en-GB"
                         }
                     ]
@@ -309,6 +313,7 @@ profile = {
                     "display": [
                         {
                             "name": "EthereumAssociatedAddress",
+                            "description": "This is a verifiable credential",
                             "locale": "en-GB"
                         }
                     ]
@@ -332,6 +337,7 @@ profile = {
                     "display": [
                         {
                             "name": "Verifiable Id",
+                            "description": "This is a verifiable credential",
                             "locale": "en-GB"
                         }
                     ]
@@ -355,6 +361,7 @@ profile = {
                     "display": [
                         {
                             "name": "EmailPass",
+                            "description": "This is a verifiable credential",
                             "locale": "en-GB"
                         }
                     ]
@@ -378,6 +385,7 @@ profile = {
                     "display": [
                         {
                             "name": "Proof of phone number",
+                            "description": "This is a verifiable credential",
                             "locale": "en-GB"
                         }
                     ]
@@ -561,7 +569,10 @@ profile = {
                     "display": [
                         {
                             "name": "EmployeeCredential",
-                            "locale": "en-US"
+                            "description": "This is a verifiable credential",
+                            "locale": "en-US",
+                            "background_color": "#3B6F6D",
+                            "text_color": "#FFFFFF",
                         }
                     ]
                 },
@@ -581,12 +592,16 @@ profile = {
                     "display": [
                         {
                             "name": "EthereumAssociatedAddress",
-                            "locale": "en-US"
+                            "description": "This is a verifiable credential",
+                            "locale": "en-US",
+                            "background_color": "#3B6F6D",
+                            "text_color": "#FFFFFF",
                         }
                     ]
                 },
                 {
                     "id": "VerifiableId",
+                    "description": "This is a verifiable credential",
                     "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
@@ -601,7 +616,10 @@ profile = {
                     "display": [
                         {
                             "name": "Verifiable Id",
-                            "locale": "en-US"
+                            "locale": "en-US",
+                            "background_color": "#3B6F6D",
+                            "text_color": "#FFFFFF",
+                            "description": "This is a verifiable credential",
                         }
                     ]
                 },
@@ -621,7 +639,10 @@ profile = {
                     "display": [
                         {
                             "name": "EmailPass",
-                            "locale": "en-US"
+                            "description": "This is a verifiable credential",
+                            "locale": "en-US",
+                            "background_color": "#3B6F6D",
+                            "text_color": "#FFFFFF"
                         }
                     ]
                 },
@@ -641,7 +662,10 @@ profile = {
                     "display": [
                         {
                             "name": "Proof of phone number",
-                            "locale": "en-US"
+                            "description": "This is a verifiable credential",
+                            "locale": "en-US",
+                            "background_color": "#3B6F6D",
+                            "text_color": "#FFFFFF"
                         }
                     ]
                 }
