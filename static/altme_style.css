@@ -8,6 +8,11 @@
     src: url(Roboto-Regular.ttf);
 }
 
+@font-face {
+    font-family: RobotoBold;
+    src: url(Roboto-Bold.ttf);
+}
+
 #logo {
     width: 127.11px;
     height: 33.15px;
@@ -429,7 +434,11 @@ header {
 }
 
 #qrcode {
-    width: 279px;
+    border-radius: 16px;
+    border: 1px solid var(--swatch-100, #DCDDDF);
+    background: var(--White, #FFF);
+    padding: 24px;
+    width: 300px;
 }
 
 #success {
@@ -1829,4 +1838,14 @@ th {
     color: white;
     border: none;
     width: fit-content;
+}
+
+#titleVerifier {
+    color: #000;
+    font-family: RobotoBold;
+    font-size: 48px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 56px;
+    letter-spacing: -1px;
 }
