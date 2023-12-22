@@ -1,50 +1,184 @@
-<!DOCTYPE html>
-<!-- op_verifier_qrcopde2-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
 <html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/static/img/altmeIcon.png">
-    <title>Talao</title>
-    <link rel="stylesheet" href="/static/home.css">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/static/altme_style.css">
+  <link rel="icon" type="image/png" href="/static/img/icon.png" sizes="16x16">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
 <body>
-    {% include 'header.html' %}
 
-    <div id="mainBox">
-        <div id="boxVerifier1">
 
-            <p id="title">{{page_title}}</p>
+  <nav id="navBar" class="js-nav nav-02  nav-02--sticky  nav-02--sticky--white  ">
+    <div class="nav-02__box">
+      <div class="nav-02__logo"><a class="nav-02__link" href="https://altme.io/" target="_self">
+          <img loading="lazy" class="nav-02__logo_img"
+            src="/static/img/altme-decentralized-identity-wallet-did-logo.webp" height="70" alt="Logo" />
+        </a></div>
 
+      <div class="nav-02__list_wrapper  ">
+        <div class="nav-02__list nav-02__list--desktop">
+          <!--<div class="nav-02__item">
+                    <a class="button   button--black-outline  button--empty " href="https://altme.io/#slider-07-879531"
+                      target="_self">
+                      <p class="linkP"> Wallet features
+                      </p>
+                    </a>
+                  </div>
+                  <div class="nav-02__item" id="newsNav">
+                    <a class="button   button--black-outline  button--empty " href="https://altme.io/#posts-05-876621"
+                      target="_self">
+                      <p class="linkP">News</p>
+  
+                    </a>
+                  </div>
+                  <div class="nav-02__item" id="roadmapNav">
+                    <a href="https://altme.io/#features-09-390941" target="_self">
+                      <p class="linkP">Roadmap</p>
+  
+                    </a>
+                  </div>-->
+          <div class="nav-02__item" id="faqNav">
+            <a class="button   button--black-outline  button--empty " href="https://altme.io/" target="_self">
+              <p class="linkP">Back to home</p>
+            </a>
+          </div>
+          <div class="nav-02__item">
+
+            <a data-stripe-product-id="" data-stripe-mode="payment" data-successful-payment-url=""
+              data-cancel-payment-url="" class="button button--accent-bg "
+              href="mailto:contact@altme.io?cc=hugo@altme.io&subject=Altme" target="_blank">
+              <div class="contactSpan">
+                <p class="contactP">Contact</p>
+              </div>
+            </a>
+          </div>
         </div>
 
-        <div id="boxVerifier2">
 
-            <div id="divCompliantVerifier">
-                <img id="arrowDown" src="/static/img/arrow-down.png">
-                <p id="compliant">{{page_subtitle}}</p>
-            </div>
-            <img id="qrcode" src="{{ qrcode(url) }}">
-            <p>{{qrcode_message}}</p>
-            <a href={{landing_page_url}}>{{landing_page_url}} </a>
-        </div>
+      </div>
 
     </div>
-    {% include 'footer.html' %}
+
+  </nav>
+  <div id="menuDiv" class="nav-02__list_wrapper  ">
+    <div class="nav-02__list nav-02__list--desktop">
+      <div class="nav-02__item">
+        <a class="button   button--black-outline  button--empty " href="https://altme.io/" target="_self">
+          <p class="linkP"> Back to home
+          </p>
+        </a>
+      </div>
+      <!-- <div class="nav-02__item" id="newsNav">
+              <a class="button   button--black-outline  button--empty " href="https://altme.io/#posts-05-876621"
+                target="_self">
+                <p class="linkP">News</p>
+  
+              </a>
+            </div>
+            <div class="nav-02__item" id="roadmapNav">
+              <a href="https://altme.io/#features-09-390941" target="_self">
+                <p class="linkP">Roadmap</p>
+  
+              </a>
+            </div>
+            <div class="nav-02__item" id="faqNav">
+              <a class="button   button--black-outline  button--empty " href="#superFaq" target="_self">
+                <p class="linkP">FAQ</p>
+              </a>
+            </div>-->
+      <div class="nav-02__item">
+
+        <a data-stripe-product-id="" data-stripe-mode="payment" data-successful-payment-url=""
+          data-cancel-payment-url="" class="button button--accent-bg "
+          href="mailto:contact@altme.io?cc=hugo@altme.io&subject=Altme" target="_blank">
+          <div class="contactSpan">
+            <p class="contactP">Contact</p>
+          </div>
+        </a>
+      </div>
+    </div>
 
 
-    <script>
-        var source = new EventSource('/verifier/wallet/stream');
+  </div>
+  <div id="navBarMobile" class="js-nav nav-02  nav-02--sticky  nav-02--sticky--white  ">
+    <div class="nav-02__box">
+      <div class="nav-02__logo">
+        <a class="nav-02__link" href="https://altme.io/" target="_self">
+          <img loading="lazy" class="nav-02__logo_img"
+            src="https://unicorn-cdn.b-cdn.net/653ef4c9-deb9-41af-9fa0-dc973cdd8134/altme-identity-wallet---blockchain---web3---self-sovereign-identity---decentralized-identity---ebsi---ssi---did---digital-identity---logo.png"
+            height="70" alt="Logo" />
+        </a>
+      </div>
+
+
+    </div>
+    <button id="buttonMenu">
+      <div id="buttonMenuLogo">
+        <img id="imageButtonMenu" class="imgButtonMenuInactive" src="/static/img/div.png">
+      </div>
+    </button>
+
+  </div>
+  <div id="mainBox">
+    <p id="title">{{page_title}}</p>
+    <img id="qrcode" src="{{ qrcode(url) }}">
+  </div>
+
+
+  <div class="bg-white-color ">
+    <footer class="footer-02" id="footer">
+      <div class="footer-02__wrapper">
+        <div class="footer-02__text content_box">
+          <p id="line1Footer">&copy; 2023&nbsp; Altme All rights reserved, <a href="https://altme.io/cgu/"
+              target="_blank">CGU</a>, <a href="https://altme.io/privacy/" target="_blank">Privacy</a></p>
+          <p id="line2Footer" hidden><strong>Built with TzKT API, Spruce Didkit 0.4.0</strong>&nbsp;</p>
+        </div>
+        <div class="social-buttons  ">
+
+          <div class="social-buttons__item"><a class="social-buttons__link social-buttons__link--twitter"
+              href="https://twitter.com/Altme_io" target="_blank"><img loading="lazy" class="social-buttons__icon"
+                alt="twitter icon"
+                src="https://dvzvtsvyecfyp.cloudfront.net/static/img/icons/social/black/twitter.svg" /></a></div>
+          <div class="social-buttons__item"><a class="social-buttons__link social-buttons__link--linkedin"
+              href="https://www.linkedin.com/company/altme-web3/" target="_blank"><img loading="lazy"
+                class="social-buttons__icon" alt="linkedin icon"
+                src="https://dvzvtsvyecfyp.cloudfront.net/static/img/icons/social/black/linkedin.svg" /></a></div>
+
+        </div>
+      </div>
+    </footer>
+
+  </div>
+  <script>
+    document.getElementById('buttonMenu').addEventListener('click', () => {
+      if (document.getElementById('imageButtonMenu').getAttribute("class") === "imgButtonMenuInactive") {
+    document.getElementById('menuDiv').setAttribute("class", "flex");
+        document.body.style.overflow = 'hidden';
+
+        document.getElementById('imageButtonMenu').setAttribute("class", "imgButtonMenuActive");
+        document.getElementById('imageButtonMenu').setAttribute("src", "/static/img/crossMenu.png")
+      }
+      else if (document.getElementById('imageButtonMenu').getAttribute("class") === "imgButtonMenuActive") {
+    document.getElementById('menuDiv').setAttribute("class", "");
+        document.body.style.overflow = '';
+
+        document.getElementById('imageButtonMenu').setAttribute("class", "imgButtonMenuInactive");
+        document.getElementById('imageButtonMenu').setAttribute("src", "/static/img/div.png")
+
+      }
+    })
+    var source = new EventSource('/verifier/wallet/stream');
         source.onmessage = function (event) {
             const result = JSON.parse(event.data)
             if (result.stream_id == '{{stream_id}}') {
                 window.location.href = '/verifier/wallet/followup?stream_id=' + result.stream_id;
             }
         };
-    </script>
+  </script>
 </body>
 
 </html>

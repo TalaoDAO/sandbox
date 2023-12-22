@@ -31,49 +31,49 @@ ACCEPTANCE_TOKEN_LIFE = 28 * 24 * 60 * 60
 def init_app(app, red, mode):
     # endpoint for application if redirect to local page (test)
     app.add_url_rule(
-        "/sandbox/ebsi/issuer/<issuer_id>/<stream_id>",
+        '/sandbox/ebsi/issuer/<issuer_id>/<stream_id>',
         view_func=oidc_issuer_landing_page,
-        methods=["GET", "POST"],
-        defaults={"red": red, "mode": mode},
+        methods=['GET', 'POST'],
+        defaults={'red': red, 'mode': mode},
     )
     app.add_url_rule(
-        "/sandbox/ebsi/issuer_stream",
+        '/sandbox/ebsi/issuer_stream',
         view_func=oidc_issuer_stream,
-        methods=["GET", "POST"],
-        defaults={"red": red},
+        methods=['GET', 'POST'],
+        defaults={'red': red},
     )
     app.add_url_rule(
-        "/sandbox/ebsi/issuer_followup/<stream_id>",
+        '/sandbox/ebsi/issuer_followup/<stream_id>',
         view_func=oidc_issuer_followup,
-        methods=["GET"],
-        defaults={"red": red},
+        methods=['GET'],
+        defaults={'red': red},
     )
     
     # OIDC4VCI protocol with wallet
-    app.add_url_rule("/issuer/<issuer_id>/.well-known/openid-configuration", view_func=issuer_openid_configuration, methods=["GET"],defaults={"mode": mode})
-    app.add_url_rule("/issuer/<issuer_id>/.well-known/openid-credential-issuer",view_func=issuer_openid_configuration, methods=["GET"], defaults={"mode": mode})
-    app.add_url_rule("/issuer/<issuer_id>/authorize", view_func=issuer_authorize, methods=["GET", "POST"], defaults={"red": red, "mode": mode})
-    app.add_url_rule("/issuer/<issuer_id>/token", view_func=issuer_token, methods=["POST"], defaults={"red": red, "mode": mode},)
-    app.add_url_rule("/issuer/<issuer_id>/credential", view_func=issuer_credential, methods=["POST"], defaults={"red": red, "mode": mode})
-    app.add_url_rule("/issuer/<issuer_id>/deferred", view_func=issuer_deferred, methods=["POST"], defaults={"red": red, "mode": mode},)
-    app.add_url_rule("/issuer/<issuer_id>/authorize_server/.well-known/openid-configuration", view_func=authorization_server_openid_configuration, methods=["GET"], defaults={"mode": mode},)
-    app.add_url_rule("/issuer/credential_offer_uri/<id>", view_func=issuer_credential_offer_uri, methods=["GET"], defaults={"red": red})
-    app.add_url_rule("/issuer/error_uri", view_func=wallet_error_uri, methods=["GET"])
+    app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=issuer_openid_configuration, methods=['GET'],defaults={'mode': mode})
+    app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-credential-issuer',view_func=issuer_openid_configuration, methods=['GET'], defaults={'mode': mode})
+    app.add_url_rule('/issuer/<issuer_id>/authorize', view_func=issuer_authorize, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/issuer/<issuer_id>/token', view_func=issuer_token, methods=['POST'], defaults={'red': red, 'mode': mode},)
+    app.add_url_rule('/issuer/<issuer_id>/credential', view_func=issuer_credential, methods=['POST'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/issuer/<issuer_id>/deferred', view_func=issuer_deferred, methods=['POST'], defaults={'red': red, 'mode': mode},)
+    app.add_url_rule('/issuer/<issuer_id>/authorize_server/.well-known/openid-configuration', view_func=authorization_server_openid_configuration, methods=['GET'], defaults={'mode': mode},)
+    app.add_url_rule('/issuer/credential_offer_uri/<id>', view_func=issuer_credential_offer_uri, methods=['GET'], defaults={'red': red})
+    app.add_url_rule('/issuer/error_uri', view_func=wallet_error_uri, methods=['GET'])
     
-    app.add_url_rule("/issuer/<issuer_id>/.well-known/jwt-vc-issuer",view_func=openid_jwt_vc_issuer_configuration, methods=["GET"], defaults={"mode": mode})
-    app.add_url_rule("/issuer/<issuer_id>/jwks", view_func=issuer_jwks, methods=["GET", "POST"])
+    app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-vc-issuer',view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
+    app.add_url_rule('/issuer/<issuer_id>/jwks', view_func=issuer_jwks, methods=['GET', 'POST'])
 
     return
 
 
 def front_publish(stream_id, red, error=None, error_description=None):
     # send event to front channel to go forward callback and send credential to wallet
-    data = {"stream_id": stream_id}
+    data = {'stream_id': stream_id}
     if error:
-        data["error"] = error
+        data['error'] = error
     if error_description:
-        data["error_description"] = error_description
-    red.publish("issuer_oidc", json.dumps(data))
+        data['error_description'] = error_description
+    red.publish('issuer_oidc', json.dumps(data))
 
 
 def wallet_error_uri():
@@ -93,19 +93,19 @@ def wallet_error_uri():
 
 
 def error_uri_build(request, error, error_description, mode):
-    if request.headers.get('Content-Type') == "application/json":
+    if request.headers.get('Content-Type') == 'application/json':
         body = json.dumps(request.json)
     elif not request.headers.get('Content-Type'):
-        body = ""
+        body = ''
     else:
         body = json.dumps(request.form)
 
     data = {
-        "header": str(request.headers),
-        "arguments": json.dumps(request.args),
-        "body": body,
-        "error": error,
-        "error_description": error_description
+        'header': str(request.headers),
+        'arguments': json.dumps(request.args),
+        'body': body,
+        'error': error,
+        'error_description': error_description
     }
     return mode.server + 'issuer/error_uri?' + urlencode(data)
 
@@ -116,7 +116,7 @@ def manage_error(error, error_description, red, mode, request=None, stream_id=No
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-credential-error-response
     """
     # console
-    logging.warning("manage error = %s", error_description)
+    logging.warning('manage error = %s', error_description)
     
     # front channel
     if stream_id:
@@ -124,87 +124,87 @@ def manage_error(error, error_description, red, mode, request=None, stream_id=No
     
     # wallet
     payload = {
-        "error": error,
-        "error_description": error_description,
+        'error': error,
+        'error_description': error_description,
     }
     if request:
         payload['error_uri'] = error_uri_build(request, error, error_description, mode)
 
-    headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
-    return {"response": json.dumps(payload), "status": status, "headers": headers}
+    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
+    return {'response': json.dumps(payload), 'status': status, 'headers': headers}
 
 
 # issuer openid configuration endpoint 
 def issuer_openid_configuration(issuer_id, mode):
     doc = oidc(issuer_id, mode)
-    return jsonify(doc) if doc else (jsonify("Not found"), 404)
+    return jsonify(doc) if doc else (jsonify('Not found'), 404)
 
 
 # for wallet
 def oidc(issuer_id, mode):
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-        issuer_profile = profile[issuer_data["profile"]]
+        issuer_profile = profile[issuer_data['profile']]
     except Exception:
-        logging.warning("issuer_id not found for %s", issuer_id)
+        logging.warning('issuer_id not found for %s', issuer_id)
         return
 
     # Credentials_supported section
-    cs = issuer_profile.get("credentials_supported")
+    cs = issuer_profile.get('credentials_supported')
    
     # general section
     issuer_openid_configuration = {}
     issuer_openid_configuration.update(
         {
-            "credential_issuer": mode.server + "issuer/" + issuer_id,
-            "credential_endpoint": mode.server + "issuer/" + issuer_id + "/credential",
-            "deferred_credential_endpoint": mode.server + "issuer/" + issuer_id + "/deferred",
-            "credentials_supported": cs
+            'credential_issuer': mode.server + 'issuer/' + issuer_id,
+            'credential_endpoint': mode.server + 'issuer/' + issuer_id + '/credential',
+            'deferred_credential_endpoint': mode.server + 'issuer/' + issuer_id + '/deferred',
+            'credentials_supported': cs
         }
     )
 
     # setup credential manifest as optional
     # https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-server-metadata
-    if issuer_profile.get("credential_manifest_support"):
+    if issuer_profile.get('credential_manifest_support'):
         cm = []
-        for _vc in issuer_profile.get("credentials_types_supported"):
-            file_path = "./credential_manifest/" + _vc + "_credential_manifest.json"
+        for _vc in issuer_profile.get('credentials_types_supported'):
+            file_path = './credential_manifest/' + _vc + '_credential_manifest.json'
             try:
                 cm_to_add = json.load(open(file_path))
-                cm_to_add["issuer"]["id"] = issuer_data.get("did", "Unknown")
-                cm_to_add["issuer"]["name"] = issuer_data["application_name"]
+                cm_to_add['issuer']['id'] = issuer_data.get('did', 'Unknown')
+                cm_to_add['issuer']['name'] = issuer_data['application_name']
                 cm.append(cm_to_add)
             except Exception:
-                logging.warning("credential manifest not found for %s", _vc)
-        issuer_openid_configuration["credential_manifests"] = cm
+                logging.warning('credential manifest not found for %s', _vc)
+        issuer_openid_configuration['credential_manifests'] = cm
 
     # setup authorization server if needed
-    if issuer_profile.get("authorization_server_support"):
-        issuer_openid_configuration["authorization_server"] = mode.server + "issuer/" + issuer_id + "/authorize_server"
+    if issuer_profile.get('authorization_server_support'):
+        issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id + '/authorize_server'
     else:
-        authorization_server_config = json.load(open("authorization_server_config.json"))
+        authorization_server_config = json.load(open('authorization_server_config.json'))
         issuer_openid_configuration.update(authorization_server_config)
-        if issuer_data["profile"] != "DIIP":
-            issuer_openid_configuration["authorization_endpoint"] = mode.server + "issuer/" + issuer_id + "/authorize"
-            issuer_openid_configuration["token_endpoint"] = mode.server + "issuer/" + issuer_id + "/token"
+        if issuer_data['profile'] != 'DIIP':
+            issuer_openid_configuration['authorization_endpoint'] = mode.server + 'issuer/' + issuer_id + '/authorize'
+            issuer_openid_configuration['token_endpoint'] = mode.server + 'issuer/' + issuer_id + '/token'
     return issuer_openid_configuration
 
 
 # jwt vc issuer openid configuration
 def openid_jwt_vc_issuer_configuration(issuer_id, mode):
     config = {
-        "issuer" : mode.server + "issuer/" + issuer_id,
-        "jwks_uri" : mode.server + "issuer/" + issuer_id + "/jwks"
+        'issuer' : mode.server + 'issuer/' + issuer_id,
+        'jwks_uri' : mode.server + 'issuer/' + issuer_id + '/jwks'
     }
     return  jsonify(config)
 
 
 # authorization server endpoint
 def authorization_server_openid_configuration(issuer_id, mode):
-    authorization_server_config = json.load(open("authorization_server_config.json"))
+    authorization_server_config = json.load(open('authorization_server_config.json'))
     config = {
-        "authorization_endpoint": mode.server + "issuer/" + issuer_id + "/authorize",
-        "token_endpoint": mode.server + "issuer/" + issuer_id + "/token"
+        'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/authorize',
+        'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token'
     }
     config.update(authorization_server_config)
     return jsonify(config)
@@ -218,10 +218,10 @@ def thumbprint(key):
 # jwks endpoint
 def issuer_jwks(issuer_id):
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-    pub_key = copy.copy(json.loads(issuer_data["jwk"]))
+    pub_key = copy.copy(json.loads(issuer_data['jwk']))
     del pub_key['d']
     pub_key['kid'] = thumbprint(pub_key)
-    return jsonify({"keys" : [pub_key]})
+    return jsonify({'keys' : [pub_key]})
 
 
 def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state, user_pin_required, mode):
@@ -229,69 +229,69 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
     issuer_profile = issuer_data['profile']
     profile_data = profile[issuer_profile]
 
-    if profile_data["oidc4vciDraft"] == "8":
+    if profile_data['oidc4vciDraft'] == '8':
         #  https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-pre-authorized-code-flow
         if len(credential_type) == 1:
             credential_type = credential_type[0]
         offer = {
-            "issuer": f"{mode.server}issuer/{issuer_id}",
-            "credential_type": credential_type,
+            'issuer': f'{mode.server}issuer/{issuer_id}',
+            'credential_type': credential_type,
         }
         if pre_authorized_code:
-            offer["pre-authorized_code"] = pre_authorized_code
+            offer['pre-authorized_code'] = pre_authorized_code
             if user_pin_required:
-                offer["user_pin_required"]: True
+                offer['user_pin_required']: True
     
     # new OIDC4VCI standard with credentials as an array ofjson objects (EBSI-V3)
-    elif int(profile_data["oidc4vciDraft"]) >= 10 and profile_data["credentials_as_json_object_array"] :
+    elif int(profile_data['oidc4vciDraft']) >= 10 and profile_data['credentials_as_json_object_array'] :
         offer = {
-            "credential_issuer": f"{mode.server}issuer/{issuer_id}",
-            "credentials": [],
+            'credential_issuer': f'{mode.server}issuer/{issuer_id}',
+            'credentials': [],
         }
         if pre_authorized_code:
-            offer["grants"] = {
-                "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
-                    "pre-authorized_code": pre_authorized_code
+            offer['grants'] = {
+                'urn:ietf:params:oauth:grant-type:pre-authorized_code': {
+                    'pre-authorized_code': pre_authorized_code
                 }
             }
             if user_pin_required:
-                offer["grants"][
-                    "urn:ietf:params:oauth:grant-type:pre-authorized_code"
-                ].update({"user_pin_required": True})
+                offer['grants'][
+                    'urn:ietf:params:oauth:grant-type:pre-authorized_code'
+                ].update({'user_pin_required': True})
         else:
-            offer["grants"] = {"authorization_code": {"issuer_state": issuer_state}}
+            offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
         
         for one_vc in credential_type:
-            for supported_vc in profile_data["credentials_supported"]:
-                if one_vc in supported_vc["types"]:
-                    offer["credentials"].append(
+            for supported_vc in profile_data['credentials_supported']:
+                if one_vc in supported_vc['types']:
+                    offer['credentials'].append(
                         {
-                            "format": supported_vc["format"],
-                            "types": supported_vc["types"],
+                            'format': supported_vc['format'],
+                            'types': supported_vc['types'],
                         }
                     )
-                if supported_vc.get("trust_framework"):
-                    offer["trust_framework"] = supported_vc["trust_framework"]
+                if supported_vc.get('trust_framework'):
+                    offer['trust_framework'] = supported_vc['trust_framework']
 
     # OIDC4VCI standard with credentials as an array of string
     else:
         # https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html
         offer = {
-            "credential_issuer": f'{mode.server}issuer/{issuer_id}',
-            "credentials": credential_type,
+            'credential_issuer': f'{mode.server}issuer/{issuer_id}',
+            'credentials': credential_type,
         }
         if pre_authorized_code:
-            offer["grants"] = {
-                "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
-                    "pre-authorized_code": pre_authorized_code
+            offer['grants'] = {
+                'urn:ietf:params:oauth:grant-type:pre-authorized_code': {
+                    'pre-authorized_code': pre_authorized_code
                 }
             }
             if user_pin_required:
-                offer["grants"][
-                    "urn:ietf:params:oauth:grant-type:pre-authorized_code"
-                ].update({"user_pin_required": True})
+                offer['grants'][
+                    'urn:ietf:params:oauth:grant-type:pre-authorized_code'
+                ].update({'user_pin_required': True})
         else:
-            offer["grants"] = {"authorization_code": {"issuer_state": issuer_state}}                
+            offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}                
     return offer
 
 
@@ -303,8 +303,8 @@ def issuer_credential_offer_uri(id, red):
     try:
         offer = json.loads(red.get(id).decode())
     except Exception:
-        logging.warning("session expired")
-        return jsonify("Session expired"), 404
+        logging.warning('session expired')
+        return jsonify('Session expired'), 404
     return jsonify(offer), 201
 
 
@@ -314,47 +314,47 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     try:
         session_data = json.loads(red.get(stream_id).decode())
     except Exception:
-        logging.warning("session expired")
-        return jsonify("Session expired"), 404
-    credential_type = session_data["credential_type"]
-    pre_authorized_code = session_data["pre-authorized_code"]
-    user_pin_required = session_data["user_pin_required"]
-    issuer_state = session_data["issuer_state"]
+        logging.warning('session expired')
+        return jsonify('Session expired'), 404
+    credential_type = session_data['credential_type']
+    pre_authorized_code = session_data['pre-authorized_code']
+    user_pin_required = session_data['user_pin_required']
+    issuer_state = session_data['issuer_state']
     offer = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state,  user_pin_required, mode)
 
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-    data_profile = profile[issuer_data["profile"]]
+    data_profile = profile[issuer_data['profile']]
     # credential offer is passed by value
-    if issuer_data.get("oidc4vciDraft", "11") == "8" or data_profile["oidc4vciDraft"] == "8":
-        url_to_display = data_profile["oidc4vci_prefix"] + "?" + urlencode(offer)
+    if issuer_data.get('oidc4vciDraft', '11') == '8' or data_profile['oidc4vciDraft'] == '8':
+        url_to_display = data_profile['oidc4vci_prefix'] + '?' + urlencode(offer)
         json_url = offer
     else :    
-        url_to_display = data_profile["oidc4vci_prefix"] + "?" + urlencode({"credential_offer": json.dumps(offer)})
-        json_url = {"credential_offer": offer}
+        url_to_display = data_profile['oidc4vci_prefix'] + '?' + urlencode({'credential_offer': json.dumps(offer)})
+        json_url = {'credential_offer': offer}
 
     # credential offer is passed by reference : credential offer uri
-    if issuer_data.get("credential_offer_uri"):
+    if issuer_data.get('credential_offer_uri'):
         id = str(uuid.uuid1())
         credential_offer_uri = (
-            f"{mode.server}issuer/credential_offer_uri/{id}"
+            f'{mode.server}issuer/credential_offer_uri/{id}'
         )
         red.setex(id, GRANT_LIFE, json.dumps(offer))
-        logging.info("credential offer uri =%s", credential_offer_uri)
+        logging.info('credential offer uri = %s', credential_offer_uri)
         url_to_display = (
-            data_profile["oidc4vci_prefix"]
-            + "?credential_offer_uri="
+            data_profile['oidc4vci_prefix']
+            + '?credential_offer_uri='
             + credential_offer_uri
         )
 
     openid_configuration = json.dumps(oidc(issuer_id, mode), indent=4)
     deeplink_talao = (
-        mode.deeplink_talao + "app/download/oidc4vc?" + urlencode({"uri": url_to_display})
+        mode.deeplink_talao + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display})
     )
     deeplink_altme = (
-        mode.deeplink_altme + "app/download/oidc4vc?" + urlencode({"uri": url_to_display})
+        mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display})
     )
-    qrcode_page = issuer_data.get("issuer_landing_page")
-    logging.info("QR code page = %s", qrcode_page)
+    qrcode_page = issuer_data.get('issuer_landing_page')
+    logging.info('QR code page = %s', qrcode_page)
     return render_template(
         qrcode_page,
         openid_configuration=openid_configuration,
@@ -364,12 +364,12 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
         deeplink_talao=deeplink_talao,
         stream_id=stream_id,
         issuer_id=issuer_id,
-        page_title=issuer_data["page_title"],
-        page_subtitle=issuer_data["page_subtitle"],
-        page_description=issuer_data["page_description"],
-        title=issuer_data["title"],
-        landing_page_url=issuer_data["landing_page_url"],
-        issuer_state=request.args.get("issuer_state"),
+        page_title=issuer_data['page_title'],
+        page_subtitle=issuer_data['page_subtitle'],
+        page_description=issuer_data['page_description'],
+        title=issuer_data['title'],
+        landing_page_url=issuer_data['landing_page_url'],
+        issuer_state=request.args.get('issuer_state'),
     )
 
 
@@ -380,91 +380,91 @@ def authorization_error(error, error_description, stream_id, red, state):
         # front channel follow up
         front_publish(stream_id, red, error=error, error_description=error_description)
         resp = {
-            "error_description": error_description,
-            "error": error}
+            'error_description': error_description,
+            'error': error}
         if state:
-            resp["state"] = state
+            resp['state'] = state
         return urlencode(resp)
 
 
 def issuer_authorize(issuer_id, red, mode):
     try:
-        issuer_state = request.args["issuer_state"]
+        issuer_state = request.args['issuer_state']
         stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
     except Exception:
-        return jsonify({"error": "access_denied"}), 403
+        return jsonify({'error': 'access_denied'}), 403
 
-    scope = request.args.get("scope")  # not required for this flow
-    nonce = request.args.get("nonce")
-    code_challenge = request.args.get("code_challenge")
-    code_challenge_method = request.args.get("code_challenge_method")
-    client_metadata = request.args.get("client_metadata")
-    state = request.args.get("state")  # wallet state
-    authorization_details = request.args.get("authorization_details")
+    scope = request.args.get('scope')  # not required for this flow
+    nonce = request.args.get('nonce')
+    code_challenge = request.args.get('code_challenge')
+    code_challenge_method = request.args.get('code_challenge_method')
+    client_metadata = request.args.get('client_metadata')
+    state = request.args.get('state')  # wallet state
+    authorization_details = request.args.get('authorization_details')
     
     try:
-        redirect_uri = request.args["redirect_uri"]
+        redirect_uri = request.args['redirect_uri']
     except Exception:
-        return jsonify({"error": "invalid_request"}), 403
+        return jsonify({'error': 'invalid_request'}), 403
 
     try:
-        response_type = request.args["response_type"]
+        response_type = request.args['response_type']
     except Exception:
         return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Response type is missing', stream_id, red, state)) 
 
     try:
-        client_id = request.args["client_id"]  # client_id of the wallet
-        logging.info("client_id of the wallet = %s", client_id)
+        client_id = request.args['client_id']  # client_id of the wallet
+        logging.info('client_id of the wallet = %s', client_id)
     except Exception:
         return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Client id is missing', stream_id, red, state))
     
 
-    logging.info("redirect_uri = %s", redirect_uri)
-    logging.info("code_challenge = %s", code_challenge)
-    logging.info("client_metadata = %s", client_metadata)
-    logging.info("authorization details = %s", authorization_details)
-    logging.info("scope = %s", scope)
+    logging.info('redirect_uri = %s', redirect_uri)
+    logging.info('code_challenge = %s', code_challenge)
+    logging.info('client_metadata = %s', client_metadata)
+    logging.info('authorization details = %s', authorization_details)
+    logging.info('scope = %s', scope)
     
-    if response_type != "code":
+    if response_type != 'code':
         return redirect(redirect_uri + '?' + authorization_error('invalid_response_type', 'response_type not supported', stream_id, red, state))
 
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
 
     offer_data = json.loads(red.get(issuer_state).decode())
-    vc = offer_data["vc"]
-    credential_type = offer_data["credential_type"]
+    vc = offer_data['vc']
+    credential_type = offer_data['credential_type']
 
     # Code creation
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-    if profile[issuer_data["profile"]].get("pre-authorized_code_as_jwt"):
+    if profile[issuer_data['profile']].get('pre-authorized_code_as_jwt'):
         code = oidc4vc.build_pre_authorized_code(
-            issuer_data["jwk"],
-            "https://self-issued.me/v2",
-            mode.server + "issuer/" + issuer_id,
-            issuer_data["verification_method"],
+            issuer_data['jwk'],
+            'https://self-issued.me/v2',
+            mode.server + 'issuer/' + issuer_id,
+            issuer_data['verification_method'],
             nonce,
         )
     else:
         code = str(uuid.uuid1()) + '.' + str(uuid.uuid1()) + '.' + str(uuid.uuid1())
 
     code_data = {
-        "credential_type": credential_type,
-        "client_id": client_id,
-        "scope": scope,
-        "authorization_details": authorization_details,
-        "issuer_id": issuer_id,
-        "issuer_state": issuer_state,
-        "state": state,
-        "stream_id": stream_id,
-        "vc": vc,
-        "code_challenge": code_challenge,
-        "code_challenge_method": code_challenge_method,
+        'credential_type': credential_type,
+        'client_id': client_id,
+        'scope': scope,
+        'authorization_details': authorization_details,
+        'issuer_id': issuer_id,
+        'issuer_state': issuer_state,
+        'state': state,
+        'stream_id': stream_id,
+        'vc': vc,
+        'code_challenge': code_challenge,
+        'code_challenge_method': code_challenge_method,
     }
     red.setex(code, GRANT_LIFE, json.dumps(code_data))
-    resp = {"code": code}
+    resp = {'code': code}
     if state:
-        resp["state"] = state
-    return redirect(redirect_uri + "?" + urlencode(resp))
+        resp['state'] = state
+    return redirect(redirect_uri + '?' + urlencode(resp))
 
 
 # token endpoint
@@ -479,48 +479,48 @@ def issuer_token(issuer_id, red, mode):
     issuer_profile = profile[issuer_data['profile']]
 
     # error response https://datatracker.ietf.org/doc/html/rfc6749#section-4.2.2.1
-    grant_type = request.form.get("grant_type")
+    grant_type = request.form.get('grant_type')
     if not grant_type:
-        return Response(**manage_error("invalid_request", "Request format is incorrect, grant is missing", red, mode, request=request))
+        return Response(**manage_error('invalid_request', 'Request format is incorrect, grant is missing', red, mode, request=request))
 
-    if grant_type == "urn:ietf:params:oauth:grant-type:pre-authorized_code" and not request.form.get("pre-authorized_code"):
-        return Response(**manage_error("invalid_request", "Request format is incorrect, this grant type is not supported", red, mode, request=request))
+    if grant_type == 'urn:ietf:params:oauth:grant-type:pre-authorized_code' and not request.form.get('pre-authorized_code'):
+        return Response(**manage_error('invalid_request', 'Request format is incorrect, this grant type is not supported', red, mode, request=request))
 
-    if grant_type == "urn:ietf:params:oauth:grant-type:pre-authorized_code":
-        code = request.form.get("pre-authorized_code")
-        user_pin = request.form.get("user_pin")
-    elif grant_type == "authorization_code":
-        code = request.form.get("code")
+    if grant_type == 'urn:ietf:params:oauth:grant-type:pre-authorized_code':
+        code = request.form.get('pre-authorized_code')
+        user_pin = request.form.get('user_pin')
+    elif grant_type == 'authorization_code':
+        code = request.form.get('code')
     else:
-        return Response(**manage_error("invalid_request", "Grant type not supported", red, mode, request=request))
+        return Response(**manage_error('invalid_request', 'Grant type not supported', red, mode, request=request))
     if not code:
-        return Response(**manage_error("invalid_request", "Request format is incorrect, code is missing", red, mode, request=request))
+        return Response(**manage_error('invalid_request', 'Request format is incorrect, code is missing', red, mode, request=request))
 
     # display client_authentication method
     if request.headers.get('Authorization'):
-        client_authentication_method = "client_secret_basic"
-    elif request.form.get("client_id"):
-        client_authentication_method = "client_secret_post"
-    elif request.form.get('assertion'):
-        client_authentication_method = "client_secret_jwt)"
+        client_authentication_method = 'client_secret_basic'
+    elif request.form.get('client_id'):
+        client_authentication_method = 'client_secret_post'
+    elif request.form.get('assertion') or request.form.get('client_assertion'):
+        client_authentication_method = 'client_secret_jwt)'
     else:
-        client_authentication_method = "none"
-    logging.info("client authentication method = %s", client_authentication_method)
+        client_authentication_method = 'none'
+    logging.info('client authentication method = %s', client_authentication_method)
 
     # Code expired
     try:
         data = json.loads(red.get(code).decode())
     except Exception:
-        return Response(**manage_error("access_denied", "Grant code expired", red, mode, request=request, status=404))
+        return Response(**manage_error('access_denied', 'Grant code expired', red, mode, request=request, status=404))
     
     stream_id = data['stream_id']
     
     # check code verifier
-    if grant_type == "authorization_code" and int(issuer_profile['oidc4vciDraft']) >= 10:
-        code_verifier = request.form.get("code_verifier")
+    if grant_type == 'authorization_code' and int(issuer_profile['oidc4vciDraft']) >= 10:
+        code_verifier = request.form.get('code_verifier')
         code_challenge_calculated = pkce.get_code_challenge(code_verifier)
         if code_challenge_calculated != data['code_challenge']:
-            return Response(**manage_error("access_denied", "Code verifier is incorrect", red, mode, request=request, stream_id=stream_id, status=404))
+            return Response(**manage_error('access_denied', 'Code verifier is incorrect', red, mode, request=request, stream_id=stream_id, status=404))
             
     # PIN code
     if data.get("user_pin_required") and not user_pin:
@@ -855,20 +855,27 @@ async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer
     if format == 'vc+sd-jwt':
         return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk)
     elif format in ['ldp_vc', 'jwt_vc_json-ld']:
-        credential["id"] = jti
         if wallet_did:
             credential['credentialSubject']['id'] = wallet_did
+        else:
+            try:
+                del credential['credentialSubject']['id']
+            except:
+                pass
+        credential["id"] = jti
         credential['issuer'] = issuer_did
         credential['issued'] = f"{datetime.now().replace(microsecond=0).isoformat()}Z"
         credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
         credential['validFrom'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
         credential['expirationDate'] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
         credential["validUntil"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
-    elif format in ['jwt_vc_json', 'jwt_vc']:
+    elif format in ['jwt_vc_json', 'jwt_vc']:     # jwt_vc format is used for ebsi V3 only with draft 10
         credential = clean_jwt_vc_json(credential)
-    # jwt_vc format is used for ebsi V3 only with draft 10
+    else:
+        logging.error('credential format not supported %s', format)
+        return
+    logging.info("credential to sign = %s", credential)
     if format in ['jwt_vc', 'jwt_vc_json', 'jwt_vc_json-ld']:
-        logging.info("credential to sign = %s", credential)
         credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm, issuer_key, c_nonce, issuer_did, jti, wallet_did)
     else:  #  proof_format == 'ldp_vc':
         try: 
@@ -883,18 +890,18 @@ async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer
             )
         except Exception as e:
             logging.warning("Didkit exception = %s", str(e))
-            logging.warning("incorrect json_ld = %s", json.dumps(credential))
-            return None
+            logging.warning('incorrect json_ld = %s', json.dumps(credential))
+            return
         
-        result = await didkit.verify_credential(credential_signed, "{}")
-        logging.info("signature check with didkit = %s", result)
+        result = await didkit.verify_credential(credential_signed, '{}')
+        logging.info('signature check with didkit = %s', result)
         credential_signed = json.loads(credential_signed)
     return credential_signed
 
 
 def clean_jwt_vc_json(credential):
     vc = copy.copy(credential)
-    vc['@context'] = [ "https://www.w3.org/2018/credentials/v1"]
+    vc['@context'] = [ 'https://www.w3.org/2018/credentials/v1']
     try:
         del vc['issuer']
     except:

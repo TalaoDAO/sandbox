@@ -1,0 +1,1832 @@
+@font-face {
+    font-family: Nunito;
+    src: url(Nunito-VariableFont_wght.ttf);
+}
+
+@font-face {
+    font-family: Roboto;
+    src: url(Roboto-Regular.ttf);
+}
+
+#logo {
+    width: 127.11px;
+    height: 33.15px;
+}
+
+.title {
+    color: var(--Black, #14171C);
+    font-feature-settings: 'clig' off, 'liga' off;
+    /* Heading 2 - 24 Bold */
+    font-family: Roboto;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 32px;
+    /* 133.333% */
+    letter-spacing: -0.25px;
+}
+
+#draw {
+    width: 447.49px;
+    height: 449.19px;
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+    z-index: 0;
+
+}
+
+#bigBox {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 150px;
+    gap: 40px;
+
+    width: 1170px;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 1;
+    flex-grow: 1;
+
+}
+
+#menuDiv {
+    display: none;
+    height: calc(100vh - 90px);
+    width: 100vw;
+    position: fixed;
+    top: 90px;
+    left: 0px;
+    z-index: 100;
+    background-color: white;
+    flex-direction: column;
+    align-items: center;
+}
+
+#body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0px;
+
+    width: 100%;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 1;
+
+}
+
+body {
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+header {
+    /* Auto layout */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 0px 0px;
+    gap: 10px;
+
+    width: 100%;
+
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    align-self: stretch;
+    flex-grow: 0;
+}
+
+#wrapperTop {
+
+    /* Auto layout */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0px;
+    gap: 10px;
+
+    width: 1128px;
+    height: 77px;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+}
+
+
+.displayNone {
+    display: none !important;
+}
+
+.box1 {
+    /* item */
+    box-sizing: border-box;
+    /* Auto layout */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 16px 24px;
+
+    height: 68px;
+
+    background: #FFFFFF;
+    border: 1px solid #EDECF2;
+    border-radius: 16px;
+
+    /* Inside auto layout */
+    flex: none;
+    align-self: stretch;
+    flex-grow: 0;
+    cursor: pointer;
+}
+
+.box1:hover {
+    background: #EDECF2;
+}
+
+.box2 {
+    /* item */
+    box-sizing: border-box;
+    /* Auto layout */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 16px 24px;
+
+    width: 549px;
+    height: 67px;
+
+    background: #FFFFFF;
+    border: 1px solid #EDECF2;
+    border-radius: 16px;
+
+    /* Inside auto layout */
+    flex: none;
+    align-self: stretch;
+    flex-grow: 0;
+}
+
+.box2:hover {
+    background: #EDECF2;
+}
+
+.underbox1 {
+    /* inside item */
+
+    /* Auto layout */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0px;
+    gap: 16px;
+
+    width: 501px;
+    height: 33.89px;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 1;
+}
+
+.underbox2 {
+    /* inside item */
+
+    /* Auto layout */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0px;
+    gap: 16px;
+
+    width: 501px;
+    height: 35px;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 1;
+}
+
+.frame2 {
+    /* Frame 2 */
+
+    /* Auto layout */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0px;
+    gap: 16px;
+
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+}
+
+.frame3 {
+    /* Frame 3 */
+
+    /* Auto layout */
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0px;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 1;
+    align-self: stretch;
+    flex-grow: 1;
+    /* Frame 3 */
+
+    position: relative;
+    left: 138px;
+}
+
+.vector {
+    /* Vector */
+
+    width: 9px;
+    height: 16px;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+}
+
+#beaconlogo {
+    /* beacon logo */
+
+    width: 36.5px;
+    height: 36.5px;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+}
+
+.kvwalletbtn {
+    background-color: transparent;
+    /*border: transparent;*/
+    min-width: 551px;
+    height: 67px;
+    border-radius: 16px;
+    border: none;
+    padding: 0;
+    /*border: red;
+    border-width: 1px;
+    border-style: solid;*/
+    z-index: 100;
+    position: relative;
+    right: 391px;
+    order: 2;
+}
+
+#kvwalletmodal_walletconnect_btn {}
+
+#kvwalletmodal_walletconnect_btn2 {}
+
+#kvwalletmodal_walletconnect_btn3 {}
+
+#kvwalletmodal_walletconnect_btn4 {}
+
+#kvwalletmodal_walletconnect_btn5 {}
+
+#kvwalletmodal_metamask_btn {}
+
+#frame6 {
+
+
+    /* Auto layout */
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 0px;
+
+    height: 78px;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 2;
+    flex-grow: 0;
+    position: relative;
+    top: 30px;
+}
+
+#ssi {
+    /* Connect wallet */
+
+    width: 549px;
+    height: 78px;
+
+    /* Paragraph/16/medium */
+    font-family: 'Nunito';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 161.7%;
+
+    /* or 26px */
+
+    /* Purple_light */
+    color: #B0A7BC;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 1;
+}
+
+#templelogo {
+    /* temple-wallet 1 */
+
+    width: 36px;
+    height: 35px;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+}
+
+.walletText {
+    /* Beacon Wallet */
+    text-align: left;
+    padding-left: 25px;
+    width: 280px;
+    height: 29px;
+
+    /* Paragraph/18/bold */
+    font-family: 'Nunito';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 161.7%;
+
+    /* or 29px */
+
+    color: #000000;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+}
+
+#soon {
+    /* Beacon Wallet */
+    text-align: left;
+    padding-left: 25px;
+    width: 280px;
+    height: 29px;
+
+    /* Paragraph/18/bold */
+    font-family: 'Nunito';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 161.7%;
+
+    /* or 29px */
+
+    color: #665c5c;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+}
+
+#qrcode {
+    width: 279px;
+}
+
+#success {
+    /* Connect wallet */
+
+    width: 549px;
+    height: 29px;
+
+    /* Paragraph/18/bold */
+    font-family: 'Nunito';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 161.7%;
+
+    /* or 29px */
+    text-align: center;
+
+    /* Secondary */
+    color: #544A62;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 1;
+    align-self: stretch;
+    flex-grow: 0;
+}
+
+.transparent {
+    background-color: transparent;
+    border: transparent;
+}
+
+#connectDesktop {
+
+    position: absolute;
+    top: 60px;
+    left: 153px;
+    font-family: Nunito;
+    font-size: 20px;
+    color: #330080;
+}
+
+#superFaq {
+    gap: 90px;
+    padding-top: 90px;
+    background: #F6F5F9;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    top: 50px;
+}
+
+#faq {
+    width: 1128px;
+
+}
+
+.question {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 1090px;
+    align-items: center;
+}
+
+.activeAnswer {
+    font-family: 'Nunito';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 161.7%;
+
+    /* or 26px */
+
+    /* Secondary */
+    color: #544A62;
+    margin: 2px;
+    max-width: 970px;
+    text-align: left;
+
+}
+
+.inactiveAnswer {
+    visibility: collapse;
+    width: 1128px;
+    font-size: 0;
+}
+
+
+.questionP {
+    font-family: 'Nunito';
+    font-style: normal;
+    font-weight: 650;
+    font-size: 18px;
+    line-height: 161.7%;
+
+    /* or 29px */
+
+    /* Secondary */
+    color: #000000;
+}
+
+.answerP {
+    font-family: 'Nunito';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 161.7%;
+
+    /* or 29px */
+
+    /* Secondary */
+    color: #544A62;
+}
+
+#faqP {
+    font-family: 'Nunito';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 131.7%;
+
+    /* or 42px */
+
+    color: #330080;
+}
+
+#templeRight {
+    width: 50px;
+    height: 50px;
+}
+
+#kukaiRight {
+    width: 50px;
+    height: 50px;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-clean {
+    padding: 50px 0;
+    background-color: #fff;
+    color: #4b4c4d;
+}
+
+
+
+.container {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    font-weight: bolder;
+    opacity: 0.7;
+}
+
+footer {
+    display: block;
+}
+
+.row {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.justify-content-center {
+    -ms-flex-pack: center !important;
+    justify-content: center !important;
+}
+
+.container,
+.container-lg,
+.container-md,
+.container-sm,
+.container-xl {
+    max-width: 1140px;
+}
+
+.col {
+    -ms-flex-preferred-size: 0;
+    flex-basis: 0;
+    -ms-flex-positive: 1;
+    flex-grow: 1;
+    max-width: 100%;
+}
+
+.footer-clean h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.footer-clean ul {
+    padding: 0;
+    list-style: none;
+    line-height: 1.6;
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+.footer-clean ul a {
+    color: inherit;
+    text-decoration: none;
+    opacity: 0.8;
+}
+
+#preview {
+    width: 40%;
+}
+
+.nav-02 {
+    position: fixed;
+    z-index: 70;
+    left: 0px;
+    top: 0px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0px 1px 20px rgba(0, 0, 0, 0.07);
+    width: 100%;
+    height: 70px;
+
+    padding-top: 10px;
+    padding-right: 0px;
+    padding-bottom: 10px;
+    padding-left: 0px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.vnotify-container {
+    z-index: 100;
+}
+
+.nav-02__box {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 1170px;
+    justify-content: space-between;
+}
+
+.nav-02__list {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+}
+
+.nav-02__list_wrapper {
+    align-items: center;
+    display: flex;
+}
+
+.contactSpan {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #2e0072;
+    width: 120px;
+    height: 44px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px 0 rgba(136, 144, 195, 0.2), 0 5px 15px 0 rgba(37, 44, 97, 0.15);
+}
+
+.contactP {
+    color: white;
+}
+
+nav {
+    font-family: 'Nunito';
+    font-size: 14px;
+    font-weight: 700;
+
+}
+
+nav a {
+    text-decoration: none;
+    color: #303030;
+}
+
+.nav-02__item:hover {
+    transform: translateY(-2px);
+    transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    color: #6600FF;
+}
+
+#faqNav {}
+
+.linkP:hover {
+    color: #6600FF;
+}
+
+#roadmapNav {
+    position: relative;
+    left: 7px;
+}
+
+#newsNav {
+    position: relative;
+    right: 1px;
+}
+
+#page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+
+
+.bg-white-color {
+    width: 100%;
+    height: 130px;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.footer-02 {
+    display: flex;
+    flex-direction: column;
+}
+
+.social-buttons {
+    display: flex;
+    flex-direction: row;
+    width: 60px;
+    justify-content: space-around;
+    opacity: 0.7;
+    position: relative;
+    top: 2px;
+}
+
+.footer-02__wrapper {
+    display: flex;
+    flex-direction: row;
+    width: 1050px;
+    height: 50px;
+    justify-content: space-between;
+
+}
+
+.footer-02__text {
+    font-size: 15px;
+    font-family: 'Nunito';
+    color: #3d3d3d;
+    font-weight: normal;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+
+}
+
+#line1Footer {
+    margin: 0;
+}
+
+#line2Footer {
+    margin: 0;
+}
+
+.social-buttons__icon {
+    width: 18px;
+    height: 18px;
+}
+
+.footer-02__text a {
+    color: #3d3d3d;
+}
+
+#frame19 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0px;
+    gap: 10px;
+
+    width: 448px;
+    height: 77px;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+}
+
+#underFrame19 {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    gap: 40px;
+
+    height: 77px;
+
+    /* Purple_light */
+    background: #F1EDF7;
+    border-radius: 76px;
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+}
+
+.activeButtonFAQ {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /*padding: 16px 32px;*/
+    gap: 10px;
+
+    width: 130px;
+    height: 61px;
+
+    background: #FFFFFF;
+    box-shadow: 0px 2px 13px rgba(97, 86, 109, 0.2);
+    border-radius: 50px;
+
+    /* Inside auto layout */
+    flex: none;
+    flex-grow: 0;
+    position: relative;
+    bottom: 2.5px;
+    right: 4px;
+}
+
+.activeButtonFAQ p {
+
+    /* Paragraph/18/bold */
+    font-family: 'Nunito';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 161.7%;
+
+    /* or 29px */
+    text-align: center;
+
+    /* Purple */
+    color: #330080;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+}
+
+.inactiveButtonFAQ {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /*padding: 16px 32px;*/
+    gap: 10px;
+
+    width: 131px;
+    height: 61px;
+
+    border-radius: 50px;
+
+    /* Inside auto layout */
+    flex: none;
+    flex-grow: 0;
+    position: relative;
+    bottom: 3px;
+    right: 6px;
+}
+
+.inactiveButtonFAQ p {
+
+    /* Paragraph/18/regular */
+    font-family: 'Nunito';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 161.7%;
+
+    /* or 29px */
+    text-align: center;
+
+    /* Secondary */
+    color: #544A62;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+}
+
+.buttonFAQ {
+    height: 61px;
+
+    border-radius: 50px;
+    background-color: transparent;
+    border: transparent;
+    /*border: solid;
+    border-width: 1px;
+    border-color: #000000;*/
+
+}
+
+.activeQuestions {
+    visibility: visible;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0px;
+    gap: 16px;
+
+    width: 1092px;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+}
+
+.inactiveQuestions {
+    visibility: collapse;
+    height: 0px;
+    font-size: 0;
+}
+
+.inactiveQuestions * {
+    visibility: collapse;
+    height: 0px;
+    font-size: 0;
+}
+
+#youHaveQuestions {
+
+    /* Heading/h1 */
+    font-family: 'Nunito';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 58px;
+    line-height: 131.7%;
+
+    /* or 76px */
+    text-align: center;
+
+    /* Purple */
+    color: #330080;
+
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    flex-grow: 0;
+    margin: 0;
+}
+
+#SSIQuestions {
+    position: relative;
+    bottom: 180px;
+
+}
+
+#securityQuestions {
+    position: relative;
+    bottom: 90px;
+
+}
+
+.superQuestions:hover {
+    background-color: #F1EDF7;
+}
+
+.superQuestions {
+    box-sizing: border-box;
+
+    /* Auto layout */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    padding-left: 30px;
+    width: 1128px;
+
+    background: #FFFFFF;
+    border: 2px solid #DDD8E3;
+    border-radius: 16px;
+
+    /* Inside auto layout */
+    flex: none;
+    order: 0;
+    align-self: stretch;
+    flex-grow: 0;
+}
+
+.arrows {
+    width: 32px;
+    height: 32px;
+    position: relative;
+    bottom: 4px;
+    right: 6px;
+    margin: 18px;
+
+}
+
+.showAnswerButton {
+
+    border-radius: 50px;
+    background-color: transparent;
+    border: transparent;
+}
+
+#divButtonTest {
+    width: 549px;
+    height: 67px;
+    border-radius: 16px;
+}
+
+.rightDivButton {
+    display: flex;
+    flex-direction: row;
+    width: 460px;
+    overflow: hidden;
+    align-items: center;
+}
+
+#boxWC1 {
+    order: 0;
+}
+
+#boxWC2 {
+    order: 1;
+}
+
+#boxWC3 {
+    order: 2;
+}
+
+#boxWC4 {
+    order: 3;
+}
+
+#boxWC5 {
+    order: 4;
+}
+
+#boxWC6 {
+    order: 6;
+}
+
+#boxMetamask {
+    order: 5;
+}
+
+.kvwalletmodal {
+    order: 2000;
+    height: 0px;
+    font-size: 0;
+}
+
+#frame7 a {
+    text-decoration: none;
+}
+
+#logout {
+    font-size: 14px;
+
+    height: 44px;
+    border: none;
+    border-radius: 4px;
+    right: 0.5%;
+}
+
+#disconnect:hover {
+    background: #EDECF2;
+}
+
+.activeNav {
+    color: #544A62;
+    margin: 0;
+
+}
+
+.inactiveNav {
+    color: #330080;
+    margin: 0;
+}
+
+p {
+    margin: 0;
+}
+
+.linkP {
+    text-align: center;
+    margin: 10px;
+}
+
+a {
+    text-decoration: none;
+}
+
+
+
+#navBarMobile {
+    display: none;
+}
+
+@media screen and (max-width: 1080px) {
+    * {
+        max-width: 100vw;
+    }
+
+    #draw {
+        width: 90vw;
+        height: unset;
+    }
+
+    #rightBox {
+        width: fit-content;
+        height: fit-content;
+        order: 0;
+        width: 100%;
+    }
+
+    #navBar {
+        display: none;
+    }
+
+    #navBarMobile {
+        position: fixed;
+        z-index: 100;
+        left: 0px;
+        top: 0px;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0px 1px 20px rgba(0, 0, 0, 0.07);
+        width: 100%;
+
+        padding-top: 10px;
+        padding-right: 0px;
+        padding-bottom: 10px;
+        padding-left: 0px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .nav-02__box {
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+        justify-content: space-between;
+        height: 80px;
+    }
+
+    #buttonMenuLogo {
+        width: 42px;
+        height: 44px;
+        box-shadow: 0 2px 4px 0 rgba(136, 144, 195, 0.2), 0 5px 15px 0 rgba(37, 44, 97, 0.15);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+    }
+
+    #buttonMenu {
+        background-color: transparent;
+        border: transparent;
+        position: relative;
+        right: 15px;
+        padding: 0;
+        width: 42px;
+
+    }
+
+    #boxWC8 {
+        display: none;
+    }
+
+    #connectM {
+        display: none;
+    }
+
+    .imgButtonMenuInactive {
+        width: 12px;
+    }
+
+    .imgButtonMenuActive {
+        width: 9.1px;
+    }
+
+    .container,
+    .container-lg,
+    .container-md,
+    .container-sm,
+    .container-xl {
+        max-width: unset;
+    }
+
+    /* {
+        border: red 1px solid;
+    }*/
+
+    #underFrame19 {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        padding-left: 20px;
+        padding-right: 20px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+
+        width: 85%;
+        height: 77px;
+
+        /* Purple_light */
+        background: #F1EDF7;
+        border-radius: 76px;
+
+        /* Inside auto layout */
+        flex: none;
+        order: 0;
+        flex-grow: 0;
+    }
+
+    .activeButtonFAQ {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        /*padding: 16px 32px;*/
+        gap: 10px;
+
+        width: 100%;
+        height: 61px;
+
+        background: #FFFFFF;
+        box-shadow: 0px 2px 13px rgba(97, 86, 109, 0.2);
+        border-radius: 50px;
+
+        /* Inside auto layout */
+        flex: none;
+        flex-grow: 0;
+
+    }
+
+    .activeButtonFAQ p {
+
+
+        /* Paragraph/18/bold */
+        font-family: 'Nunito';
+        font-style: normal;
+        font-weight: 700;
+        font-size: 14px;
+        line-height: 161.7%;
+
+        /* or 29px */
+        text-align: center;
+
+        /* Purple */
+        color: #330080;
+
+
+        /* Inside auto layout */
+        flex: none;
+        order: 0;
+        flex-grow: 0;
+    }
+
+    .inactiveButtonFAQ {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        /*padding: 16px 32px;*/
+        gap: 10px;
+
+        width: 100%;
+        height: 61px;
+
+        border-radius: 50px;
+
+        /* Inside auto layout */
+        flex: none;
+        flex-grow: 0;
+
+    }
+
+    #qrcode {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .inactiveButtonFAQ p {
+
+
+        /* Paragraph/18/regular */
+        font-family: 'Nunito';
+        font-style: normal;
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 161.7%;
+
+        /* or 29px */
+        text-align: center;
+
+        /* Secondary */
+        color: #544A62;
+
+
+        /* Inside auto layout */
+        flex: none;
+        order: 0;
+        flex-grow: 0;
+    }
+
+    .buttonFAQ {
+        width: 95.8%;
+        height: 61px;
+        padding: 0;
+        border-radius: 50px;
+        background-color: transparent;
+        border: transparent;
+        /*border: solid;
+    border-width: 1px;
+    border-color: #000000;*/
+
+    }
+
+    .question {
+        width: fit-content;
+    }
+
+    #ssi {
+        max-width: 95vw;
+    }
+
+    #frame6 {
+        width: 100vw;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .superQuestions {
+        width: fit-content;
+        padding-left: 0px;
+        align-items: center;
+
+    }
+
+    .showAnswerButton {
+        padding: 0;
+    }
+
+
+    .flex {
+        display: flex !important;
+    }
+
+    .nav-02__list a {
+        font-family: 'Nunito';
+        font-size: 14px;
+        font-weight: 700;
+        color: #303030;
+    }
+
+    #buttonDeepLink {
+        background-color: #6600FF;
+        border: none;
+        color: white;
+        font-size: 20px;
+        padding: 8px;
+    }
+
+    .nav-02__list {
+        flex-direction: column;
+    }
+}
+
+#emailDiv {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+#email {
+    padding: 6px;
+    border-radius: 6px;
+    border-style: solid;
+    font-size: 18px;
+    width: 100%;
+    font-family: Nunito;
+}
+
+#sendEmail {
+    background-color: #330080;
+    color: white;
+    border: none;
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 18px;
+    width: 30%;
+    font-family: Nunito;
+}
+
+#mainBox {
+    padding: 40px 0px;
+    display: flex;
+    flex-direction: column;
+    margin-top: 90px;
+    min-height: calc(100vh - 300px);
+    gap: 120px;
+    align-items: center;
+}
+
+#connecterBox {
+    display: flex;
+    flex-direction: row;
+    background-color: white;
+    padding: 24px;
+    border: solid 1px #DCDDDF;
+    border-radius: 16px;
+    gap: 10px;
+}
+
+.buttonAltme {
+    border-radius: 8px;
+    background: var(--Brand---Purple-default, #330080);
+    padding: 12px 24px;
+    color: white;
+    border: none;
+    font-family: Roboto;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+#passwordInput {
+    border-radius: 6px;
+    border: 1px solid var(--gray-300, #DEE2E6);
+    background: var(--default-white, #FFF);
+    padding: 9px 16px;
+}
+
+#dashboard {
+    display: flex;
+    flex-direction: column;
+    width: 70vw;
+    align-items: flex-start;
+    gap: 60px;
+}
+
+#line1Dashboard {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+}
+
+#line2Dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#dashboardTitle {
+    color: #000;
+    font-feature-settings: 'clig' off, 'liga' off;
+    /* Display 2 - Bold */
+    font-family: Roboto;
+    font-size: 48px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 56px;
+    /* 116.667% */
+    letter-spacing: -1px;
+}
+
+.inputDashboard {
+    border-radius: 6px;
+    border: 1px solid var(--gray-300, #DEE2E6);
+    background: var(--default-white, #FFF);
+    padding: 16px;
+}
+
+.inputDashboardfree {
+    border-radius: 6px;
+    border: 1px solid var(--gray-300, #DEE2E6);
+    background: var(--default-white, #FFF);
+    padding: 16px;
+    cursor: not-allowed;
+}
+
+#userAdder {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    border-radius: 16px;
+    border: 1px solid var(--swatch-100, #DCDDDF);
+    background: var(--White, #FFF);
+    padding: 24px;
+}
+
+#line3Dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+#tableDashboard {
+    border-radius: 16px;
+    border-spacing: 0;
+    border: solid 1px #DCDDDF;
+}
+
+td,
+th {
+    padding: 20px 40px;
+    font-family: Roboto;
+}
+
+.buttonTable {
+    border-radius: 8px;
+    background: var(--swatch-400, #999BA1);
+    padding: 0px 16px;
+    color: black;
+    border: none;
+    height: 47px;
+}
+
+#customizer {
+    display: flex;
+    flex-direction: column;
+    width: 70vw;
+    gap: 24px;
+}
+
+.optionDiv {
+    display: flex;
+    flex-direction: column;
+    border: solid 1px #DCDDDF;
+    padding: 24px;
+    width: 100%;
+    gap: 16px;
+    border-radius: 16px;
+}
+
+.line1Setup {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    gap: 24px;
+}
+
+.stepDiv {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.free {
+    display: none;
+
+}
+
+#buttonAddUserfree {
+    background-color: grey;
+}
+
+#userAdderfree {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    border-radius: 16px;
+    border: 1px solid var(--swatch-100, #DCDDDF);
+    background-color: rgb(241, 241, 241);
+    padding: 24px;
+    cursor: not-allowed;
+}
+
+.paid {}
+
+.optionDivMainTitle {
+    color: var(--Brand---Purple-default, #330080);
+
+    font-family: Roboto;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 24px;
+    /* 133.333% */
+}
+
+.optionDivSecondTitle {
+    color: var(--Swatch-800, #494B50);
+    /* Paragraph 14 - Regular */
+    font-family: Roboto;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    /* 142.857% */
+}
+
+.optionsDivRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+}
+
+#customizeTitle {
+    color: #000;
+    /* Display 2 - Bold */
+    font-family: Roboto;
+    font-size: 48px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 56px;
+    /* 116.667% */
+    letter-spacing: -1px;
+}
+
+#defaultTitle {
+    color: #000;
+    /* Paragraph 16 - Regular */
+    font-family: Roboto;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+    /* 150% */
+}
+
+#backToDashboard {
+    color: var(--Black, #14171C);
+
+    /* Paragraph 16 - Regular */
+    font-family: Roboto;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+    margin-bottom: 30px;
+}
+
+.optionLabel {
+    font-family: Roboto;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+}
+
+.customizeUnderTitle {
+    color: #000;
+    /* Heading 2 - 24 Bold */
+    font-family: Roboto;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 32px;
+    /* 133.333% */
+    letter-spacing: -0.25px;
+}
+
+.buttonsStep {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.submit {
+    border-radius: 8px;
+    background: var(--Brand---Purple-default, #330080);
+    padding: 12px 24px;
+    color: white;
+    border: none;
+    margin: auto;
+
+}
+
+.previousStep {
+    border-radius: 8px;
+    background: var(--Brand---Purple-default, #330080);
+    padding: 12px 24px;
+    color: white;
+    border: none;
+}
+
+.nextStep {
+    border-radius: 8px;
+    background: var(--Brand---Purple-default, #330080);
+    padding: 12px 24px;
+    color: white;
+    border: none;
+}
+
+.optionDivDisabled {
+    display: flex;
+    flex-direction: column;
+    border: solid 1px #DCDDDF;
+    padding: 24px;
+    width: 100%;
+    gap: 16px;
+    border-radius: 16px;
+    background-color: rgb(241, 241, 241);
+    max-width: calc(100% - 48px);
+}
+
+#blockchainDiv {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+#customProfileDiv {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.labelAndButton {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+}
+
+.inputTextSetup {
+    border-radius: 6px;
+    border: 1px solid var(--Gray-300, #DEE2E6);
+    background: var(--Default-White, #FFF);
+    padding: 14px 16px;
+    text-decoration: none;
+    /* Paragraph 16 - Regular */
+    font-family: Roboto;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+    /* 150% */
+}
+
+.selectSetup {
+    border-radius: 8px;
+    border: 1px solid var(--Gray-400, #CED4DA);
+    background: var(--Gray-White, #FFF);
+    padding: 6px 12px;
+    width: fit-content;
+}
+
+#line2DashboardDiv {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+}
+
+.generateCredentials {
+    border-radius: 8px;
+    background: var(--Brand---Purple-default, #330080);
+    padding: 12px 24px;
+    color: white;
+    border: none;
+    width: fit-content;
+}

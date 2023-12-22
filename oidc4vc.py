@@ -145,6 +145,11 @@ def sign_jwt_vc(vc, issuer_vm, issuer_key, nonce, iss, jti, wallet_did):
     payload['vc'] = vc
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
+    a = jwt.JWT.from_jose_token(token.serialize())
+    verif_key = jwk.JWK(**issuer_key)
+    a.validate(verif_key)
+    print("issuer key = ", issuer_key)
+    print("token = ", token.serialize())
     return token.serialize()
 
 

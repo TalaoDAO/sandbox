@@ -774,6 +774,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
     if access:
         vp_token = request.form.get('vp_token')
         id_token = request.form.get('id_token')
+        print("id token received from wallet = ", id_token)
         presentation_submission = request.form.get('presentation_submission')
         response_format = "ok"
         logging.info('id_token received = %s', id_token)
