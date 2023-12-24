@@ -187,6 +187,8 @@ def oidc(issuer_id, mode):
         if issuer_data['profile'] != 'DIIP':
             issuer_openid_configuration['authorization_endpoint'] = mode.server + 'issuer/' + issuer_id + '/authorize'
             issuer_openid_configuration['token_endpoint'] = mode.server + 'issuer/' + issuer_id + '/token'
+            issuer_openid_configuration["jwks_uri"] =  mode.server + 'issuer/jwks'
+
     return issuer_openid_configuration
 
 
@@ -204,7 +206,8 @@ def authorization_server_openid_configuration(issuer_id, mode):
     authorization_server_config = json.load(open('authorization_server_config.json'))
     config = {
         'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/authorize',
-        'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token'
+        'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token',
+        "jwks_uri":  mode.server + 'issuer/jwks'
     }
     config.update(authorization_server_config)
     return jsonify(config)
@@ -708,15 +711,14 @@ async def issuer_credential(issuer_id, red, mode):
     if not credential:
         return Response(**manage_error("unsupported_credential_type", "Credential is not found for this credential identifier", red, mode, request=request, stream_id=stream_id,))
     
+    # sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer_vm, c_nonce, format, issuer, duration=365, wallet_jwk=None):
     credential_signed = await sign_credential(
         credential,
-        iss,
-        issuer_data["did"],
-        issuer_data["jwk"],
-        issuer_data["verification_method"],
+        iss, # wallet_did
+        issuer_id,
         access_token_data["c_nonce"],
         vc_format,
-        f"{mode.server}issuer/{issuer_id}",
+        mode.server + 'issuer/' + issuer_id, # issuer
         wallet_jwk=wallet_jwk
     )
     logging.info("credential signed sent to wallet = %s", credential_signed)
@@ -781,18 +783,14 @@ async def issuer_deferred(issuer_id, red, mode):
     except Exception:
         return Response(**manage_error("issuance_pending", "Credential is not available yet", red, mode, request=request, status=404))
 
-    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-
     # sign_credential
     credential_signed = await sign_credential(
         credential,
         acceptance_token_data["subjectId"],
-        issuer_data["did"],
-        issuer_data["jwk"],
-        issuer_data["verification_method"],
+        issuer_id,
         acceptance_token_data["c_nonce"],
         acceptance_token_data["format"],
-        f"{mode.server}issuer/{issuer_id}"
+        mode.server + 'issuer/' + issuer_id
     )
     if not credential_signed:
         return Response(**manage_error("internal_error", "Credential signature failed due to format", red, mode, request=request, status=404))
@@ -850,7 +848,11 @@ def oidc_issuer_stream(red):
     return Response(event_stream(red), headers=headers)
 
 
-async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer_vm, c_nonce, format, issuer, duration=365, wallet_jwk=None):
+async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, issuer, duration=365, wallet_jwk=None):
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    issuer_did =  issuer_data["did"]
+    issuer_key = issuer_data["jwk"]
+    issuer_vm = issuer_data["verification_method"]
     jti = 'urn:uuid:' + str(uuid.uuid1())
     if format == 'vc+sd-jwt':
         return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk)
@@ -876,7 +878,12 @@ async def sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer
         return
     logging.info("credential to sign = %s", credential)
     if format in ['jwt_vc', 'jwt_vc_json', 'jwt_vc_json-ld']:
-        credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm, issuer_key, c_nonce, issuer_did, jti, wallet_did)
+        # sign_jwt_vc(vc, kid, issuer_key, nonce, iss, jti, sub)
+        if issuer_data["issuer_id_as_url"]:
+            kid = oidc4vc.thumbprint_str(issuer_key)
+            credential_signed = oidc4vc.sign_jwt_vc(credential, kid, issuer_key, c_nonce, issuer, jti, wallet_did)
+        else:
+            credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm, issuer_key, c_nonce, issuer_did, jti, wallet_did)
     else:  #  proof_format == 'ldp_vc':
         try: 
             didkit_options = {

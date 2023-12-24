@@ -114,7 +114,7 @@ def pub_key(key):
     return Key.export_public(as_dict=True)
     
 
-def sign_jwt_vc(vc, issuer_vm, issuer_key, nonce, iss, jti, wallet_did):
+def sign_jwt_vc(vc, kid, issuer_key, nonce, iss, jti, sub):
     """
     For issuer
     https://jwcrypto.readthedocs.io/en/latest/jwk.html
@@ -126,7 +126,7 @@ def sign_jwt_vc(vc, issuer_vm, issuer_key, nonce, iss, jti, wallet_did):
     signer_key = jwk.JWK(**issuer_key) 
     header = {
         'typ':'JWT',
-        'kid': issuer_vm,
+        'kid': kid,
         'alg': alg(issuer_key)
     }
     try:
@@ -137,7 +137,7 @@ def sign_jwt_vc(vc, issuer_vm, issuer_key, nonce, iss, jti, wallet_did):
             'nbf': math.floor(datetime.timestamp(datetime.now())),
             'exp': math.floor(datetime.timestamp(datetime.now())) + 365*24*60*60, 
             'jti': jti,
-            'sub': wallet_did
+            'sub': sub
         }
     except Exception as e:
         logging.info("jwt signing error = %s", str(e))
@@ -148,8 +148,6 @@ def sign_jwt_vc(vc, issuer_vm, issuer_key, nonce, iss, jti, wallet_did):
     a = jwt.JWT.from_jose_token(token.serialize())
     verif_key = jwk.JWK(**issuer_key)
     a.validate(verif_key)
-    print("issuer key = ", issuer_key)
-    print("token = ", token.serialize())
     return token.serialize()
 
 
@@ -382,6 +380,14 @@ def thumbprint(key):
     a = signer_key.thumbprint()
     a  += "=" * ((4 - len(a) % 4) % 4) 
     return base64.urlsafe_b64decode(a).hex()
+
+def thumbprint_str(key):
+    key = json.loads(key) if isinstance(key, str) else key
+    if key['crv'] == 'P-256K':
+        key['crv'] = 'secp256k1'
+    signer_key = jwk.JWK(**key) 
+    return signer_key.thumbprint()
+    
 
 
 def verification_method(did, key): # = kid

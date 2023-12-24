@@ -1,0 +1,19 @@
+{
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1"
+    ],
+    "type": [
+        "VerifiableCredential",
+        "PermanentResidentCard"
+      ],
+    "credentialSubject": {
+      "firstName": "Thierry",
+      "lastName": "Thevenet",
+      "email": "thierry.thevenet@talao.io",
+      "event": {
+        "name": "DBC Conference 2023",
+        "date": "2023-06-26"
+      },
+      "id": "did:jwk:eyJjcnYiOiJQLTI1NiIsImt0eSI6IkVDIiwieCI6Ilh6TkVDNU1rNFVQeWZ5alBUeTMzQUNjaTI0dG5qQ1ZENlVjbERiU1Jfd3MiLCJ5IjoiVFptaHdvMkJDY0xPVENKUTFKTDBUQXdNMTVwSlNQQWZkejNOQVhjal8xbyJ9"
+    }
+  }

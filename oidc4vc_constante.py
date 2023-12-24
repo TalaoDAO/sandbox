@@ -126,6 +126,7 @@ client_data_pattern_oidc4vc = {
     "pkce": None,
     "id_token": "on",
     "client_id_as_DID": "on",  # for siopv2 request
+    "issuer_id_as_url": None,  # for OIDV4CI  issuer
     "vp_token": None,
     "group": None,
     "group_B": None,

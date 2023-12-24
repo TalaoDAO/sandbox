@@ -536,7 +536,7 @@ def test_12(mode):
         issuer_id = "wixtxxvbxw"
         client_secret = "4fc17d17-934b-11ee-b456-699f8f5cf9a0"
 
-    offer = ["EmailPass"]
+    offer = ["GuestCredential", "PermanentResidentCard", "OpenBadgeCredential", "DBCGuest"]
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret

@@ -102,6 +102,7 @@ def oidc4vc_issuer_console(mode):
             login_name=session['login_name'],
             credential_offer_uri="" if not session['client_data'].get('credential_offer_uri')  else "checked" ,
             deferred_flow="" if not session['client_data'].get('deferred_flow')  else "checked" ,
+            issuer_id_as_url="" if not session['client_data'].get('issuer_id_as_url')  else "checked" ,
             application_name=session['client_data'].get('application_name', 'Unknown'),
             client_secret=session['client_data']['client_secret'],
             user=session['client_data']['user'], 
@@ -128,6 +129,7 @@ def oidc4vc_issuer_console(mode):
             session['client_data']['user'] = request.form['user']
             session['client_data']['credential_offer_uri'] = request.form.get('credential_offer_uri') 
             session['client_data']['deferred_flow'] = request.form.get('deferred_flow') 
+            session['client_data']['issuer_id_as_url'] = request.form.get('issuer_id_as_url') 
             session['client_data']['page_title'] = request.form['page_title']
             session['client_data']['page_subtitle'] = request.form['page_subtitle']
             session['client_data']['page_description'] = request.form['page_description']
