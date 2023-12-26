@@ -187,7 +187,7 @@ def oidc(issuer_id, mode):
         if issuer_data['profile'] != 'DIIP':
             issuer_openid_configuration['authorization_endpoint'] = mode.server + 'issuer/' + issuer_id + '/authorize'
             issuer_openid_configuration['token_endpoint'] = mode.server + 'issuer/' + issuer_id + '/token'
-            issuer_openid_configuration["jwks_uri"] =  mode.server + 'issuer/jwks'
+            issuer_openid_configuration["jwks_uri"] =  mode.server + 'issuer/' + issuer_id + '/jwks'
 
     return issuer_openid_configuration
 
@@ -207,7 +207,7 @@ def authorization_server_openid_configuration(issuer_id, mode):
     config = {
         'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/authorize',
         'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token',
-        "jwks_uri":  mode.server + 'issuer/jwks'
+        "jwks_uri":  mode.server + 'issuer/' + issuer_id + '/jwks'
     }
     config.update(authorization_server_config)
     return jsonify(config)
@@ -502,13 +502,21 @@ def issuer_token(issuer_id, red, mode):
     # display client_authentication method
     if request.headers.get('Authorization'):
         client_authentication_method = 'client_secret_basic'
-    elif request.form.get('client_id'):
+    elif request.form.get('client_id') and request.form.get('client_secret') :
         client_authentication_method = 'client_secret_post'
+    elif request.form.get('client_id'):
+        client_authentication_method = 'client_id'
     elif request.form.get('assertion') or request.form.get('client_assertion'):
         client_authentication_method = 'client_secret_jwt)'
     else:
         client_authentication_method = 'none'
     logging.info('client authentication method = %s', client_authentication_method)
+
+    if issuer_profile in ["EBSI-V3", "DIIP" ]:
+        if not request.form.get('client_id'):
+            return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
+        if not request.form.get('client_id')[:3] != "did":
+            return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
 
     # Code expired
     try:
@@ -879,7 +887,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
     logging.info("credential to sign = %s", credential)
     if format in ['jwt_vc', 'jwt_vc_json', 'jwt_vc_json-ld']:
         # sign_jwt_vc(vc, kid, issuer_key, nonce, iss, jti, sub)
-        if issuer_data["issuer_id_as_url"]:
+        if issuer_data.get("issuer_id_as_url"):
             kid = oidc4vc.thumbprint_str(issuer_key)
             credential_signed = oidc4vc.sign_jwt_vc(credential, kid, issuer_key, c_nonce, issuer, jti, wallet_did)
         else:
