@@ -408,7 +408,7 @@ profile = {
             "credentials_as_json_object_array": False,
             "siopv2_prefix": "openid-vc://",
             "oidc4vp_prefix": "openid-vc://",
-            "credentials_types_supported": ["EmployeeCredential",  "EthereumAssociatedAddress", "VerifiableId", "EmailPass", "PhoneProof"],
+            "credentials_types_supported": ["EmployeeCredential",  "VerifiableId", "EmailPass",],
             "credentials_supported": {
                 "EmployeeCredential": {
                     "format": "jwt_vc_json",
@@ -429,32 +429,14 @@ profile = {
                     ],
                     "display": [
                         {
-                            "name": "EmployeeCredential",
-                            "locale": "en-GB"
-                        }
-                    ]
-                },
-                "EthereumAssociatedAddress": {
-                    "format": "jwt_vc_json",
-                    "credential_definition" : {
-                        "types": [
-                            "VerifiableCredential",
-                            "EthereumAssociatedAddress"
-                        ],
-                    },
-                    "cryptographic_binding_methods_supported": [
-                        "DID"
-                    ],
-                    "cryptographic_suites_supported": [
-                        "ES256K",
-                        "ES256",
-                        "ES384",
-                        "RS256"
-                    ],
-                    "display": [
-                        {
-                            "name": "EthereumAssociatedAddress",
-                            "locale": "en-GB"
+                            "name": "Employee Credential",
+                            "locale": "en-US",
+                            "logo": {
+                                "url": "https://exampleuniversity.com/public/logo.png",
+                                "alt_text": "a square logo of a university"
+                            },
+                            "background_color": "#12107c",
+                            "text_color": "#FFFFFF"
                         }
                     ]
                 },
@@ -478,7 +460,9 @@ profile = {
                     "display": [
                         {
                             "name": "Verifiable Id",
-                            "locale": "en-GB"
+                            "locale": "en-US",
+                            "background_color": "#12107c",
+                            "text_color": "#FFFFFF"
                         }
                     ]
                 },
@@ -505,13 +489,65 @@ profile = {
                             "locale": "en-GB"
                         }
                     ]
+                }
+            },
+            "grant_types_supported": [
+                "authorization_code",
+                "urn:ietf:params:oauth:grant-type:pre-authorized_code"
+            ],
+            "schema_for_type": False,
+            "credential_manifest_support": False
+        },
+       "DEFAULT-VC-JWT-OIDC4VCI13":
+        {
+            "oidc4vciDraft" : "13",
+            "siopv2Draft": "12",
+            "oidc4vpDraft": "18",
+            "vc_format": "jwt_vc_json",
+            "verifier_vp_type": "jwt_vp",
+            "oidc4vci_prefix": "openid-credential-offer://" ,
+            "authorization_server_support": False,
+            "credentials_as_json_object_array": False,
+            "siopv2_prefix": "openid-vc://",
+            "oidc4vp_prefix": "openid-vc://",
+            "credentials_types_supported": ["EmployeeCredential",  "VerifiableId", "EmailPass",],
+            "credential_configurations_supported": {
+                "EmployeeCredential": {
+                    "format": "jwt_vc_json",
+                    "credential_definition":{
+                        "type": [
+                            "VerifiableCredential",
+                            "EmployeeCredential"
+                        ],
+                    },
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Employee Credential",
+                            "locale": "en-US",
+                            "logo": {
+                                "url": "https://exampleuniversity.com/public/logo.png",
+                                "alt_text": "a square logo of a university"
+                            },
+                            "background_color": "#12107c",
+                            "text_color": "#FFFFFF"
+                        }
+                    ]
                 },
-                "PhoneProof": {
+                "VerifiableId": {
                     "format": "jwt_vc_json",
                     "credential_definition": {
                         "type": [
                             "VerifiableCredential",
-                            "PhoneProof"
+                            "VerifiableId"
                         ]
                     },
                     "cryptographic_binding_methods_supported": [
@@ -525,7 +561,33 @@ profile = {
                     ],
                     "display": [
                         {
-                            "name": "Proof of phone number",
+                            "name": "Verifiable Id",
+                            "locale": "en-US",
+                            "background_color": "#12107c",
+                            "text_color": "#FFFFFF"
+                        }
+                    ]
+                },
+                "EmailPass" :{
+                    "format": "jwt_vc_json",
+                    "credential_deifnition" : {
+                        "type": [
+                            "VerifiableCredential",
+                            "EmailPass"
+                        ]
+                    },
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "EmailPass",
                             "locale": "en-GB"
                         }
                     ]

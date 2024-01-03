@@ -507,7 +507,7 @@ def test_7(mode):
         issuer_id = "cqmygbreop"
         client_secret = "a71f33f9-3100-11ee-825b-9db9eb02bfb8"
 
-    offer = ["EmailPass"]
+    offer = ["EmailPass", "EmployeeCredential"]
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
@@ -526,6 +526,7 @@ def test_7(mode):
     except Exception:
         return jsonify("No qr code")
     return redirect(qrcode) 
+
 
 def test_12(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"

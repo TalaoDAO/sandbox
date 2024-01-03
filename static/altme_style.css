@@ -689,7 +689,7 @@ footer {
     display: flex;
     flex-direction: row;
     height: 100%;
-    width: 1170px;
+    width: 70vw;
     justify-content: space-between;
 }
 
@@ -791,7 +791,7 @@ nav a {
 .footer-02__wrapper {
     display: flex;
     flex-direction: row;
-    width: 1050px;
+    width: 70vw;
     height: 50px;
     justify-content: space-between;
 
@@ -1848,4 +1848,17 @@ th {
     font-weight: 700;
     line-height: 56px;
     letter-spacing: -1px;
+}
+
+#qrcodeDiv{
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    align-items: center;
+}
+#walletLost{
+    text-decoration: underline;
+    font-family: RobotoBold;
+    color: grey;
+    font-size: 22px;
 }

@@ -36,8 +36,9 @@ oidc4vc_profile_list = {
     'EBSI-V3': 'EBSI OIDC4VCI Draft 11',
     #'HEDERA': 'Greencypher project',
     'GAIN-POC': 'GAIN POC openid, SD-JWT implementation in progress',
-    'DIIP': 'Dutch Blockchain Coalition, implementation in progress',
+    'DIIP': 'Decentrtalized Identity Interop Profile (DIIP)',
     'DEFAULT-VC-JWT-OIDC4VCI12' : 'JWT-VC with OIDC4VCI draft 12',
+    'DEFAULT-VC-JWT-OIDC4VCI13' : 'JWT-VC with OIDC4VCI draft 13',
     'CUSTOM': 'CUSTOM profile',
 }
 

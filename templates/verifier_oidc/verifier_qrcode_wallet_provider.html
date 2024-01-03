@@ -125,7 +125,11 @@
   </div>
   <div id="mainBox">
     <p id="titleVerifier">{{page_title}}</p>
-    <img id="qrcode" src="{{ qrcode(url) }}">
+    <div id="qrcodeDiv">
+      <img id="qrcode" src="{{ qrcode(url) }}">
+      <a id="walletLost" href="https://wallet-provider.talao.co/disable_wallet">I have lost my wallet</a>
+    </div>
+    
   </div>
 
 
