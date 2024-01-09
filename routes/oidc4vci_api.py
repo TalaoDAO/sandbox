@@ -151,7 +151,7 @@ def oidc(issuer_id, mode):
 
     # Credentials_supported section
     cs = issuer_profile.get('credentials_supported')
-   
+
     # general section
     issuer_openid_configuration = {}
     issuer_openid_configuration.update(
@@ -182,7 +182,10 @@ def oidc(issuer_id, mode):
     if issuer_profile.get('authorization_server_support'):
         issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id + '/authorize_server'
     else:
-        authorization_server_config = json.load(open('authorization_server_config.json'))
+        if int(issuer_profile.get("oidc4vciDraft", "11")) >= 12:
+            authorization_server_config = json.load(open('authorization_server_config_draft12.json'))
+        else:
+            authorization_server_config = json.load(open('authorization_server_config.json'))
         issuer_openid_configuration.update(authorization_server_config)
         if issuer_data['profile'] != 'DIIP':
             issuer_openid_configuration['authorization_endpoint'] = mode.server + 'issuer/' + issuer_id + '/authorize'
@@ -198,7 +201,7 @@ def openid_jwt_vc_issuer_configuration(issuer_id, mode):
         'issuer' : mode.server + 'issuer/' + issuer_id,
         'jwks_uri' : mode.server + 'issuer/' + issuer_id + '/jwks'
     }
-    return  jsonify(config)
+    return jsonify(config)
 
 
 # authorization server endpoint
@@ -542,17 +545,20 @@ def issuer_token(issuer_id, red, mode):
 
     # token endpoint response
     access_token = str(uuid.uuid1())
+    refresh_token = str(uuid.uuid1())
     vc = data.get("vc")
     endpoint_response = {
         "access_token": access_token,
         "c_nonce": str(uuid.uuid1()),
         "token_type": "Bearer",
         "expires_in": ACCESS_TOKEN_LIFE,
+        "c_nonce_expires_in": 1704466725,
+        "refresh_token": refresh_token
     }
     if issuer_profile == "GAIN-POC":
         endpoint_response.update({
             "scope": None,
-            "refresh_token": str(uuid.uuid1())
+            "refresh_token": refresh_token
         })
     
     # authorization_details in case of multiple VC of the same type

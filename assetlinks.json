@@ -1,14 +1,15 @@
 [
     {
-        "relation": [
-            "delegate_permission/common.handle_all_urls"
-        ],
-        "target": {
-            "namespace": "android_app",
-            "package_name": "co.talao.wallet",
-            "sha256_cert_fingerprints": [
-                "A9:37:34:8D:13:6A:AB:9D:C8:F2:17:57:4E:F5:EB:5D:47:32:2C:F2:67:9D:7D:9E:F9:B4:BF:CD:57:69:DE:49"
-            ]
-        }
+    "relation": [
+        "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+        "namespace": "android_app",
+        "package_name": "co.talao.wallet",
+        "sha256_cert_fingerprints": [
+        "A9:37:34:8D:13:6A:AB:9D:C8:F2:17:57:4E:F5:EB:5D:47:32:2C:F2:67:9D:7D:9E:F9:B4:BF:CD:57:69:DE:49",
+        "76:EE:B8:B1:01:14:02:CB:A4:D4:84:A7:2D:79:EC:73:F1:78:80:C5:79:C5:B8:F6:C8:3D:33:02:3B:B8:8F:60"
+        ]
+    }
     }
 ]
