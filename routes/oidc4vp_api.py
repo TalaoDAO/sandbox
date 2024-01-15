@@ -570,12 +570,8 @@ def oidc4vc_login_qrcode(red, mode):
         prez.add_format_ldp_vp()
         prez.add_format_ldp_vc()
     if 'vp_token' in response_type and profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp':
-        if verifier_data['profile'] == 'EBSI-V3':
-            prez.add_format_jwt_vp_ebsi()
-            prez.add_format_jwt_vc_ebsi()
-        else:
-            prez.add_format_jwt_vp()
-            prez.add_format_jwt_vc()
+        prez.add_format_jwt_vp()
+        prez.add_format_jwt_vc()
 
     nonce = nonce or str(uuid.uuid1())
     redirect_uri = mode.server + "verifier/wallet/endpoint/" + stream_id
