@@ -16,7 +16,7 @@ JWT_ALG = [
 class Presentation_Definition :
 
     def __init__(self, name, purpose, id=str(uuid.uuid1()) ):
-        self.version = "0.1.0"
+        self.version = "0.1.1"
         self.pd = {
             "id": id,
             "input_descriptors": list(),
@@ -28,9 +28,9 @@ class Presentation_Definition :
         return self.version
     
     def add_format_ldp_vc(self,  proof_type=LDP_PROOF_TYPE) :
-        if not self.pd.get('vp_formats') :
-            self.pd['vp_formats'] = dict()
-        self.pd["vp_formats"].update({
+        if not self.pd.get('vc_formats'):
+            self.pd['vc_formats'] = dict()
+        self.pd["vc_formats"].update({
                 "ldp_vc": {
                     "proof_type": proof_type
                 }
@@ -46,9 +46,18 @@ class Presentation_Definition :
             })
     
     def add_format_jwt_vc(self, jwt_alg=JWT_ALG) :
-        if not self.pd.get('vp_formats') :
-            self.pd['vp_formats'] = dict()
-        self.pd["vp_formats"].update({
+        if not self.pd.get('vc_formats') :
+            self.pd['vc_formats'] = dict()
+        self.pd["vc_formats"].update({
+                "jwt_vc": {
+                    "alg": jwt_alg
+                }
+            })
+        
+    def add_format_jwt_vc_ebsi(self, jwt_alg=JWT_ALG) :
+        if not self.pd.get('format') :
+            self.pd['format'] = dict()
+        self.pd["format"].update({
                 "jwt_vc": {
                     "alg": jwt_alg
                 }
@@ -58,6 +67,16 @@ class Presentation_Definition :
         if not self.pd.get('vp_formats') :
             self.pd['vp_formats'] = dict()
         self.pd["vp_formats"].update({
+                "jwt_vp": {
+                    "alg": jwt_alg
+                }
+            })
+        
+        
+    def add_format_jwt_vp_ebsi(self, jwt_alg=JWT_ALG) :
+        if not self.pd.get('format') :
+            self.pd['format'] = dict()
+        self.pd["format"].update({
                 "jwt_vp": {
                     "alg": jwt_alg
                 }
