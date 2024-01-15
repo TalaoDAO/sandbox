@@ -25,14 +25,6 @@
     "RS256"
   ],
   "vp_formats": {
-    "jwt_vp": {
-      "alg_values_supported": [
-        "ES256",
-        "ES256K",
-        "EdDSA",
-        "RS256"
-      ]
-    },
     "ldp_vp": {
       "proof_type": [
           "JsonWebSignature2020",

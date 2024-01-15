@@ -26,22 +26,14 @@
   ],
   "vp_formats": {
     "jwt_vp": {
-      "alg_values_supported": [
-        "ES256",
-        "ES256K",
-        "EdDSA",
-        "RS256"
-      ]
+        "alg_values_supported": [
+            "ES256",
+            "ES256K",
+            "EdDSA",
+            "RS256"
+            ]
+        }
     },
-    "ldp_vp": {
-      "proof_type": [
-          "JsonWebSignature2020",
-          "Ed25519Signature2018",
-          "EcdsaSecp256k1Signature2019",
-          "RsaSignature2018"
-      ]
-    }
-  },
   "subject_syntax_types_supported": [
     "did:key",
     "did:ebsi",

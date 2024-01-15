@@ -458,11 +458,15 @@ def build_wallet_metadata(client_id, redirect_uri) -> dict:
     except Exception:
         logging.warning("wallet metadata failed to build")
         return {}
-    wallet_metadata = json.load(open('wallet_metadata.json', 'r')) 
-    wallet_metadata['request_uri_parameter_supported'] = bool(verifier_data.get('request_uri_parameter_supported'))
-    wallet_metadata['request_parameter_supported'] = bool(verifier_data.get('request_parameter_supported'))
-    wallet_metadata['redirect_uris'] = [redirect_uri]
-    return wallet_metadata
+    verifier_profile = profile[verifier_data['profile']]
+    if verifier_profile['verifier_vp_type'] == 'jwt_vp':
+        verifier_metadata = json.load(open('verifier_metadata_jwt.json', 'r'))
+    else:       
+        verifier_metadata = json.load(open('verifier_metadata_ldp.json', 'r')) 
+    verifier_metadata['request_uri_parameter_supported'] = bool(verifier_data.get('request_uri_parameter_supported'))
+    verifier_metadata['request_parameter_supported'] = bool(verifier_data.get('request_parameter_supported'))
+    verifier_metadata['redirect_uris'] = [redirect_uri]
+    return verifier_metadata
 
 
 def presentation_definition_uri(verifier_id, red):
