@@ -50,7 +50,7 @@ def init_app(app, red, mode):
     )
     
     # OIDC4VCI protocol with wallet
-    app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=issuer_openid_configuration, methods=['GET'],defaults={'mode': mode})
+    #app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=issuer_openid_configuration, methods=['GET'],defaults={'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-credential-issuer',view_func=issuer_openid_configuration, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/authorize', view_func=issuer_authorize, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/token', view_func=issuer_token, methods=['POST'], defaults={'red': red, 'mode': mode},)

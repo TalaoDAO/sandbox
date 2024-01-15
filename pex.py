@@ -28,36 +28,36 @@ class Presentation_Definition :
         return self.version
     
     def add_format_ldp_vc(self,  proof_type=LDP_PROOF_TYPE) :
-        if not self.pd.get('format') :
-            self.pd['format'] = dict()
-        self.pd["format"].update({
+        if not self.pd.get('vp_formats') :
+            self.pd['vp_formats'] = dict()
+        self.pd["vp_formats"].update({
                 "ldp_vc": {
                     "proof_type": proof_type
                 }
             })
     
     def add_format_ldp_vp(self, proof_type=LDP_PROOF_TYPE) :
-        if not self.pd.get('format') :
-            self.pd['format'] = dict()
-        self.pd["format"].update({
+        if not self.pd.get('vp_formats') :
+            self.pd['vp_formats'] = dict()
+        self.pd["vp_formats"].update({
                 "ldp_vp": {
                     "proof_type": proof_type
                 }
             })
     
     def add_format_jwt_vc(self, jwt_alg=JWT_ALG) :
-        if not self.pd.get('format') :
-            self.pd['format'] = dict()
-        self.pd["format"].update({
+        if not self.pd.get('vp_formats') :
+            self.pd['vp_formats'] = dict()
+        self.pd["vp_formats"].update({
                 "jwt_vc": {
                     "alg": jwt_alg
                 }
             })
         
     def add_format_jwt_vp(self, jwt_alg=JWT_ALG) :
-        if not self.pd.get('format') :
-            self.pd['format'] = dict()
-        self.pd["format"].update({
+        if not self.pd.get('vp_formats') :
+            self.pd['vp_formats'] = dict()
+        self.pd["vp_formats"].update({
                 "jwt_vp": {
                     "alg": jwt_alg
                 }
