@@ -452,7 +452,7 @@ def wallet_metadata_uri(verifier_id, red):
     return jsonify(wallet_metadata)
 
 
-def build_wallet_metadata(client_id, redirect_uri) -> dict:
+def build_verifier_metadata(client_id, redirect_uri) -> dict:
     try:
         verifier_data = json.loads(read_oidc4vc_verifier(client_id))
     except Exception:
@@ -600,7 +600,7 @@ def oidc4vc_login_qrcode(red, mode):
         client_id = verifier_data['did']
     
     authorization_request['client_id'] = client_id
-    wallet_metadata = build_wallet_metadata(verifier_id, redirect_uri)
+    wallet_metadata = build_verifier_metadata(verifier_id, redirect_uri)
 
     # OIDC4VP
     if 'vp_token' in response_type:

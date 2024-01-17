@@ -1475,6 +1475,8 @@ a {
 }
 
 #mainBox {
+    background: rgb(40,25,147);
+    background: linear-gradient(133deg, rgba(40,25,147,1) 0%, rgba(111,13,157,1) 100%);
     padding: 40px 0px;
     display: flex;
     flex-direction: column;
@@ -1482,6 +1484,25 @@ a {
     min-height: calc(100vh - 300px);
     gap: 120px;
     align-items: center;
+    
+}
+
+@media only screen and (max-width: 600px) {
+    #mainBox {
+        padding: 10px;
+    }
+
+    #titleVerifier {
+        font-size: 20px;
+    }
+
+    #infotext {
+        font-size: 14px;
+    }
+
+    #qrcodeDiv {
+        margin-top: 10px;
+    }
 }
 
 #connecterBox {
@@ -1841,13 +1862,26 @@ th {
 }
 
 #titleVerifier {
-    color: #000;
-    font-family: RobotoBold;
-    font-size: 48px;
+    color: white;
+    font-family: Roboto;
+    font-size: 75px;
     font-style: normal;
     font-weight: 700;
     line-height: 56px;
     letter-spacing: -1px;
+}
+
+#infotext {
+    margin-top: -70px;
+    font-family: Roboto;
+    color: white;
+    font-size: 24px; 
+    font-weight: normal;
+}
+
+#demoLink {
+    text-decoration: underline;
+    color: white;
 }
 
 #qrcodeDiv{
