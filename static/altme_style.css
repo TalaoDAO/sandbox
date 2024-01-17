@@ -1888,6 +1888,7 @@ th {
     display: flex;
     flex-direction: column;
     gap: 30px;
+    margin-top: -50px;
     align-items: center;
 }
 #walletLost{
