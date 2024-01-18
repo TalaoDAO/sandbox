@@ -1874,10 +1874,11 @@ th {
     text-align: center;
     font-feature-settings: 'clig' off, 'liga' off;
     font-family: Roboto;
-    font-size: 75px;
+    font-size: 65px;
     font-style: normal;
     font-weight: 500;
     line-height: 81px; 
+    margin-top: 20px;
 }
 
 #infotext {
@@ -1886,11 +1887,14 @@ th {
     color: white;
     font-size: 24px; 
     font-weight: normal;
+
+    
 }
 
 #demoLink {
     text-decoration: underline;
     color: white;
+    margin-bottom: 20px;
 }
 
 #qrcodeDiv{
