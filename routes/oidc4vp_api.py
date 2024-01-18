@@ -778,7 +778,6 @@ async def oidc4vc_login_endpoint(stream_id, red):
     if access:
         vp_token = request.form.get('vp_token')
         id_token = request.form.get('id_token')
-        print("id token received from wallet = ", id_token)
         presentation_submission = request.form.get('presentation_submission')
         response_format = "ok"
         logging.info('id_token received = %s', id_token)
@@ -803,7 +802,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
         if presentation_submission:
             logging.info('presentation submission received = %s', json.dumps(json.loads(presentation_submission), indent=4))
         else: 
-            logging.info('presentation submission received = %s', "")
+            logging.info('No presentation submission received')
 
         if not id_token and not vp_token:
             response_format = "invalid request format",
@@ -822,7 +821,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
     if access and vp_token:
         if not presentation_submission:
             presentation_submission_status = "Not found"
-            access = False 
+            #access = False # TODO
         else:
             presentation_submission_status = "ok"
 
