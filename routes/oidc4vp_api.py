@@ -959,17 +959,21 @@ async def oidc4vc_login_endpoint(stream_id, red):
             "error": "access_denied",
             "error_description": json.dumps(detailed_response)
         }
+        logging.info("Access denied")
     else:
         response = "{}"
     
-    logging.info("response = %s", json.dumps(response, indent=4))
     logging.info("response detailed = %s", json.dumps(detailed_response, indent=4))
     
     # follow up
     if id_token:
         sub = id_token_payload.get('sub')
     else:
-        sub = vp_sub
+        try:
+            sub = vp_sub
+        except Exception:
+            sub = "Error"
+            
     wallet_data = json.dumps({
                     "access": access,
                     "vp_token_payload": vp_token_payload, # jwt_vp payload or json-ld 
