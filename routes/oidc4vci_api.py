@@ -280,7 +280,9 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                     offer['trust_framework'] = supported_vc['trust_framework']
 
     # OIDC4VCI standard with credentials as an array of string
-    else:
+    
+    elif profile_data['oidc4vciDraft'] in ['11', '12']:
+    
         # https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html
         offer = {
             'credential_issuer': f'{mode.server}issuer/{issuer_id}',
@@ -297,7 +299,36 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                     'urn:ietf:params:oauth:grant-type:pre-authorized_code'
                 ].update({'user_pin_required': True})
         else:
-            offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}                
+            offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}    
+    
+    else:
+        offer = {
+            'credential_issuer': f'{mode.server}issuer/{issuer_id}',
+            'credential_configurations': credential_type,
+        }
+        if pre_authorized_code:
+            offer['grants'] = {
+                'urn:ietf:params:oauth:grant-type:pre-authorized_code': {
+                    'pre-authorized_code': pre_authorized_code
+                }
+            }
+            if user_pin_required:
+                offer['grants'][
+                    'urn:ietf:params:oauth:grant-type:pre-authorized_code'
+                ].update({
+                    "tx_code": {
+                        "length": 4,
+                        "input_mode" : "numeric",
+                        "description": "Please provide the one-time code which was sent via e-mail"
+                    }
+                })
+        
+        else:
+            offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}    
+            
+            
+            
+                        
     return offer
 
 
@@ -876,7 +907,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
         else:
             try:
                 del credential['credentialSubject']['id']
-            except:
+            except Exception:
                 pass
         credential["id"] = jti
         credential['issuer'] = issuer_did

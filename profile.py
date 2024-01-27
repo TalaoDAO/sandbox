@@ -127,7 +127,7 @@ profile = {
             "credential_manifest_support": True,
             "siopv2_prefix": "openid-vc://",
             "oidc4vp_prefix": "openid-vc://",
-            "credentials_types_supported": ["EmployeeCredential",  "EthereumAssociatedAddress", "VerifiableId", "EmailPass", "PhoneProof"],
+            "credentials_types_supported": ["EmployeeCredential",  "EthereumAssociatedAddress", "Over18", "VerifiableId", "EmailPass", "PhoneProof"],
             "trust_framework": {
                 "name": "default",
                 "type": "Accredition"
@@ -152,6 +152,30 @@ profile = {
                     "display": [
                         {
                             "name": "Employee Credential",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                 {
+                    "id": "Over18",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "Over18"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Over 18",
+                            "description": "This is a verifiable credential",
                             "locale": "en-GB"
                         }
                     ]
@@ -268,7 +292,7 @@ profile = {
             "credential_manifest_support": False,
             "siopv2_prefix": "openid-vc://",
             "oidc4vp_prefix": "openid-vc://",
-            "credentials_types_supported": ["EmployeeCredential",  "EthereumAssociatedAddress", "VerifiableId", "EmailPass", "PhoneProof"],
+            "credentials_types_supported": ["EmployeeCredential",  "EthereumAssociatedAddress", "VerifiableId", "Over18", "EmailPass", "PhoneProof"],
             "credentials_supported": [
                 {
                     "id": "EmployeeCredential",
@@ -337,6 +361,30 @@ profile = {
                     "display": [
                         {
                             "name": "Verifiable Id",
+                            "description": "This is a verifiable credential",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                 {
+                    "id": "Over18",
+                    "format": "jwt_vc_json",
+                    "types": [
+                        "VerifiableCredential",
+                        "Over18"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Over 18",
                             "description": "This is a verifiable credential",
                             "locale": "en-GB"
                         }
@@ -498,7 +546,7 @@ profile = {
             "schema_for_type": False,
             "credential_manifest_support": False
         },
-       "DEFAULT-VC-JWT-OIDC4VCI13":
+    "DEFAULT-VC-JWT-OIDC4VCI13":
         {
             "oidc4vciDraft" : "13",
             "siopv2Draft": "12",
@@ -600,7 +648,7 @@ profile = {
             "schema_for_type": False,
             "credential_manifest_support": False
         },
-     "DIIP":
+    "DIIP":
         {
             "oidc4vciDraft" : "11",
             "siopv2Draft": "12",
@@ -614,191 +662,191 @@ profile = {
             "oidc4vp_prefix": "openid-vc://",
             "credentials_types_supported": ["GuestCredential", "PermanentResidentCard", "OpenBadgeCredential", "DBCGuest"],
             "credentials_supported": [
-    {
-      "display": [
-        {
-          "name": "DBC Guest (DIIP)",
-          "description": "The DBC Guest credential is a DIIP example.",
-          "background_color": "#3B6F6D",
-          "text_color": "#FFFFFF",
-          "logo": {
-            "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
-            "alt_text": "An orange block shape, with the text Dutch Blockchain Coalition next to it, portraying the logo of the Dutch Blockchain Coalition."
-          },
-          "background_image": {
-            "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
-            "alt_text": "Connected open cubes in blue with one orange cube as a background of the card"
-          }
+                {
+                    "display": [
+                        {
+                            "name": "DBC Guest (DIIP)",
+                            "description": "The DBC Guest credential is a DIIP example.",
+                            "background_color": "#3B6F6D",
+                            "text_color": "#FFFFFF",
+                            "logo": {
+                                "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
+                                "alt_text": "An orange block shape, with the text Dutch Blockchain Coalition next to it, portraying the logo of the Dutch Blockchain Coalition."
+                            },
+                            "background_image": {
+                                "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
+                                "alt_text": "Connected open cubes in blue with one orange cube as a background of the card"
+                            }
+                        },
+                        {
+                            "locale": "en-US",
+                            "name": "DBC Guest (DIIP)",
+                            "description": "The DBC guest credential is a DIIP example.",
+                            "background_color": "#3B6F6D",
+                            "text_color": "#FFFFFF",
+                            "logo": {
+                                "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
+                                "alt_text": "An orange block shape, with the text Dutch Blockchain Coalition next to it, portraying the logo of the Dutch Blockchain Coalition."
+                            },
+                            "background_image": {
+                                "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
+                                "alt_text": "Connected open cubes in blue with one orange cube as a background of the card"
+                            }
+                        },
+                        {
+                            "locale": "nl-NL",
+                            "name": "DBC gast (DIIP)",
+                            "description": "De DBC gast credential is een DIIP voorbeeld.",
+                            "background_color": "#3B6F6D",
+                            "text_color": "#FFFFFF",
+                            "logo": {
+                                "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
+                                "alt_text": "Aaneengesloten open blokken in de kleur blauw, met een blok in de kleur oranje, die tesamen de achtergrond van de kaart vormen."
+                            },
+                            "background_image": {
+                                "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
+                                "alt_text": "Connected open cubes in blue with one orange cube as a background of the card"
+                            }
+                        }
+                    ],
+                    "format": "jwt_vc_json",
+                    "trust_framework": None,
+                    "types": [
+                        "VerifiableCredential",
+                        "DBCGuest"
+                    ],
+                    "id": "DBCGuest",
+                    "scope": None
+                },
+                {
+                    "display": [
+                        {
+                            "name": "Example University Degree",
+                            "description": "JFF Plugfest 3 OpenBadge (JWT)",
+                            "text_color": "#FFFFFF",
+                            "background_color": "#1763c1",
+                            "logo": {
+                                "url": "https://w3c-ccg.github.io/vc-ed/plugfest-1-2022/images/JFF_LogoLockup.png",
+                                "alt_text": "Red, magenta and yellow vertical lines with 3 black dots and the text JFF, depicting the Jobs For the Future logo."
+                            }
+                        },
+                        {
+                            "locale": "en-US",
+                            "name": "Example University Degree",
+                            "description": "JFF Plugfest 3 OpenBadge (JWT)",
+                            "text_color": "#FFFFFF",
+                            "background_color": "#1763c1",
+                            "logo": {
+                                "url": "https://w3c-ccg.github.io/vc-ed/plugfest-1-2022/images/JFF_LogoLockup.png",
+                                "alt_text": "Red, magenta and yellow vertical lines with 3 black dots and the text JFF, depicting the Jobs For the Future logo."
+                            }
+                        }
+                    ],
+                    "format": "jwt_vc_json",
+                    "trust_framework": None,
+                    "types": [
+                        "VerifiableCredential",
+                        "OpenBadgeCredential"
+                    ],
+                    "id": "OpenBadgeCredential",
+                    "scope": None
+                },
+                {
+                    "display": [
+                        {
+                            "name": "Permanent Resident Card",
+                            "description": "Government of Kakapo (JWT)",
+                            "text_color": "#FFFFFF",
+                            "background_color": "#3a2d2d",
+                            "logo": {
+                                "url": "https://i.ibb.co/kJm9Mpx/Screenshot-2023-08-18-000155.png",
+                                "alt_text": "White shield with text Government of Kakapo and subtitle Ministry of Foreign Affairs."
+                            }
+                        },
+                        {
+                            "locale": "en-US",
+                            "name": "Permanent Resident Card",
+                            "description": "Government of Kakapo (JWT)",
+                            "text_color": "#FFFFFF",
+                            "background_color": "#3a2d2d",
+                            "logo": {
+                                "url": "https://i.ibb.co/kJm9Mpx/Screenshot-2023-08-18-000155.png",
+                                "alt_text": "White shield with text Government of Kakapo and subtitle Ministry of Foreign Affairs."
+                            }
+                        }
+                    ],
+                    "format": "jwt_vc_json",
+                    "trust_framework": None,
+                    "types": [
+                        "VerifiableCredential",
+                        "PermanentResidentCard"
+                    ],
+                    "id": "PermanentResidentCard",
+                    "scope": None
+                },
+                {
+                    "display": [
+                        {
+                            "name": "Sphereon guest",
+                            "description": "Demo credential",
+                            "text_color": "#FFFFFF",
+                            "background_color": "#1763c1",
+                            "background_image": {
+                                "url": "https://i.ibb.co/kmfrH4F/tulips.png",
+                                "alt_text": "Black and white photo of tulips with one red tulip"
+                            },
+                            "logo": {
+                                "url": "https://i.ibb.co/NWQQ9kt/sphereon-logo.png",
+                                "alt_text": "Red square depicting Sphereon logo."
+                            }
+                        },
+                        {
+                            "locale": "en-US",
+                            "name": "Demo credential",
+                            "description": "Sphereon guest credential for demo purposes.",
+                            "text_color": "#FFFFFF",
+                            "background_image": {
+                                "url": "https://i.ibb.co/kmfrH4F/tulips.png",
+                                "alt_text": "Black and white photo of tulips with one red tulip"
+                            },
+                            "logo": {
+                                "url": "https://i.ibb.co/NWQQ9kt/sphereon-logo.png",
+                                "alt_text": "Red square depicting Sphereon logo."
+                            }
+                        },
+                        {
+                            "locale": "nl-NL",
+                            "name": "Sphereon gast",
+                            "description": "Sphereon gast credential wordt uitgegeven voor demo doeleinden.",
+                            "text_color": "#FFFFFF",
+                            "background_image": {
+                                "url": "https://i.ibb.co/kmfrH4F/tulips.png",
+                                "alt_text": "Black and white photo of tulips with one red tulip"
+                            },
+                            "logo": {
+                                "url": "https://i.ibb.co/NWQQ9kt/sphereon-logo.png",
+                                "alt_text": "Red square depicting Sphereon logo."
+                            }
+                        }
+                    ],
+                    "format": "jwt_vc_json",
+                    "trust_framework": None,
+                    "types": [
+                        "VerifiableCredential",
+                        "GuestCredential"
+                    ],
+                    "id": "GuestCredential",
+                    "scope": None
+                    }
+                ],
+                "grant_types_supported": [
+                    "authorization_code",
+                    "urn:ietf:params:oauth:grant-type:pre-authorized_code"
+                ],
+                "schema_for_type": False,
+                "credential_manifest_support": False
         },
-        {
-          "locale": "en-US",
-          "name": "DBC Guest (DIIP)",
-          "description": "The DBC guest credential is a DIIP example.",
-          "background_color": "#3B6F6D",
-          "text_color": "#FFFFFF",
-          "logo": {
-            "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
-            "alt_text": "An orange block shape, with the text Dutch Blockchain Coalition next to it, portraying the logo of the Dutch Blockchain Coalition."
-          },
-          "background_image": {
-            "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
-            "alt_text": "Connected open cubes in blue with one orange cube as a background of the card"
-          }
-        },
-        {
-          "locale": "nl-NL",
-          "name": "DBC gast (DIIP)",
-          "description": "De DBC gast credential is een DIIP voorbeeld.",
-          "background_color": "#3B6F6D",
-          "text_color": "#FFFFFF",
-          "logo": {
-            "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
-            "alt_text": "Aaneengesloten open blokken in de kleur blauw, met een blok in de kleur oranje, die tesamen de achtergrond van de kaart vormen."
-          },
-          "background_image": {
-            "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
-            "alt_text": "Connected open cubes in blue with one orange cube as a background of the card"
-          }
-        }
-      ],
-      "format": "jwt_vc_json",
-      "trust_framework": None,
-      "types": [
-        "VerifiableCredential",
-        "DBCGuest"
-      ],
-      "id": "DBCGuest",
-      "scope": None
-    },
-    {
-      "display": [
-        {
-          "name": "Example University Degree",
-          "description": "JFF Plugfest 3 OpenBadge (JWT)",
-          "text_color": "#FFFFFF",
-          "background_color": "#1763c1",
-          "logo": {
-            "url": "https://w3c-ccg.github.io/vc-ed/plugfest-1-2022/images/JFF_LogoLockup.png",
-            "alt_text": "Red, magenta and yellow vertical lines with 3 black dots and the text JFF, depicting the Jobs For the Future logo."
-          }
-        },
-        {
-          "locale": "en-US",
-          "name": "Example University Degree",
-          "description": "JFF Plugfest 3 OpenBadge (JWT)",
-          "text_color": "#FFFFFF",
-          "background_color": "#1763c1",
-          "logo": {
-            "url": "https://w3c-ccg.github.io/vc-ed/plugfest-1-2022/images/JFF_LogoLockup.png",
-            "alt_text": "Red, magenta and yellow vertical lines with 3 black dots and the text JFF, depicting the Jobs For the Future logo."
-          }
-        }
-      ],
-      "format": "jwt_vc_json",
-      "trust_framework": None,
-      "types": [
-        "VerifiableCredential",
-        "OpenBadgeCredential"
-      ],
-      "id": "OpenBadgeCredential",
-      "scope": None
-    },
-    {
-      "display": [
-        {
-          "name": "Permanent Resident Card",
-          "description": "Government of Kakapo (JWT)",
-          "text_color": "#FFFFFF",
-          "background_color": "#3a2d2d",
-          "logo": {
-            "url": "https://i.ibb.co/kJm9Mpx/Screenshot-2023-08-18-000155.png",
-            "alt_text": "White shield with text Government of Kakapo and subtitle Ministry of Foreign Affairs."
-          }
-        },
-        {
-          "locale": "en-US",
-          "name": "Permanent Resident Card",
-          "description": "Government of Kakapo (JWT)",
-          "text_color": "#FFFFFF",
-          "background_color": "#3a2d2d",
-          "logo": {
-            "url": "https://i.ibb.co/kJm9Mpx/Screenshot-2023-08-18-000155.png",
-            "alt_text": "White shield with text Government of Kakapo and subtitle Ministry of Foreign Affairs."
-          }
-        }
-      ],
-      "format": "jwt_vc_json",
-      "trust_framework": None,
-      "types": [
-        "VerifiableCredential",
-        "PermanentResidentCard"
-      ],
-      "id": "PermanentResidentCard",
-      "scope": None
-    },
-    {
-      "display": [
-        {
-          "name": "Sphereon guest",
-          "description": "Demo credential",
-        "text_color": "#FFFFFF",
-          "background_color": "#1763c1",
-          "background_image": {
-            "url": "https://i.ibb.co/kmfrH4F/tulips.png",
-            "alt_text": "Black and white photo of tulips with one red tulip"
-          },
-          "logo": {
-            "url": "https://i.ibb.co/NWQQ9kt/sphereon-logo.png",
-            "alt_text": "Red square depicting Sphereon logo."
-          }
-        },
-        {
-          "locale": "en-US",
-          "name": "Demo credential",
-          "description": "Sphereon guest credential for demo purposes.",
-          "text_color": "#FFFFFF",
-          "background_image": {
-            "url": "https://i.ibb.co/kmfrH4F/tulips.png",
-            "alt_text": "Black and white photo of tulips with one red tulip"
-          },
-          "logo": {
-            "url": "https://i.ibb.co/NWQQ9kt/sphereon-logo.png",
-            "alt_text": "Red square depicting Sphereon logo."
-          }
-        },
-        {
-          "locale": "nl-NL",
-          "name": "Sphereon gast",
-          "description": "Sphereon gast credential wordt uitgegeven voor demo doeleinden.",
-          "text_color": "#FFFFFF",
-          "background_image": {
-            "url": "https://i.ibb.co/kmfrH4F/tulips.png",
-            "alt_text": "Black and white photo of tulips with one red tulip"
-          },
-          "logo": {
-            "url": "https://i.ibb.co/NWQQ9kt/sphereon-logo.png",
-            "alt_text": "Red square depicting Sphereon logo."
-          }
-        }
-      ],
-      "format": "jwt_vc_json",
-      "trust_framework": None,
-      "types": [
-        "VerifiableCredential",
-        "GuestCredential"
-      ],
-      "id": "GuestCredential",
-      "scope": None
-    }
-  ],
-            "grant_types_supported": [
-                "authorization_code",
-                "urn:ietf:params:oauth:grant-type:pre-authorized_code"
-            ],
-            "schema_for_type": False,
-            "credential_manifest_support": False
-        },
-         "GAIN-POC":
+    "GAIN-POC":
         {
             "oidc4vciDraft" : "13",
             "siopv2Draft": "12",
@@ -937,7 +985,7 @@ profile = {
             "schema_for_type": False,
             "credential_manifest_support": True
         },
-        "HEDERA":
+    "HEDERA":
         {   
             "oidc4vciDraft" : "11",
             "siopv2Draft": "12",

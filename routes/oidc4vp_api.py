@@ -799,10 +799,14 @@ async def oidc4vc_login_endpoint(stream_id, red):
         else: 
             logging.info('vp token received = %s', vp_token)
         
+        #with open('vp_token.txt', 'w') as outfile:
+        #    outfile.write(vp_token)
+        
         if presentation_submission:
             logging.info('presentation submission received = %s', json.dumps(json.loads(presentation_submission), indent=4))
         else: 
             logging.info('No presentation submission received')
+        
 
         if not id_token and not vp_token:
             response_format = "invalid request format",

@@ -214,7 +214,6 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key):
         _sd.append(hash(disclosure))
     signer_key = jwk.JWK(**issuer_key)
     pub_key = json.loads(signer_key.export(private_key=False) )
-    print("pub key = ", pub_key)
     pub_key['kid'] = signer_key.thumbprint()
     header = {
         'typ':"vc+sd-jwt",

@@ -459,7 +459,6 @@ def test_9(mode): # multiple VC of the same type
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json=data)
-    print('issuer vc = ', vc)
     try:
         qrcode = resp.json()['redirect_uri']
     except Exception:
