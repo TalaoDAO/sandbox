@@ -337,7 +337,7 @@ profile = {
                     "display": [
                         {
                             "name": "EthereumAssociatedAddress",
-                            "description": "This is a verifiable credential",
+                            "description": "This card is a proof of ownership of your crypto account. You can use it when you need to prove your email ownership with services that have already adopted the verifiable and decentralized identity system.",
                             "locale": "en-GB"
                         }
                     ]
@@ -361,7 +361,7 @@ profile = {
                     "display": [
                         {
                             "name": "Verifiable Id",
-                            "description": "This is a verifiable credential",
+                            "description": "This card is a proof of your identity. You can use it when you need to prove your email ownership with services that have already adopted the verifiable and decentralized identity system.",
                             "locale": "en-GB"
                         }
                     ]
@@ -409,7 +409,7 @@ profile = {
                     "display": [
                         {
                             "name": "EmailPass",
-                            "description": "This is a verifiable credential",
+                            "description": "This card is a proof of ownership of your email. You can use it when you need to prove your email ownership with services that have already adopted the verifiable and decentralized identity system.",
                             "locale": "en-GB"
                         }
                     ]
@@ -433,7 +433,7 @@ profile = {
                     "display": [
                         {
                             "name": "Proof of phone number",
-                            "description": "This is a verifiable credential",
+                            "description": "This card is a proof of ownership of your phone number. You can use it when you need to prove your email ownership with services that have already adopted the verifiable and decentralized identity system.",
                             "locale": "en-GB"
                         }
                     ]
