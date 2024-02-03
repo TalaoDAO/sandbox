@@ -84,7 +84,8 @@ landing_page_style_list = {
     "./issuer_oidc/issuer_qrcode.html": "Style",
     "./issuer_oidc/issuer_qrcode_test.html": "Test",
     "./issuer_oidc/issuer_qrcode_id360.html": "Id360",
-    "./issuer_oidc/wallet_link_issuer_qrcode.html": "Wallet link"
+    "./issuer_oidc/wallet_link_issuer_qrcode.html": "Wallet link",
+    "./issuer_oidc/issuer_qrcode_emailpass.html": "Emailpass"
 }
 
 # issuer qrcode page for guest
