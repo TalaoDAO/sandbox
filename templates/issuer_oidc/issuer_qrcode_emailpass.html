@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
-    {% include 'head.html' %}   
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=300px, initial-scale=1, maximum-scale=1">  
+     <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='./img/3D.ico') }}"/>
+     <title>{{company_name}}</title>
+     <link rel = "stylesheet" type= "text/css" href= "{{ url_for('static', filename='bootstrap.min.css') }}">
   </head>
   <body class="flex flex-col items-center justify-center h-screen w-screen">
     <div id="wrapper">
@@ -18,7 +22,7 @@
             <div class="card shadow border-dark mt-5" >
               <img class="card-img-top p-3" src="{{ qrcode(url) }}">
               <div class="card-body">
-                <h6 class="card-title">{{_('Scan the QR Code with your wallet')}}</h6>
+                <h6 class="card-title">Scan the QR Code with your wallet</h6>
                 </div>
                 </div>
               </div>
@@ -26,21 +30,6 @@
           </div>
         </div>
 
-<!--
-      <div id="content_smartphone" class="d-block d-sm-none mt-5"> 
-      
-        <a href="{{deeplink_altme}}"><img src="/static/img/emailproof.png" class="card-img-top mt-3 p-3"></a>
-       
-            <div class="text-center">
-              <div class="text-center my-1 p-3">
-                <a href="{{deeplink_altme}}" class="bg-transparent" style="text-decoration: none;">{{_('Click here to get your proof of email into your wallet')}} </p>
-                <div class="col mb-3"></a>
-                            
-                </div>
-              </div>      
-          
-        
-        </div>  -->
 
 
  
@@ -101,14 +90,22 @@
 <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
 <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
 
+
 <script>
-var source = new EventSource('/emailpass/stream');
-source.onmessage = function (event) {
-     const result = JSON.parse(event.data)
-     if (result.id == "{{id}}" ){
-      window.location.href="/emailpass/end?followup=" + result.check;
-     }
-};
-</script>
+    var source = new EventSource('/sandbox/ebsi/issuer_stream');
+    source.onmessage = function (event) {
+    const data = JSON.parse(event.data)
+    if (data.stream_id == '{{stream_id}}'){
+      if (data.error){
+        window.location.href = '/sandbox/ebsi/issuer_followup/{{stream_id}}?error=' + data.error + '&error_description=' + data.error_description;
+      }
+      else {
+        window.location.href='/sandbox/ebsi/issuer_followup/{{stream_id}}' ; 
+      }
+    };
+  }
+  </script>
+
+
 </body>
 </html>
