@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<!-- wallet_for _ebsiv3_issuer.html -->
+<html>
+
+<head>
+    {% include 'head.html' %}
+</head>
+
+<body id="page-top" >
+    <div id="wrapper">
+        <div class="d-flex flex-column" id="content-wrapper">
+            <div id="content" >
+                {% include 'saas_nav_bar.html' %}
+                <div class="container-fluid my-5">
+                
+                    <div class="text-center">
+                        <h4>Wallet for OIDC4VC Issuer</h4>
+                    </div>
+                 
+
+
+                    <div class="row my-5">
+                        <div class="col mt-4">
+                            <div id="id_qrcode" class="text-center">
+                            <form action="/scan" method="post">
+                              
+                                <br>
+                                Input QR code :<br> <textarea name="qrcode" cols="100" rows="5"></textarea><br><br>
+
+                               
+                                <button  class="btn btn-primary btn-sm" style="background-color: #09060f;" type="submit">Enter</button>
+                            </form> 
+                        </div>
+                        </div>
+                    </div>
+          
+                </div>
+            </div>
+        </div>
+    </div>
+                                {% include 'user_footer.html' %}
+
+    <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+
+    <script>
+        function goBack() {
+          window.history.back();
+        }
+    </script>
+
+</body>
+
+</html>

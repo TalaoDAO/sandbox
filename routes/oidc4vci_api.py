@@ -153,15 +153,24 @@ def oidc(issuer_id, mode):
     cs = issuer_profile.get('credentials_supported')
 
     # general section
-    issuer_openid_configuration = {}
-    issuer_openid_configuration.update(
-        {
+    issuer_openid_configuration = {
             'credential_issuer': mode.server + 'issuer/' + issuer_id,
             'credential_endpoint': mode.server + 'issuer/' + issuer_id + '/credential',
             'deferred_credential_endpoint': mode.server + 'issuer/' + issuer_id + '/deferred',
+    }
+    if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
+        issuer_openid_configuration.update(
+        {
+            'credential_configurations_supported': cs
+        }
+        )
+    else:
+         issuer_openid_configuration.update(
+        {
             'credentials_supported': cs
         }
     )
+
 
     # setup credential manifest as optional
     # https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-server-metadata
@@ -301,10 +310,10 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
         else:
             offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}    
     
-    else:
+    else: # Draft 13
         offer = {
             'credential_issuer': f'{mode.server}issuer/{issuer_id}',
-            'credential_configurations': credential_type,
+            'credential_configuration_ids': credential_type,
         }
         if pre_authorized_code:
             offer['grants'] = {
@@ -691,10 +700,23 @@ async def issuer_credential(issuer_id, red, mode):
     credential_identifier = None
     credential_type = None
     if result.get("credential_definition"): # GAIN-POC, draft 13
-        credential_type = result['credential_definition'].get('type') 
+        credentials_supported = list(issuer_profile[ "credentials_supported"].keys())
+        if vc_format == "vc+sd-jwt":
+            vct = result['credential_definition'].get('vct') 
+            for vc in credentials_supported:
+                if issuer_profile[ "credentials_supported"][vc]['credential_definition']['vct'] == vct:
+                    credential_type = vc
+                    break
+        else:
+            type = result['credential_definition'].get('type')
+            for vc in credentials_supported:
+                if issuer_profile[ "credentials_supported"][vc]['credential_definition']['type'].sort() == type.sort():
+                    credential_type = vc
+                    break
     elif result.get("credential_identifier"): # draft = 12 
         credential_identifier = result.get("credential_identifier")
         logging.info("credential identifier = %s", credential_identifier)
+    
     elif result.get("types"): # draft = 11 and above
         for vc_type in result["types"]:
             if vc_type not in ["VerifiableCredential", "VerifiableAttestation"]:
@@ -739,6 +761,7 @@ async def issuer_credential(issuer_id, red, mode):
     credential = None
     if not credential_identifier:
         logging.info("Only one VC of the same type")
+        print("credential type = ", credential_type)
         try:
             credential = access_token_data["vc"][credential_type]
         except Exception:
@@ -774,11 +797,12 @@ async def issuer_credential(issuer_id, red, mode):
     # Transfer VC
     c_nonce = str(uuid.uuid1())
     payload = {
-        "format": vc_format,
         "credential": credential_signed,  # string or json depending on the format
         "c_nonce": c_nonce,
         "c_nonce_expires_in": C_NONCE_LIFE,
     }
+    if int(issuer_profile['oidc4vciDraft']) < 13:
+        payload.update({"format": vc_format})
 
     # update nonce in access token for next VC request
     access_token_data["c_nonce"] = c_nonce
@@ -852,6 +876,7 @@ async def issuer_deferred(issuer_id, red, mode):
         "c_nonce": str(uuid.uuid1()),
         "c_nonce_expires_in": C_NONCE_LIFE,
     }
+
     headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
     return Response(response=json.dumps(payload), headers=headers)
 
