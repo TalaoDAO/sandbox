@@ -534,7 +534,10 @@ def issuer_token(issuer_id, red, mode):
 
     if grant_type == 'urn:ietf:params:oauth:grant-type:pre-authorized_code':
         code = request.form.get('pre-authorized_code')
-        user_pin = request.form.get('user_pin')
+        if int(issuer_profile['oidc4vciDraft']) >= 13:
+            user_pin= request.form.get('tx_code')
+        else:
+            user_pin = request.form.get('user_pin')
     elif grant_type == 'authorization_code':
         code = request.form.get('code')
     else:

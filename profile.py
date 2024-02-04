@@ -894,6 +894,57 @@ profile = {
             "schema_for_type": False,
             "credential_manifest_support": False
         },
+    "DEFAULT-13":
+        {
+            "oidc4vciDraft" : "13",
+            "siopv2Draft": "12",
+            "oidc4vpDraft": "18",
+            "vc_format": "jwt_vc_json",
+            "verifier_vp_type": "jwt_vp",
+            "oidc4vci_prefix": "openid-credential-offer://" ,
+            "authorization_server_support": False,
+            "credentials_as_json_object_array": False,
+            "siopv2_prefix": "openid-vc://",
+            "oidc4vp_prefix": "openid-vc://",
+            "credentials_types_supported": ["IdentityCredential"],
+            "credentials_supported": {
+                "IdentityCredential": {
+                    "format": "jwt_vc_json",
+                    "scope": "identity_credential",
+                    "cryptographic_binding_methods_supported": [
+                        "jwk",
+                        "x5c"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256",
+                        "ES384",
+                        "ES512",
+                        "ES256K"
+                    ],
+                    "credential_definition": {
+                        "type": [
+                            "VerifiableCredential",
+                            "IdentityCredential"
+                        ]
+                    },
+                    "proof_types_supported": [
+                        "jwt",
+                        "cwt"
+                    ],
+                    "display": [
+                        {
+                            "name": "Identity Credential"
+                        }
+                    ]
+                }
+            },
+            "grant_types_supported": [
+                "authorization_code",
+                "urn:ietf:params:oauth:grant-type:pre-authorized_code"
+            ],
+            "schema_for_type": False,
+            "credential_manifest_support": False
+        },
     "GAIA-X":
         {
             "oidc4vciDraft" : "8",
