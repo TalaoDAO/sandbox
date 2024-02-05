@@ -647,7 +647,7 @@ profile = {
                 },
                 "EmailPass" :{
                     "format": "jwt_vc_json",
-                    "credential_deifnition" : {
+                    "credential_definition" : {
                         "type": [
                             "VerifiableCredential",
                             "EmailPass"

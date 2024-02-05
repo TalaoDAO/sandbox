@@ -37,8 +37,8 @@ oidc4vc_profile_list = {
     #'HEDERA': 'Greencypher project',
     'GAIN-POC': 'GAIN POC openid, SD-JWT implementation in progress',
     'DIIP': 'Decentrtalized Identity Interop Profile (DIIP)',
-    'DEFAULT-VC-JWT-OIDC4VCI12' : 'JWT-VC with OIDC4VCI draft 12',
-    'DEFAULT-VC-JWT-OIDC4VCI13' : 'JWT-VC with OIDC4VCI draft 13',
+    'DEFAULT-VC-JWT-OIDC4VCI12' : 'jwt_vc_json with OIDC4VCI draft 12',
+    'DEFAULT-VC-JWT-OIDC4VCI13' : 'jwt_vc_json with OIDC4VCI draft 13',
     'CUSTOM': 'CUSTOM profile',
 }
 

@@ -704,6 +704,7 @@ async def issuer_credential(issuer_id, red, mode):
     credential_type = None
     if result.get("credential_definition"): # GAIN-POC, draft 13
         credentials_supported = list(issuer_profile[ "credentials_supported"].keys())
+        print(credentials_supported)
         if vc_format == "vc+sd-jwt":
             vct = result['credential_definition'].get('vct') 
             for vc in credentials_supported:
@@ -712,8 +713,10 @@ async def issuer_credential(issuer_id, red, mode):
                     break
         else:
             type = result['credential_definition'].get('type')
+            type.sort()
             for vc in credentials_supported:
-                if issuer_profile[ "credentials_supported"][vc]['credential_definition']['type'].sort() == type.sort():
+                issuer_profile[ "credentials_supported"][vc]['credential_definition']['type'].sort()
+                if issuer_profile[ "credentials_supported"][vc]['credential_definition']['type'] == type:
                     credential_type = vc
                     break
     elif result.get("credential_identifier"): # draft = 12 
