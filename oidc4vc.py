@@ -218,7 +218,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key):
     header = {
         'typ':"vc+sd-jwt",
         'kid':  pub_key['kid'],
-        'alg': 'ES256'
+        'alg': alg(issuer_key)
     }
     payload = {
         'iss': issuer,
@@ -231,7 +231,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key):
         "_sd" : _sd,
         "vct" : unsecured['vct'],
     }
-    token = jwt.JWT(header=header, claims=payload, algs=['ES256'])
+    token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
     return token.serialize() + _disclosure
 
