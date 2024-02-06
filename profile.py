@@ -558,37 +558,8 @@ profile = {
             "credentials_as_json_object_array": False,
             "siopv2_prefix": "openid-vc://",
             "oidc4vp_prefix": "openid-vc://",
-            "credentials_types_supported": ["EmployeeCredential",  "VerifiableId", "EmailPass", "IdentityCredential"],
+            "credentials_types_supported": ["EmployeeCredential",  "VerifiableId", "EmailPass"],
             "credentials_supported": {
-                "IdentityCredential": {
-                    "format": "jwt_vc_json",
-                    "scope": "identity_credential",
-                    "cryptographic_binding_methods_supported": [
-                        "jwk",
-                        "x5c"
-                    ],
-                    "cryptographic_suites_supported": [
-                        "ES256",
-                        "ES384",
-                        "ES512",
-                        "ES256K"
-                    ],
-                    "credential_definition": {
-                        "type": [
-                            "VerifiableCredential",
-                            "IdentityCredential"
-                        ]
-                    },
-                    "proof_types_supported": [
-                        "jwt",
-                        "cwt"
-                    ],
-                    "display": [
-                        {
-                            "name": "Identity Credential"
-                        }
-                    ]
-                },
                 "EmployeeCredential": {
                     "format": "jwt_vc_json",
                     "credential_definition":{

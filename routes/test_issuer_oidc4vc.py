@@ -245,14 +245,14 @@ def test_5(mode):
         'X-API-KEY': client_secret
     }
 
-    with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
-                credential = json.loads(f.read())
+    offer = ['VerifiableId']
+
     data = { 
         "issuer_id": issuer_id,
-        "vc": {"IdentityCredential" : credential}, 
+        "vc": build_credential_offered(offer), 
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
-        "credential_type": ['IdentityCredential'],
+        "credential_type": ['VerifiableId'],
         "callback": mode.server + 'sandbox/issuer/callback',
         "user_pin_required": True,
         "user_pin": "4444",
