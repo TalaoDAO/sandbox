@@ -632,6 +632,7 @@ def issuer_token(issuer_id, red, mode):
         "authorization_details": authorization_details,
         "stream_id": data.get("stream_id"),
         "issuer_state": data.get("issuer_state"),
+        "client_id": request.form.get('client_id')
     }
     logging.info('token endpoint response = %s', json.dumps(endpoint_response, indent=4))
     red.setex(access_token, ACCESS_TOKEN_LIFE, json.dumps(access_token_data))
@@ -697,7 +698,8 @@ async def issuer_credential(issuer_id, red, mode):
         proof_payload = None
         wallet_jwk = None
         if vc_format == 'ldp_vc':
-            return Response(**manage_error("access_denied", "Issuer does not support Bearer credential in ldp_vc format", red, mode, request=request, stream_id=stream_id))
+        #    return Response(**manage_error("access_denied", "Issuer does not support Bearer credential in ldp_vc format", red, mode, request=request, stream_id=stream_id))
+            pass
 
     # Get credential type requested
     credential_identifier = None
@@ -738,7 +740,10 @@ async def issuer_credential(issuer_id, red, mode):
     else:
         return Response(**manage_error("invalid_request", "Invalid request format", red, mode, request=request, stream_id=stream_id))
 
-    iss = proof_payload.get("iss") if proof else None
+    if not proof:
+        iss = access_token_data['client_id']
+    else:
+        iss = proof_payload.get("iss") if proof else None
 
     # deferred use case
     if issuer_data.get("deferred_flow"):
