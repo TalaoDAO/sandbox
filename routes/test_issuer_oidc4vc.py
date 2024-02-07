@@ -478,7 +478,7 @@ def test_10(mode):
         issuer_id = "kivrsduinn"
         client_secret = "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"
 
-    offer = ["VerifiableId", "PhoneProof"]
+    offer = ["VerifiableId", "EmailPass"]
 
     headers = {
         'Content-Type': 'application/json',

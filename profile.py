@@ -566,7 +566,7 @@ profile = {
                         "type": [
                             "VerifiableCredential",
                             "EmployeeCredential"
-                        ],
+                        ]
                     },
                     "cryptographic_binding_methods_supported": [
                         "DID"
@@ -596,7 +596,27 @@ profile = {
                         "type": [
                             "VerifiableCredential",
                             "VerifiableId"
-                        ]
+                        ],
+                         "credentialSubject": {
+                            "firstName": {
+                                "mandatory": True,
+                                "display": [
+                                    {
+                                        "name": "First Name",
+                                        "locale": "en-US"
+                                    }
+                                ]
+                            },
+                            "familyName": {
+                                "mandatory": True,
+                                "display": [
+                                    {
+                                        "name": "Family Name",
+                                        "locale": "en-US"
+                                    }
+                                ]
+                            }
+                         }
                     },
                     "cryptographic_binding_methods_supported": [
                         "DID"
@@ -863,6 +883,54 @@ profile = {
                 "IdentityCredential": {
                     "format": "vc+sd-jwt",
                     "scope": "identity_credential",
+                    "display": [
+                        {
+                            "name": "IdentityCredential",
+                            "locale": "en-US",
+                            "background_color": "#12107c",
+                            "text_color": "#FFFFFF"
+                        }
+                    ],
+                     "claims": {
+                        "given_name": {
+                            "mandatory": True,
+                            "display": [
+                                {
+                                    "name": "Given Name",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "Vorname",
+                                    "locale": "de-DE"
+                                }
+                            ]
+                        },
+                        "family_name": {
+                            "mandatory": True,
+                            "display": [
+                                {
+                                    "name": "Surname",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "Nachname",
+                                    "locale": "de-DE"
+                                }
+                            ]
+                        },
+                        "email": {},
+                        "phone_number": {},
+                        "address": {
+                            "street_address": {},
+                            "locality": {},
+                            "region": {},
+                            "country": {}
+                        },
+                        "birthdate": {},
+                        "is_over_18": {},
+                        "is_over_21": {},
+                        "is_over_65": {}
+                    },
                     "cryptographic_binding_methods_supported": [
                         "jwk",
                         "x5c"
