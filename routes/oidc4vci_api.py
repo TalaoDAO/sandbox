@@ -149,31 +149,21 @@ def oidc(issuer_id, mode):
         logging.warning('issuer_id not found for %s', issuer_id)
         return
 
-    # Credentials_supported section
-    cs = issuer_profile.get('credentials_supported')
-
     # general section
     issuer_openid_configuration = {
-            'credential_issuer': mode.server + 'issuer/' + issuer_id,
-            'credential_endpoint': mode.server + 'issuer/' + issuer_id + '/credential',
-            'deferred_credential_endpoint': mode.server + 'issuer/' + issuer_id + '/deferred',
+        'credential_issuer': mode.server + 'issuer/' + issuer_id,
+        'credential_endpoint': mode.server + 'issuer/' + issuer_id + '/credential',
+        'deferred_credential_endpoint': mode.server + 'issuer/' + issuer_id + '/deferred',
     }
-    if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
-        issuer_openid_configuration.update(
-        {
-            'credential_configurations_supported': cs
-        }
-        )
-    else:
-         issuer_openid_configuration.update(
-        {
-            'credentials_supported': cs
-        }
-    )
 
+    # Credentials supported section
+    cs = issuer_profile.get('credentials_supported')
+    if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
+        issuer_openid_configuration.update({'credential_configurations_supported': cs})
+    else:
+         issuer_openid_configuration.update({'credentials_supported': cs})
 
     # setup credential manifest as optional
-    # https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html#name-server-metadata
     if issuer_profile.get('credential_manifest_support'):
         cm = []
         for _vc in issuer_profile.get('credentials_types_supported'):
@@ -647,6 +637,7 @@ async def issuer_credential(issuer_id, red, mode):
 
     """
     logging.info("credential endpoint request %s", json.dumps(request.json, indent=4))
+    
     # Check access token
     try:
         access_token = request.headers["Authorization"].split()[1]
@@ -659,10 +650,10 @@ async def issuer_credential(issuer_id, red, mode):
 
     # to manage followup screen
     stream_id = access_token_data.get("stream_id")
+    
+    # issuer profile
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
-
-    # get issuer OIDC4VCI draft
     logging.info('OIDC4VCI Draft = %s', issuer_profile['oidc4vciDraft'])
 
     # Check request format
@@ -675,40 +666,41 @@ async def issuer_credential(issuer_id, red, mode):
     vc_format = result.get("format")
     logging.info("format in credential request = %s", vc_format)
 
-    # check proof 
+    # check request format for draft 13
+    if int(issuer_profile['oidc4vciDraft']) >= 13:
+        if result.get('format') == "vc+sd-jwt" and not result.get("vct"):
+            return Response(**manage_error("invalid_request", "Invalid request format, vct is missiong for vc+sd-jwt format", red, mode, request=request, stream_id=stream_id))
+
+    # check proof if it exists
     proof = result.get("proof")
     if proof:
         proof_type = result["proof"]["proof_type"]
         proof = result["proof"]["jwt"]
+        proof_header = oidc4vc.get_header_from_token(proof)
+        logging.info('Proof header = %s', json.dumps(proof_header, indent=4))
         if proof_type != "jwt":
             return Response(**manage_error("unsupported_credential_type","The credential proof type is not supported", red, mode, request=request, stream_id=stream_id )            )
-        # Check proof of key ownership received (OPTIONAL check)
         logging.info("proof of key ownership received = %s", proof)
         try:
             oidc4vc.verif_token(proof, access_token_data["c_nonce"])
-            logging.info("proof of ownership is validated")
+            logging.info("proof is validated")
         except Exception as e:
-            logging.warning("proof of ownership error = %s", e)
             return Response(**manage_error("access_denied", "Proof of key ownership, signature verification error : " + str(e), red, mode, request=request, stream_id=stream_id))
         proof_payload = oidc4vc.get_payload_from_token(proof)
-        proof_header = oidc4vc.get_header_from_token(proof)
         wallet_jwk = proof_header.get('jwk') # GAIN POC
+        iss = proof_payload.get("iss")
     else:
-        logging.warning('No proof available -> Bearer credential')
-        proof_payload = None
+        logging.warning('No proof available -> Bearer credential, iss = client_id')
         wallet_jwk = None
-        if vc_format == 'ldp_vc':
-        #    return Response(**manage_error("access_denied", "Issuer does not support Bearer credential in ldp_vc format", red, mode, request=request, stream_id=stream_id))
-            pass
+        iss = access_token_data['client_id']
 
     # Get credential type requested
     credential_identifier = None
     credential_type = None
-    if result.get("credential_definition"): # GAIN-POC, draft 13
+    if int(issuer_profile['oidc4vciDraft']) >= 13:
         credentials_supported = list(issuer_profile[ "credentials_supported"].keys())
-        print(credentials_supported)
-        if vc_format == "vc+sd-jwt":
-            vct = result['credential_definition'].get('vct') 
+        if vc_format == "vc+sd-jwt" and result.get('vct'): #draft 13 with vc+sd-jwt"
+            vct = result.get('vct') 
             for vc in credentials_supported:
                 if issuer_profile[ "credentials_supported"][vc]['credential_definition']['vct'] == vct:
                     credential_type = vc
@@ -721,39 +713,54 @@ async def issuer_credential(issuer_id, red, mode):
                 if issuer_profile[ "credentials_supported"][vc]['credential_definition']['type'] == type:
                     credential_type = vc
                     break
-    elif result.get("credential_identifier"): # draft = 12 
-        credential_identifier = result.get("credential_identifier")
-        logging.info("credential identifier = %s", credential_identifier)
-    
-    elif result.get("types"): # draft = 11 and above
-        for vc_type in result["types"]:
-            if vc_type not in ["VerifiableCredential", "VerifiableAttestation"]:
-                credential_type = vc_type
+    elif int(issuer_profile['oidc4vciDraft']) == 12:
+        if result.get("credential_identifier"): # draft = 12 
+            credential_identifier = result.get("credential_identifier")
+            logging.info("credential identifier = %s", credential_identifier)
+        else:
+            credentials_supported = issuer_profile[ "credentials_supported"]
+            types = result.get('types')
+            types.sort()
+            for vc in credentials_supported:
+                vc['types'].sort()
+                if vc['types'] == types:
+                    credential_type = vc['id']
+                    logging.info("credential type = %s", credential_type)
+                    break
+            if not credential_type:
+                return Response(
+                    **manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
+    elif int(issuer_profile['oidc4vciDraft']) == 11:
+        credentials_supported = issuer_profile[ "credentials_supported"]
+        types = result.get('types')
+        types.sort()
+        for vc in credentials_supported:
+            vc['types'].sort()
+            if vc['types'] == types:
+                credential_type = vc['id']
                 logging.info("credential type = %s", credential_type)
                 break
         if not credential_type:
             return Response(
                 **manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
-    elif result.get("type"): # draft = 8 or below 
+    elif int(issuer_profile['oidc4vciDraft']) < 11:
         credential_type = result["type"]
         logging.info("credential type = %s", credential_type)
     else:
         return Response(**manage_error("invalid_request", "Invalid request format", red, mode, request=request, stream_id=stream_id))
 
-    if not proof:
-        iss = access_token_data['client_id']
-    else:
-        iss = proof_payload.get("iss") if proof else None
-
     # deferred use case
     if issuer_data.get("deferred_flow"):
-        acceptance_token = str(uuid.uuid1())
+        deferred_random = str(uuid.uuid1())
         payload = {
-            "acceptance_token": acceptance_token,
             "c_nonce": str(uuid.uuid1()),
             "c_nonce_expires_in": ACCEPTANCE_TOKEN_LIFE,
         }
-        acceptance_token_data = {
+        if int(issuer_profile['oidc4vciDraft']) == 12:
+            payload.update({"acceptance_token": deferred_random})
+        else:
+            payload.update({"transaction_id": deferred_random})
+        deferred_data = {
             "issuer_id": issuer_id,
             "format": vc_format,
             "subjectId": iss,
@@ -762,23 +769,13 @@ async def issuer_credential(issuer_id, red, mode):
             "c_nonce": str(uuid.uuid1()),
             "c_nonce_expires_at": datetime.timestamp(datetime.now()) + ACCEPTANCE_TOKEN_LIFE,
         }
-        red.setex(
-            acceptance_token, ACCEPTANCE_TOKEN_LIFE, json.dumps(acceptance_token_data)
-        )
+        red.setex(deferred_random, ACCEPTANCE_TOKEN_LIFE, json.dumps(deferred_data))
         headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
         return Response(response=json.dumps(payload), headers=headers)
 
-    # get credential
+    # get credential to issue
     credential = None
-    if not credential_identifier:
-        logging.info("Only one VC of the same type")
-        print("credential type = ", credential_type)
-        try:
-            credential = access_token_data["vc"][credential_type]
-        except Exception:
-            # send event to front to go forward callback and send credential to wallet
-            return Response(**manage_error("unsupported_credential_type","The credential type is not offered",red, mode, request=request, stream_id=stream_id, ))
-    else:
+    if credential_identifier:
         logging.info("Multiple VCs of the same type")
         for one_type in access_token_data["vc"]:
             for one_credential in one_type["list"]:
@@ -787,6 +784,12 @@ async def issuer_credential(issuer_id, red, mode):
                     credential = one_credential["value"]
                     logging.info("credential found for identifier = %s", credential_identifier )
                     break 
+    else:
+        logging.info("Only one VC of the same type")
+        try:
+            credential = access_token_data["vc"][credential_type]
+        except Exception:
+            return Response(**manage_error("unsupported_credential_type","The credential type is not offered",red, mode, request=request, stream_id=stream_id, ))
     if not credential:
         return Response(**manage_error("unsupported_credential_type", "Credential is not found for this credential identifier", red, mode, request=request, stream_id=stream_id,))
     
@@ -843,8 +846,7 @@ async def issuer_deferred(issuer_id, red, mode):
     try:
         acceptance_token = request.headers["Authorization"].split()[1]
     except Exception:
-        return Response(
-            **manage_error("invalid_request","Acceptance token not passed in request header", red, mode, request=request, status=400)        )
+        return Response(**manage_error("invalid_request","Acceptance token not passed in request header", red, mode, request=request))
 
     # Offer expired, VC is no more available return 410
     try:
@@ -948,9 +950,9 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
         credential["id"] = jti
         credential['issuer'] = issuer_did
         credential['issued'] = f"{datetime.now().replace(microsecond=0).isoformat()}Z"
-        credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+        #credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
         credential['validFrom'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-        credential['expirationDate'] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
+        #credential['expirationDate'] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
         credential["validUntil"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
     elif format in ['jwt_vc_json', 'jwt_vc']:     # jwt_vc format is used for ebsi V3 only with draft 10
         credential = clean_jwt_vc_json(credential)
