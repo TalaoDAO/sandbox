@@ -181,7 +181,9 @@ def oidc(issuer_id, mode):
     if issuer_profile.get('authorization_server_support'):
         issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id + '/authorize_server'
     else:
-        if int(issuer_profile.get("oidc4vciDraft", "11")) >= 12:
+        if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
+            authorization_server_config = json.load(open('authorization_server_config_draft13.json'))
+        elif int(issuer_profile.get("oidc4vciDraft", "11")) == 12:
             authorization_server_config = json.load(open('authorization_server_config_draft12.json'))
         else:
             authorization_server_config = json.load(open('authorization_server_config.json'))
@@ -669,7 +671,7 @@ async def issuer_credential(issuer_id, red, mode):
     # check request format for draft 13
     if int(issuer_profile['oidc4vciDraft']) >= 13:
         if result.get('format') == "vc+sd-jwt" and not result.get("vct"):
-            return Response(**manage_error("invalid_request", "Invalid request format, vct is missiong for vc+sd-jwt format", red, mode, request=request, stream_id=stream_id))
+            return Response(**manage_error("invalid_request", "Invalid request format, vct is missing for vc+sd-jwt format", red, mode, request=request, stream_id=stream_id))
 
     # check proof if it exists
     proof = result.get("proof")
@@ -702,7 +704,7 @@ async def issuer_credential(issuer_id, red, mode):
         if vc_format == "vc+sd-jwt" and result.get('vct'): #draft 13 with vc+sd-jwt"
             vct = result.get('vct') 
             for vc in credentials_supported:
-                if issuer_profile[ "credentials_supported"][vc]['credential_definition']['vct'] == vct:
+                if issuer_profile[ "credentials_supported"][vc]['vct'] == vct:
                     credential_type = vc
                     break
         else:

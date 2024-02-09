@@ -569,9 +569,10 @@ profile = {
                         ]
                     },
                     "cryptographic_binding_methods_supported": [
-                        "DID"
+                        "DID",
+                        "jwk"
                     ],
-                    "cryptographic_suites_supported": [
+                    "credential_signing_alg_values_supported": [
                         "ES256K",
                         "ES256",
                         "ES384",
@@ -597,7 +598,7 @@ profile = {
                             "VerifiableCredential",
                             "VerifiableId"
                         ],
-                         "credentialSubject": {
+                        "credentialSubject": {
                             "firstName": {
                                 "mandatory": True,
                                 "display": [
@@ -616,12 +617,13 @@ profile = {
                                     }
                                 ]
                             }
-                         }
+                        }
                     },
                     "cryptographic_binding_methods_supported": [
-                        "DID"
+                        "DID",
+                        "jwk"
                     ],
-                    "cryptographic_suites_supported": [
+                    "credential_signing_alg_values_supported": [
                         "ES256K",
                         "ES256",
                         "ES384",
@@ -645,9 +647,10 @@ profile = {
                         ]
                     },
                     "cryptographic_binding_methods_supported": [
-                        "DID"
+                        "DID",
+                        "jwk"
                     ],
-                    "cryptographic_suites_supported": [
+                    "credential_signing_alg_values_supported": [
                         "ES256K",
                         "ES256",
                         "ES384",
@@ -891,7 +894,7 @@ profile = {
                             "text_color": "#FFFFFF"
                         }
                     ],
-                     "claims": {
+                    "claims": {
                         "given_name": {
                             "mandatory": True,
                             "display": [
@@ -933,20 +936,17 @@ profile = {
                     },
                     "cryptographic_binding_methods_supported": [
                         "jwk",
-                        "x5c"
+                        "DID"
                     ],
-                    "cryptographic_suites_supported": [
+                    "credential_signing_alg_values_supported": [
                         "ES256",
                         "ES384",
                         "ES512",
                         "ES256K"
                     ],
-                    "credential_definition": {
-                        "vct": "https://credentials.example.com/identity_credential"
-                    },
+                    "vct": "https://credentials.example.com/identity_credential",
                     "proof_types_supported": [
-                        "jwt",
-                        "cwt"
+                        "jwt"
                     ],
                     "display": [
                         {
