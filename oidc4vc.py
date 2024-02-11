@@ -136,9 +136,10 @@ def sign_jwt_vc(vc, kid, issuer_key, nonce, iss, jti, sub):
             'iat': math.floor(datetime.timestamp(datetime.now())),
             'nbf': math.floor(datetime.timestamp(datetime.now())),
             'exp': math.floor(datetime.timestamp(datetime.now())) + 365*24*60*60, 
-            'jti': jti,
-            'sub': sub
+            'jti': jti
         }
+        if sub:
+            payload['sub'] = sub
     except Exception as e:
         logging.info("jwt signing error = %s", str(e))
         return

@@ -673,7 +673,7 @@ profile = {
         },
     "DIIP":
         {
-            "oidc4vciDraft" : "11",
+            "oidc4vciDraft": "11",
             "siopv2Draft": "12",
             "oidc4vpDraft": "18",
             "vc_format": "jwt_vc_json",
@@ -869,9 +869,57 @@ profile = {
                 "schema_for_type": False,
                 "credential_manifest_support": False
         },
+        "BASELINE":
+        {
+            "oidc4vciDraft": "11",
+            "siopv2Draft": "12",
+            "oidc4vpDraft": "18",
+            "vc_format": "vc+sd-jwt",
+            "verifier_vp_type": "jwt_vp",
+            "oidc4vci_prefix": "openid-credential-offer://" ,
+            "authorization_server_support": False,
+            "credentials_as_json_object_array": False,
+            "siopv2_prefix": "openid-vc://",
+            "oidc4vp_prefix": "openid-vc://",
+            "credentials_types_supported": ["IdentityCredential"],
+            "credentials_supported": [
+                {
+                    "display": [
+                        {
+                            "name": "Credential Identity",
+                            "description": "Credential Identity with Draft 11",
+                            "background_color": "#3B6F6D",
+                            "text_color": "#FFFFFF",
+                            "logo": {
+                                "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
+                                "alt_text": "An orange block shape, with the text Dutch Blockchain Coalition next to it, portraying the logo of the Dutch Blockchain Coalition."
+                            },
+                            "background_image": {
+                                "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
+                                "alt_text": "Connected open cubes in blue with one orange cube as a background of the card"
+                            }
+                        }
+                    ],
+                    "format": "vc+sd-jwt",
+                    "trust_framework": None,
+                    #"types": [
+                    #    "IdentityCredential"
+                    #],
+                    "vct": "IdentityCredential",
+                    "id": "IdentityCredential",
+                    "scope": None
+                }
+            ],
+            "grant_types_supported": [
+                "authorization_code",
+                "urn:ietf:params:oauth:grant-type:pre-authorized_code"
+            ],
+            "schema_for_type": False,
+            "credential_manifest_support": False
+        },
     "GAIN-POC":
         {
-            "oidc4vciDraft" : "13",
+            "oidc4vciDraft": "13",
             "siopv2Draft": "12",
             "oidc4vpDraft": "18",
             "vc_format": "vc+sd-jwt",
@@ -888,7 +936,7 @@ profile = {
                     "scope": "identity_credential",
                     "display": [
                         {
-                            "name": "IdentityCredential",
+                            "name": "Identity Credential",
                             "locale": "en-US",
                             "background_color": "#12107c",
                             "text_color": "#FFFFFF"
@@ -899,12 +947,16 @@ profile = {
                             "mandatory": True,
                             "display": [
                                 {
-                                    "name": "Given Name",
+                                    "name": "First Name",
                                     "locale": "en-US"
                                 },
                                 {
                                     "name": "Vorname",
                                     "locale": "de-DE"
+                                },
+                                {
+                                    "name": "Prenom",
+                                    "locale": "de-FR"
                                 }
                             ]
                         },
@@ -912,12 +964,16 @@ profile = {
                             "mandatory": True,
                             "display": [
                                 {
-                                    "name": "Surname",
+                                    "name": "Last Name",
                                     "locale": "en-US"
                                 },
                                 {
                                     "name": "Nachname",
                                     "locale": "de-DE"
+                                },
+                                {
+                                    "name": "Nom",
+                                    "locale": "de-FR"
                                 }
                             ]
                         },
@@ -947,11 +1003,6 @@ profile = {
                     "vct": "https://credentials.example.com/identity_credential",
                     "proof_types_supported": [
                         "jwt"
-                    ],
-                    "display": [
-                        {
-                            "name": "Identity Credential"
-                        }
                     ]
                 }
             },
@@ -1141,7 +1192,7 @@ profile = {
                         "RS256"
                     ]
                 },
-                 {
+                {
                     "id": "RetProject",
                     "vc_format": "jwt_vc_json",
                     "types": [
@@ -1157,7 +1208,7 @@ profile = {
                         "RS256"
                     ]
                 },
-                 {
+                {
                     "id": "HotProject",
                     "vc_format": "jwt_vc_json",
                     "types": [
@@ -1173,7 +1224,7 @@ profile = {
                         "RS256"
                     ]
                 },
-                 {
+                {
                     "id": "XctProject",
                     "vc_format": "jwt_vc_json",
                     "types": [

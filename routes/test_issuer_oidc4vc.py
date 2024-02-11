@@ -127,28 +127,24 @@ def test_4(mode):
     else: 
         issuer_id = "raamxepqex"
         client_secret = "5381c36b-45c2-11ee-ac39-9db132f0e4a1"
-    vc = 'EthereumAssociatedAddress'
-    with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
-        credential = json.loads(f.read())
-    credential['id'] = "urn:uuid:" + str(uuid.uuid4())
-    credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-    credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
     
+    with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
+        credential = json.loads(f.read())
+        
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
     }
     data = { 
         "issuer_id": issuer_id,
-        "vc": {vc: credential}, 
+        "vc": {'IdentityCredential': credential}, 
         "issuer_state": str(uuid.uuid1()),
-        "credential_type": vc,
+        "credential_type": 'IdentityCredential',
         "pre-authorized_code": True,
-        "user_pin_required": True,
-        "user_pin": "555555",
+        "user_pin_required": False,
         "callback": mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
     }
-    resp = requests.post(api_endpoint, headers=headers, json = data)
+    resp = requests.post(api_endpoint, headers=headers, json=data)
     try:
         qrcode = resp.json()['redirect_uri']
     except Exception:

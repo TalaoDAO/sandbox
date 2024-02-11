@@ -161,7 +161,7 @@ def oidc(issuer_id, mode):
     if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
         issuer_openid_configuration.update({'credential_configurations_supported': cs})
     else:
-         issuer_openid_configuration.update({'credentials_supported': cs})
+        issuer_openid_configuration.update({'credentials_supported': cs})
 
     # setup credential manifest as optional
     if issuer_profile.get('credential_manifest_support'):
@@ -181,26 +181,20 @@ def oidc(issuer_id, mode):
     if issuer_profile.get('authorization_server_support'):
         issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id + '/authorize_server'
     else:
-        if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
-            authorization_server_config = json.load(open('authorization_server_config_draft13.json'))
-        elif int(issuer_profile.get("oidc4vciDraft", "11")) == 12:
-            authorization_server_config = json.load(open('authorization_server_config_draft12.json'))
-        else:
-            authorization_server_config = json.load(open('authorization_server_config.json'))
+        authorization_server_config = json.load(open('authorization_server_config.json'))
         issuer_openid_configuration.update(authorization_server_config)
         if issuer_data['profile'] != 'DIIP':
             issuer_openid_configuration['authorization_endpoint'] = mode.server + 'issuer/' + issuer_id + '/authorize'
             issuer_openid_configuration['token_endpoint'] = mode.server + 'issuer/' + issuer_id + '/token'
             issuer_openid_configuration["jwks_uri"] =  mode.server + 'issuer/' + issuer_id + '/jwks'
-
     return issuer_openid_configuration
 
 
 # jwt vc issuer openid configuration
 def openid_jwt_vc_issuer_configuration(issuer_id, mode):
     config = {
-        'issuer' : mode.server + 'issuer/' + issuer_id,
-        'jwks_uri' : mode.server + 'issuer/' + issuer_id + '/jwks'
+        'issuer': mode.server + 'issuer/' + issuer_id,
+        'jwks_uri': mode.server + 'issuer/' + issuer_id + '/jwks'
     }
     return jsonify(config)
 
@@ -228,7 +222,7 @@ def issuer_jwks(issuer_id):
     pub_key = copy.copy(json.loads(issuer_data['jwk']))
     del pub_key['d']
     pub_key['kid'] = thumbprint(pub_key)
-    return jsonify({'keys' : [pub_key]})
+    return jsonify({'keys': [pub_key]})
 
 
 def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state, user_pin_required, mode):
@@ -250,7 +244,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                 offer['user_pin_required']: True
     
     # new OIDC4VCI standard with credentials as an array ofjson objects (EBSI-V3)
-    elif int(profile_data['oidc4vciDraft']) >= 10 and profile_data['credentials_as_json_object_array'] :
+    elif int(profile_data['oidc4vciDraft']) >= 10 and profile_data['credentials_as_json_object_array']:
         offer = {
             'credential_issuer': f'{mode.server}issuer/{issuer_id}',
             'credentials': [],
@@ -319,17 +313,12 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                 ].update({
                     "tx_code": {
                         "length": 4,
-                        "input_mode" : "numeric",
+                        "input_mode": "numeric",
                         "description": "Please provide the one-time code which was sent via e-mail"
                     }
                 })
-        
         else:
-            offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}    
-            
-            
-            
-                        
+            offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}                
     return offer
 
 
@@ -366,11 +355,11 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     if issuer_data.get('oidc4vciDraft', '11') == '8' or data_profile['oidc4vciDraft'] == '8':
         url_to_display = data_profile['oidc4vci_prefix'] + '?' + urlencode(offer)
         json_url = offer
-    else :    
+    else:    
         url_to_display = data_profile['oidc4vci_prefix'] + '?' + urlencode({'credential_offer': json.dumps(offer)})
         json_url = {'credential_offer': offer}
 
-    # credential offer is passed by reference : credential offer uri
+    # credential offer is passed by reference: credential offer uri
     if issuer_data.get('credential_offer_uri'):
         id = str(uuid.uuid1())
         credential_offer_uri = (
@@ -527,7 +516,7 @@ def issuer_token(issuer_id, red, mode):
     if grant_type == 'urn:ietf:params:oauth:grant-type:pre-authorized_code':
         code = request.form.get('pre-authorized_code')
         if int(issuer_profile['oidc4vciDraft']) >= 13:
-            user_pin= request.form.get('tx_code')
+            user_pin = request.form.get('tx_code')
         else:
             user_pin = request.form.get('user_pin')
     elif grant_type == 'authorization_code':
@@ -540,7 +529,7 @@ def issuer_token(issuer_id, red, mode):
     # display client_authentication method
     if request.headers.get('Authorization'):
         client_authentication_method = 'client_secret_basic'
-    elif request.form.get('client_id') and request.form.get('client_secret') :
+    elif request.form.get('client_id') and request.form.get('client_secret'):
         client_authentication_method = 'client_secret_post'
     elif request.form.get('client_id'):
         client_authentication_method = 'client_id'
@@ -687,10 +676,12 @@ async def issuer_credential(issuer_id, red, mode):
             oidc4vc.verif_token(proof, access_token_data["c_nonce"])
             logging.info("proof is validated")
         except Exception as e:
-            return Response(**manage_error("access_denied", "Proof of key ownership, signature verification error : " + str(e), red, mode, request=request, stream_id=stream_id))
+            return Response(**manage_error("access_denied", "Proof of key ownership, signature verification error: " + str(e), red, mode, request=request, stream_id=stream_id))
         proof_payload = oidc4vc.get_payload_from_token(proof)
-        wallet_jwk = proof_header.get('jwk') # GAIN POC
+        wallet_jwk = proof_header.get('jwk')  # GAIN POC
         iss = proof_payload.get("iss")
+        if access_token_data['client_id'] and iss != access_token_data['client_id']:
+            return Response(**manage_error("access_denied", "iss of proof of key is different from client_id", red, mode, request=request, stream_id=stream_id))
     else:
         logging.warning('No proof available -> Bearer credential, iss = client_id')
         wallet_jwk = None
@@ -711,8 +702,8 @@ async def issuer_credential(issuer_id, red, mode):
             type = result['credential_definition'].get('type')
             type.sort()
             for vc in credentials_supported:
-                issuer_profile[ "credentials_supported"][vc]['credential_definition']['type'].sort()
-                if issuer_profile[ "credentials_supported"][vc]['credential_definition']['type'] == type:
+                issuer_profile["credentials_supported"][vc]['credential_definition']['type'].sort()
+                if issuer_profile["credentials_supported"][vc]['credential_definition']['type'] == type:
                     credential_type = vc
                     break
     elif int(issuer_profile['oidc4vciDraft']) == 12:
@@ -733,15 +724,22 @@ async def issuer_credential(issuer_id, red, mode):
                 return Response(
                     **manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
     elif int(issuer_profile['oidc4vciDraft']) == 11:
-        credentials_supported = issuer_profile[ "credentials_supported"]
-        types = result.get('types')
-        types.sort()
-        for vc in credentials_supported:
-            vc['types'].sort()
-            if vc['types'] == types:
-                credential_type = vc['id']
-                logging.info("credential type = %s", credential_type)
-                break
+        credentials_supported = issuer_profile["credentials_supported"]
+        if vc_format == "vc+sd-jwt" and result.get('vct'):  #draft 11 with vc+sd-jwt"
+            vct = result.get('vct') 
+            for vc in credentials_supported:
+                if vc['vct'] == vct:
+                    credential_type = vc
+                    break
+        else:
+            types = result.get('types')
+            types.sort()
+            for vc in credentials_supported:
+                vc['types'].sort()
+                if vc['types'] == types:
+                    credential_type = vc['id']
+                    logging.info("credential type = %s", credential_type)
+                    break
         if not credential_type:
             return Response(
                 **manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
@@ -907,7 +905,7 @@ def oidc_issuer_followup(stream_id, red):
         issuer_data = db_api.read_oidc4vc_issuer(issuer_id)
         callback = json.loads(issuer_data)["callback"]
     callback_uri = callback + '?'
-    data = {"issuer_state" : user_data.get("issuer_state")}
+    data = {"issuer_state": user_data.get("issuer_state")}
     if request.args.get("error"):
         data["error"] = request.args.get("error")
     if request.args.get("error_description"):
