@@ -64,11 +64,15 @@
 
 
           <div class="text-center mt-5">
-            <h2>OpenID issuer configuration</h2><br>
-          <textarea rows="30" cols="150">{{openid_configuration|safe}}</textarea>
+            <h2>OpenID credential issuer configuration</h2><br>
+          <textarea rows="30" cols="150">{{openid_credential_configuration|safe}}</textarea>
           </div>
 
          
+          <div class="text-center mt-5">
+            <h2>OpenID configuration</h2><br>
+          <textarea rows="30" cols="150">{{openid_configuration|safe}}</textarea>
+          </div>
 
           {% if back_button  %}
           <div class="text-center mt-5">

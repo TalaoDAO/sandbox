@@ -366,7 +366,7 @@ profile = {
                         }
                     ]
                 },
-                 {
+                {
                     "id": "Over18",
                     "format": "jwt_vc_json",
                     "types": [

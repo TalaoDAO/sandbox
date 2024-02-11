@@ -18,7 +18,10 @@
     "pairwise"
   ],
   "id_token_signing_alg_values_supported": [
-    "ES256"
+    "ES256",
+    "ES256K",
+    "EdDSA",
+    "RS256"
   ],
   "request_object_signing_alg_values_supported": [
     "ES256",
