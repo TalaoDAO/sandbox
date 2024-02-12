@@ -871,7 +871,7 @@ profile = {
         },
         "BASELINE":
         {
-            "oidc4vciDraft": "11",
+            "oidc4vciDraft": "13",
             "siopv2Draft": "12",
             "oidc4vpDraft": "18",
             "vc_format": "vc+sd-jwt",
@@ -881,35 +881,83 @@ profile = {
             "credentials_as_json_object_array": False,
             "siopv2_prefix": "openid-vc://",
             "oidc4vp_prefix": "openid-vc://",
-            "credentials_types_supported": ["IdentityCredential"],
-            "credentials_supported": [
-                {
+            "credentials_types_supported": ["IdentityCredential"], 
+            "credentials_supported": {
+                "IdentityCredential": {
+                    "format": "vc+sd-jwt",
+                    "scope": "identity_credential",
                     "display": [
                         {
-                            "name": "Credential Identity",
-                            "description": "Credential Identity with Draft 11",
-                            "background_color": "#3B6F6D",
-                            "text_color": "#FFFFFF",
-                            "logo": {
-                                "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
-                                "alt_text": "An orange block shape, with the text Dutch Blockchain Coalition next to it, portraying the logo of the Dutch Blockchain Coalition."
-                            },
-                            "background_image": {
-                                "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
-                                "alt_text": "Connected open cubes in blue with one orange cube as a background of the card"
-                            }
+                            "name": "Identity Credential",
+                            "locale": "en-US",
+                            "background_color": "#12107c",
+                            "text_color": "#FFFFFF"
                         }
                     ],
-                    "format": "vc+sd-jwt",
-                    "trust_framework": None,
-                    #"types": [
-                    #    "IdentityCredential"
-                    #],
-                    "vct": "IdentityCredential",
-                    "id": "IdentityCredential",
-                    "scope": None
+                    "claims": {
+                        "given_name": {
+                            "mandatory": True,
+                            "display": [
+                                {
+                                    "name": "First Name",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "Vorname",
+                                    "locale": "de-DE"
+                                },
+                                {
+                                    "name": "Prenom",
+                                    "locale": "de-FR"
+                                }
+                            ]
+                        },
+                        "family_name": {
+                            "mandatory": True,
+                            "display": [
+                                {
+                                    "name": "Last Name",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "Nachname",
+                                    "locale": "de-DE"
+                                },
+                                {
+                                    "name": "Nom",
+                                    "locale": "de-FR"
+                                }
+                            ]
+                        },
+                        "email": {},
+                        "phone_number": {},
+                        "address": {
+                            "street_address": {},
+                            "locality": {},
+                            "region": {},
+                            "country": {}
+                        },
+                        "birthdate": {},
+                        "is_over_18": {},
+                        "is_over_21": {},
+                        "is_over_65": {}
+                    },
+                    "cryptographic_binding_methods_supported": [
+                        "jwk",
+                        "DID"
+                    ],
+                    "credential_signing_alg_values_supported": [
+                        "ES256",
+                        "ES384",
+                        "ES512",
+                        "ES256K"
+                    ],
+                    "vct": "https://credentials.example.com/identity_credential",
+                    "proof_types_supported": [
+                        "jwt"
+                    ]
                 }
-            ],
+            },
             "grant_types_supported": [
                 "authorization_code",
                 "urn:ietf:params:oauth:grant-type:pre-authorized_code"
