@@ -208,7 +208,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key):
     issuer_key = json.loads(issuer_key) if isinstance(issuer_key, str) else issuer_key
     _sd = []
     _disclosure = ""
-    for claim in [ attribute for attribute in unsecured.keys() if attribute != "vct"]:
+    for claim in [attribute for attribute in unsecured.keys() if attribute != "vct"]:
         contents = json.dumps([salt(), claim, unsecured[claim]])
         disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
         _disclosure += "~" + disclosure 
@@ -217,8 +217,8 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key):
     pub_key = json.loads(signer_key.export(private_key=False) )
     pub_key['kid'] = signer_key.thumbprint()
     header = {
-        'typ':"vc+sd-jwt",
-        'kid':  pub_key['kid'],
+        'typ': "vc+sd-jwt",
+        'kid': pub_key['kid'],
         'alg': alg(issuer_key)
     }
     payload = {
@@ -229,8 +229,8 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key):
         "cnf": {
             "jwk": subject_key
         },
-        "_sd" : _sd,
-        "vct" : unsecured['vct'],
+        "_sd": _sd,
+        "vct": unsecured['vct'],
     }
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)

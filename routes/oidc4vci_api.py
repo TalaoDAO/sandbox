@@ -675,6 +675,8 @@ async def issuer_credential(issuer_id, red, mode):
                 return Response(**manage_error("invalid_proof", "Proof of key ownership, signature verification error: " + str(e), red, mode, request=request, stream_id=stream_id))
             proof_payload = oidc4vc.get_payload_from_token(proof)
             wallet_jwk = proof_header.get('jwk')  # GAIN POC
+            if not wallet_jwk: # Baseline profile with kid
+                wallet_jwk = oidc4vc.resolve_did(proof_header.get('kid'))
             iss = proof_payload.get("iss")
             if access_token_data['client_id'] and iss != access_token_data['client_id']:
                 return Response(**manage_error("invalid_proof", "iss of proof of key is different from client_id", red, mode, request=request, stream_id=stream_id))
@@ -693,6 +695,7 @@ async def issuer_credential(issuer_id, red, mode):
         logging.warning('No proof available -> Bearer credential, iss = client_id')
         wallet_jwk = None
         iss = access_token_data['client_id']
+    logging.info("wallet JWK = %s", wallet_jwk)
 
     # Get credential type requested
     credential_identifier = None
