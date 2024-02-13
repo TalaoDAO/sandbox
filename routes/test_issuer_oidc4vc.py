@@ -309,7 +309,7 @@ def test_8(mode):
         'X-API-KEY': client_secret
     }
     with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
-                credential = json.loads(f.read())
+        credential = json.loads(f.read())
     data = { 
         "issuer_id": issuer_id,
         "vc": {"IdentityCredential" : credential}, 
@@ -349,7 +349,7 @@ def test_6_2(red, mode): # VC is sent after delay
         "pre-authorized_code": True,
         "credential_type": offer,
         }
-    resp = requests.post(api_endpoint, headers=headers, json = data)
+    requests.post(api_endpoint, headers=headers, json = data)
     return redirect('/issuer/oidc/test')
 
 
@@ -505,7 +505,7 @@ def test_7(mode):
         issuer_id = "cqmygbreop"
         client_secret = "a71f33f9-3100-11ee-825b-9db9eb02bfb8"
 
-    offer = ["EmailPass", "EmployeeCredential"]
+    offer = ["EmailPass", "VerifiableId"]
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret

@@ -156,7 +156,7 @@ profile = {
                         }
                     ]
                 },
-                 {
+                {
                     "id": "Over18",
                     "format": "ldp_vc",
                     "types": [
@@ -224,7 +224,27 @@ profile = {
                             "name": "Verifiable Id",
                             "locale": "en-GB"
                         }
-                    ]
+                    ],
+                    "credentialSubject": {
+                            "firstName": {
+                                "mandatory": True,
+                                "display": [
+                                    {
+                                        "name": "First Name",
+                                        "locale": "en-US"
+                                    }
+                                ]
+                            },
+                            "familyName": {
+                                "mandatory": True,
+                                "display": [
+                                    {
+                                        "name": "Family Name",
+                                        "locale": "en-US"
+                                    }
+                                ]
+                            }
+                        }
                 },
                 {
                     "id": "EmailPass",
@@ -364,7 +384,27 @@ profile = {
                             "description": "This card is a proof of your identity. You can use it when you need to prove your email ownership with services that have already adopted the verifiable and decentralized identity system.",
                             "locale": "en-GB"
                         }
-                    ]
+                    ],
+                    "credentialSubject": {
+                            "firstName": {
+                                "mandatory": True,
+                                "display": [
+                                    {
+                                        "name": "First Name",
+                                        "locale": "en-US"
+                                    }
+                                ]
+                            },
+                            "familyName": {
+                                "mandatory": True,
+                                "display": [
+                                    {
+                                        "name": "Family Name",
+                                        "locale": "en-US"
+                                    }
+                                ]
+                            }
+                        }
                 },
                 {
                     "id": "Over18",
