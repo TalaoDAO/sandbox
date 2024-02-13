@@ -699,8 +699,12 @@ async def issuer_credential(issuer_id, red, mode):
     else:
         logging.warning('No proof available -> Bearer credential, iss = client_id')
         wallet_jwk = None
-        iss = access_token_data['client_id']
+        if vc_format == 'ldp_vc':
+            iss = None  # wallet_did
+        else:
+            iss = access_token_data['client_id']  # wallet_did
     logging.info("wallet JWK = %s", wallet_jwk)
+    logging.info("iss = %s", iss)
 
     # Get credential type requested
     credential_identifier = None
@@ -869,8 +873,7 @@ async def issuer_deferred(issuer_id, red, mode):
     try:
         acceptance_token_data = json.loads(red.get(acceptance_token).decode())
     except Exception:
-        return Response(**manage_error("invalid_token", "Acceptance token expired", red, mode, request=request, status=410)
-        )
+        return Response(**manage_error("invalid_token", "Acceptance token expired", red, mode, request=request, status=410))
 
     issuer_state = acceptance_token_data["issuer_state"]
     credential_type = acceptance_token_data["credential_type"]
