@@ -649,6 +649,7 @@ async def issuer_credential(issuer_id, red, mode):
         result = request.json
     except Exception:
         return Response(**manage_error("invalid_request", "Invalid request format", red, mode, request=request, stream_id=stream_id))
+    
 
     # check vc format
     vc_format = result.get("format")
@@ -659,6 +660,10 @@ async def issuer_credential(issuer_id, red, mode):
         if result.get('format') == "vc+sd-jwt" and not result.get("vct"):
             return Response(**manage_error("invalid_request", "Invalid request format, vct is missing for vc+sd-jwt format", red, mode, request=request, stream_id=stream_id))
 
+    # check types
+    if vc_format in ["ldp_vc", "jwt_vc_json", "jwt_vc_json-ld", "jwt_vc"] and not result.get('types'):
+        return Response(**manage_error("unsupported_credential_format", "Invalid VC format, types is missing", red, mode, request=request, stream_id=stream_id))
+    
     # check proof if it exists depending on type of proof
     proof = result.get("proof")
     if proof:
