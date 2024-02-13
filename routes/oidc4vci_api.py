@@ -704,7 +704,7 @@ async def issuer_credential(issuer_id, red, mode):
         else:
             iss = access_token_data['client_id']  # wallet_did
     logging.info("wallet JWK = %s", wallet_jwk)
-    logging.info("iss = %s", iss)
+    logging.info("iss / wallet_did = %s", iss)
 
     # Get credential type requested
     credential_identifier = None

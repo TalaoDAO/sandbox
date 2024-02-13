@@ -935,6 +935,19 @@ profile = {
                         }
                     ],
                     "claims": {
+                        "iss": {
+                            "mandatory": True,
+                            "display": [
+                                {
+                                    "name": "Issuer",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "Emetteur",
+                                    "locale": "de-FR"
+                                }
+                            ]
+                        },
                         "given_name": {
                             "mandatory": True,
                             "display": [
@@ -1031,6 +1044,19 @@ profile = {
                         }
                     ],
                     "claims": {
+                        "iss": {
+                            "mandatory": True,
+                            "display": [
+                                {
+                                    "name": "Issuer",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "Emetteur",
+                                    "locale": "de-FR"
+                                }
+                            ]
+                        },
                         "given_name": {
                             "mandatory": True,
                             "display": [
