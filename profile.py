@@ -602,6 +602,7 @@ profile = {
             "credentials_supported": {
                 "EmployeeCredential": {
                     "format": "jwt_vc_json",
+                    "scope": "EmployeeCredential_scope",
                     "credential_definition":{
                         "type": [
                             "VerifiableCredential",
@@ -633,6 +634,7 @@ profile = {
                 },
                 "VerifiableId": {
                     "format": "jwt_vc_json",
+                    "scope": "VerifiableId_scope",
                     "credential_definition": {
                         "type": [
                             "VerifiableCredential",
@@ -678,8 +680,9 @@ profile = {
                         }
                     ]
                 },
-                "EmailPass" :{
+                "EmailPass": {
                     "format": "jwt_vc_json",
+                    "scope": "EmailPass_scope",
                     "credential_definition" : {
                         "type": [
                             "VerifiableCredential",
@@ -925,7 +928,7 @@ profile = {
             "credentials_supported": {
                 "IdentityCredential": {
                     "format": "vc+sd-jwt",
-                    "scope": "identity_credential",
+                    "scope": "IdentityCredential_scope",
                     "display": [
                         {
                             "name": "Identity Credential",
@@ -1034,7 +1037,7 @@ profile = {
             "credentials_supported": {
                 "IdentityCredential": {
                     "format": "vc+sd-jwt",
-                    "scope": "identity_credential",
+                    "scope": "identityCredential_scope",
                     "display": [
                         {
                             "name": "Identity Credential",

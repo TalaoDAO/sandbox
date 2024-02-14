@@ -31,8 +31,6 @@ def init_app(app,red, mode):
     return
 
 
-
-
 def issuer_oidc_test(mode):
     if mode.myenv == 'aws':
         issuer_id_test_1 = "zxhaokccsi"
@@ -119,76 +117,6 @@ def issuer_callback():
     return jsonify(f"Great ! request = {json.dumps(request.args)}")
 
 
-def test_4(mode):
-    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "tdiwmpyhzc"
-        client_secret = "5972a3b8-45c3-11ee-93f5-0a1628958560"
-    else: 
-        issuer_id = "raamxepqex"
-        client_secret = "5381c36b-45c2-11ee-ac39-9db132f0e4a1"
-    
-    with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
-        credential = json.loads(f.read())
-        
-    headers = {
-        'Content-Type': 'application/json',
-        'X-API-KEY': client_secret
-    }
-    data = { 
-        "issuer_id": issuer_id,
-        "vc": {'IdentityCredential': credential}, 
-        "issuer_state": str(uuid.uuid1()),
-        "credential_type": 'IdentityCredential',
-        "pre-authorized_code": True,
-        "user_pin_required": False,
-        "callback": mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
-    }
-    resp = requests.post(api_endpoint, headers=headers, json=data)
-    try:
-        qrcode = resp.json()['redirect_uri']
-    except Exception:
-        return jsonify("No qr code")
-    return redirect(qrcode)
-
-
-def test_2(mode):
-    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "sobosgdtgd"
-        client_secret = "9904f8ee-61f2-11ee-8e05-0a1628958560"
-    else:
-        issuer_id = "mjdgqkkmcf"
-        client_secret = "36f779d3-61f2-11ee-864a-532486291c32"
-    vc = 'EmailPass'
-    with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
-        credential = json.loads(f.read())
-    credential['id'] = "urn:uuid:" + str(uuid.uuid4())
-    credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-    credential['expirationDate'] = (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
-    
-    headers = {
-        'Content-Type': 'application/json',
-        'X-API-KEY': client_secret
-    }
-    data = { 
-        "issuer_id": issuer_id,
-        "vc": {vc: credential}, 
-        "issuer_state": str(uuid.uuid1()),
-        "credential_type": vc,
-        "pre-authorized_code": True,
-        "user_pin_required": True,
-        "user_pin": "666666",
-        "callback": mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
-    }
-    resp = requests.post(api_endpoint, headers=headers, json=data)
-    try:
-        qrcode = resp.json()['redirect_uri']
-    except Exception:
-        return jsonify("No qr code")
-    return redirect(qrcode) 
-
-
 def test_1(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
@@ -224,7 +152,108 @@ def test_1(mode):
         qrcode = resp.json()['redirect_uri']
     except Exception:
         return jsonify("No qr code")
+    return redirect(qrcode)
+
+
+def test_2(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
+    if mode.myenv == 'aws':
+        issuer_id = "sobosgdtgd"
+        client_secret = "9904f8ee-61f2-11ee-8e05-0a1628958560"
+    else:
+        issuer_id = "mjdgqkkmcf"
+        client_secret = "36f779d3-61f2-11ee-864a-532486291c32"
+    vc = 'EmailPass'
+    with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
+        credential = json.loads(f.read())
+    credential['id'] = "urn:uuid:" + str(uuid.uuid4())
+    credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+    credential['expirationDate'] = (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
+    
+    headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': client_secret
+    }
+    data = { 
+        "issuer_id": issuer_id,
+        "vc": {vc: credential}, 
+        "issuer_state": str(uuid.uuid1()),
+        "credential_type": vc,
+        "pre-authorized_code": True,
+        "user_pin_required": True,
+        "user_pin": "4444",
+        "callback": mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
+    }
+    resp = requests.post(api_endpoint, headers=headers, json=data)
+    try:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
+        return jsonify("No qr code")
     return redirect(qrcode) 
+
+
+def test_3(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
+    if mode.myenv == 'aws':
+        issuer_id = "cejjvswuep"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    else:       
+        issuer_id = "ooroomolyd"
+        client_secret = "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"
+
+    offer = ["VerifiableId", "PhoneProof"]
+
+    headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': client_secret
+    }
+    data = { 
+        "issuer_id": issuer_id,
+        "vc": build_credential_offered(offer), 
+        "issuer_state": str(uuid.uuid1()),
+        "credential_type": offer,
+        "pre-authorized_code": True,
+        "callback": mode.server + 'sandbox/issuer/callback',
+        }
+    resp = requests.post(api_endpoint, headers=headers, json = data)
+    try:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+
+
+def test_4(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
+    if mode.myenv == 'aws':
+        issuer_id = "tdiwmpyhzc"
+        client_secret = "5972a3b8-45c3-11ee-93f5-0a1628958560"
+    else: 
+        issuer_id = "raamxepqex"
+        client_secret = "5381c36b-45c2-11ee-ac39-9db132f0e4a1"
+    
+    with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
+        credential = json.loads(f.read())
+        
+    headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': client_secret
+    }
+    data = { 
+        "issuer_id": issuer_id,
+        "vc": {'IdentityCredential': credential}, 
+        "issuer_state": str(uuid.uuid1()),
+        "credential_type": 'IdentityCredential',
+        "pre-authorized_code": True,
+        "user_pin_required": False,
+        "callback": mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
+    }
+    resp = requests.post(api_endpoint, headers=headers, json=data)
+    try:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
+        return jsonify("No qr code")
+    return redirect(qrcode)
 
 
 def test_5(mode):
@@ -259,71 +288,7 @@ def test_5(mode):
         qrcode =  resp.json()['redirect_uri']
     except Exception:
         return jsonify("No qr code")
-    return redirect(qrcode) 
-
-
-def test_11(mode):
-    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "pcbrwbvrsi"
-        client_secret = "0f4103ef-42c3-11ee-9015-0a1628958560"
-    else: 
-        issuer_id = "kwcdgsspng"
-        client_secret = "6f1dd8a5-42c3-11ee-b096-b5bae73ba948"
-    
-    offer = ['VerifiableDiploma']
-    headers = {
-        'Content-Type': 'application/json',
-        'X-API-KEY': client_secret
-    }
-
-    data = { 
-        "issuer_id" : issuer_id,
-        "vc": build_credential_offered(offer), 
-        "issuer_state": str(uuid.uuid1()),
-        "credential_type": offer,
-        "pre-authorized_code": False,
-        "callback": mode.server + 'sandbox/issuer/callback',
-        "user_pin_required": False
-        }
-    
-    resp = requests.post(api_endpoint, headers=headers, json = data)
-    try:
-        qrcode = resp.json()['redirect_uri']
-    except Exception:
-        return jsonify("No qr code")
-    return redirect(qrcode) 
-
-    
-def test_8(mode):
-    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "npwsshblrm"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-    else:       
-        issuer_id = "npwsshblrm"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-
-    headers = {
-        'Content-Type': 'application/json',
-        'X-API-KEY': client_secret
-    }
-    with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
-        credential = json.loads(f.read())
-    data = { 
-        "issuer_id": issuer_id,
-        "vc": {"IdentityCredential" : credential}, 
-        "issuer_state": str(uuid.uuid1()),
-        "pre-authorized_code": True,
-        "credential_type": ['IdentityCredential'],
-        "callback": mode.server + 'sandbox/issuer/callback',
-        }
-    resp = requests.post(api_endpoint, headers=headers, json = data)
-    try:
-        qrcode = resp.json()['redirect_uri']
-    except Exception:
-        return jsonify("No qr code")
-    return redirect(qrcode) 
+    return redirect(qrcode)
 
 
 def test_6_2(red, mode): # VC is sent after delay
@@ -382,20 +347,19 @@ def test_6_1(red, mode):
         qrcode =  resp.json()['redirect_uri']
     except Exception:
         return jsonify("No qr code")
-    return redirect(qrcode + '?issuer_state=' + issuer_state) 
+    return redirect(qrcode + '?issuer_state=' + issuer_state)
 
 
-def test_3(mode):
+def test_7(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
-        issuer_id = "cejjvswuep"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-    else:       
-        issuer_id = "ooroomolyd"
-        client_secret = "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"
+        issuer_id = "mfyttabosy"
+        client_secret = "c0ab5d96-3113-11ee-a3e3-0a1628958560"
+    else:
+        issuer_id = "cqmygbreop"
+        client_secret = "a71f33f9-3100-11ee-825b-9db9eb02bfb8"
 
-    offer = ["VerifiableId", "PhoneProof"]
-
+    offer = ["EmailPass", "VerifiableId"]
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
@@ -405,7 +369,38 @@ def test_3(mode):
         "vc": build_credential_offered(offer), 
         "issuer_state": str(uuid.uuid1()),
         "credential_type": offer,
+        "pre-authorized_code": False,
+        "callback": mode.server + 'sandbox/issuer/callback',
+        }
+    resp = requests.post(api_endpoint, headers=headers, json=data)
+    try:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+
+
+def test_8(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
+    if mode.myenv == 'aws':
+        issuer_id = "npwsshblrm"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    else:       
+        issuer_id = "npwsshblrm"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+
+    headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': client_secret
+    }
+    with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
+        credential = json.loads(f.read())
+    data = { 
+        "issuer_id": issuer_id,
+        "vc": {"IdentityCredential" : credential}, 
+        "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
+        "credential_type": ['IdentityCredential'],
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
@@ -496,29 +491,32 @@ def test_10(mode):
     return redirect(qrcode) 
 
 
-def test_7(mode):
+def test_11(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
-        issuer_id = "mfyttabosy"
-        client_secret = "c0ab5d96-3113-11ee-a3e3-0a1628958560"
-    else:
-        issuer_id = "cqmygbreop"
-        client_secret = "a71f33f9-3100-11ee-825b-9db9eb02bfb8"
-
-    offer = ["EmailPass", "VerifiableId"]
+        issuer_id = "pcbrwbvrsi"
+        client_secret = "0f4103ef-42c3-11ee-9015-0a1628958560"
+    else: 
+        issuer_id = "kwcdgsspng"
+        client_secret = "6f1dd8a5-42c3-11ee-b096-b5bae73ba948"
+    
+    offer = ['VerifiableDiploma']
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
     }
+
     data = { 
-        "issuer_id": issuer_id,
+        "issuer_id" : issuer_id,
         "vc": build_credential_offered(offer), 
         "issuer_state": str(uuid.uuid1()),
         "credential_type": offer,
-        "pre-authorized_code": True,
+        "pre-authorized_code": False,
         "callback": mode.server + 'sandbox/issuer/callback',
+        "user_pin_required": False
         }
-    resp = requests.post(api_endpoint, headers=headers, json=data)
+    
+    resp = requests.post(api_endpoint, headers=headers, json = data)
     try:
         qrcode = resp.json()['redirect_uri']
     except Exception:
@@ -554,7 +552,6 @@ def test_12(mode):
     except Exception:
         return jsonify("No qr code")
     return redirect(qrcode) 
-
 
 
 def build_credential_offered(offer):

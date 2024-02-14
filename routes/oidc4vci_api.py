@@ -411,6 +411,7 @@ def authorization_error(error, error_description, stream_id, red, state):
         return urlencode(resp)
 
 
+# authorization code endpoint
 def issuer_authorize(issuer_id, red, mode):
     try:
         issuer_state = request.args['issuer_state']
@@ -418,7 +419,7 @@ def issuer_authorize(issuer_id, red, mode):
     except Exception:
         return jsonify({'error': 'access_denied'}), 403
 
-    scope = request.args.get('scope')  # not required for this flow
+    scope = request.args.get('scope')
     nonce = request.args.get('nonce')
     code_challenge = request.args.get('code_challenge')
     code_challenge_method = request.args.get('code_challenge_method')
