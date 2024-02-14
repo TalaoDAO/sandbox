@@ -726,6 +726,8 @@ async def issuer_credential(issuer_id, red, mode):
                 if issuer_profile["credentials_supported"][vc]['credential_definition']['type'] == type:
                     credential_type = vc
                     break
+        if not credential_type:
+            return Response(**manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
     elif int(issuer_profile['oidc4vciDraft']) == 12:
         if result.get("credential_identifier"): # draft = 12 
             credential_identifier = result.get("credential_identifier")
@@ -741,8 +743,7 @@ async def issuer_credential(issuer_id, red, mode):
                     logging.info("credential type = %s", credential_type)
                     break
             if not credential_type:
-                return Response(
-                    **manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
+                return Response(**manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
     elif int(issuer_profile['oidc4vciDraft']) == 11:
         credentials_supported = issuer_profile["credentials_supported"]
         if vc_format == "vc+sd-jwt" and result.get('vct'):  #draft 11 with vc+sd-jwt"
@@ -761,14 +762,18 @@ async def issuer_credential(issuer_id, red, mode):
                     logging.info("credential type = %s", credential_type)
                     break
         if not credential_type:
-            return Response(
-                **manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
+            return Response(**manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
     elif int(issuer_profile['oidc4vciDraft']) < 11:
-        credential_type = result["type"]
-        logging.info("credential type = %s", credential_type)
+        for one_type in result["types"]:
+            if one_type not in ["VerifiableCredential", "VerifiableAttestation"]:
+                credential_type = one_type
+                break    
+        if not credential_type:
+            return Response(**manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
     else:
         return Response(**manage_error("invalid_request", "Invalid request format", red, mode, request=request, stream_id=stream_id))
-
+    logging.info("credential type = %s", credential_type)
+    
     # deferred use case
     if issuer_data.get("deferred_flow"):
         deferred_random = str(uuid.uuid1())
