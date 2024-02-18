@@ -519,6 +519,7 @@ def oidc4vc_login_qrcode(red, mode):
         for i in ["1", "2", "3", "4"]:
             vc = 'vc_' + i
             reason = 'reason_' + i
+            print("verifier type = ",  profile[verifier_data['profile']].get("verifier_vp_type"))
             if verifier_data[vc] != 'None':
                 if verifier_data.get('filter_type_array'):
                     prez.add_constraint_with_type_array(
@@ -578,17 +579,23 @@ def oidc4vc_login_qrcode(red, mode):
                 )
 
     # add format depending on profile
-    if 'vp_token' in response_type and profile[verifier_data['profile']].get("verifier_vp_type") == 'ldp_vp':
-        prez.add_format_ldp_vp()
-        prez.add_format_ldp_vc()
-    if 'vp_token' in response_type and profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp':
-        prez.add_format_jwt_vp()
-        prez.add_format_jwt_vc()
-    if 'vp_token' in response_type and profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp_json':
-        prez.add_format_jwt_vp_json()
-        prez.add_format_jwt_vc_json()
-    if 'vp_token' in response_type and profile[verifier_data['profile']].get("verifier_vp_type") == 'vc+sd-jwt':
-        prez.add_format_sd_jwt()
+    if 'vp_token' in response_type: 
+        if profile[verifier_data['profile']].get("verifier_vp_type") == 'ldp_vp':
+            prez.add_format_ldp_vp()
+            prez.add_format_ldp_vc()
+        elif profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp':
+            prez.add_format_jwt_vp()
+            prez.add_format_jwt_vc()
+        elif profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp_json':
+            prez.add_format_jwt_vp_json()
+            prez.add_format_jwt_vc_json()
+        elif profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp_json-ld':
+            prez.add_format_jwt_vp_json()
+            prez.add_format_jwt_vc_json()
+        elif profile[verifier_data['profile']].get("verifier_vp_type") == 'vc+sd-jwt':
+            prez.add_format_sd_jwt()
+        else:
+            return render_template("verifier_oidc/verifier_session_problem.html", message='VOP format not supported')
 
     nonce = nonce or str(uuid.uuid1())
     redirect_uri = mode.server + "verifier/wallet/endpoint/" + stream_id

@@ -211,9 +211,23 @@ def oidc4vc_verifier_console(mode):
                             session['client_data'][vc],
                             "Input descriptor for credential " + i,
                             session['client_data'][reason],
-                            id= session['client_data'][vc].lower() + '_' + i
+                            id = session['client_data'][vc].lower() + '_' + i
                         ) 
-            else:     
+            elif profile[session['client_data']['profile']].get("verifier_vp_type") == 'vc+sd-jwt':
+                if not prez:
+                    prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
+                for i in ["1", "2", "3", "4"]:
+                    vc = 'vc_' + i
+                    reason = 'reason_' + i
+                    if session['client_data'][vc] != 'None'  :
+                        prez.add_constraint(
+                            "$.vct",
+                            session['client_data'][vc],
+                            "Input descriptor for credential " + i,
+                            session['client_data'][reason],
+                            id=session['client_data'][vc].lower() + '_' + i
+                        )
+            else:
                 if not prez:
                     prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
                 for i in ["1", "2", "3", "4"]:
@@ -225,7 +239,7 @@ def oidc4vc_verifier_console(mode):
                             session['client_data'][vc],
                             "Input descriptor for credential " + i,
                             session['client_data'][reason],
-                            id= session['client_data'][vc].lower() + '_' + i
+                            id=session['client_data'][vc].lower() + '_' + i
                         )
         
         if session['client_data'].get('vp_token') and session['client_data'].get('group'): 
@@ -260,15 +274,23 @@ def oidc4vc_verifier_console(mode):
                         id=session['client_data'][vc].lower() + '_' + i
                     )
             
-        if session['client_data'].get('vp_token') and profile[session['client_data']['profile']]["verifier_vp_type"] == 'ldp_vp':
-            prez.add_format_ldp_vp()
-            prez.add_format_ldp_vc()
-        
-        if session['client_data'].get('vp_token') and profile[session['client_data']['profile']]["verifier_vp_type"] == 'jwt_vp':
-            prez.add_format_jwt_vp()
-            prez.add_format_jwt_vc()
-
         if session['client_data'].get('vp_token'):
+            if profile[session['client_data']['profile']]["verifier_vp_type"] == 'ldp_vp':
+                prez.add_format_ldp_vp()
+                prez.add_format_ldp_vc()
+        
+            elif profile[session['client_data']['profile']]["verifier_vp_type"] == 'jwt_vp':
+                prez.add_format_jwt_vp()
+                prez.add_format_jwt_vc()
+            
+            elif profile[session['client_data']['profile']].get("verifier_vp_type") == 'jwt_vp_json':
+                prez.add_format_jwt_vp_json()
+                prez.add_format_jwt_vc_json()
+        
+            elif profile[session['client_data']['profile']].get("verifier_vp_type") == 'vc+sd-jwt':
+                prez.add_format_sd_jwt()
+            else:
+                pass
             presentation_definition = prez.get()
         else:
             presentation_definition = ""

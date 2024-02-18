@@ -43,7 +43,7 @@ logging.basicConfig(level=logging.INFO)
 # Environment variables set in gunicornconf.py  and transfered to environment.py
 mychain = os.getenv('MYCHAIN')
 myenv = os.getenv('MYENV')
-if not myenv :
+if not myenv:
     myenv='local'
 mode = environment.currentMode(mychain, myenv)
 
@@ -157,9 +157,9 @@ def build_credential_offered(offer):
 @app.route('/sandbox/md_file', methods=['GET'])
 def md_file():
     # https://dev.to/mrprofessor/rendering-markdown-from-flask-1l41
-    if request.args['file'] == 'privacy' :
+    if request.args['file'] == 'privacy':
         content = open('privacy_en.md', 'r').read()
-    elif request.args['file'] == 'terms_and_conditions' :
+    elif request.args['file'] == 'terms_and_conditions':
         content = open('mobile_cgu_en.md', 'r').read()
     else:
         return redirect(mode.server + 'login/')
@@ -235,14 +235,14 @@ class Issuer(Resource):
             'X-API-KEY': '<issuer_secret>'
         }
         
-        Swagger example : 
+        Swagger example: 
         issuer_id = ooroomolyd
         issuer_secret = f5fa78af-3aa9-11ee-a601-b33f6ebca22b
         
 
         payload = {
             "issuer_id": REQUIRED, see platform
-            "vc": CONDITIONAL -> { "EmployeeCredendial": {@context : .....}, ....}, json object, VC as a json-ld not signed 
+            "vc": CONDITIONAL -> { "EmployeeCredendial": {@context: .....}, ....}, json object, VC as a json-ld not signed 
             "deferred_vc": CONDITIONAL, default is None REQUIRED if vc is nt sent 
             "issuer_state": REQUIRED, string,
             "credential_type": REQUIRED -> array of the credentials offered
@@ -377,13 +377,13 @@ class Issuer(Resource):
 
 
 @app.route('/app/download' , methods=['GET']) 
-def app_download() :
+def app_download():
     return render_template('app_download/talao_app_download.html')
 
 
 # Google universal link for Talao wallet
 @app.route('/.well-known/assetlinks.json' , methods=['GET']) 
-def assetlinks(): 
+def assetlinks():
     document = json.load(open('assetlinks.json', 'r'))
     return jsonify(document)
 
@@ -400,7 +400,7 @@ def apple_app_site_association():
 def well_known_did_configuration():
     document = json.load(open('well_known_did_configuration.jsonld', 'r'))
     headers = {
-        "Content-Type" : "application/did+ld+json",
+        "Content-Type": "application/did+ld+json",
         "Cache-Control": "no-cache"
     }
     return Response(json.dumps(document), headers=headers)
@@ -424,13 +424,11 @@ def device_detector():
 def well_known_did():
     """
     did:web:talao.co
-    https://w3c-ccg.github.io/did-method-web/
-    https://identity.foundation/.well-known/resources/did-configuration/#LinkedDomains
     """
     DID_Document = json.load(open('DID_Document.json', 'r'))
     headers = {
-        "Content-Type" : "application/did+ld+json",
-        "Cache-Control" : "no-cache"
+        "Content-Type": "application/did+ld+json",
+        "Cache-Control": "no-cache"
     }
     return Response(json.dumps(DID_Document), headers=headers)
 
