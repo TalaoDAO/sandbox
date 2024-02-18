@@ -18,6 +18,7 @@ import pkce
 import requests
 import copy
 from jwcrypto import jwk
+import contextlib
 
 logging.basicConfig(level=logging.INFO)
 
@@ -662,6 +663,7 @@ async def issuer_credential(issuer_id, red, mode):
     if int(issuer_profile['oidc4vciDraft']) < 13:
         if vc_format in ["ldp_vc", "jwt_vc_json", "jwt_vc_json-ld", "jwt_vc"] and not result.get('types') :
             return Response(**manage_error("unsupported_credential_format", "Invalid VC format, types is missing", red, mode, request=request, stream_id=stream_id))
+
     
     # check proof if it exists depending on type of proof
     proof = result.get("proof")
@@ -1015,36 +1017,15 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
 def clean_jwt_vc_json(credential):
     vc = copy.copy(credential)
     vc['@context'] = ['https://www.w3.org/2018/credentials/v1']
-    try:
+    with contextlib.suppress(Exception):
         del vc['issuer']
-    except Exception:
-        pass
-    try:
         del vc['issued']
-    except Exception:
-        pass
-    try:
         del vc['id']
-    except Exception:
-        pass
-    try:
         del vc['issuanceDate']
-    except Exception:
-        pass
-    try:
         del vc['credentialSubject']['id']
-    except Exception:
-        pass
-    try:
         del vc['expirationDate']
-    except Exception:
-        pass
-    try:
         del vc['validFrom']
-    except Exception:
-        pass
-    try:
         del vc['validUntil']
-    except Exception:
-        pass
+        del vc['credentialStatus']
+        del vc['credentialSchema']
     return vc

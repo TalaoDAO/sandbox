@@ -48,6 +48,7 @@ oidc4vc_profile_list = {
 oidc4vc_verifier_credential_list = {
     #"DID": "Authentication",
     "None": "None",
+    'IdentityCredential': 'Identity Credential GAIN POC',
     'VerifiableId':  'Verifiable ID',
     'VerifiableDiploma': 'EBSI Diploma',
     'EmployeeCredential': 'Employee Credential',

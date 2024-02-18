@@ -528,6 +528,14 @@ def oidc4vc_login_qrcode(red, mode):
                         verifier_data[reason],
                         id= verifier_data[vc].lower() + '_' + i
                     )
+                elif profile[verifier_data['profile']].get("verifier_vp_type") == 'vc+sd-jwt':
+                    prez.add_constraint(
+                        "$.vct",
+                        verifier_data[vc],
+                        "Input descriptor for credential " + i,
+                        verifier_data[reason],
+                        id=verifier_data[vc].lower() + '_' + i
+                    )
                 else:
                     prez.add_constraint(
                         "$.credentialSubject.type",
@@ -576,6 +584,11 @@ def oidc4vc_login_qrcode(red, mode):
     if 'vp_token' in response_type and profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp':
         prez.add_format_jwt_vp()
         prez.add_format_jwt_vc()
+    if 'vp_token' in response_type and profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp_json':
+        prez.add_format_jwt_vp_json()
+        prez.add_format_jwt_vc_json()
+    if 'vp_token' in response_type and profile[verifier_data['profile']].get("verifier_vp_type") == 'vc+sd-jwt':
+        prez.add_format_sd_jwt()
 
     nonce = nonce or str(uuid.uuid1())
     redirect_uri = mode.server + "verifier/wallet/endpoint/" + stream_id
@@ -697,7 +710,7 @@ def oidc4vc_login_qrcode(red, mode):
     try:
         r = requests.get(authorization_request_displayed['request_uri'])
         request_uri_jwt = r.content.decode()
-    except:
+    except Exception:
         request_uri_jwt =""
 
     deeplink_altme = mode.deeplink_altme + 'app/download/authorize?' + urlencode(authorization_request_displayed)

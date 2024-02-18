@@ -427,82 +427,13 @@ def well_known_did():
     https://w3c-ccg.github.io/did-method-web/
     https://identity.foundation/.well-known/resources/did-configuration/#LinkedDomains
     """
-    DidDocument = did_doc()
+    DID_Document = json.load(open('DID_Document.json', 'r'))
     headers = {
         "Content-Type" : "application/did+ld+json",
         "Cache-Control" : "no-cache"
     }
-    return Response(json.dumps(DidDocument), headers=headers)
+    return Response(json.dumps(DID_Document), headers=headers)
 
-
-def did_doc():
-    return {
-        "@context": 
-            [
-                "https://www.w3.org/ns/did/v1",
-                {
-                    "@id": "https://w3id.org/security#publicKeyJwk",
-                    "@type": "@json"
-                }
-            ],
-            "id": "did:web:talao.co",
-            "verificationMethod":
-                [
-                    {
-                        "id": "did:web:talao.co#key-1",
-                        "type": "JwsVerificationKey2020",
-                        "controller": "did:web:talao.co",
-                        "publicKeyJwk": {
-                            "e":"AQAB",
-                            "kid": "did:web:talao.co#key-1",
-                            "kty": "RSA",
-                            "n": "mIPHiLUlfIwj9udZARJg5FlyXuqMsyGHucbA-CqpJh98_17Qvd51SAdg83UzuCihB7LNYXEujnzEP5J5mAWsrTi0G3CRFk-pU_TmuY8p57M_NXvB1EJsOrjuki5HmcybzfkJMtHydD7gVotPoe-W4f8TxWqB54ve4YiFczG6A43yB3lLCYZN2wEWfwKD_FcaC3wKWdHFxqLkrulD4pVZQ_DwMNuf2XdCvEzpC33ZsU3DB6IxtcSbVejGCyq5EXroIh1-rp6ZPuCGExg8CjiLehsWvOmBac9wO74yfo1IF6PIrQQNkFA3vL2YWjp3k8SO0PAaUMF44orcUI_OOHXYLw"
-                        }
-                    },
-                    {
-                        "id": "did:web:talao.co#key-2",
-                        "type": "JwsVerificationKey2020",
-                        "controller": "did:web:talao.co",
-                        "publicKeyJwk": {
-                            "crv": "P-256",
-                            "kty": "EC",
-                            "x": "Bls7WaGu_jsharYBAzakvuSERIV_IFR2tS64e5p_Y_Q",
-                            "y": "haeKjXQ9uzyK4Ind1W4SBUkR_9udjjx1OmKK4vl1jko"
-                        }
-                    },
-                    {
-                        "id": "did:web:talao.co#key-3",
-                        "type": "JwsVerificationKey2020",
-                        "controller": "did:web:talao.co",
-                        "publicKeyJwk": {
-                            "crv": "Ed25519",
-                            "kty": "OKP",
-                            "x": "FUoLewH4w4-KdaPH2cjZbL--CKYxQRWR05Yd_bIbhQo"
-                        }
-                    },
-                ],
-            "authentication" : [
-                "did:web:talao.co#key-1",
-            ],
-            "assertionMethod" : [
-                "did:web:talao.co#key-1",
-                "did:web:talao.co#key-2",
-                "did:web:talao.co#key-3"
-            ],
-            "keyAgreement" : [
-                "did:web:talao.co#key-3"
-            ],
-            "capabilityInvocation":[
-                "did:web:talao.co#key-1"
-            ],
-            "service": [
-                {
-                    "id": 'did:web:talao.co#domain-1',
-                    "type": 'LinkedDomains',
-                    "serviceEndpoint": "https://talao.co"
-                }
-            ]
-        }
 
 
 # MAIN entry point for test
