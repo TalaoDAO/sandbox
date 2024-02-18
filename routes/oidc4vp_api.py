@@ -801,7 +801,6 @@ async def oidc4vc_login_endpoint(stream_id, red):
         presentation_submission = request.form.get('presentation_submission')
         response_format = "ok"
         logging.info('id_token received = %s', id_token)
-
         state = request.form.get('id_token')
 
         # check types of vp
@@ -819,15 +818,14 @@ async def oidc4vc_login_endpoint(stream_id, red):
         else: 
             logging.info('vp token received = %s', vp_token)
         
-        #with open('vp_token.txt', 'w') as outfile:
+        #  with open('vp_token.txt', 'w') as outfile:
         #    outfile.write(vp_token)
         
         if presentation_submission:
             logging.info('presentation submission received = %s', json.dumps(json.loads(presentation_submission), indent=4))
-        else: 
+        else:
             logging.info('No presentation submission received')
-        
-
+    
         if not id_token and not vp_token:
             response_format = "invalid request format",
             access = False
@@ -845,7 +843,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
     if access and vp_token:
         if not presentation_submission:
             presentation_submission_status = "Not found"
-            #access = False # TODO
+            # access = False # TODO
         else:
             presentation_submission_status = "ok"
 
@@ -893,6 +891,8 @@ async def oidc4vc_login_endpoint(stream_id, red):
     # check vp_token signature
     if access and vp_token:
         if vp_type == "jwt_vp":
+            if len(vp_token.split("~")) > 1: # sd_jwt
+                vp_token = vp_token.split("~")[0]
             try:
                 oidc4vc.verif_token(vp_token, nonce)
                 vp_token_status = "ok"

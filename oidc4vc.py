@@ -83,7 +83,7 @@ def resolve_wallet_did_ebsi_v3(did) -> str:
         return
 
 
-def generate_wallet_did_ebsiv3 (key):
+def generate_wallet_did_ebsiv3(key):
     # json string, remove space, alphabetical ordered 
     if isinstance(key, str):
         key = json.loads(pub_key)
@@ -234,7 +234,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key):
     }
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
-    return token.serialize() + _disclosure
+    return token.serialize() + _disclosure + "~"
 
 
 def build_pre_authorized_code(key, wallet_did, issuer_did, issuer_vm, nonce):
@@ -254,7 +254,7 @@ def build_pre_authorized_code(key, wallet_did, issuer_did, issuer_vm, nonce):
         "iss": issuer_did,
         "nonce": nonce
     }
-    token = jwt.JWT(header=header,claims=payload, algs=[alg(key)])
+    token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
     token.make_signed_token(key)
     return token.serialize()
 
@@ -381,6 +381,7 @@ def thumbprint(key):
     a  += "=" * ((4 - len(a) % 4) % 4) 
     return base64.urlsafe_b64decode(a).hex()
 
+
 def thumbprint_str(key):
     key = json.loads(key) if isinstance(key, str) else key
     if key['crv'] == 'P-256K':
@@ -388,7 +389,6 @@ def thumbprint_str(key):
     signer_key = jwk.JWK(**key) 
     return signer_key.thumbprint()
     
-
 
 def verification_method(did, key): # = kid
     key = json.loads(key) if isinstance(key, str) else key
@@ -417,7 +417,6 @@ def resolve_did_web(did) -> str:
         logging.warning('return API code = %s', r.status_code)
         return "{'error': 'did:web not found on server'}"
     return r.json()
-
 
 
 def did_resolve_lp(did):
