@@ -522,6 +522,9 @@ def issuer_token(issuer_id, red, mode):
         return Response(**manage_error('invalid_request', 'Grant type not supported', red, mode, request=request))
     if not code:
         return Response(**manage_error('invalid_request', 'Request format is incorrect, code is missing', red, mode, request=request))
+    if grant_type == 'authorization_code' and not request.form.get('redirect_uri'):
+        return Response(**manage_error('invalid_request', 'Request format is incorrect, redirect_uri is missing', red, mode, request=request))
+
 
     # display client_authentication method
     if request.headers.get('Authorization'):
