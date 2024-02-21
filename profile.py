@@ -1,7 +1,7 @@
 profile = {
     "EBSI-V3":
         {
-            "oidc4vciDraft" : "10",
+            "oidc4vciDraft": "10",
             "siopv2Draft": "12",
             "oidc4vpDraft": "13",
             "vc_format": "jwt_vc",
@@ -278,6 +278,30 @@ profile = {
                     ]
                 },
                 {
+                    "id": "Liveness",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "Liveness"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Proof of humanity",
+                            "description": "This card is a proof that your are a human being",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
                     "id": "VerifiableId",
                     "format": "ldp_vc",
                     "types": [
@@ -386,7 +410,7 @@ profile = {
             "credential_manifest_support": False,
             "siopv2_prefix": "openid-vc://",
             "oidc4vp_prefix": "openid-vc://",
-            "credentials_types_supported": ["VerifiableId", "Over18", "Over15", "EmailPass", "PhoneProof"],
+            "credentials_types_supported": ["Over18", "Over15", "Over13", "Over21", "Over65", "Over50", "VerifiableId", "EmailPass", "PhoneProof", "Liveness"],
             "credentials_supported": [
                 {
                     "id": "VerifiableId",
@@ -433,11 +457,11 @@ profile = {
                         }
                 },
                 {
-                    "id": "Over18",
+                    "id": "Over13",
                     "format": "jwt_vc_json",
                     "types": [
                         "VerifiableCredential",
-                        "Over18"
+                        "Over13"
                     ],
                     "cryptographic_binding_methods_supported": [
                         "DID"
@@ -450,8 +474,8 @@ profile = {
                     ],
                     "display": [
                         {
-                            "name": "Over 18",
-                            "description": "This is a verifiable credential",
+                            "name": "Over 13",
+                            "description": "This card is a proof that your are over 13 yo. You can use it when you need to prove your age with services that have already adopted the verifiable and decentralized identity system.",
                             "locale": "en-GB"
                         }
                     ]
@@ -475,7 +499,128 @@ profile = {
                     "display": [
                         {
                             "name": "Over 15",
+                            "description": "This card is a proof that your are over 15 yo. You can use it when you need to prove your age with services that have already adopted the verifiable and decentralized identity system.",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id": "Over18",
+                    "format": "jwt_vc_json",
+                    "types": [
+                        "VerifiableCredential",
+                        "Over18"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Over 18",
+                            "description": "This card is a proof that your are over 18 yo. You can use it when you need to prove your age with services that have already adopted the verifiable and decentralized identity system.",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id": "Over21",
+                    "format": "jwt_vc_json",
+                    "types": [
+                        "VerifiableCredential",
+                        "Over21"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Over 21",
+                            "description": "This card is a proof that your are over 21 yo. You can use it when you need to prove your age with services that have already adopted the verifiable and decentralized identity system.",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id": "Over50",
+                    "format": "jwt_vc_json",
+                    "types": [
+                        "VerifiableCredential",
+                        "Over50"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Over 50",
+                            "description": "This card is a proof that your are over 50 yo. You can use it when you need to prove your age with services that have already adopted the verifiable and decentralized identity system.",
                             "description": "This is a verifiable credential",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id": "Over65",
+                    "format": "jwt_vc_json",
+                    "types": [
+                        "VerifiableCredential",
+                        "Over65"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Over 65",
+                            "description": "This card is a proof that your are over 65 yo. You can use it when you need to prove your age with services that have already adopted the verifiable and decentralized identity system.",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id": "Liveness",
+                    "format": "jwt_vc_json",
+                    "types": [
+                        "VerifiableCredential",
+                        "Liveness"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Proof of HUmanity",
+                            "description": "This card is a proof that your are a human being.",
                             "locale": "en-GB"
                         }
                     ]
