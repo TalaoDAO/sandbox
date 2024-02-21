@@ -115,7 +115,7 @@ profile = {
         },
     "DEFAULT":
         {
-            "oidc4vciDraft" : "11",
+            "oidc4vciDraft": "11",
             "siopv2Draft": "12",
             "oidc4vpDraft": "18",
             "vc_format": "ldp_vc",
@@ -127,35 +127,12 @@ profile = {
             "credential_manifest_support": True,
             "siopv2_prefix": "openid-vc://",
             "oidc4vp_prefix": "openid-vc://",
-            "credentials_types_supported": ["EmployeeCredential",  "EthereumAssociatedAddress", "Over18", "VerifiableId", "EmailPass", "PhoneProof"],
+            "credentials_types_supported": ["Over18", "Over15", "Over13", "Over21", "Over65", "Over50", "VerifiableId", "EmailPass", "PhoneProof", "Liveness"],
             "trust_framework": {
                 "name": "default",
-                "type": "Accredition"
+                "type": "Accreditation"
             },
             "credentials_supported": [
-                {
-                    "id": "EmployeeCredential",
-                    "format": "ldp_vc",
-                    "types": [
-                        "VerifiableCredential",
-                        "EmployeeCredential"
-                    ],
-                    "cryptographic_binding_methods_supported": [
-                        "DID"
-                    ],
-                    "cryptographic_suites_supported": [
-                        "ES256K",
-                        "ES256",
-                        "ES384",
-                        "RS256"
-                    ],
-                    "display": [
-                        {
-                            "name": "Employee Credential",
-                            "locale": "en-GB"
-                        }
-                    ]
-                },
                 {
                     "id": "Over18",
                     "format": "ldp_vc",
@@ -175,17 +152,17 @@ profile = {
                     "display": [
                         {
                             "name": "Over 18",
-                            "description": "This is a verifiable credential",
+                            "description": "This card is a proof that your are over 18 yo. You can use it when you need to prove your age with services that have already adopted the verifiable and decentralized identity system.",
                             "locale": "en-GB"
                         }
                     ]
                 },
                 {
-                    "id": "EthereumAssociatedAddress",
+                    "id": "Over15",
                     "format": "ldp_vc",
                     "types": [
                         "VerifiableCredential",
-                        "EthereumAssociatedAddress"
+                        "Over15"
                     ],
                     "cryptographic_binding_methods_supported": [
                         "DID"
@@ -198,7 +175,104 @@ profile = {
                     ],
                     "display": [
                         {
-                            "name": "Ethereum Associated Address",
+                            "name": "Over 15",
+                            "description": "This card is a proof that your are over 15 yo. You can use it when you need to prove your age with services that have already adopted the verifiable and decentralized identity system.",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id": "Over13",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "Over13"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Over 13",
+                            "description": "This card is a proof that your are over 13 yo. You can use it when you need to prove your age with services that have already adopted the verifiable and decentralized identity system.",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id": "Over21",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "Over21"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Over 21",
+                            "description": "This card is a proof that your are over 21 yo. You can use it when you need to prove your age with services that have already adopted the verifiable and decentralized identity system.",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id": "Over50",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "Over50"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Over 50",
+                            "description": "This card is a proof that your are over 50 yo. You can use it when you need to prove your age with services that have already adopted the verifiable and decentralized identity system.",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id": "Over65",
+                    "format": "ldp_vc",
+                    "types": [
+                        "VerifiableCredential",
+                        "Over65"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Over 65",
+                            "description": "This card is a proof that your are over 65 yo. You can use it when you need to prove your age with services that have already adopted the verifiable and decentralized identity system.",
                             "locale": "en-GB"
                         }
                     ]
@@ -300,7 +374,7 @@ profile = {
         },
     "DEFAULT-JWT":
         {
-            "oidc4vciDraft" : "11",
+            "oidc4vciDraft": "11",
             "siopv2Draft": "12",
             "oidc4vpDraft": "18",
             "vc_format": "jwt_vc_json",
@@ -312,56 +386,8 @@ profile = {
             "credential_manifest_support": False,
             "siopv2_prefix": "openid-vc://",
             "oidc4vp_prefix": "openid-vc://",
-            "credentials_types_supported": ["EmployeeCredential",  "EthereumAssociatedAddress", "VerifiableId", "Over18", "EmailPass", "PhoneProof"],
+            "credentials_types_supported": ["VerifiableId", "Over18", "Over15", "EmailPass", "PhoneProof"],
             "credentials_supported": [
-                {
-                    "id": "EmployeeCredential",
-                    "format": "jwt_vc_json",
-                    "types": [
-                        "VerifiableCredential",
-                        "EmployeeCredential"
-                    ],
-                    "cryptographic_binding_methods_supported": [
-                        "DID"
-                    ],
-                    "cryptographic_suites_supported": [
-                        "ES256K",
-                        "ES256",
-                        "ES384",
-                        "RS256"
-                    ],
-                    "display": [
-                        {
-                            "name": "EmployeeCredential",
-                            "description": "This is a verifiable credential",
-                            "locale": "en-GB"
-                        }
-                    ]
-                },
-                {
-                    "id": "EthereumAssociatedAddress",
-                    "format": "jwt_vc_json",
-                    "types": [
-                        "VerifiableCredential",
-                        "EthereumAssociatedAddress"
-                    ],
-                    "cryptographic_binding_methods_supported": [
-                        "DID"
-                    ],
-                    "cryptographic_suites_supported": [
-                        "ES256K",
-                        "ES256",
-                        "ES384",
-                        "RS256"
-                    ],
-                    "display": [
-                        {
-                            "name": "EthereumAssociatedAddress",
-                            "description": "This card is a proof of ownership of your crypto account. You can use it when you need to prove your email ownership with services that have already adopted the verifiable and decentralized identity system.",
-                            "locale": "en-GB"
-                        }
-                    ]
-                },
                 {
                     "id": "VerifiableId",
                     "format": "jwt_vc_json",
@@ -425,6 +451,30 @@ profile = {
                     "display": [
                         {
                             "name": "Over 18",
+                            "description": "This is a verifiable credential",
+                            "locale": "en-GB"
+                        }
+                    ]
+                },
+                {
+                    "id": "Over15",
+                    "format": "jwt_vc_json",
+                    "types": [
+                        "VerifiableCredential",
+                        "Over15"
+                    ],
+                    "cryptographic_binding_methods_supported": [
+                        "DID"
+                    ],
+                    "cryptographic_suites_supported": [
+                        "ES256K",
+                        "ES256",
+                        "ES384",
+                        "RS256"
+                    ],
+                    "display": [
+                        {
+                            "name": "Over 15",
                             "description": "This is a verifiable credential",
                             "locale": "en-GB"
                         }

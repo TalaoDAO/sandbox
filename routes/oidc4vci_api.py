@@ -115,11 +115,11 @@ def manage_error(error, error_description, red, mode, request=None, stream_id=No
     """
     # console
     logging.warning('manage error = %s', error_description)
-    
+
     # front channel
     if stream_id:
         front_publish(stream_id, red, error=error, error_description=error_description)
-    
+
     # wallet
     payload = {
         'error': error,
@@ -266,7 +266,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                 ].update({'user_pin_required': True})
         else:
             offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
-                
+
         for one_vc in credential_type:
             for supported_vc in profile_data['credentials_supported']:
                 if one_vc in supported_vc['types']:
@@ -296,8 +296,8 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                     'urn:ietf:params:oauth:grant-type:pre-authorized_code'
                 ].update({'user_pin_required': True})
         else:
-            offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}    
-    
+            offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
+
     else:  # Draft 13
         offer = {
             'credential_issuer': f'{mode.server}issuer/{issuer_id}',
@@ -426,7 +426,7 @@ def issuer_authorize(issuer_id, red, mode):
     client_metadata = request.args.get('client_metadata')
     state = request.args.get('state')  # wallet state
     authorization_details = request.args.get('authorization_details')
-    
+
     try:
         redirect_uri = request.args['redirect_uri']
     except Exception:
@@ -435,7 +435,7 @@ def issuer_authorize(issuer_id, red, mode):
     try:
         response_type = request.args['response_type']
     except Exception:
-        return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Response type is missing', stream_id, red, state)) 
+        return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Response type is missing', stream_id, red, state))
 
     try:
         client_id = request.args['client_id']  # client_id of the wallet
@@ -448,7 +448,7 @@ def issuer_authorize(issuer_id, red, mode):
     logging.info('client_metadata = %s', client_metadata)
     logging.info('authorization details = %s', authorization_details)
     logging.info('scope = %s', scope)
-    
+
     if response_type != 'code':
         return redirect(redirect_uri + '?' + authorization_error('invalid_response_type', 'response_type not supported', stream_id, red, state))
 
@@ -550,16 +550,16 @@ def issuer_token(issuer_id, red, mode):
         data = json.loads(red.get(code).decode())
     except Exception:
         return Response(**manage_error('access_denied', 'Grant code expired', red, mode, request=request, status=404))
-    
+
     stream_id = data['stream_id']
-    
+
     # check code verifier
     if grant_type == 'authorization_code' and int(issuer_profile['oidc4vciDraft']) >= 10:
         code_verifier = request.form.get('code_verifier')
         code_challenge_calculated = pkce.get_code_challenge(code_verifier)
         if code_challenge_calculated != data['code_challenge']:
             return Response(**manage_error('access_denied', 'Code verifier is incorrect', red, mode, request=request, stream_id=stream_id, status=404))
-            
+
     # PIN code
     if data.get("user_pin_required") and not user_pin:
         return Response(**manage_error("invalid_request", "User pin is missing", red, mode, request=request, stream_id=stream_id))
@@ -676,7 +676,6 @@ async def issuer_credential(issuer_id, red, mode):
             proof = result["proof"]["jwt"]
             proof_header = oidc4vc.get_header_from_token(proof)
             logging.info('Proof header = %s', json.dumps(proof_header, indent=4))
-            logging.info("proof of key ownership received = %s", proof)
             try:
                 oidc4vc.verif_token(proof, access_token_data["c_nonce"])
                 logging.info("proof is validated")
@@ -715,7 +714,7 @@ async def issuer_credential(issuer_id, red, mode):
     if int(issuer_profile['oidc4vciDraft']) >= 13:
         credentials_supported = list(issuer_profile["credentials_supported"].keys())
         if vc_format == "vc+sd-jwt" and result.get('vct'):  # draft 13 with vc+sd-jwt"
-            vct = result.get('vct') 
+            vct = result.get('vct')
             for vc in credentials_supported:
                 if issuer_profile["credentials_supported"][vc]['vct'] == vct:
                     credential_type = vc
@@ -731,7 +730,7 @@ async def issuer_credential(issuer_id, red, mode):
         if not credential_type:
             return Response(**manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
     elif int(issuer_profile['oidc4vciDraft']) == 12:
-        if result.get("credential_identifier"):  # draft = 12 
+        if result.get("credential_identifier"):  # draft = 12
             credential_identifier = result.get("credential_identifier")
             logging.info("credential identifier = %s", credential_identifier)
         else:
@@ -749,7 +748,7 @@ async def issuer_credential(issuer_id, red, mode):
     elif int(issuer_profile['oidc4vciDraft']) == 11:
         credentials_supported = issuer_profile["credentials_supported"]
         if vc_format == "vc+sd-jwt" and result.get('vct'):  # draft 11 with vc+sd-jwt"
-            vct = result.get('vct') 
+            vct = result.get('vct')
             for vc in credentials_supported:
                 if vc['vct'] == vct:
                     credential_type = vc
@@ -769,7 +768,7 @@ async def issuer_credential(issuer_id, red, mode):
         for one_type in result["types"]:
             if one_type not in ["VerifiableCredential", "VerifiableAttestation"]:
                 credential_type = one_type
-                break    
+                break
         if not credential_type:
             return Response(**manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
     else:
@@ -810,7 +809,7 @@ async def issuer_credential(issuer_id, red, mode):
                     vc_format = one_type["vc_format"]
                     credential = one_credential["value"]
                     logging.info("credential found for identifier = %s", credential_identifier)
-                    break 
+                    break
     else:
         logging.info("Only one VC of the same type")
         try:
@@ -996,7 +995,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
         else:
             credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm, issuer_key, c_nonce, issuer_did, jti, wallet_did)
     else:  # proof_format == 'ldp_vc':
-        try: 
+        try:
             didkit_options = {
                 "proofPurpose": "assertionMethod",
                 "verificationMethod": issuer_vm,

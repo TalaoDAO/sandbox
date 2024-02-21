@@ -868,6 +868,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
             id_token_sub = id_token_payload.get('sub')
             id_token_sub_jwk = id_token_payload.get('sub_jwk')
             id_token_nonce = id_token_payload.get('nonce')
+            profile_status = 'OK'
         except Exception:
             id_token_status += " id_token invalid format "
             access = False
@@ -957,6 +958,15 @@ async def oidc4vc_login_endpoint(stream_id, red):
                 aud_status = "failed in vp_token aud"
                 access = False
     
+    #  check profile data
+    if verifier_data['profile'] == 'DEFAULT':
+        if vp_type != 'ldp_vp' or vp_sub[:12] != 'did:key:z6Mk': 
+            logging.warning("wrong config for profile DEFAULT")
+            profile_status = "Profile DEFAULT is not respected"
+            access = False
+    else:
+        logging.warning('Profile DEFAULT is OK)')
+        
     status_code = 200 if access else 400
     
     if state:
@@ -966,6 +976,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
         "created": datetime.timestamp(datetime.now()),
         "qrcode_status": qrcode_status,
         "state": state_status,
+        "profile": profile_status,
         "vp type": vp_type,
         "vc type": vc_type,
         "subject_syntax_type": subject_syntax_type,
