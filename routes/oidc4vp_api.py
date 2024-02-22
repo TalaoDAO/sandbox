@@ -906,9 +906,6 @@ async def oidc4vc_login_endpoint(stream_id, red):
             vp_token_status = verifyResult
             vp_token_payload = json.loads(vp_token)
 
-
-    # check VC signature
-
     # check types of vc
     if access and vp_token:
         vc_type = ""
@@ -958,7 +955,8 @@ async def oidc4vc_login_endpoint(stream_id, red):
                 aud_status = "failed in vp_token aud"
                 access = False
     
-    #  check profile data
+    #  check profile compliance
+    profile_status = verifier_data['profile']
     if verifier_data['profile'] == 'DEFAULT':
         if vp_type != 'ldp_vp' or vp_sub[:12] != 'did:key:z6Mk': 
             logging.warning("wrong config for profile DEFAULT")
