@@ -26,14 +26,14 @@ def init_app(app, red, mode):
 
 def oidc4vc_nav_logout():
     if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/saas4ssi')
+        return redirect('/sandbox/saas4ssi')
     session.clear()
-    return redirect('/saas4ssi')
+    return redirect('/sandbox/saas4ssi')
 
 
 def oidc4vc_issuer_select():
     if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/saas4ssi')
+        return redirect('/sandbox/saas4ssi')
     my_list = db_api.list_oidc4vc_issuer()
     issuer_list = str()
     for issuer_data in my_list:
@@ -57,7 +57,7 @@ def oidc4vc_issuer_select():
     
 def oidc4vc_nav_create(mode):
     if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/saas4ssi')
+        return redirect('/sandbox/saas4ssi')
     return redirect('/issuer/console?client_id=' + db_api.create_oidc4vc_issuer(mode,  user=session['login_name']))
 
 """   
@@ -76,7 +76,7 @@ def oidc4vc_issuer_preview_presentation_endpoint(stream_id, red):
 def oidc4vc_issuer_console(mode):
     global reason
     if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/saas4ssi')
+        return redirect('/sandbox/saas4ssi')
     if request.method == 'GET':
         if not request.args.get('client_id'):
             return redirect('/issuer/console/select')
@@ -167,7 +167,7 @@ def oidc4vc_issuer_console(mode):
 async def oidc4vc_issuer_advanced():
     global reason
     if not session.get('is_connected') or not session.get('login_name'):
-        return redirect('/saas4ssi')
+        return redirect('/sandbox/saas4ssi')
     
     if request.method == 'GET':
         session['client_data'] = json.loads(db_api.read_oidc4vc_issuer(session['client_id']))

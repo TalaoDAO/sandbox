@@ -793,6 +793,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
     subject_syntax_type = "DID"
     vp_token_payload = {}
     id_token_payload = {}
+    profile_status = 'Unknown'
 
     # get id_token, vp_token and presentation_submission
     if access:
@@ -868,7 +869,6 @@ async def oidc4vc_login_endpoint(stream_id, red):
             id_token_sub = id_token_payload.get('sub')
             id_token_sub_jwk = id_token_payload.get('sub_jwk')
             id_token_nonce = id_token_payload.get('nonce')
-            profile_status = 'OK'
         except Exception:
             id_token_status += " id_token invalid format "
             access = False
