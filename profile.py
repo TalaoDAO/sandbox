@@ -124,7 +124,7 @@ profile = {
             "authorization_server_support": False,
             "credentials_as_json_object_array": False,
             "schema_for_type": False,
-            "credential_manifest_support": True,
+            "credential_manifest_support": False,
             "siopv2_prefix": "openid-vc://",
             "oidc4vp_prefix": "openid-vc://",
             "credentials_types_supported": ["Over18", "Over15", "Over13", "Over21", "Over65", "Over50", "VerifiableId", "EmailPass", "PhoneProof", "Liveness"],
@@ -320,6 +320,7 @@ profile = {
                     "display": [
                         {
                             "name": "Verifiable Id",
+                            "description": "This credential is a proof of your identity. You can use it when you need to prove your identity with services that have already adopted a decentralized identity system.",
                             "locale": "en-GB"
                         }
                     ],
@@ -338,6 +339,33 @@ profile = {
                                 "display": [
                                     {
                                         "name": "Family Name",
+                                        "locale": "en-US"
+                                    }
+                                ]
+                            },
+                            "gender": {
+                                "mandatory": True,
+                                "display": [
+                                    {
+                                        "name": "Gender",
+                                        "locale": "en-US"
+                                    }
+                                ]
+                            },
+                            "dateOfBirth": {
+                                "mandatory": True,
+                                "display": [
+                                    {
+                                        "name": "Birth Date",
+                                        "locale": "en-US"
+                                    }
+                                ]
+                            },
+                            "dateIssued": {
+                                "mandatory": True,
+                                "display": [
+                                    {
+                                        "name": "Issue Date",
                                         "locale": "en-US"
                                     }
                                 ]

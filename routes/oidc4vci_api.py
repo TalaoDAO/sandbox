@@ -741,7 +741,6 @@ async def issuer_credential(issuer_id, red, mode):
                 vc['types'].sort()
                 if vc['types'] == types:
                     credential_type = vc['id']
-                    logging.info("credential type = %s", credential_type)
                     break
             if not credential_type:
                 return Response(**manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
@@ -760,7 +759,6 @@ async def issuer_credential(issuer_id, red, mode):
                 vc['types'].sort()
                 if vc['types'] == types:
                     credential_type = vc['id']
-                    logging.info("credential type = %s", credential_type)
                     break
         if not credential_type:
             return Response(**manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
@@ -1009,9 +1007,9 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
             logging.warning("Didkit exception = %s", str(e))
             logging.warning('incorrect json_ld = %s', json.dumps(credential))
             return
-        
-        result = await didkit.verify_credential(credential_signed, '{}')
-        logging.info('signature check with didkit = %s', result)
+        logging.info('VC signed with didkit')
+        #result = await didkit.verify_credential(credential_signed, '{}')
+        #logging.info('signature check with didkit = %s', result)
         credential_signed = json.loads(credential_signed)
     return credential_signed
 

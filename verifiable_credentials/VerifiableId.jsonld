@@ -13,18 +13,17 @@
               "familyName": "schema:lastName",
               "firstName": "schema:firstName",
               "dateOfBirth" : "schema:birthDate",
+              "gender": "schema:gender",
               "idRecto": "schema:image",
+              "dateIssued": "schema:dateIssued",
               "idVerso": "schema:image"
-
-
-         }
-      }
+          }
+        }
       }
     ],
     "id": "urn:did:30e69635-4f00-4fcb-ac56-b3e04a6140c5",
     "type": [
       "VerifiableCredential",
-      "VerifiableAttestation",
       "VerifiableId"
     ],
     "issuer": "did:ebsi:zcfcwGjLBojczw9yhmUFE3Z",
@@ -35,7 +34,9 @@
       "type" : "VerifiableId",
       "familyName": "Castafiori",
       "firstName": "Bianca",
-      "dateOfBirth": "1930-10-01"
+      "dateOfBirth": "1930-10-01",
+      "gender": "F",
+      "dateIssued": "2022-12-20T14:25:22Z"
     },
     "credentialSchema": {
       "id": "https://api-conformance.ebsi.eu/trusted-schemas-registry/v2/schemas/z22ZAMdQtNLwi51T2vdZXGGZaYyjrsuP1yzWyXZirCAHv",
