@@ -81,11 +81,8 @@ web_display_VP.init_app(app, red, mode)
 web_wallet_test.init_app(app, red, mode)
 test_issuer_oidc4vc.init_app(app, red, mode)
 test_verifier_oidc4vc.init_app(app, red, mode)
-
 ciba.init_app(app, red, mode)
 jpma2jpma.init_app(app, red, mode)
-
-
 sess = Session()
 sess.init_app(app)
 qrcode = QRcode(app)
