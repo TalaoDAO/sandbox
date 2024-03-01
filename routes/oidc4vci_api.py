@@ -720,11 +720,11 @@ async def issuer_credential(issuer_id, red, mode):
                     credential_type = vc
                     break
         else:
-            type = result['credential_definition'].get('type')
-            type.sort()
+            vc_type = result['credential_definition'].get('type')
+            vc_type.sort()
             for vc in credentials_supported:
                 issuer_profile["credentials_supported"][vc]['credential_definition']['type'].sort()
-                if issuer_profile["credentials_supported"][vc]['credential_definition']['type'] == type:
+                if issuer_profile["credentials_supported"][vc]['credential_definition']['type'] == vc_type:
                     credential_type = vc
                     break
         if not credential_type:

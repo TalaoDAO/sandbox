@@ -335,7 +335,15 @@ profile = {
                         "mandatory": True,
                         "display": [{"name": "Family Name", "locale": "en-US"}],
                     },
-                },
+                     "dateOfBirth": {
+                        "mandatory": True,
+                        "display": [{"name": "Date of Birth", "locale": "en-US"}],
+                    },
+                    "gender": {
+                        "mandatory": True,
+                        "display": [{"name": "Gender", "locale": "en-US"}],
+                    }
+                }
             },
             {
                 "id": "Over13",
