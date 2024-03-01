@@ -675,13 +675,14 @@ async def issuer_credential(issuer_id, red, mode):
         if proof_type == 'jwt':
             proof = result["proof"]["jwt"]
             proof_header = oidc4vc.get_header_from_token(proof)
+            proof_payload = oidc4vc.get_paylod_from_token(proof)
             logging.info('Proof header = %s', json.dumps(proof_header, indent=4))
+            logging.info('Proof paylod = %s', json.dumps(proof_header, indent=4))
             try:
                 oidc4vc.verif_token(proof, access_token_data["c_nonce"])
                 logging.info("proof is validated")
             except Exception as e:
                 return Response(**manage_error("invalid_proof", "Proof of key ownership, signature verification error: " + str(e), red, mode, request=request, stream_id=stream_id))
-            proof_payload = oidc4vc.get_payload_from_token(proof)
             wallet_jwk = proof_header.get('jwk')  # GAIN POC
             if not wallet_jwk:  # Baseline profile with kid
                 wallet_jwk = oidc4vc.resolve_did(proof_header.get('kid'))

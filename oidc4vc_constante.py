@@ -32,7 +32,6 @@ siopv2_draft = {
 oidc4vc_profile_list = {
     'DEFAULT': 'DEFAULT ldp_vc OIDC4VCI draft 11',
     'DEFAULT-JWT': 'DEFAULT jwt_vc_json OIDC4VCI draft 11',
-    'GAIA-X': 'GAIA-X projects OIDC4VCI draft 8',
     'EBSI-V3': 'EBSI OIDC4VCI Draft 11',
     #'HEDERA': 'Greencypher project',
     'GAIN-POC': 'GAIN POC openid, SD-JWT implementation in progress',
