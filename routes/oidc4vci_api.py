@@ -675,7 +675,7 @@ async def issuer_credential(issuer_id, red, mode):
         if proof_type == 'jwt':
             proof = result["proof"]["jwt"]
             proof_header = oidc4vc.get_header_from_token(proof)
-            proof_payload = oidc4vc.get_paylod_from_token(proof)
+            proof_payload = oidc4vc.get_payload_from_token(proof)
             logging.info('Proof header = %s', json.dumps(proof_header, indent=4))
             logging.info('Proof paylod = %s', json.dumps(proof_header, indent=4))
             try:
