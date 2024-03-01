@@ -691,10 +691,10 @@ async def issuer_credential(issuer_id, red, mode):
         elif proof_type == 'ldp_vp':
             proof = result["proof"]["ldp_vp"]
             proof = json.dumps(proof) if isinstance(proof, dict) else proof
-            result = await didkit.verify_presentation(proof, '{}')
+            proof_check = await didkit.verify_presentation(proof, '{}')
             iss = json.loads(proof)['holder']
             wallet_jwk = None
-            logging.info("ldp_vp proof check  = %s", result)
+            logging.info("ldp_vp proof check  = %s", proof_check)
             if iss != access_token_data['client_id']:
                 return Response(**manage_error("invalid_proof", "iss of proof of key is different from client_id", red, mode, request=request, stream_id=stream_id))
         else:
