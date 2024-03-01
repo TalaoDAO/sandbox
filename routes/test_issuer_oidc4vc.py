@@ -411,7 +411,7 @@ def test_8(mode):
     return redirect(qrcode) 
 
 
-def test_9(mode): # multiple VC of the same type
+def test_9(mode): # 
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "pexkhrzlmj"
@@ -423,33 +423,15 @@ def test_9(mode): # multiple VC of the same type
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
     }
-    emailpass_1 = build_credential("EmailPass")
-    emailpass_1["credentialSubject"]["email"] = "email_1@gmail.com"
-    emailpass_2 = build_credential("EmailPass")
-    emailpass_2["credentialSubject"]["email"] = "email_2@gmail.com"
-    vc = [
-            {
-                "type": "EmailPass",
-                "vc_format": "jwt_vc_json-ld",
-                "types": ["VerifiableCredentials", "EmailPass"],
-                "list": [
-                    {
-                        "identifier": emailpass_1['id'],
-                        "value": emailpass_1
-                    },
-                    {
-                        "identifier": emailpass_2['id'],
-                        "value": emailpass_2
-                    }
-                ]
-            }
-    ]
+   
+    with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
+        credential = json.loads(f.read())
     data = { 
         "issuer_id": issuer_id,
-        "vc": vc,
+        "vc": {"IdentityCredential" : credential}, 
         "issuer_state": str(uuid.uuid1()),
-        "credential_type": ["EmailPass"],
-        "pre-authorized_code": True,
+        "pre-authorized_code": False,
+        "credential_type": ['IdentityCredential'],
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json=data)
