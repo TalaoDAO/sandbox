@@ -677,7 +677,7 @@ async def issuer_credential(issuer_id, red, mode):
             proof_header = oidc4vc.get_header_from_token(proof)
             proof_payload = oidc4vc.get_payload_from_token(proof)
             logging.info('Proof header = %s', json.dumps(proof_header, indent=4))
-            logging.info('Proof paylod = %s', json.dumps(proof_header, indent=4))
+            logging.info('Proof payload = %s', json.dumps(proof_payload, indent=4))
             try:
                 oidc4vc.verif_token(proof, access_token_data["c_nonce"])
                 logging.info("proof is validated")
