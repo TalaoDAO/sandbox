@@ -691,7 +691,7 @@ async def issuer_credential(issuer_id, red, mode):
         elif proof_type == 'ldp_vp':
             proof = result["proof"]["ldp_vp"]
             proof = json.dumps(proof) if isinstance(proof, dict) else proof
-            result = didkit.verify_presentation(proof, '{}')
+            result = await didkit.verify_presentation(proof, '{}')
             iss = json.loads(proof)['holder']
             wallet_jwk = None
             logging.info("ldp_vp proof check  = %s", result)
