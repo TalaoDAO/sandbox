@@ -164,8 +164,15 @@ def oidc4vc_authorize(red, mode):
     # user is connected, successful exit to client with code
     if session.get('verified') and request.args.get('code'):
         code = request.args['code']
-        code_data = json.loads(red.get(code).decode())
-        
+        try:
+            code_data = json.loads(red.get(code).decode())
+        except Exception:
+            logging.error("code expired")
+            resp = {'error': "access_denied"}
+            redirect_uri = code_data['redirect_uri']
+            session.clear()
+            return redirect(redirect_uri + sep + urlencode(resp)) 
+
         # authorization code flow -> redirect with code
         if code_data['response_type'] == 'code':
             logging.info("response_type = code: successful redirect to client with code = %s", code) 
@@ -957,7 +964,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
     
     #  check profile compliance
     profile_status = verifier_data['profile']
-    if verifier_data['profile'] == 'DEFAULT':
+    if verifier_data['profile'] == 'DEFAULT' and vp_token:
         if vp_type != 'ldp_vp' or vp_sub[:12] != 'did:key:z6Mk': 
             logging.warning("wrong config for profile DEFAULT")
             profile_status = "Profile DEFAULT is not respected"

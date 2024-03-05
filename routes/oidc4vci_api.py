@@ -667,7 +667,6 @@ async def issuer_credential(issuer_id, red, mode):
         if vc_format in ["ldp_vc", "jwt_vc_json", "jwt_vc_json-ld", "jwt_vc"] and not result.get('types') :
             return Response(**manage_error("unsupported_credential_format", "Invalid VC format, types is missing", red, mode, request=request, stream_id=stream_id))
 
-    
     # check proof if it exists depending on type of proof
     proof = result.get("proof")
     if proof:
@@ -697,7 +696,7 @@ async def issuer_credential(issuer_id, red, mode):
             wallet_jwk = None
             logging.info("ldp_vp proof check  = %s", proof_check)
             if iss != access_token_data['client_id']:
-                return Response(**manage_error("invalid_proof", "iss of proof of key is different from client_id", red, mode, request=request, stream_id=stream_id))
+                return Response(**manage_error("invalid_proof", "iss of proof of key is different from client_id in token request", red, mode, request=request, stream_id=stream_id))
         else:
             return Response(**manage_error("invalid_proof", "The credential proof type is not supported", red, mode, request=request, stream_id=stream_id))
     else:
@@ -783,15 +782,17 @@ async def issuer_credential(issuer_id, red, mode):
         }
         if int(issuer_profile['oidc4vciDraft']) == 12:
             payload.update({"acceptance_token": deferred_random})
-        else:
+        elif int(issuer_profile['oidc4vciDraft']) > 12:
             payload.update({"transaction_id": deferred_random})
+        else:
+            return Response(**manage_error("invalid_request", "Deferred not supported", red, mode, request=request, stream_id=stream_id))
         deferred_data = {
             "issuer_id": issuer_id,
             "format": vc_format,
             "subjectId": iss,
             "issuer_state": access_token_data["issuer_state"],
             "credential_type": credential_type,
-            "c_nonce": str(uuid.uuid1()),
+            "c_nonce": payload['c_nonce'],
             "c_nonce_expires_at": datetime.timestamp(datetime.now()) + ACCEPTANCE_TOKEN_LIFE,
         }
         red.setex(deferred_random, ACCEPTANCE_TOKEN_LIFE, json.dumps(deferred_data))
