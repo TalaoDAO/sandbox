@@ -864,6 +864,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
             oidc4vc.verif_token(id_token, nonce)
         except Exception:
             id_token_status = "signature check failed"
+            logging.info(" id_token invalid format ")
             access = False 
     
     if access and id_token:
@@ -879,10 +880,12 @@ async def oidc4vc_login_endpoint(stream_id, red):
         except Exception:
             id_token_status += " id_token invalid format "
             access = False
+            logging.info(" id_token invalid format ")
         if id_token_sub_jwk:
             subject_syntax_type = "JWK Thumbprint"
-        if not id_token_sub_jwk and not id_token_kid:
+        if not id_token_sub_jwk and not id_token_kid and not id_token_jwk:
             access = False
+            logging.info("not correct format")
         if id_token_sub_jwk and id_token_kid:
             access = False
         
@@ -908,6 +911,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
             except Exception:
                 vp_token_status = "signature check failed"
                 access = False
+                logging.info("signature check failed")
         else:
             verifyResult = json.loads(await didkit.verify_presentation(vp_token, "{}"))
             vp_token_status = verifyResult
@@ -939,6 +943,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
     if access and vp_token:
         if vp_type == "ldp_vp":
             vp_sub = json.loads(vp_token)['holder']
+            print("vp_sub = ", vp_sub)
             if json.loads(vp_token)['proof'].get('challenge') == nonce:
                 nonce_status = "ok"
             else:
@@ -965,10 +970,13 @@ async def oidc4vc_login_endpoint(stream_id, red):
     #  check profile compliance
     profile_status = verifier_data['profile']
     if verifier_data['profile'] == 'DEFAULT' and vp_token:
-        if vp_type != 'ldp_vp' or vp_sub[:12] != 'did:key:z6Mk': 
-            logging.warning("wrong config for profile DEFAULT")
-            profile_status = "Profile DEFAULT is not respected"
+        if vp_type != 'ldp_vp':
+            logging.warning("wrong VP type for profile DEFAULT")
+            profile_status = "Profile DEFAULT is not respected, wro,g vc_type for this profile"
             access = False
+        elif vp_sub[:12] != 'did:key:z6Mk':
+            logging.warning("wrong key for profile DEFAULT")
+            profile_status = "Profile DEFAULT is not respected, wronk key for this profile"
     else:
         logging.warning('Profile DEFAULT is OK)')
         
