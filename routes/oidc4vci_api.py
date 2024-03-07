@@ -51,7 +51,9 @@ def init_app(app, red, mode):
     )
     # OIDC4VCI protocol with wallet
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-credential-issuer', view_func=credential_issuer_openid_configuration_endpoint, methods=['GET'], defaults={'mode': mode})
-    app.add_url_rule('/issuer/<issuer_id>/authorize', view_func=issuer_authorize, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/issuer/<issuer_id>/authorize', view_func=issuer_authorize, methods=['GET'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/issuer/<issuer_id>/authorize/par', view_func=issuer_authorize_par, methods=['POST'], defaults={'red': red})
+
     app.add_url_rule('/issuer/<issuer_id>/token', view_func=issuer_token, methods=['POST'], defaults={'red': red, 'mode': mode},)
     app.add_url_rule('/issuer/<issuer_id>/credential', view_func=issuer_credential, methods=['POST'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/deferred', view_func=issuer_deferred, methods=['POST'], defaults={'red': red, 'mode': mode},)
@@ -183,7 +185,8 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         as_config.update({
             'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/authorize',
             'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token',
-            'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks'
+            'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
+            'pushed_authorization_request_endpoint' : mode.server +'issuer/' + issuer_id + '/authorize/par' 
         })
         credential_issuer_openid_configuration.update(as_config)
 
@@ -210,7 +213,8 @@ def as_openid_configuration(issuer_id, mode):
     config = {
         'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/authorize',
         'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token',
-        "jwks_uri":  mode.server + 'issuer/' + issuer_id + '/jwks'
+        'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
+        'pushed_authorization_request_endpoint' : mode.server +'issuer/' + issuer_id + '/authorize/par' 
     }
     config.update(authorization_server_config)
     return config
@@ -411,32 +415,79 @@ def authorization_error(error, error_description, stream_id, red, state):
     return urlencode(resp)
 
 
-# authorization code endpoint
-def issuer_authorize(issuer_id, red, mode):
+# pushed authorization endpoint endpoint
+def issuer_authorize_par(issuer_id, red):
     try:
-        issuer_state = request.args['issuer_state']
-        stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
+        request_uri_data = {
+            "issuer_state": request.form.get('issuer_state'),
+            "scope": request.form.get('scope'),
+            "nonce": request.form.get('nonce'),
+            "code_challenge": request.form.get('code_challenge'),
+            "code_challenge_method": request.form.get('code_challenge_method'),
+            "client_metadata": request.form.get('client_metadata'),
+            "state": request.form.get('state'),
+            "authorization_details": request.form.get('authorization_details')
+        }
     except Exception:
         return jsonify({'error': 'access_denied'}), 403
+    request_uri = "urn:ietf:params:oauth:request_uri:" + str(uuid.uuid1())
+    red.setex(request_uri, 50, json.dumps(request_uri_data))
+    endpoint_response ={
+        "request_uri": request_uri,
+        "expires_in": 50
+    }
+    headers = {
+        "Cache-Control": "no-store",
+        "Content-Type": "application/json"
+    }
+    return Response(response=json.dumps(endpoint_response), headers=headers)
 
-    scope = request.args.get('scope')
-    nonce = request.args.get('nonce')
-    code_challenge = request.args.get('code_challenge')
-    code_challenge_method = request.args.get('code_challenge_method')
-    client_metadata = request.args.get('client_metadata')
-    state = request.args.get('state')  # wallet state
-    authorization_details = request.args.get('authorization_details')
 
-    try:
-        redirect_uri = request.args['redirect_uri']
-    except Exception:
-        return jsonify({'error': 'invalid_request'}), 403
-
-    try:
-        response_type = request.args['response_type']
-    except Exception:
-        return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Response type is missing', stream_id, red, state))
-
+# authorization code endpoint
+def issuer_authorize(issuer_id, red, mode):
+    if request_uri := request.args.get('request_uri'):
+        try:
+            request_uri_data = json.loads(red.get(request_uri).decode())
+            redirect_uri = request_uri_data['redirect_uri']
+        except:
+             return jsonify({'error': 'invalid_request'}), 403
+        try:
+            issuer_state = request_uri_data.get('issuer_state')
+            stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
+        except:
+            return jsonify({'error': 'access_denied'}), 403
+        try:
+            response_type = request_uri_data['response_type']
+        except Exception:
+            return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Response type is missing', stream_id, red, state))
+        scope = request_uri_data.get('scope')
+        nonce = request_uri_data.get('nonce')
+        code_challenge = request_uri_data.get('code_challenge')
+        code_challenge_method = request_uri_data.get('code_challenge_method')
+        client_metadata = request_uri_data.get('client_metadata')
+        state = request_uri_data.get('state')
+        authorization_details = request_uri_data.get('authorization_details')
+    else:
+        try:
+            redirect_uri = request.args['redirect_uri']
+        except Exception:
+            return jsonify({'error': 'invalid_request'}), 403
+        try:
+            issuer_state = request.args['issuer_state']
+            stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
+        except Exception:
+            return jsonify({'error': 'access_denied'}), 403
+        scope = request.args.get('scope')
+        nonce = request.args.get('nonce')
+        code_challenge = request.args.get('code_challenge')
+        code_challenge_method = request.args.get('code_challenge_method')
+        client_metadata = request.args.get('client_metadata')
+        state = request.args.get('state')  # wallet state
+        authorization_details = request.args.get('authorization_details')
+        try:
+            response_type = request.args['response_type']
+        except Exception:
+            return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Response type is missing', stream_id, red, state))
     try:
         client_id = request.args['client_id']  # client_id of the wallet
         logging.info('client_id of the wallet = %s', client_id)
