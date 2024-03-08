@@ -417,6 +417,7 @@ def authorization_error(error, error_description, stream_id, red, state):
 
 # pushed authorization endpoint endpoint
 def issuer_authorize_par(issuer_id, red):
+    logging.info("POST call = %s", request.form)
     try:
         request_uri_data = {
             "issuer_state": request.form.get('issuer_state'),
