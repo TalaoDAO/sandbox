@@ -417,25 +417,28 @@ def authorization_error(error, error_description, stream_id, red, state):
 
 # pushed authorization endpoint endpoint
 def issuer_authorize_par(issuer_id, red):
-    logging.info("POST call = %s", request.form)
     try:
         request_uri_data = {
-            "issuer_state": request.form.get('issuer_state'),
             "redirect_uri": request.form['redirect_uri'],
-            "response_type": request.form.get('response_type'),
-            "scope": request.form.get('scope'),
-            "nonce": request.form.get('nonce'),
-            "code_challenge": request.form.get('code_challenge'),
-            "code_challenge_method": request.form.get('code_challenge_method'),
-            "client_metadata": request.form.get('client_metadata'),
-            "state": request.form.get('state'),
-            "authorization_details": request.form.get('authorization_details')
+            "client_id": request.form['client_id'],
+            "response_type": request.form['response_type'],
+            "scope": request.form['scope'],
+            "issuer_state": request.form['issuer_state'],
         }
+        stream_id = json.loads(red.get(request.form['issuer_state']).decode())['stream_id']
     except Exception:
-        return jsonify({'error': 'access_denied'}), 403
+        return Response(**authorization_error('invalid_request', 'Request format is incorrect', stream_id, red, request.form.get('state')))
+    request_uri_data.update({
+        "nonce": request.form.get('nonce'),
+        "code_challenge": request.form.get('code_challenge'),
+        "code_challenge_method": request.form.get('code_challenge_method'),
+        "client_metadata": request.form.get('client_metadata'),
+        "state": request.form.get('state'),
+        "authorization_details": request.form.get('authorization_details')
+    })
     request_uri = "urn:ietf:params:oauth:request_uri:" + str(uuid.uuid1())
     red.setex(request_uri, 50, json.dumps(request_uri_data))
-    endpoint_response ={
+    endpoint_response = {
         "request_uri": request_uri,
         "expires_in": 50
     }
@@ -448,23 +451,19 @@ def issuer_authorize_par(issuer_id, red):
 
 # authorization code endpoint
 def issuer_authorize(issuer_id, red, mode):
-    request_uri = request.args.get('request_uri')
-    if request_uri:
-        #try:
-        request_uri_data = json.loads(red.get(request_uri).decode())
-        redirect_uri = request_uri_data['redirect_uri']
-        #except:
-        #    print('redirect uri failed')
-        #    return jsonify({'error': 'invalid_request'}), 403
-        #try:
+    if request_uri := request.args.get('request_uri'):
+        try:
+            request_uri_data = json.loads(red.get(request_uri).decode())   
+        except:
+            logging.info('redirect uri failed')
+            return jsonify({'error': 'invalid_request'}), 403
         issuer_state = request_uri_data['issuer_state']
-        stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
-        #except:
-        #    return jsonify({'error': 'access_denied'}), 403
-        #try:
+        try:
+            stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
+        except:
+            return jsonify({'error': 'access_denied'}), 403
+        redirect_uri = request_uri_data['redirect_uri']
         response_type = request_uri_data['response_type']
-        #except Exception:
-        #return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Response type is missing', stream_id, red, state))
         scope = request_uri_data['scope']
         nonce = request_uri_data['nonce']
         code_challenge = request_uri_data['code_challenge']
@@ -476,29 +475,35 @@ def issuer_authorize(issuer_id, red, mode):
         try:
             redirect_uri = request.args['redirect_uri']
         except Exception:
-            return jsonify({'error': 'invalid_request'}), 403
+            return jsonify({
+                'error': 'access_denied',
+                'error_description': 'redirect_uri is missing'
+            }), 403
         try:
             issuer_state = request.args['issuer_state']
             stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
         except Exception:
-            return jsonify({'error': 'access_denied'}), 403
-        scope = request.args.get('scope')
+            return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'issuer_state type is missing', stream_id, red, state))
+        try:
+            response_type = request.args['response_type']
+        except Exception:
+            return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'response_type is missing', stream_id, red, state))
+        try:
+            scope = request.args['scope']
+        except Exception:
+            return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'scope is missing', stream_id, red, state))
         nonce = request.args.get('nonce')
         code_challenge = request.args.get('code_challenge')
         code_challenge_method = request.args.get('code_challenge_method')
         client_metadata = request.args.get('client_metadata')
         state = request.args.get('state')  # wallet state
         authorization_details = request.args.get('authorization_details')
-        try:
-            response_type = request.args['response_type']
-        except Exception:
-            return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Response type is missing', stream_id, red, state))
     try:
         client_id = request.args['client_id']  # client_id of the wallet
-        logging.info('client_id of the wallet = %s', client_id)
     except Exception:
         return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Client id is missing', stream_id, red, state))
 
+    logging.info('client_id of the wallet = %s', client_id)
     logging.info('redirect_uri = %s', redirect_uri)
     logging.info('code_challenge = %s', code_challenge)
     logging.info('client_metadata = %s', client_metadata)
