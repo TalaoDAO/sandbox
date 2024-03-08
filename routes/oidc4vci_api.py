@@ -446,28 +446,30 @@ def issuer_authorize_par(issuer_id, red):
 
 # authorization code endpoint
 def issuer_authorize(issuer_id, red, mode):
-    if request_uri := request.args.get('request_uri'):
-        try:
-            request_uri_data = json.loads(red.get(request_uri).decode())
-            redirect_uri = request_uri_data['redirect_uri']
-        except:
-             return jsonify({'error': 'invalid_request'}), 403
-        try:
-            issuer_state = request_uri_data.get('issuer_state')
-            stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
-        except:
-            return jsonify({'error': 'access_denied'}), 403
-        try:
-            response_type = request_uri_data['response_type']
-        except Exception:
-            return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Response type is missing', stream_id, red, state))
-        scope = request_uri_data.get('scope')
-        nonce = request_uri_data.get('nonce')
-        code_challenge = request_uri_data.get('code_challenge')
-        code_challenge_method = request_uri_data.get('code_challenge_method')
-        client_metadata = request_uri_data.get('client_metadata')
-        state = request_uri_data.get('state')
-        authorization_details = request_uri_data.get('authorization_details')
+    request_uri = request.args.get('request_uri')
+    if request_uri:
+        #try:
+        request_uri_data = json.loads(red.get(request_uri).decode())
+        redirect_uri = request_uri_data['redirect_uri']
+        #except:
+        #    print('redirect uri failed')
+        #    return jsonify({'error': 'invalid_request'}), 403
+        #try:
+        issuer_state = request_uri_data['issuer_state']
+        stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
+        #except:
+        #    return jsonify({'error': 'access_denied'}), 403
+        #try:
+        response_type = request_uri_data['response_type']
+        #except Exception:
+        #return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Response type is missing', stream_id, red, state))
+        scope = request_uri_data['scope']
+        nonce = request_uri_data['nonce']
+        code_challenge = request_uri_data['code_challenge']
+        code_challenge_method = request_uri_data['code_challenge_method']
+        client_metadata = request_uri_data['client_metadata']
+        state = request_uri_data['state']
+        authorization_details = request_uri_data['authorization_details']
     else:
         try:
             redirect_uri = request.args['redirect_uri']
