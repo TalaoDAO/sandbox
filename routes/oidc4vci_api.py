@@ -421,6 +421,7 @@ def issuer_authorize_par(issuer_id, red):
     try:
         request_uri_data = {
             "issuer_state": request.form.get('issuer_state'),
+            "redirect_uri": request.form['redirect_uri'],
             "scope": request.form.get('scope'),
             "nonce": request.form.get('nonce'),
             "code_challenge": request.form.get('code_challenge'),
