@@ -978,7 +978,7 @@ profile = {
                         "mandatory": True,
                         "display": [
                             {"name": "Issuer", "locale": "en-US"},
-                            {"name": "Emetteur", "locale": "de-FR"},
+                            {"name": "Emetteur", "locale": "fr-FR"},
                         ],
                     },
                     "given_name": {
@@ -986,7 +986,7 @@ profile = {
                         "display": [
                             {"name": "First Name", "locale": "en-US"},
                             {"name": "Vorname", "locale": "de-DE"},
-                            {"name": "Prenom", "locale": "de-FR"},
+                            {"name": "Prenom", "locale": "fr-FR"},
                         ],
                     },
                     "family_name": {
@@ -994,14 +994,26 @@ profile = {
                         "display": [
                             {"name": "Last Name", "locale": "en-US"},
                             {"name": "Nachname", "locale": "de-DE"},
-                            {"name": "Nom", "locale": "de-FR"},
+                            {"name": "Nom", "locale": "fr-FR"},
                         ],
                     },
                     "email": {},
                     "phone_number": {},
                     "address": {
-                        "street_address": {},
-                        "locality": {},
+                        "street_address": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Street", "locale": "en-US"},
+                                {"name": "Rue", "locale": "fr-FR"},
+                            ],
+                        },
+                        "locality": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Locality", "locale": "en-US"},
+                                {"name": "Ville", "locale": "fr-FR"},
+                            ],
+                        },
                         "region": {},
                         "country": {},
                     },
