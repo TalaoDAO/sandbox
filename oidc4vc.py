@@ -199,39 +199,40 @@ def hash(text):
     return base64.urlsafe_b64encode(m.digest()).decode().replace("=", "")
 
 
-def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key):
+def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=1000):
     """
     https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-01.html
-
     GAIN POC https://gist.github.com/javereec/48007399d9876d71f523145da307a7a3
+    HAIP : https://openid.net/specs/openid4vc-high-assurance-interoperability-profile-sd-jwt-vc-1_0-00.html
     """
     issuer_key = json.loads(issuer_key) if isinstance(issuer_key, str) else issuer_key
     _sd = []
     _disclosure = ""
-    for claim in [attribute for attribute in unsecured.keys() if attribute != "vct"]:
+    for claim in [attribute for attribute in unsecured.keys() if attribute not in ["vct", "status"]]:
         contents = json.dumps([salt(), claim, unsecured[claim]])
         disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
         _disclosure += "~" + disclosure 
         _sd.append(hash(disclosure))
     signer_key = jwk.JWK(**issuer_key)
-    pub_key = json.loads(signer_key.export(private_key=False) )
-    pub_key['kid'] = signer_key.thumbprint()
+    #pub_key = json.loads(signer_key.export(private_key=False) )
+    #pub_key['kid'] = signer_key.thumbprint()
     header = {
         'typ': "vc+sd-jwt",
-        'kid': pub_key['kid'],
+        'kid': signer_key.thumbprint(),
         'alg': alg(issuer_key)
     }
     payload = {
         'iss': issuer,
         'iat': math.ceil(datetime.timestamp(datetime.now())),
-        'exp': math.ceil(datetime.timestamp(datetime.now())) + 10000,
+        'exp': math.ceil(datetime.timestamp(datetime.now())) + duration,
         "_sd_alg": "sha256",
         "cnf": {
             "jwk": subject_key
         },
-        "_sd": _sd,
         "vct": unsecured['vct'],
     }
+    if _sd: payload["_sd"] = _sd
+    if unsecured.get("status"): payload["status"] = unsecured["status"]
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
     return token.serialize() + _disclosure + "~"

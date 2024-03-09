@@ -455,13 +455,20 @@ def issuer_authorize(issuer_id, red, mode):
         try:
             request_uri_data = json.loads(red.get(request_uri).decode())   
         except:
-            logging.info('redirect uri failed')
-            return jsonify({'error': 'invalid_request'}), 403
+            logging.warning('redirect uri failed')
+            return jsonify({
+                'error': 'invalid_request',
+                'error_description': 'request is expired'
+            }), 403
         issuer_state = request_uri_data['issuer_state']
         try:
             stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
         except:
-            return jsonify({'error': 'access_denied'}), 403
+            logging.warning('stream_id is lost')
+            return jsonify({
+                'error': 'invalid_request',
+                'error_description': 'request is expired'
+            }), 403
         redirect_uri = request_uri_data['redirect_uri']
         response_type = request_uri_data['response_type']
         scope = request_uri_data['scope']

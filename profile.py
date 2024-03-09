@@ -920,7 +920,13 @@ profile = {
                     "birthdate": {},
                     "is_over_13": {},
                     "is_over_15": {},
-                    "is_over_18": {},
+                    "is_over_18":  {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Over 18", "locale": "en-US"},
+                            {"name": "Majeur", "locale": "fr-FR"},
+                        ],
+                    },
                     "is_over_21": {},
                     "is_over_50": {},
                     "is_over_65": {},
@@ -1000,7 +1006,13 @@ profile = {
                         "country": {},
                     },
                     "birthdate": {},
-                    "is_over_18": {},
+                    "is_over_18":  {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Over 18", "locale": "en-US"},
+                            {"name": "Majeur", "locale": "fr-FR"},
+                        ],
+                    },
                     "is_over_21": {},
                     "is_over_65": {},
                 },
