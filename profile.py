@@ -912,10 +912,34 @@ profile = {
                     "email": {},
                     "phone_number": {},
                     "address": {
-                        "street_address": {},
-                        "locality": {},
-                        "region": {},
-                        "country": {},
+                        "street_address": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Street", "locale": "en-US"},
+                                {"name": "Rue", "locale": "fr-FR"},
+                            ],
+                        },
+                        "locality": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Locality", "locale": "en-US"},
+                                {"name": "Ville", "locale": "fr-FR"},
+                            ],
+                        },
+                        "region": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Region", "locale": "en-US"},
+                                {"name": "Region", "locale": "fr-FR"},
+                            ],
+                        },
+                        "country": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Country", "locale": "en-US"},
+                                {"name": "Pays", "locale": "fr-FR"},
+                            ],
+                        },
                     },
                     "birthdate": {},
                     "is_over_13": {},
@@ -999,7 +1023,7 @@ profile = {
                     },
                     "email": {},
                     "phone_number": {},
-                    "address": {
+                      "address": {
                         "street_address": {
                             "mandatory": True,
                             "display": [
@@ -1014,8 +1038,20 @@ profile = {
                                 {"name": "Ville", "locale": "fr-FR"},
                             ],
                         },
-                        "region": {},
-                        "country": {},
+                        "region": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Region", "locale": "en-US"},
+                                {"name": "Region", "locale": "fr-FR"},
+                            ],
+                        },
+                        "country": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Country", "locale": "en-US"},
+                                {"name": "Pays", "locale": "fr-FR"},
+                            ],
+                        },
                     },
                     "birthdate": {},
                     "is_over_18":  {
