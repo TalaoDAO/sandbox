@@ -515,19 +515,21 @@ def test_12(mode):
         issuer_id = "wixtxxvbxw"
         client_secret = "4fc17d17-934b-11ee-b456-699f8f5cf9a0"
 
-    offer = ["GuestCredential", "PermanentResidentCard", "OpenBadgeCredential", "DBCGuest"]
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
     }
+    with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
+        credential = json.loads(f.read())
     data = { 
         "issuer_id": issuer_id,
-        "vc": build_credential_offered(offer), 
+        "vc": {"IdentityCredential" : credential}, 
         "issuer_state": str(uuid.uuid1()),
-        "credential_type": offer,
-        "pre-authorized_code": True,
+        "pre-authorized_code": False,
+        "credential_type": ['IdentityCredential'],
         "callback": mode.server + 'sandbox/issuer/callback',
         }
+    
     resp = requests.post(api_endpoint, headers=headers, json=data)
     try:
         qrcode = resp.json()['redirect_uri']

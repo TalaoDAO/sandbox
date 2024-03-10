@@ -1082,4 +1082,114 @@ profile = {
         "schema_for_type": False,
         "credential_manifest_support": False,
     },
+    "HAIP": {
+        "oidc4vciDraft": "13",
+        "siopv2Draft": "12",
+        "oidc4vpDraft": "20",
+        "vc_format": "vc+sd-jwt",
+        "verifier_vp_type": "vc+sd-jwt",
+        "oidc4vci_prefix": "haip://",
+        "authorization_server_support": False,
+        "credentials_as_json_object_array": False,
+        "siopv2_prefix": "haip://",
+        "oidc4vp_prefix": "haip://",
+        "credentials_types_supported": ["IdentityCredential"],
+        "credentials_supported": {
+            "IdentityCredential": {
+                "format": "vc+sd-jwt",
+                "scope": "IdentityCredential_scope",
+                "display": [
+                    {
+                        "name": "Identity Credential",
+                        "locale": "en-US",
+                        "background_color": "#12107c",
+                        "text_color": "#FFFFFF",
+                    }
+                ],
+                "claims": {
+                    "iss": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Issuer", "locale": "en-US"},
+                            {"name": "Emetteur", "locale": "fr-FR"},
+                        ],
+                    },
+                    "given_name": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "First Name", "locale": "en-US"},
+                            {"name": "Vorname", "locale": "de-DE"},
+                            {"name": "Prenom", "locale": "fr-FR"},
+                        ],
+                    },
+                    "family_name": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Last Name", "locale": "en-US"},
+                            {"name": "Nachname", "locale": "de-DE"},
+                            {"name": "Nom", "locale": "fr-FR"},
+                        ],
+                    },
+                    "email": {},
+                    "phone_number": {},
+                    "address": {
+                        "street_address": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Street", "locale": "en-US"},
+                                {"name": "Rue", "locale": "fr-FR"},
+                            ],
+                        },
+                        "locality": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Locality", "locale": "en-US"},
+                                {"name": "Ville", "locale": "fr-FR"},
+                            ],
+                        },
+                        "region": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Region", "locale": "en-US"},
+                                {"name": "Region", "locale": "fr-FR"},
+                            ],
+                        },
+                        "country": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Country", "locale": "en-US"},
+                                {"name": "Pays", "locale": "fr-FR"},
+                            ],
+                        },
+                    },
+                    "birthdate": {},
+                    "is_over_13": {},
+                    "is_over_15": {},
+                    "is_over_18":  {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Over 18", "locale": "en-US"},
+                            {"name": "Majeur", "locale": "fr-FR"},
+                        ],
+                    },
+                    "is_over_21": {},
+                    "is_over_50": {},
+                    "is_over_65": {},
+                },
+                "cryptographic_binding_methods_supported": ["jwk", "DID"],
+                "credential_signing_alg_values_supported": [
+                    "ES256",
+                    "ES256K",
+                ],
+                "vct": "https://credentials.example.com/identity_credential",
+                "proof_types_supported": ["jwt"],
+            }
+        },
+        "grant_types_supported": [
+            "authorization_code",
+            "urn:ietf:params:oauth:grant-type:pre-authorized_code",
+        ],
+        "schema_for_type": False,
+        "credential_manifest_support": False,
+    }
 }

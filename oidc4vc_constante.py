@@ -21,7 +21,8 @@ oidc4vci_draft = {
 oidc4vp_draft = {
     "10": "draft 10",
     "13": "draft 13",
-     "18": "draft 18"
+    "18": "draft 18",
+    "20": "draft 20"
 }
 
 siopv2_draft = {
@@ -37,9 +38,10 @@ oidc4vc_profile_list = {
     'GAIN-POC': 'GAIN POC openid, SD-JWT implementation in progress',
     'DIIP': 'Decentrtalized Identity Interop Profile (DIIP)',
     'DEFAULT-VC-JWT-OIDC4VCI12': 'jwt_vc_json with OIDC4VCI draft 12',
-    'DEFAULT-VC-JWT-OIDC4VCI13': 'jwt_vc_json with OIDC4VCI draft 13',
+    'DEFAULT-VC-JWT-OIDC4VCI13': 'jwt_vc_json with OIDC4VCI draft 13 (DIIP V2.1)',
     'CUSTOM': 'CUSTOM profile',
-    'BASELINE': 'Baseline Profile'
+    'BASELINE': 'Baseline Profile',
+    'HAIP': 'HAIP-EUDI Wallet'
 }
 
 

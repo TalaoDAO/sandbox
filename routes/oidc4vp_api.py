@@ -641,7 +641,9 @@ def oidc4vc_login_qrcode(red, mode):
             client_metadata_uri = mode.server + "verifier/wallet/client_metadata_uri/" + verifier_id
         
         # client_id_scheme
-        if verifier_data.get('client_id_as_DID'):
+        if verifier_data['profile'] == "HAIP":
+            authorization_request['client_id_scheme'] = 'verifier_attestation'
+        elif verifier_data.get('client_id_as_DID'):
             authorization_request['client_id_scheme'] = 'did'
         else:
             authorization_request['client_id_scheme'] = 'redirect_uri'
@@ -650,7 +652,9 @@ def oidc4vc_login_qrcode(red, mode):
         if verifier_data.get('presentation_definition_uri'):
             red.setex("presentation_definition_" + verifier_id, QRCODE_LIFE, json.dumps(presentation_definition))        
             presentation_definition_uri = mode.server + 'verifier/wallet/presentation_definition_uri/' + verifier_id
-        
+    else:
+        presentation_definition = None
+         
     # SIOPV2
     if 'id_token' in response_type:
         authorization_request['scope'] = 'openid'
@@ -663,9 +667,6 @@ def oidc4vc_login_qrcode(red, mode):
         "verifier_id": verifier_id
     }
     red.setex(stream_id, QRCODE_LIFE, json.dumps(data))
-
-    if 'vp_token' not in response_type:
-        presentation_definition = None
 
     # Request for uri    
     if 'vp_token' in response_type:
@@ -681,9 +682,8 @@ def oidc4vc_login_qrcode(red, mode):
         else:
             authorization_request['presentation_definition_uri'] = presentation_definition_uri
 
-    if response_type == "id_token": 
-        if verifier_data.get('request_uri_parameter_supported'):
-            authorization_request['registration'] = wallet_metadata
+    if response_type == "id_token" and verifier_data.get('request_uri_parameter_supported'):
+        authorization_request['registration'] = wallet_metadata
     
     # manage request_uri as jwt
     request_as_jwt = build_jwt_request(
@@ -695,7 +695,7 @@ def oidc4vc_login_qrcode(red, mode):
     )
 
     # QRCode preparation with authorization_request_displayed
-    if verifier_data.get('request_uri_parameter_supported'):
+    if verifier_data.get('request_uri_parameter_supported') or verifier_data['profile'] == "HAIP":
         red.setex("request_uri_" + stream_id, QRCODE_LIFE, json.dumps(request_as_jwt))
         authorization_request_displayed = { 
             "client_id": client_id,
@@ -707,18 +707,13 @@ def oidc4vc_login_qrcode(red, mode):
         authorization_request_displayed = authorization_request
 
     url = prefix + '?' + urlencode(authorization_request_displayed)
-    if 'vp_token' in response_type:
+    if 'vp_token' in response_type and not verifier_data.get('request_uri_parameter_supported'):
         if not verifier_data.get('client_metadata_uri'):
-            if not verifier_data.get('request_uri_parameter_supported'):
-                url = url + '&client_metadata=' + quote(json.dumps(wallet_metadata))
-    
+            url += '&client_metadata=' + quote(json.dumps(wallet_metadata))
         if not verifier_data.get('presentation_definition_uri'):
-            if not verifier_data.get('request_uri_parameter_supported'):
-                url = url + '&presentation_definition=' + quote(json.dumps(presentation_definition))
-    
-    if response_type == "id_token": 
-        if not verifier_data.get('request_uri_parameter_supported'):
-            url = url + '&registration=' + quote(json.dumps(wallet_metadata))
+            url += '&presentation_definition=' + quote(json.dumps(presentation_definition))
+    if response_type == "id_token" and not verifier_data.get('request_uri_parameter_supported'):
+        url += '&registration=' + quote(json.dumps(wallet_metadata))
     
     # get request uri jwt
     try:
@@ -733,13 +728,13 @@ def oidc4vc_login_qrcode(red, mode):
     
     # test qrcode size
     logging.info("qrcode qize = %s", len(url))
-    if len(url) > 2900:
-        return jsonify("This QR code is too big, use request uri")
+    if len(url) > 2900: return jsonify("This QR code is too big, use request uri")
     
     return render_template(
         qrcode_page,
         url=url,
         request_uri=request_uri_jwt,
+        request_uri_payload=json.dumps(oidc4vc.get_payload_from_token(request_uri_jwt), indent=4),
         url_json= unquote(url),
         presentation_definition=json.dumps(presentation_definition, indent=4),
         client_metadata=json.dumps(wallet_metadata, indent=4),
