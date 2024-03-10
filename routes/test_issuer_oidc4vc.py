@@ -44,7 +44,7 @@ def issuer_oidc_test(mode):
         issuer_id_test_9 = "pexkhrzlmj"
         issuer_id_test_10 = "grlvzckofy"
         issuer_id_test_11 = "pcbrwbvrsi"
-        issuer_id_test_12 = "avzzyxzxkp"
+        issuer_id_test_12 = "hrngdrpura"
     else:
         issuer_id_test_1 = "zxhaokccsi"
         issuer_id_test_2 = "mjdgqkkmcf"
@@ -519,20 +519,16 @@ def test_12(mode):
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
     }
-    offer = ["VerifiableId", "EmailPass"]
-
-    headers = {
-        'Content-Type': 'application/json',
-        'X-API-KEY': client_secret
-    }
+    with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
+        credential = json.loads(f.read())
     data = { 
         "issuer_id": issuer_id,
-        "vc": build_credential_offered(offer), 
+        "vc": {"IdentityCredential" : credential}, 
         "issuer_state": str(uuid.uuid1()),
-        "credential_type": offer,
-        "pre-authorized_code": True,
+        "pre-authorized_code": False,
+        "credential_type": ['IdentityCredential'],
         "callback": mode.server + 'sandbox/issuer/callback',
-    }
+        }
     resp = requests.post(api_endpoint, headers=headers, json=data)
     try:
         qrcode = resp.json()['redirect_uri']
