@@ -155,7 +155,7 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         'credential_endpoint': mode.server + 'issuer/' + issuer_id + '/credential',
         'deferred_credential_endpoint': mode.server + 'issuer/' + issuer_id + '/deferred',
     }
-
+   
     # Credentials supported section
     cs = issuer_profile.get('credentials_supported')
     if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
@@ -188,6 +188,8 @@ def credential_issuer_openid_configuration(issuer_id, mode):
             'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
             'pushed_authorization_request_endpoint' : mode.server +'issuer/' + issuer_id + '/authorize/par' 
         })
+        if issuer_data['profile'] == "HAIP":
+            as_config["require_pushed_authorization_requests"] = True
         credential_issuer_openid_configuration.update(as_config)
 
     return credential_issuer_openid_configuration
@@ -209,6 +211,11 @@ def authorization_server_openid_configuration(issuer_id, mode):
 
 # authorization server configuration
 def as_openid_configuration(issuer_id, mode):
+    try:
+        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    except Exception:
+        logging.warning('issuer_id not found for %s', issuer_id)
+        return
     authorization_server_config = json.load(open('authorization_server_config.json'))
     config = {
         'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/authorize',
@@ -216,6 +223,8 @@ def as_openid_configuration(issuer_id, mode):
         'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
         'pushed_authorization_request_endpoint' : mode.server +'issuer/' + issuer_id + '/authorize/par' 
     }
+    if issuer_data['profile'] == "HAIP":
+            config["require_pushed_authorization_requests"] = True
     config.update(authorization_server_config)
     return config
 
@@ -451,6 +460,11 @@ def issuer_authorize_par(issuer_id, red):
 
 # authorization code endpoint
 def issuer_authorize(issuer_id, red, mode):
+    try:
+        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    except Exception:
+        logging.warning('issuer_id not found for %s', issuer_id)
+        return
     if request_uri := request.args.get('request_uri'):
         try:
             request_uri_data = json.loads(red.get(request_uri).decode())   
@@ -479,6 +493,11 @@ def issuer_authorize(issuer_id, red, mode):
         state = request_uri_data['state']
         authorization_details = request_uri_data['authorization_details']
     else:
+        if issuer_data['profile'] == "HAIP":
+            return jsonify({
+                'error': 'access_denied',
+                'error_description': 'HAIP profile request PAR'
+            }), 403
         try:
             redirect_uri = request.args['redirect_uri']
         except Exception:
@@ -520,14 +539,11 @@ def issuer_authorize(issuer_id, red, mode):
     if response_type != 'code':
         return redirect(redirect_uri + '?' + authorization_error('invalid_response_type', 'response_type not supported', stream_id, red, state))
 
-    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-
     offer_data = json.loads(red.get(issuer_state).decode())
     vc = offer_data['vc']
     credential_type = offer_data['credential_type']
 
     # Code creation
-    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     if profile[issuer_data['profile']].get('pre-authorized_code_as_jwt'):
         code = oidc4vc.build_pre_authorized_code(
             issuer_data['jwk'],
