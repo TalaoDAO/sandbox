@@ -573,6 +573,7 @@ profile = {
             "VerifiableId",
             "EmailPass",
             "PhoneProof",
+            "Over18"
         ],
         "credentials_supported": {
             "EmployeeCredential": {
@@ -647,6 +648,24 @@ profile = {
                     "RS256",
                 ],
                 "display": [{"name": "Proof of Email", "locale": "en-GB"}],
+            },
+             "Over18": {
+                "format": "jwt_vc_json",
+                "scope": "Over18_scope",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "Over18"]
+                },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "display": [
+                    {"name": "Over 18yo proof", "locale": "en-GB"}, 
+                    {"name": "Preuve de majorité", "locale": "fr-GB"}
+                ],
             },
             "PhoneProof": {
                 "format": "jwt_vc_json",

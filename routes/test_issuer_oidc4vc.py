@@ -201,7 +201,7 @@ def test_3(mode):
         issuer_id = "ooroomolyd"
         client_secret = "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"
 
-    offer = ["VerifiableId", "PhoneProof"]
+    offer = ["VerifiableId", "EmailPass", "Over18"]
 
     headers = {
         'Content-Type': 'application/json',
@@ -359,7 +359,7 @@ def test_7(mode):
         issuer_id = "cqmygbreop"
         client_secret = "a71f33f9-3100-11ee-825b-9db9eb02bfb8"
 
-    offer = ["EmailPass", "VerifiableId"]
+    offer = ["EmailPass", "VerifiableId", "Over18"]
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
