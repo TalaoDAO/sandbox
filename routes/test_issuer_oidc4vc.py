@@ -462,7 +462,7 @@ def test_10(mode):
         "vc": build_credential_offered(offer), 
         "issuer_state": str(uuid.uuid1()),
         "credential_type": offer,
-        "pre-authorized_code": True,
+        "pre-authorized_code": False,
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
