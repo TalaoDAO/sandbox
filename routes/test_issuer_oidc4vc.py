@@ -510,7 +510,7 @@ def test_12(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "hrngdrpura"
-        client_secret = "d4684bc2-892f-11ee-9a8c-0a1628958560"
+        client_secret = "1c290181-de11-11ee-9fb4-0a1628958560"
     else:
         issuer_id = "wixtxxvbxw"
         client_secret = "4fc17d17-934b-11ee-b456-699f8f5cf9a0"
