@@ -28,6 +28,8 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/issuer/callback',  view_func=issuer_callback, methods=['GET'])
     # test
     app.add_url_rule('/issuer/oidc/test',  view_func=issuer_oidc_test, methods=['GET', 'POST'], defaults={"mode": mode})
+    app.add_url_rule('/sandbox/issuer/oidc/test',  view_func=issuer_oidc_test, methods=['GET', 'POST'], defaults={"mode": mode})
+
 
     return
 
