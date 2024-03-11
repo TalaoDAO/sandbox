@@ -590,6 +590,9 @@ def oidc4vc_login_qrcode(red, mode):
         if profile[verifier_data['profile']].get("verifier_vp_type") == 'ldp_vp':
             prez.add_format_ldp_vp()
             prez.add_format_ldp_vc()
+        elif profile[verifier_data['profile']].get("verifier_vp_type") == 'all_vp':
+            prez.add_format_all_vp()
+            prez.add_format_all_vc()
         elif profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp':
             prez.add_format_jwt_vp()
             prez.add_format_jwt_vc()

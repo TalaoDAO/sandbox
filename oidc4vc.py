@@ -208,14 +208,13 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=1000):
     issuer_key = json.loads(issuer_key) if isinstance(issuer_key, str) else issuer_key
     _sd = []
     _disclosure = ""
-    for claim in [attribute for attribute in unsecured.keys() if attribute not in ["vct", "status"]]:
+    disclosure_list = unsecured.get("disclosure")
+    for claim in [attribute for attribute in unsecured.keys() if attribute not in disclosure_list]:
         contents = json.dumps([salt(), claim, unsecured[claim]])
         disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
         _disclosure += "~" + disclosure 
         _sd.append(hash(disclosure))
     signer_key = jwk.JWK(**issuer_key)
-    #pub_key = json.loads(signer_key.export(private_key=False) )
-    #pub_key['kid'] = signer_key.thumbprint()
     header = {
         'typ': "vc+sd-jwt",
         'kid': signer_key.thumbprint(),
@@ -229,10 +228,11 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=1000):
         "cnf": {
             "jwk": subject_key
         },
-        "vct": unsecured['vct'],
     }
+    for claim in [attribute for attribute in disclosure_list if attribute != "disclosure"]:
+        payload[claim] = unsecured[claim]
     if _sd: payload["_sd"] = _sd
-    if unsecured.get("status"): payload["status"] = unsecured["status"]
+    logging.info("sd-jwt payload = %s", json.dumps(payload, indent = 4))
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
     return token.serialize() + _disclosure + "~"

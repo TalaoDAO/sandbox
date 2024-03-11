@@ -573,9 +573,63 @@ profile = {
             "VerifiableId",
             "EmailPass",
             "PhoneProof",
-            "Over18"
+            "Over18",
+            "DBCGuest"
         ],
         "credentials_supported": {
+            "DBCGuest": {
+                "display": [
+                    {
+                        "name": "DBC Guest (DIIP)",
+                        "description": "The DBC Guest credential is a DIIP example.",
+                        "background_color": "#3B6F6D",
+                        "text_color": "#FFFFFF",
+                        "logo": {
+                            "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
+                            "alt_text": "An orange block shape, with the text Dutch Blockchain Coalition next to it, portraying the logo of the Dutch Blockchain Coalition.",
+                        },
+                        "background_image": {
+                            "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
+                            "alt_text": "Connected open cubes in blue with one orange cube as a background of the card",
+                        },
+                    },
+                    {
+                        "locale": "en-US",
+                        "name": "DBC Guest (DIIP)",
+                        "description": "The DBC guest credential is a DIIP example.",
+                        "background_color": "#3B6F6D",
+                        "text_color": "#FFFFFF",
+                        "logo": {
+                            "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
+                            "alt_text": "An orange block shape, with the text Dutch Blockchain Coalition next to it, portraying the logo of the Dutch Blockchain Coalition.",
+                        },
+                        "background_image": {
+                            "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
+                            "alt_text": "Connected open cubes in blue with one orange cube as a background of the card",
+                        },
+                    },
+                    {
+                        "locale": "nl-NL",
+                        "name": "DBC gast (DIIP)",
+                        "description": "De DBC gast credential is een DIIP voorbeeld.",
+                        "background_color": "#3B6F6D",
+                        "text_color": "#FFFFFF",
+                        "logo": {
+                            "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
+                            "alt_text": "Aaneengesloten open blokken in de kleur blauw, met een blok in de kleur oranje, die tesamen de achtergrond van de kaart vormen.",
+                        },
+                        "background_image": {
+                            "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
+                            "alt_text": "Connected open cubes in blue with one orange cube as a background of the card",
+                        },
+                    },
+                ],
+                "format": "jwt_vc_json",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "DBCGuest"]
+                },
+                "scope": "DBCGuest_scope",
+            },   
             "EmployeeCredential": {
                 "format": "jwt_vc_json",
                 "scope": "EmployeeCredential_scope",
@@ -1204,6 +1258,24 @@ profile = {
                 "proof_types_supported": ["jwt"],
             }
         },
+        "grant_types_supported": [
+            "authorization_code",
+            "urn:ietf:params:oauth:grant-type:pre-authorized_code",
+        ],
+        "schema_for_type": False,
+        "credential_manifest_support": False,
+    },
+     "VERIFIER-ALL": {
+        "oidc4vciDraft": "13",
+        "siopv2Draft": "12",
+        "oidc4vpDraft": "20",
+        "vc_format": "all_vc",
+        "verifier_vp_type": "all_vp",
+        "oidc4vci_prefix": "haip://",
+        "authorization_server_support": False,
+        "credentials_as_json_object_array": False,
+        "siopv2_prefix": "haip://",
+        "oidc4vp_prefix": "openid-vc://",
         "grant_types_supported": [
             "authorization_code",
             "urn:ietf:params:oauth:grant-type:pre-authorized_code",

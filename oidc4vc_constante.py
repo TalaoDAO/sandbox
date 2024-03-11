@@ -41,7 +41,8 @@ oidc4vc_profile_list = {
     'DEFAULT-VC-JWT-OIDC4VCI13': 'jwt_vc_json with OIDC4VCI draft 13 (DIIP V2.1)',
     'CUSTOM': 'CUSTOM profile',
     'BASELINE': 'Baseline Profile',
-    'HAIP': 'HAIP-EUDI Wallet'
+    'HAIP': 'HAIP-EUDI Wallet',
+    'VERIFIER-ALL': 'VERIFIER ALL'
 }
 
 

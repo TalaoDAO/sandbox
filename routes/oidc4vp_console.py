@@ -278,6 +278,10 @@ def oidc4vc_verifier_console(mode):
             if profile[session['client_data']['profile']]["verifier_vp_type"] == 'ldp_vp':
                 prez.add_format_ldp_vp()
                 prez.add_format_ldp_vc()
+            
+            elif profile[session['client_data']['profile']]["verifier_vp_type"] == 'all_vp':
+                prez.add_format_all_vp()
+                prez.add_format_all_vc()
         
             elif profile[session['client_data']['profile']]["verifier_vp_type"] == 'jwt_vp':
                 prez.add_format_jwt_vp()

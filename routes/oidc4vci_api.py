@@ -427,6 +427,16 @@ def authorization_error(error, error_description, stream_id, red, state):
 # pushed authorization endpoint endpoint
 def issuer_authorize_par(issuer_id, red):
     try:
+        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    except Exception:
+        logging.warning('issuer_id not found for %s', issuer_id)
+        return
+    if issuer_data['profile'] == "HAIP":
+        if not request.form.get("client_assertion_type") or not request.form.het("client_assertion"):
+            return Response(**authorization_error('invalid_request', 'HAIP request client assertion authentication', stream_id, red, None))
+        else:
+            pass #TODO testing
+    try:
         request_uri_data = {
             "redirect_uri": request.form['redirect_uri'],
             "client_id": request.form['client_id'],
@@ -436,7 +446,7 @@ def issuer_authorize_par(issuer_id, red):
         }
         stream_id = json.loads(red.get(request.form['issuer_state']).decode())['stream_id']
     except Exception:
-        return Response(**authorization_error('invalid_request', 'Request format is incorrect', stream_id, red, request.form.get('state')))
+        return Response(**authorization_error('invalid_request', 'Request format is incorrect', stream_id, red, None))
     request_uri_data.update({
         "nonce": request.form.get('nonce'),
         "code_challenge": request.form.get('code_challenge'),
@@ -587,6 +597,14 @@ def issuer_token(issuer_id, red, mode):
     issuer_profile = profile[issuer_data['profile']]
 
     # error response https://datatracker.ietf.org/doc/html/rfc6749#section-4.2.2.1
+    # HAIP testing
+    if issuer_data['profile'] == "HAIP":
+        if not request.form.get("client_assertion_type") or not request.form.het("client_assertion"):
+            return Response(**authorization_error('invalid_request', 'HAIP request client assertion authentication', stream_id, red, None))
+        else:
+            pass #TODO testing
+    
+    # Grant type
     grant_type = request.form.get('grant_type')
     if not grant_type:
         return Response(**manage_error('invalid_request', 'Request format is incorrect, grant is missing', red, mode, request=request))

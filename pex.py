@@ -44,6 +44,30 @@ class Presentation_Definition:
                     "proof_type": proof_type
                 }
             })
+        
+    def add_format_all_vc(self):
+        if not self.pd.get('format'):
+            self.pd['format'] = dict()
+        self.pd["format"].update({
+                "ldp_vc": {
+                    "proof_type": LDP_PROOF_TYPE
+                },
+                 "jwt_vc_json": {
+                    "alg": JWT_ALG
+                }
+            })
+    
+    def add_format_all_vp(self):
+        if not self.pd.get('format'):
+            self.pd['format'] = dict()
+        self.pd["format"].update({
+                "ldp_vp": {
+                    "proof_type": LDP_PROOF_TYPE
+                },
+                 "jwt_vp_json": {
+                    "alg": JWT_ALG
+                }
+            })
     
     def add_format_jwt_vc(self, jwt_alg=JWT_ALG):
         if not self.pd.get('format'):

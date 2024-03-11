@@ -368,7 +368,7 @@ def test_7(mode):
         issuer_id = "cqmygbreop"
         client_secret = "a71f33f9-3100-11ee-825b-9db9eb02bfb8"
 
-    offer = ["EmailPass", "VerifiableId", "Over18"]
+    offer = ["EmailPass", "VerifiableId", "Over18", "DBCGuest"]
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
@@ -460,7 +460,7 @@ def test_10(mode):
         issuer_id = "kivrsduinn"
         client_secret = "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"
 
-    offer = ["VerifiableId", "EmailPass"]
+    offer = ["VerifiableId", "EmailPass", "DBCGuest"]
 
     headers = {
         'Content-Type': 'application/json',
@@ -471,7 +471,7 @@ def test_10(mode):
         "vc": build_credential_offered(offer), 
         "issuer_state": str(uuid.uuid1()),
         "credential_type": offer,
-        "pre-authorized_code": False,
+        "pre-authorized_code": True,
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
