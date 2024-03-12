@@ -337,10 +337,12 @@ def get_payload_from_token(token) -> dict:
     For verifier
     check the signature and return None if failed
     """
-    payload = token.split('.')[1]
-    payload += "=" * ((4 - len(payload) % 4) % 4) # solve the padding issue of the base64 python lib
-    return json.loads(base64.urlsafe_b64decode(payload).decode())
-
+    try:
+        payload = token.split('.')[1]
+        payload += "=" * ((4 - len(payload) % 4) % 4) # solve the padding issue of the base64 python lib
+        return json.loads(base64.urlsafe_b64decode(payload).decode())
+    except Exception:
+        return {}
 
 def get_header_from_token(token):
     header = token.split('.')[0]

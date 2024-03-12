@@ -596,14 +596,6 @@ def issuer_token(issuer_id, red, mode):
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
 
-    # error response https://datatracker.ietf.org/doc/html/rfc6749#section-4.2.2.1
-    # HAIP testing
-    if issuer_data['profile'] == "HAIP":
-        if not request.form.get("client_assertion_type") or not request.form.het("client_assertion"):
-            return Response(**authorization_error('invalid_request', 'HAIP request client assertion authentication', stream_id, red, None))
-        else:
-            pass #TODO testing
-    
     # Grant type
     grant_type = request.form.get('grant_type')
     if not grant_type:
@@ -627,25 +619,41 @@ def issuer_token(issuer_id, red, mode):
     if grant_type == 'authorization_code' and not request.form.get('redirect_uri'):
         return Response(**manage_error('invalid_request', 'Request format is incorrect, redirect_uri is missing', red, mode, request=request))
 
-
     # display client_authentication method
-    if request.headers.get('Authorization'):
+    if request.form.get('assertion') or request.form.get('client_assertion'):
+        client_authentication_method = 'client_secret_jwt'
+    elif request.headers.get('Authorization'):
         client_authentication_method = 'client_secret_basic'
     elif request.form.get('client_id') and request.form.get('client_secret'):
         client_authentication_method = 'client_secret_post'
     elif request.form.get('client_id'):
         client_authentication_method = 'client_id'
-    elif request.form.get('assertion') or request.form.get('client_assertion'):
-        client_authentication_method = 'client_secret_jwt)'
     else:
         client_authentication_method = 'none'
     logging.info('client authentication method = %s', client_authentication_method)
 
+    # Profile check
     if issuer_profile in ["EBSI-V3", "DIIP"]:
         if not request.form.get('client_id'):
             return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
         if not request.form.get('client_id')[:3] != "did":
             return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
+    elif issuer_data['profile'] == "HAIP":
+        if not request.form.get("client_assertion_type") or not request.form.het("client_assertion"):
+            return Response(**manage_error('invalid_request', 'HAIP request client assertion authentication', red, mode, request=request))
+    else:
+        pass
+    
+    # Check content of client assertion and proof of possession (PoP)
+    if client_authentication_method == 'client_secret_jwt':
+        client_assertion = request.form.get('client_assertion').split("~")[0]
+        logging.info("client _assertion = %s", client_assertion)
+        if request.form.get('client_id') != oidc4vc.get_payload_from_token(client_assertion).get('sub'):
+            return Response(**manage_error('invalid_request', 'client_id does not match client assertion subject', red, mode, request=request))
+        PoP = request.form.get('client_assertion').split("~")[1]
+        logging.info("proof of possession = %s", PoP)
+        if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(PoP).get('iss'):
+            return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
 
     # Code expired
     try:
