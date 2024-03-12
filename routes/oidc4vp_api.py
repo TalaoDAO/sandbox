@@ -62,7 +62,10 @@ def init_app(app, red, mode):
     
 
 def convert_jwt2jsonld_vc(vc):
-    payload = oidc4vc.get_payload_from_token(vc)
+    try:
+        payload = oidc4vc.get_payload_from_token(vc)
+    except Exception:
+        return
     return payload['vc']
 
 
@@ -95,6 +98,7 @@ def oidc4vc_build_id_token(client_id, sub, nonce, vp, mode):
         for vc in vc_list:
             if isinstance(vc, str):
                 vc = convert_jwt2jsonld_vc(vc)
+                if not vc: return
             if vc['credentialSubject']['type'] == 'EmailPass':
                 payload['email'] = vc['credentialSubject']['email']
             elif vc['credentialSubject']['type'] == 'PhoneProof':
