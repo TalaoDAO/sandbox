@@ -52,7 +52,7 @@ def init_app(app, red, mode):
     # OIDC4VCI protocol with wallet
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-credential-issuer', view_func=credential_issuer_openid_configuration_endpoint, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/authorize', view_func=issuer_authorize, methods=['GET'], defaults={'red': red, 'mode': mode})
-    app.add_url_rule('/issuer/<issuer_id>/authorize/par', view_func=issuer_authorize_par, methods=['POST'], defaults={'red': red})
+    app.add_url_rule('/issuer/<issuer_id>/authorize/par', view_func=issuer_authorize_par, methods=['POST'], defaults={'red': red, 'mode':mode})
 
     app.add_url_rule('/issuer/<issuer_id>/token', view_func=issuer_token, methods=['POST'], defaults={'red': red, 'mode': mode},)
     app.add_url_rule('/issuer/<issuer_id>/credential', view_func=issuer_credential, methods=['POST'], defaults={'red': red, 'mode': mode})
@@ -425,7 +425,7 @@ def authorization_error(error, error_description, stream_id, red, state):
 
 
 # pushed authorization endpoint endpoint
-def issuer_authorize_par(issuer_id, red):
+def issuer_authorize_par(issuer_id, red, mode):
     logging.info("request body = %s", json.dumps(request.form, indent=4))
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
@@ -434,9 +434,21 @@ def issuer_authorize_par(issuer_id, red):
         return
     if issuer_data['profile'] == "HAIP":
         if not request.form.get("client_assertion_type") or not request.form.het("client_assertion"):
-            return Response(**authorization_error('invalid_request', 'HAIP request client assertion authentication', stream_id, red, None))
+            return Response(**manage_error('invalid_request', 'HAIP request client assertion authentication', red, mode, request=request))
         else:
             pass #TODO testing
+    
+    # Check content of client assertion and proof of possession (PoP)
+    if request.form.get('client_assertion'):
+        client_assertion = request.form.get('client_assertion').split("~")[0]
+        logging.info("client _assertion = %s", client_assertion)
+        if request.form.get('client_id') != oidc4vc.get_payload_from_token(client_assertion).get('sub'):
+            return Response(**manage_error('invalid_request', 'client_id does not match client assertion sub', red, mode, request=request))
+        PoP = request.form.get('client_assertion').split("~")[1]
+        logging.info("proof of possession = %s", PoP)
+        if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(PoP).get('iss'):
+            return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
+
     try:
         request_uri_data = {
             "redirect_uri": request.form['redirect_uri'],
