@@ -542,15 +542,21 @@ def test_12(mode):
         'X-API-KEY': client_secret
     }
     with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
-        credential = json.loads(f.read())
+        credential1 = json.loads(f.read())
+    with open('./verifiable_credentials/EudiPid.json', 'r') as f:
+        credential2 = json.loads(f.read())
+    
     data = { 
         "issuer_id": issuer_id,
-        "vc": {"IdentityCredential" : credential}, 
+        "vc": {
+            "IdentityCredential" : credential1,
+            "EudiPid": credential2
+        }, 
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": False,
-        "credential_type": ['IdentityCredential'],
+        "credential_type": ['IdentityCredential', 'EudiPid'],
         "callback": mode.server + 'sandbox/issuer/callback',
-        }
+    }
     resp = requests.post(api_endpoint, headers=headers, json=data)
     try:
         qrcode = resp.json()['redirect_uri']
@@ -573,13 +579,17 @@ def test_13(mode):
         'X-API-KEY': client_secret
     }
     with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
-        credential = json.loads(f.read())
+        credential1 = json.loads(f.read())
+    with open('./verifiable_credentials/EudiPid.json', 'r') as f:
+        credential2 = json.loads(f.read())
     data = { 
         "issuer_id": issuer_id,
-        "vc": {"IdentityCredential" : credential}, 
+        "vc": {
+            "IdentityCredential": credential1,
+            "EudiPid": credential2}, 
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
-        "credential_type": ['IdentityCredential'],
+        "credential_type": ['IdentityCredential', 'EudiPid'],
         "user_pin_required": True,
         "user_pin": "4444",
         "callback": mode.server + 'sandbox/issuer/callback',
