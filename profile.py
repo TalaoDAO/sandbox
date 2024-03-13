@@ -945,8 +945,75 @@ profile = {
         "credentials_as_json_object_array": False,
         "siopv2_prefix": "openid-vc://",
         "oidc4vp_prefix": "openid-vc://",
-        "credentials_types_supported": ["IdentityCredential"],
+        "credentials_types_supported": ["IdentityCredential", "EudiPid"],
         "credentials_supported": {
+             "EudiPid": {
+                "format": "vc+sd-jwt",
+                "scope": "EudiPid_scope",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "EudiPid"],
+                    "credentialSubject": {
+                        "given_name": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "First Name", "locale": "en-US"},
+                                        {"name": "Prénom", "locale": "fr-FR"}],
+                        },
+                        "family_name": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Family Name", "locale": "en-US"},
+                                        {"name": "Nom", "locale": "fr-FR"}],
+                        },
+                         "birth_place": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Birth place", "locale": "en-US"},
+                                        {"name": "Lieu de naissance", "locale": "fr-FR"}],
+                        },
+                           "nationality": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Nationality", "locale": "en-US"},
+                                        {"name": "Nationalité", "locale": "fr-FR"}],
+                        },
+                        "age_over_18": {
+                            "mandatory": True,
+                            "value_type": "bool",
+                            "display": [{"name": "Majority", "locale": "en-US"},
+                                        {"name": "Majorité", "locale": "fr-FR"}],
+                        },
+                        "picture": {
+                            "mandatory": True,
+                            "value_type": "image/jpeg",
+                            "display": [{"name": "Picture", "locale": "en-US"},
+                                        {"name": "Portrait", "locale": "fr-FR"}],
+                        },
+                         "age_birth_year": {
+                            "mandatory": True,
+                            "value_type": "integer",
+                            "display": [{"name": "Age birth year", "locale": "en-US"},
+                                        {"name": "Année de naissance", "locale": "fr-FR"}],
+                        },
+                    },
+                },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "vct": "EUDI_PID_rule_book_1_0_0",
+                "display": [
+                    {
+                        "name": "EUDI PID",
+                        "locale": "en-US",
+                        "background_color": "#14107c",
+                        "text_color": "#FFFFFF",
+                    }
+                ],
+            },
             "IdentityCredential": {
                 "format": "vc+sd-jwt",
                 "scope": "IdentityCredential_scope",

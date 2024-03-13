@@ -1,4 +1,4 @@
-from flask import redirect, jsonify, request, render_template
+from flask import redirect, jsonify, request, render_template, send_file
 from datetime import datetime, timedelta
 import json
 import uuid
@@ -30,8 +30,14 @@ def init_app(app,red, mode):
     app.add_url_rule('/issuer/oidc/test',  view_func=issuer_oidc_test, methods=['GET', 'POST'], defaults={"mode": mode})
     app.add_url_rule('/sandbox/issuer/oidc/test',  view_func=issuer_oidc_test, methods=['GET', 'POST'], defaults={"mode": mode})
 
+    app.add_url_rule('/sandbox/image',  view_func=get_image, methods=['GET'])
 
     return
+
+
+def get_image():
+    filename = 'picture.jpeg'
+    return send_file(filename, mimetype='image/jpeg')
 
 
 def issuer_oidc_test(mode):
@@ -244,7 +250,9 @@ def test_4(mode):
         client_secret = "5381c36b-45c2-11ee-ac39-9db132f0e4a1"
     
     with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
-        credential = json.loads(f.read())
+        credential_verifiableid = json.loads(f.read())
+    with open('./verifiable_credentials/EudiPid.json', 'r') as f:
+        credential_eudipid = json.loads(f.read())
         
     headers = {
         'Content-Type': 'application/json',
@@ -252,9 +260,12 @@ def test_4(mode):
     }
     data = { 
         "issuer_id": issuer_id,
-        "vc": {'IdentityCredential': credential}, 
+        "vc": {
+            'IdentityCredential': credential_verifiableid,
+            'EudiPid': credential_eudipid
+        }, 
         "issuer_state": str(uuid.uuid1()),
-        "credential_type": 'IdentityCredential',
+        "credential_type": ['IdentityCredential', 'EudiPid'],
         "pre-authorized_code": True,
         "user_pin_required": False,
         "callback": mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
