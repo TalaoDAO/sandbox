@@ -950,9 +950,7 @@ profile = {
              "EudiPid": {
                 "format": "vc+sd-jwt",
                 "scope": "EudiPid_scope",
-                "credential_definition": {
-                    "type": ["VerifiableCredential", "EudiPid"],
-                    "credentialSubject": {
+                "claims": {
                         "given_name": {
                             "mandatory": True,
                             "value_type": "string",
@@ -996,7 +994,6 @@ profile = {
                                         {"name": "Année de naissance", "locale": "fr-FR"}],
                         },
                     },
-                },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
