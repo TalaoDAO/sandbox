@@ -1,0 +1,18 @@
+{
+  "vct": "EUDI_PID_rule_book_1_0_0",
+  "given_name": "Patrick",
+  "family_name": "Doe",
+  "birth_date": "1961-12-01",
+  "age_over_18": true,
+  "age_birth_year": 1961,
+  "birth_place": "Paris",
+  "nationality": "FR",
+  "gender": 1,
+  "issuance_date": "2024-01-01",
+  "expiry_date": "2025-01-01",
+  "issuing_country": "FR",
+  "issuing_authorithy": "Paris_prefecture",
+  "picture": "https://talao.co/sandbox/image",
+  
+  "disclosure": ["age_over_18", "vct", "picture", "disclosure"]
+}
