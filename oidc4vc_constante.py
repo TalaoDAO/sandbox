@@ -52,6 +52,7 @@ oidc4vc_verifier_credential_list = {
     "None": "None",
     'https://credentials.openid.net/gain-poc-simple-identity-credential': 'vct = https://credentials.openid.net/gain-poc-simple-identity-credential',
     'VerifiableId':  'Verifiable ID',
+    'EUDI_PID_rule_book_1_0_0': 'PID for EUDI wallet',
     'VerifiableDiploma': 'EBSI Diploma',
     'EmployeeCredential': 'Employee Credential',
     'EmailPass': 'Email proof',
