@@ -433,7 +433,7 @@ def issuer_authorize_par(issuer_id, red, mode):
         logging.warning('issuer_id not found for %s', issuer_id)
         return
     if issuer_data['profile'] == "HAIP":
-        if not request.form.get("client_assertion_type") or not request.form.het("client_assertion"):
+        if not request.form.get("client_assertion_type") or not request.form.get("client_assertion"):
             return Response(**manage_error('invalid_request', 'HAIP request client assertion authentication', red, mode, request=request))
         else:
             pass #TODO testing
@@ -652,7 +652,7 @@ def issuer_token(issuer_id, red, mode):
         if not request.form.get('client_id')[:3] != "did":
             return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
     elif issuer_data['profile'] == "HAIP":
-        if not request.form.get("client_assertion_type") or not request.form.het("client_assertion"):
+        if not request.form.get("client_assertion_type") or not request.form.get("client_assertion"):
             return Response(**manage_error('invalid_request', 'HAIP request client assertion authentication', red, mode, request=request))
     else:
         pass

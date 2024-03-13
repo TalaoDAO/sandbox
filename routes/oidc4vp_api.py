@@ -62,11 +62,8 @@ def init_app(app, red, mode):
     
 
 def convert_jwt2jsonld_vc(vc):
-    try:
-        payload = oidc4vc.get_payload_from_token(vc)
-    except Exception:
-        return
-    return payload['vc']
+    payload = oidc4vc.get_payload_from_token(vc)
+    return payload.get('vc')
 
 
 def oidc4vc_build_id_token(client_id, sub, nonce, vp, mode):
