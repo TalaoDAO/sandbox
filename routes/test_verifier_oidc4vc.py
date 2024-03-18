@@ -1,6 +1,7 @@
 from flask import jsonify,  redirect, request, render_template, redirect, session
 import json
 import db_api
+import oidc4vc
 
 def init_app(app,red, mode):
     app.add_url_rule('/sandbox/verifier/test_1',  view_func=verifier_test_1, methods=['GET'], defaults={'mode': mode})
@@ -26,6 +27,7 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/verifier/callback',  view_func=verifier_callback, methods=['GET'])   
     app.add_url_rule('/sandbox/verifier/callback2',  view_func=verifier_callback2, methods=['GET'], defaults={'mode': mode})   
     app.add_url_rule('/sandbox/verifier/callback2_1',  view_func=verifier_callback2_1, methods=['GET'])   
+    app.add_url_rule('/sandbox/verifier/callback3',  view_func=verifier_callback3, methods=['GET'])   
 
     
     # Test
@@ -222,7 +224,7 @@ def verifier_test_11(mode):
         client_id = "icopdwkfhd"
     else:
         client_id = "pvtrczpaeg"
-    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback2"
+    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
     return redirect(url)
 
 
@@ -232,11 +234,16 @@ def verifier_test_12(mode):
         client_id = "woxvjqkbrb"
     else:
         client_id = "fzqtmovhto"
-    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback2"
+    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
     return redirect(url)
 
 def verifier_callback():
     return jsonify(request.args)
+
+# for sd-jwt
+def verifier_callback3():
+    token = request.args.get("id_token")
+    return jsonify(oidc4vc.get_payload_from_token(token))
 
 
 def verifier_callback2(mode):

@@ -87,7 +87,10 @@ def oidc4vc_build_id_token(client_id, sub, nonce, vp, mode):
     if nonce:
         payload['nonce'] = nonce
     if vp:
-        if isinstance(vp['verifiableCredential'], dict):
+        if vp.get("disclosure"):
+            payload['disclosure'] = vp["disclosure"]
+            vc_list = []
+        elif isinstance(vp['verifiableCredential'], dict):
             vc_list = [vp['verifiableCredential']]
         else:
             vc_list = vp['verifiableCredential']
@@ -196,7 +199,10 @@ def oidc4vc_authorize(red, mode):
             if code_wallet_data['vp_type'] == 'ldp_vp':
                 vp = code_wallet_data['vp_token_payload']
             else:
-                vp = code_wallet_data['vp_token_payload'].get('vp')
+                if code_wallet_data['vp_type'] == "vc+sd-jwt":
+                    vp = {"disclosure" : code_wallet_data['vp_token_payload']}
+                else:
+                    vp = code_wallet_data['vp_token_payload'].get('vp')
                 logging.info(" code_wallet_data['vp_token_payload'] = %s", code_wallet_data['vp_token_payload'])
             id_token = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
             resp = {"id_token": id_token} 
@@ -784,6 +790,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
         logging.info('Profile = %s', verifier_data['profile'])
     except Exception:
         qrcode_status = "QR code expired"
+        logging.info("QR code expired")
         access = False
 
     # prepare the verifier response to wallet
@@ -812,7 +819,9 @@ async def oidc4vc_login_endpoint(stream_id, red):
 
         # check types of vp
         if vp_token:
-            if vp_token[:2] == "ey":
+            if len(vp_token.split("~")) > 1:
+                vp_type = "vc+sd-jwt"
+            elif vp_token[:2] == "ey":
                 vp_type = "jwt_vp"
             elif json.loads(vp_token).get("@context"):
                 vp_type = "ldp_vp"
@@ -900,7 +909,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
                 
     # check vp_token signature
     if access and vp_token:
-        if vp_type == "jwt_vp":
+        if vp_type in ["jwt_vp", "jwt_vp_json"]:
             if len(vp_token.split("~")) > 1: # sd_jwt
                 vp_token = vp_token.split("~")[0]
             try:
@@ -911,7 +920,19 @@ async def oidc4vc_login_endpoint(stream_id, red):
                 vp_token_status = "signature check failed"
                 access = False
                 logging.info("signature check failed")
-        else:
+        elif vp_type == "vc+sd-jwt":
+            vcsd_jwt = vp_token.split("~")
+            nb_disclosure = len(vcsd_jwt)
+            print("nb of disclosure =", nb_disclosure - 2 )
+            disclosure = []
+            for i in range (1, nb_disclosure-1):
+                _disclosure = vcsd_jwt[i]
+                _disclosure += "=" * ((4 - len(_disclosure) % 4) % 4)
+                logging.info("disclosure #%s = %s", i, base64.urlsafe_b64decode(_disclosure.encode()).decode())
+                disc = base64.urlsafe_b64decode(_disclosure.encode()).decode()
+                disclosure.append(disc)
+            logging.info("vp token sihature not checked yet")
+        else: # ldp_vp
             verifyResult = json.loads(await didkit.verify_presentation(vp_token, "{}"))
             vp_token_status = verifyResult
             vp_token_payload = json.loads(vp_token)
@@ -919,7 +940,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
     # check types of vc
     if access and vp_token:
         vc_type = ""
-        if vp_type == "jwt_vp":
+        if vp_type in ["jwt_vp", "jwt_vp_json"]:
             vc_list = oidc4vc.get_payload_from_token(vp_token)['vp']["verifiableCredential"]
             for vc in vc_list:
                 try:
@@ -927,6 +948,8 @@ async def oidc4vc_login_endpoint(stream_id, red):
                     vc_type += " jwt_vc"
                 except Exception:
                     vc_type += " ldp_vc"
+        elif vp_type == "vc+sd-jwt":
+            vc_type = "vc+sd-jwt"
         else:
             vc_list = json.loads(vp_token)["verifiableCredential"]
             if isinstance(vc_list, dict):
@@ -953,6 +976,8 @@ async def oidc4vc_login_endpoint(stream_id, red):
             else:
                 aud_status = "failed in vp_token for domain "
                 access = False
+        elif vp_type == "vc+sd-jwt":
+            logging.info("nonce and aud not tested with sd-jwt")
         else:
             vp_sub = vp_token_payload['iss']
             if oidc4vc.get_payload_from_token(vp_token)['nonce'] == nonce:
@@ -967,17 +992,20 @@ async def oidc4vc_login_endpoint(stream_id, red):
                 access = False
     
     #  check profile compliance
-    profile_status = verifier_data['profile']
-    if verifier_data['profile'] == 'DEFAULT' and vp_token:
-        if vp_type != 'ldp_vp':
-            logging.warning("wrong VP type for profile DEFAULT")
-            profile_status = "Profile DEFAULT is not respected, wro,g vc_type for this profile"
-            access = False
-        elif vp_sub[:12] != 'did:key:z6Mk':
-            logging.warning("wrong key for profile DEFAULT")
-            profile_status = "Profile DEFAULT is not respected, wronk key for this profile"
-    else:
-        logging.warning('Profile DEFAULT is OK)')
+    if access:
+        profile_status = verifier_data['profile']
+        if verifier_data['profile'] == 'DEFAULT' and vp_token:
+            if vp_type != 'ldp_vp':
+                logging.warning("wrong VP type for profile DEFAULT")
+                profile_status = "Profile DEFAULT is not respected, wro,g vc_type for this profile"
+                access = False
+            elif vp_sub[:12] != 'did:key:z6Mk':
+                logging.warning("wrong key for profile DEFAULT")
+                profile_status = "Profile DEFAULT is not respected, wronk key for this profile"
+            else:
+                logging.info('Profile DEFAULT is respected')
+        else:
+           pass
         
     status_code = 200 if access else 400
     
@@ -1019,7 +1047,11 @@ async def oidc4vc_login_endpoint(stream_id, red):
             sub = vp_sub
         except Exception:
             sub = "Error"
-            
+    
+    if vp_type == "vc+sd-jwt":
+        vp_token_payload = disclosure
+        print("vp token payload = ", vp_token_payload)
+    
     wallet_data = json.dumps({
                     "access": access,
                     "vp_token_payload": vp_token_payload, # jwt_vp payload or json-ld 

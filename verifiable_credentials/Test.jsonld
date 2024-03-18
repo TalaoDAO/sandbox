@@ -1,28 +1,33 @@
 {
+  "credentialSchema": {
+    "id": "https://registry.aster-x.demo23.gxfs.fr/api/trusted-schemas-registry/v2/schemas/GaiaXTermsAndConditions",
+    "type": "FullJsonSchemaValidator2021"
+  },
+  "credentialSubject": {
+    "gx:termsAndConditions": "The PARTICIPANT signing the Self-Description agrees the following conditions: First, update its descriptions about any changes, be it technical, organizational, or legal - especially but not limited to contractual in regards to the indicated attributes present in the descriptions. Secondly, the keypair used to sign Verifiable Credentials will be revoked where Gaia-X Association becomes aware of any inaccurate statements in regards to the claims which result in a non-compliance with the Trust Framework and policy rules defined in the Policy Rules and Labelling Document (PRLD).",
+    "type": "gx:GaiaXTermsAndConditions",
+    "id": "did:web:montblanc-iot.provider.demo23.gxfs.fr"
+  },
   "@context": [
-    "https://www.w3.org/2018/credentials/v1",
-    {
-    "boolean": "schema:identifer",
-    "website": "schema:website",
-    "email": "schema:familyName",
-    "number" :"schema:number",
-    "integer" : "schema:integer"
-    }
+    "https://schema-registry.aster-x.demo23.gxfs.fr/contexts/jws-2020",
+    "https://schema-registry.aster-x.demo23.gxfs.fr/contexts/credentials",
+    "https://registry.lab.gaia-x.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#"
   ],
-  "id": "urn:uuid:201cfb13-eec3-4767-9bcb-248529982010",
   "type": [
     "VerifiableCredential",
-    "Test"
+    "gx:GaiaXTermsAndConditions"
   ],
-  "credentialSubject": {
-    "id": "did:web:demo.talao.co",
-    "type": "Test",
-    "boolean": true,
-    "email": "thierry@altme.io",
-    "website": "https://altme.io",
-    "number" : 10.546,
-    "integer" : 12
-  },
-  "issuer": "did:web:demo.talao.co",
-  "issuanceDate": "2022-03-18T07:59:40Z"
+  "id": "did:web:montblanc-iot.provider.demo23.gxfs.fr:68ce6dd5-6da0-4f02-bdf1-8256753f82b8:data.json",
+  "issuer": "did:web:montblanc-iot.provider.demo23.gxfs.fr",
+  "issuanceDate": "2024-03-15T17:03:34.585Z",
+  "validFrom": "2024-03-15T17:03:34.585Z",
+  "expirationDate": "2025-03-15T17:03:34.585Z",
+  "validUntil": "2025-03-15T17:03:34.585Z",
+  "credentialStatus": {
+    "type": "StatusList2021Entry",
+    "id": "https://revocation-registry.aster-x.demo23.gxfs.fr/api/v1/revocations/credentials/default-suspension#1295",
+    "statusPurpose": "suspension",
+    "statusListIndex": "1295",
+    "statusListCredential": "https://revocation-registry.aster-x.demo23.gxfs.fr/api/v1/revocations/credentials/default-suspension"
+  }
 }

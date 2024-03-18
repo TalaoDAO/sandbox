@@ -1296,6 +1296,30 @@ profile = {
                             "display": [{"name": "Age birth year", "locale": "en-US"},
                                         {"name": "Année de naissance", "locale": "fr-FR"}],
                         },
+                        "issuance_date": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Issuance date", "locale": "en-US"},
+                                        {"name": "Date d'emission", "locale": "fr-FR"}],
+                        },
+                        "expiry_date": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Expiry date", "locale": "en-US"},
+                                        {"name": "Date d'expiration", "locale": "fr-FR"}],
+                        },
+                        "issuing_country": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Issuing country", "locale": "en-US"},
+                                        {"name": "Pays d'emission", "locale": "fr-FR"}],
+                        },
+                         "issuing_authority": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Issuing autority", "locale": "en-US"},
+                                        {"name": "Authorité d'emission", "locale": "fr-FR"}],
+                        },
                     },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [
@@ -1324,6 +1348,14 @@ profile = {
                         "background_color": "#12107c",
                         "text_color": "#FFFFFF",
                     }
+                ],
+                 "order": [
+                    "given_name",
+                    "family_name",
+                    "birth_date",
+                    "address",
+                    "nationality",
+                    "is_over_18"
                 ],
                 "claims": {
                     "iss": {
@@ -1381,7 +1413,13 @@ profile = {
                             ],
                         },
                     },
-                    "birthdate": {},
+                    "birthdate": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Birth date", "locale": "en-US"},
+                                {"name": "Date de naissance", "locale": "fr-FR"},
+                            ],
+                        },
                     "is_over_13": {},
                     "is_over_15": {},
                     "is_over_18":  {
