@@ -215,7 +215,7 @@ def verifier_test_10(mode):
         client_id = "qixvcqlwbq"
     else:
         client_id = "ifdpawlhsw"
-    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback2"
+    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
     return redirect(url)
 
 
@@ -238,8 +238,10 @@ def verifier_test_12(mode):
     url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
     return redirect(url)
 
+
 def verifier_callback():
     return jsonify(request.args)
+
 
 # for sd-jwt
 def verifier_callback3():

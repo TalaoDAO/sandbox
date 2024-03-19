@@ -957,32 +957,33 @@ profile = {
                     "birth_place",
                     "nationality",
                     "age_over_18",
+                    "issuing_country",
                     "age_birth_year"
                 ],
                 "claims": {
                         "given_name": {
                             "mandatory": True,
                             "value_type": "string",
-                            "display": [{"name": "First Name", "locale": "en-US"},
+                            "display": [{"name": "First name", "locale": "en-US"},
                                         {"name": "Prénom", "locale": "fr-FR"}],
                         },
                         "family_name": {
                             "mandatory": True,
                             "value_type": "string",
-                            "display": [{"name": "Family Name", "locale": "en-US"},
+                            "display": [{"name": "Family name", "locale": "en-US"},
                                         {"name": "Nom", "locale": "fr-FR"}],
                         },
-                         "birth_place": {
+                        "birth_place": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Birth place", "locale": "en-US"},
                                         {"name": "Lieu de naissance", "locale": "fr-FR"}],
                         },
-                           "nationality": {
+                        "issuing_country": {
                             "mandatory": True,
                             "value_type": "string",
-                            "display": [{"name": "Nationality", "locale": "en-US"},
-                                        {"name": "Nationalité", "locale": "fr-FR"}],
+                            "display": [{"name": "Issuing country", "locale": "en-US"},
+                                        {"name": "Pays d'emission", "locale": "fr-FR"}],
                         },
                         "age_over_18": {
                             "mandatory": True,
@@ -1292,7 +1293,8 @@ profile = {
                     "birth_date",
                     "birth_place",
                     "nationality",
-                    "age_over_18",
+                    "is_over_18", 
+                    "is_over_65", 
                     "age_birth_year"
                 ],
                 "claims": {
@@ -1320,11 +1322,17 @@ profile = {
                             "display": [{"name": "Nationality", "locale": "en-US"},
                                         {"name": "Nationalité", "locale": "fr-FR"}],
                         },
-                        "age_over_18": {
+                        "is_over_18": {
                             "mandatory": True,
                             "value_type": "bool",
                             "display": [{"name": "Majority", "locale": "en-US"},
                                         {"name": "Majorité", "locale": "fr-FR"}],
+                        },
+                         "is_over_65": {
+                            "mandatory": True,
+                            "value_type": "bool",
+                            "display": [{"name": "Aged over 65", "locale": "en-US"},
+                                        {"name": "Agé de plus de 65 ans", "locale": "fr-FR"}],
                         },
                         "picture": {
                             "mandatory": True,
@@ -1395,6 +1403,9 @@ profile = {
                     "given_name",
                     "family_name",
                     "birth_date",
+                    "Gender",
+                    "email",
+                    "phone_number",
                     "address",
                     "nationality",
                     "is_over_18"
