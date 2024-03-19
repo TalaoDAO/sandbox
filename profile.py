@@ -1035,9 +1035,12 @@ profile = {
                     "given_name",
                     "family_name",
                     "birth_date",
+                    "gender",
                     "birth_place",
                     "nationality",
                     "age_over_18",
+                    "email",
+                    "phone_number"
                     "age_birth_year"
                 ],
                 "claims": {
@@ -1064,8 +1067,41 @@ profile = {
                             {"name": "Nom", "locale": "fr-FR"},
                         ],
                     },
-                    "email": {},
-                    "phone_number": {},
+                     "birthdate": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Birth date", "locale": "en-US"},
+                            {"name": "Date de naissance", "locale": "fr-FR"},
+                        ],
+                    },
+                    "gender": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Gender", "locale": "en-US"},
+                            {"name": "Genre", "locale": "fr-FR"},
+                        ],
+                    },
+                    "email": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Email", "locale": "en-US"},
+                            {"name": "Email", "locale": "fr-FR"},
+                        ],
+                    },
+                     "phone_number": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Phone number", "locale": "en-US"},
+                            {"name": "Téléphone", "locale": "fr-FR"},
+                        ],
+                    },
+                    "nationality": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Nationality", "locale": "en-US"},
+                            {"name": "Nationalité", "locale": "fr-FR"},
+                        ],
+                    },
                     "street_address": {
                         "mandatory": True,
                         "display": [
@@ -1094,7 +1130,6 @@ profile = {
                             {"name": "Pays", "locale": "fr-FR"},
                         ],
                     },
-                    "birthdate": {},
                     "is_over_13": {},
                     "is_over_15": {},
                     "is_over_18":  {
