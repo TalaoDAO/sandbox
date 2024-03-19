@@ -994,8 +994,14 @@ profile = {
                         "age_over_18": {
                             "mandatory": True,
                             "value_type": "bool",
-                            "display": [{"name": "Majority", "locale": "en-US"},
-                                        {"name": "Majorité", "locale": "fr-FR"}],
+                            "display": [{"name": "Aged over 18 yo", "locale": "en-US"},
+                                        {"name": "Agé de plus de 18 ans", "locale": "fr-FR"}],
+                        },
+                        "age_over_65": {
+                            "mandatory": True,
+                            "value_type": "bool",
+                            "display": [{"name": "Aged over 65 yo", "locale": "en-US"},
+                                        {"name": "Agé de plus de 65 ans", "locale": "fr-FR"}],
                         },
                         "picture": {
                             "mandatory": True,
@@ -1141,15 +1147,15 @@ profile = {
                     "is_over_18":  {
                         "mandatory": True,
                         "display": [
-                            {"name": "Over 18", "locale": "en-US"},
-                            {"name": "Majeur", "locale": "fr-FR"},
+                            {"name": "Aged over 18 yo", "locale": "en-US"},
+                            {"name": "Agé de plus de 18 ans", "locale": "fr-FR"},
                         ],
                     },
                     "is_over_65":  {
                         "mandatory": True,
                         "display": [
-                            {"name": "Aged over 65", "locale": "en-US"},
-                            {"name": "Plus de 65 ans", "locale": "fr-FR"},
+                            {"name": "Aged over 65 yo", "locale": "en-US"},
+                            {"name": "Agé de plus de 65 ans", "locale": "fr-FR"},
                         ],
                     }
                 },
