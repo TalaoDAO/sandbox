@@ -245,19 +245,25 @@ def verifier_callback():
 def verifier_callback3():
     token = request.args.get("id_token")
     vcsd = oidc4vc.get_payload_from_token(token)['vc+sd-jwt'].split("~")
-    vcsd_jwt = oidc4vc.get_payload_from_token(vcsd[0])
+    vcsd_jwt_payload = oidc4vc.get_payload_from_token(vcsd[0])
+    vcsd_jwt_header = oidc4vc.get_header_from_token(vcsd[0])
     disclosure = ""
     for i in range(1, len(vcsd)-1):
         _disclosure = vcsd[i]
         _disclosure += "=" * ((4 - len(vcsd[i]) % 4) % 4)    
         print(_disclosure)
         disclosure += "\r\n" + base64.urlsafe_b64decode(_disclosure.encode()).decode()
-    kbjwt = oidc4vc.get_payload_from_token(vcsd[-1])
+    kbjwt_header = oidc4vc.get_header_from_token(vcsd[-1])
+    kbjwt_payload = oidc4vc.get_payload_from_token(vcsd[-1])
+
     return render_template(
         'verifier_oidc/vcsd_jwt_test.html',
-        vcsd_jwt = json.dumps(vcsd_jwt, indent=4),
+        vcsd_jwt_header = json.dumps(vcsd_jwt_header, indent=4),
+        vcsd_jwt_payload = json.dumps(vcsd_jwt_payload, indent=4),
         disclosure= disclosure,
-        kbjwt=json.dumps(kbjwt, indent=4))
+        kbjwt_header=json.dumps(kbjwt_header, indent=4),
+        kbjwt_payload=json.dumps(kbjwt_payload, indent=4),
+        )
 
 
 def verifier_callback2(mode):

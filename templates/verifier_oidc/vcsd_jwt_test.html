@@ -18,7 +18,7 @@
             
 
           <div class="text-center mt-5">
-            <h1 class="mt-5">{{page_title}}</h1>
+            <h1 class="mt-5">SD-JWT OIDC4VP testing</h1>
             <h3 class="mt-5">{{page_subtitle}}</h3>
             
             <div class="row">
@@ -34,19 +34,34 @@
 
           </div>
               <div class="text-center mt-5">
-              <h2>vc+sd-jwt</h2><br>
-              <textarea rows="30" cols="150">{{vcsd_jwt}}</textarea>
+              <h2>Issuer signed JWT header</h2><br>
+              <textarea rows="5" cols="150">{{vcsd_jwt_header}}</textarea>
               </div>
 
               <div class="text-center mt-5">
-                <h2>Disclosure</h2><br>
-                <textarea rows="10" cols="150">{{disclosure|safe}}</textarea>
+                <h2>Issuer signed JWT payload</h2><br>
+                <textarea rows="25" cols="150">{{vcsd_jwt_payload}}</textarea>
+                </div>
+
+              <div class="text-center mt-5">
+                <h2>Disclosures</h2><br>
+                <textarea rows="5" cols="150">{{disclosure|safe}}</textarea>
 
                 
                 <div class="text-center mt-5">
-                  <h2>KB JWT</h2><br>
-                  <textarea rows="5" cols="150">{{kbjwt|safe}}</textarea>
-                  </div></div>
+                  <h2>Key Binding JWT header</h2><br>
+                  <textarea rows="5" cols="150">{{kbjwt_header|safe}}</textarea>
+                </div>
+
+                <div class="text-center mt-5">
+                    <h2>Key Binding JWT payload</h2><br>
+                    <textarea rows="7" cols="150">{{kbjwt_payload|safe}}</textarea>
+                  </div>
+        
+        
+                </div>
+        <br>
+        <br>
            
           </div>
           </div>
