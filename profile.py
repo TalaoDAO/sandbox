@@ -1031,6 +1031,15 @@ profile = {
                         "text_color": "#FFFFFF",
                     }
                 ],
+                "order": [
+                    "given_name",
+                    "family_name",
+                    "birth_date",
+                    "birth_place",
+                    "nationality",
+                    "age_over_18",
+                    "age_birth_year"
+                ],
                 "claims": {
                     "iss": {
                         "mandatory": True,
@@ -1057,35 +1066,33 @@ profile = {
                     },
                     "email": {},
                     "phone_number": {},
-                    "address": {
-                        "street_address": {
-                            "mandatory": True,
-                            "display": [
-                                {"name": "Street", "locale": "en-US"},
-                                {"name": "Rue", "locale": "fr-FR"},
-                            ],
-                        },
-                        "locality": {
-                            "mandatory": True,
-                            "display": [
-                                {"name": "Locality", "locale": "en-US"},
-                                {"name": "Ville", "locale": "fr-FR"},
-                            ],
-                        },
-                        "region": {
-                            "mandatory": True,
-                            "display": [
-                                {"name": "Region", "locale": "en-US"},
-                                {"name": "Region", "locale": "fr-FR"},
-                            ],
-                        },
-                        "country": {
-                            "mandatory": True,
-                            "display": [
-                                {"name": "Country", "locale": "en-US"},
-                                {"name": "Pays", "locale": "fr-FR"},
-                            ],
-                        },
+                    "street_address": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Street", "locale": "en-US"},
+                            {"name": "Rue", "locale": "fr-FR"},
+                        ],
+                    },
+                    "locality": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Locality", "locale": "en-US"},
+                            {"name": "Ville", "locale": "fr-FR"},
+                        ],
+                    },
+                    "region": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Region", "locale": "en-US"},
+                            {"name": "Region", "locale": "fr-FR"},
+                        ],
+                    },
+                    "country": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Country", "locale": "en-US"},
+                            {"name": "Pays", "locale": "fr-FR"},
+                        ],
                     },
                     "birthdate": {},
                     "is_over_13": {},
