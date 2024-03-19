@@ -973,7 +973,13 @@ profile = {
                             "display": [{"name": "Family name", "locale": "en-US"},
                                         {"name": "Nom", "locale": "fr-FR"}],
                         },
-                        "birth_place": {
+                        "birth_date": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Birth date", "locale": "en-US"},
+                                        {"name": "Date de naissance", "locale": "fr-FR"}],
+                        },
+                         "birth_place": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Birth place", "locale": "en-US"},
@@ -1039,19 +1045,13 @@ profile = {
                     "gender",
                     "birth_place",
                     "nationality",
-                    "age_over_18",
+                    "is_over_18",
+                    "is_over_65",
                     "email",
                     "phone_number"
-                    "age_birth_year"
+                    "issuing_country"
                 ],
                 "claims": {
-                    "iss": {
-                        "mandatory": True,
-                        "display": [
-                            {"name": "Issuer", "locale": "en-US"},
-                            {"name": "Emetteur", "locale": "fr-FR"},
-                        ],
-                    },
                     "given_name": {
                         "mandatory": True,
                         "display": [
@@ -1068,7 +1068,7 @@ profile = {
                             {"name": "Nom", "locale": "fr-FR"},
                         ],
                     },
-                     "birthdate": {
+                     "birth_date": {
                         "mandatory": True,
                         "display": [
                             {"name": "Birth date", "locale": "en-US"},
@@ -1103,6 +1103,13 @@ profile = {
                             {"name": "Nationalité", "locale": "fr-FR"},
                         ],
                     },
+                     "issuing_country": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Issuing country", "locale": "en-US"},
+                            {"name": "Pays d'émission", "locale": "fr-FR"},
+                        ],
+                    },
                     "street_address": {
                         "mandatory": True,
                         "display": [
@@ -1131,8 +1138,6 @@ profile = {
                             {"name": "Pays", "locale": "fr-FR"},
                         ],
                     },
-                    "is_over_13": {},
-                    "is_over_15": {},
                     "is_over_18":  {
                         "mandatory": True,
                         "display": [
@@ -1140,9 +1145,13 @@ profile = {
                             {"name": "Majeur", "locale": "fr-FR"},
                         ],
                     },
-                    "is_over_21": {},
-                    "is_over_50": {},
-                    "is_over_65": {},
+                    "is_over_65":  {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Aged over 65", "locale": "en-US"},
+                            {"name": "Plus de 65 ans", "locale": "fr-FR"},
+                        ],
+                    }
                 },
                 "cryptographic_binding_methods_supported": ["jwk", "DID"],
                 "credential_signing_alg_values_supported": [
@@ -1293,9 +1302,10 @@ profile = {
                     "birth_date",
                     "birth_place",
                     "nationality",
-                    "is_over_18", 
-                    "is_over_65", 
-                    "age_birth_year"
+                    "age_over_18", 
+                    "age_over_65", 
+                    "age_birth_year",
+                    "issuing_country"
                 ],
                 "claims": {
                         "given_name": {
@@ -1310,6 +1320,12 @@ profile = {
                             "display": [{"name": "Family Name", "locale": "en-US"},
                                         {"name": "Nom", "locale": "fr-FR"}],
                         },
+                         "birth_date": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Birth date", "locale": "en-US"},
+                                        {"name": "Date de naissance", "locale": "fr-FR"}],
+                        },
                          "birth_place": {
                             "mandatory": True,
                             "value_type": "string",
@@ -1322,13 +1338,13 @@ profile = {
                             "display": [{"name": "Nationality", "locale": "en-US"},
                                         {"name": "Nationalité", "locale": "fr-FR"}],
                         },
-                        "is_over_18": {
+                        "age_over_18": {
                             "mandatory": True,
                             "value_type": "bool",
                             "display": [{"name": "Majority", "locale": "en-US"},
                                         {"name": "Majorité", "locale": "fr-FR"}],
                         },
-                         "is_over_65": {
+                         "age_over_65": {
                             "mandatory": True,
                             "value_type": "bool",
                             "display": [{"name": "Aged over 65", "locale": "en-US"},
@@ -1406,18 +1422,11 @@ profile = {
                     "Gender",
                     "email",
                     "phone_number",
-                    "address",
                     "nationality",
-                    "is_over_18"
+                    "is_over_18",
+                    "issuing_country"
                 ],
                 "claims": {
-                    "iss": {
-                        "mandatory": True,
-                        "display": [
-                            {"name": "Issuer", "locale": "en-US"},
-                            {"name": "Emetteur", "locale": "fr-FR"},
-                        ],
-                    },
                     "given_name": {
                         "mandatory": True,
                         "display": [
@@ -1434,47 +1443,27 @@ profile = {
                             {"name": "Nom", "locale": "fr-FR"},
                         ],
                     },
-                    "email": {},
-                    "phone_number": {},
-                    "address": {
-                        "street_address": {
-                            "mandatory": True,
-                            "display": [
-                                {"name": "Street", "locale": "en-US"},
-                                {"name": "Rue", "locale": "fr-FR"},
-                            ],
-                        },
-                        "locality": {
-                            "mandatory": True,
-                            "display": [
-                                {"name": "Locality", "locale": "en-US"},
-                                {"name": "Ville", "locale": "fr-FR"},
-                            ],
-                        },
-                        "region": {
-                            "mandatory": True,
-                            "display": [
-                                {"name": "Region", "locale": "en-US"},
-                                {"name": "Region", "locale": "fr-FR"},
-                            ],
-                        },
-                        "country": {
-                            "mandatory": True,
-                            "display": [
-                                {"name": "Country", "locale": "en-US"},
-                                {"name": "Pays", "locale": "fr-FR"},
-                            ],
-                        },
+                    "email": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Email", "locale": "en-US"},
+                            {"name": "Email", "locale": "fr-FR"},
+                        ],
                     },
-                    "birthdate": {
+                     "phone_number": {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Phone number", "locale": "en-US"},
+                            {"name": "Téléphone", "locale": "fr-FR"},
+                        ],
+                    },
+                    "birth_date": {
                             "mandatory": True,
                             "display": [
                                 {"name": "Birth date", "locale": "en-US"},
                                 {"name": "Date de naissance", "locale": "fr-FR"},
                             ],
                         },
-                    "is_over_13": {},
-                    "is_over_15": {},
                     "is_over_18":  {
                         "mandatory": True,
                         "display": [
@@ -1482,9 +1471,19 @@ profile = {
                             {"name": "Majeur", "locale": "fr-FR"},
                         ],
                     },
-                    "is_over_21": {},
-                    "is_over_50": {},
-                    "is_over_65": {},
+                    "issuing_country": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Issuing country", "locale": "en-US"},
+                                        {"name": "Pays d'emission", "locale": "fr-FR"}],
+                        },
+                    "is_over_65":  {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Aged over 65", "locale": "en-US"},
+                            {"name": "Agé de plus de 65 ans", "locale": "fr-FR"},
+                        ],
+                    },
                 },
                 "cryptographic_binding_methods_supported": ["jwk", "DID"],
                 "credential_signing_alg_values_supported": [
