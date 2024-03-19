@@ -87,8 +87,8 @@ def oidc4vc_build_id_token(client_id, sub, nonce, vp, mode):
     if nonce:
         payload['nonce'] = nonce
     if vp:
-        if vp.get("disclosure"):
-            payload['disclosure'] = vp["disclosure"]
+        if vp.get("vc+sd-jwt"):
+            payload['vc+sd-jwt'] = vp["vc+sd-jwt"]
             vc_list = []
         elif isinstance(vp['verifiableCredential'], dict):
             vc_list = [vp['verifiableCredential']]
@@ -200,7 +200,7 @@ def oidc4vc_authorize(red, mode):
                 vp = code_wallet_data['vp_token_payload']
             else:
                 if code_wallet_data['vp_type'] == "vc+sd-jwt":
-                    vp = {"disclosure" : code_wallet_data['vp_token_payload']}
+                    vp = {"vc+sd-jwt" : code_wallet_data['vp_token_payload']}
                 else:
                     vp = code_wallet_data['vp_token_payload'].get('vp')
                 logging.info(" code_wallet_data['vp_token_payload'] = %s", code_wallet_data['vp_token_payload'])
@@ -1049,8 +1049,8 @@ async def oidc4vc_login_endpoint(stream_id, red):
             sub = "Error"
     
     if vp_type == "vc+sd-jwt":
-        vp_token_payload = disclosure
-        print("vp token payload = ", vp_token_payload)
+        vp_token_payload = vp_token
+        print("vp token payload = ", vp_token)
     
     wallet_data = json.dumps({
                     "access": access,

@@ -2,6 +2,7 @@ from flask import jsonify,  redirect, request, render_template, redirect, sessio
 import json
 import db_api
 import oidc4vc
+import base64
 
 def init_app(app,red, mode):
     app.add_url_rule('/sandbox/verifier/test_1',  view_func=verifier_test_1, methods=['GET'], defaults={'mode': mode})
@@ -243,7 +244,20 @@ def verifier_callback():
 # for sd-jwt
 def verifier_callback3():
     token = request.args.get("id_token")
-    return jsonify(oidc4vc.get_payload_from_token(token))
+    vcsd = oidc4vc.get_payload_from_token(token)['vc+sd-jwt'].split("~")
+    vcsd_jwt = oidc4vc.get_payload_from_token(vcsd[0])
+    disclosure = ""
+    for i in range(1, len(vcsd)-1):
+        _disclosure = vcsd[i]
+        _disclosure += "=" * ((4 - len(vcsd[i]) % 4) % 4)    
+        print(_disclosure)
+        disclosure += "\r\n" + base64.urlsafe_b64decode(_disclosure.encode()).decode()
+    kbjwt = oidc4vc.get_payload_from_token(vcsd[-1])
+    return render_template(
+        'verifier_oidc/vcsd_jwt_test.html',
+        vcsd_jwt = json.dumps(vcsd_jwt, indent=4),
+        disclosure= disclosure,
+        kbjwt=json.dumps(kbjwt, indent=4))
 
 
 def verifier_callback2(mode):
