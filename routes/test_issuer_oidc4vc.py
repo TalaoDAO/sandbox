@@ -36,7 +36,7 @@ def init_app(app,red, mode):
 
 
 def get_image():
-    filename = 'picture.jpeg'
+    filename = 'picture.jpg'
     return send_file(filename, mimetype='image/jpeg')
 
 
