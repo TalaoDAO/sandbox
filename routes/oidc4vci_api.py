@@ -898,12 +898,13 @@ async def issuer_credential(issuer_id, red, mode):
     
     # deferred use case
     if issuer_data.get("deferred_flow"):
+        logging.info("Deferred flow")
         deferred_random = str(uuid.uuid1())
         payload = {
             "c_nonce": str(uuid.uuid1()),
             "c_nonce_expires_in": ACCEPTANCE_TOKEN_LIFE,
         }
-        if int(issuer_profile['oidc4vciDraft']) == 12:
+        if int(issuer_profile['oidc4vciDraft']) <= 12:
             payload.update({"acceptance_token": deferred_random})
         elif int(issuer_profile['oidc4vciDraft']) > 12:
             payload.update({"transaction_id": deferred_random})
