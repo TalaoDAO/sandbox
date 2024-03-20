@@ -199,7 +199,7 @@ def hash(text):
     return base64.urlsafe_b64encode(m.digest()).decode().replace("=", "")
 
 
-def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=1000):
+def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*60):
     """
     https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-01.html
     GAIN POC https://gist.github.com/javereec/48007399d9876d71f523145da307a7a3
@@ -208,7 +208,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=1000):
     issuer_key = json.loads(issuer_key) if isinstance(issuer_key, str) else issuer_key
     _sd = []
     _disclosure = ""
-    disclosure_list = unsecured.get("disclosure")
+    disclosure_list = unsecured.get("disclosure", [])
     for claim in [attribute for attribute in unsecured.keys() if attribute not in disclosure_list]:
         contents = json.dumps([salt(), claim, unsecured[claim]])
         disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
@@ -220,6 +220,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=1000):
         'kid': signer_key.thumbprint(),
         'alg': alg(issuer_key)
     }
+    if subject_key.get("use"): del subject_key['use']
     payload = {
         'iss': issuer,
         'iat': math.ceil(datetime.timestamp(datetime.now())),

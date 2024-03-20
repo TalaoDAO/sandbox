@@ -260,6 +260,7 @@ def verifier_callback3():
 
     return render_template(
         'verifier_oidc/vcsd_jwt_test.html',
+        raw=token,
         vcsd_jwt_header = json.dumps(vcsd_jwt_header, indent=4),
         vcsd_jwt_payload = json.dumps(vcsd_jwt_payload, indent=4),
         disclosure= disclosure,
