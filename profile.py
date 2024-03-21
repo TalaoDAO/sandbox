@@ -675,6 +675,17 @@ profile = {
                 "scope": "VerifiableId_scope",
                 "credential_definition": {
                     "type": ["VerifiableCredential", "VerifiableId"],
+                    "order": [
+                        "firstname",
+                        "familyname",
+                        "DateOfBirth",
+                        "gender",
+                        "email",
+                        "phone_number",
+                        "nationality",
+                        "is_over_18",
+                        "issuing_country"
+                    ],
                     "credentialSubject": {
                         "firstName": {
                             "mandatory": True,
@@ -695,13 +706,6 @@ profile = {
                             "display": [
                                 {"name": "Date of birth", "locale": "en-US"},
                                 {"name": "Date de naissance", "locale": "fr-FR"}
-                            ],
-                        },
-                         "gender": {
-                            "mandatory": True,
-                            "display": [
-                                {"name": "Gender", "locale": "en-US"},
-                                {"name": "Genre", "locale": "fr-FR"}
                             ],
                         },
                     },
