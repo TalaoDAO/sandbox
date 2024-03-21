@@ -678,7 +678,7 @@ profile = {
                     "order": [
                         "firstname",
                         "familyname",
-                        "DateOfBirth",
+                        "dateOfBirth",
                         "gender",
                         "email",
                         "phone_number",
