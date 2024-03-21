@@ -31,7 +31,7 @@ profile = {
                 "display": [
                     {
                         "name": "Verifiable diploma",
-                        "locale": "en-GB",
+                        "locale": "en-US",
                         "description": "This the official EBSI VC Diploma",
                     }
                 ],
