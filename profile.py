@@ -40,6 +40,20 @@ profile = {
                     "type": "Accreditation",
                     "uri": "TIR link towards accreditation",
                 },
+                "credentialSubject": {
+                    "givenName": {
+                        "mandatory": True,
+                        "display": [{"name": "First Name", "locale": "en-US"}],
+                    },
+                    "familyNames": {
+                        "mandatory": True,
+                        "display": [{"name": "Family Name", "locale": "en-US"}],
+                    },
+                    "dateOfBirth": {
+                        "mandatory": True,
+                        "display": [{"name": "Birth Date", "locale": "en-US"}],
+                    },
+                },
             },
             {
                 "format": "jwt_vc",

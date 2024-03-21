@@ -7,7 +7,6 @@ from random import randrange
 import db_api
 
 
-
 def init_app(app,red, mode):
     app.add_url_rule('/sandbox/issuer/test_1',  view_func=test_1, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_2',  view_func=test_2, methods=['GET'], defaults={'mode': mode})
@@ -19,7 +18,6 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/issuer/test_7',  view_func=test_7, methods=['GET'], defaults={'mode': mode}) 
     app.add_url_rule('/sandbox/issuer/test_8',  view_func=test_8, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_9',  view_func=test_9, methods=['GET'], defaults={'mode': mode})
-
     app.add_url_rule('/sandbox/issuer/test_10',  view_func=test_10, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_11',  view_func=test_11, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_12',  view_func=test_12, methods=['GET'], defaults={'mode': mode})
@@ -55,7 +53,6 @@ def issuer_oidc_test(mode):
         issuer_id_test_11 = "pcbrwbvrsi"
         issuer_id_test_12 = "hrngdrpura"
         issuer_id_test_13 = "eyulcaatwc"
-
     else:
         issuer_id_test_1 = "zxhaokccsi"
         issuer_id_test_2 = "mjdgqkkmcf"
@@ -70,7 +67,6 @@ def issuer_oidc_test(mode):
         issuer_id_test_11 = "kwcdgsspng"
         issuer_id_test_12 = "wixtxxvbxw"
         issuer_id_test_13 = "ywmtotgmsi"
-
 
     title_test_1 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_1))["page_title"]
     subtitle_test_1 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_1))["page_subtitle"]
