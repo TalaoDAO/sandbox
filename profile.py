@@ -41,11 +41,11 @@ profile = {
                     "uri": "TIR link towards accreditation",
                 },
                 "credentialSubject": {
-                    "givenName": {
+                    "givenNames": {
                         "mandatory": True,
                         "display": [{"name": "First Name", "locale": "en-US"}],
                     },
-                    "familyNames": {
+                    "familyName": {
                         "mandatory": True,
                         "display": [{"name": "Family Name", "locale": "en-US"}],
                     },
@@ -678,11 +678,31 @@ profile = {
                     "credentialSubject": {
                         "firstName": {
                             "mandatory": True,
-                            "display": [{"name": "First Name", "locale": "en-US"}],
+                            "display": [
+                                {"name": "First name", "locale": "en-US"},
+                                {"name": "Prénom", "locale": "fr-FR"}         
+                            ],
                         },
                         "familyName": {
                             "mandatory": True,
-                            "display": [{"name": "Family Name", "locale": "en-US"}],
+                            "display": [
+                                {"name": "Family name", "locale": "en-US"},
+                                {"name": "Nom", "locale": "fr-FR"}                                
+                            ],
+                        },
+                        "dateOfBirth": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Date of birth", "locale": "en-US"},
+                                {"name": "Date de naissance", "locale": "fr-FR"}
+                            ],
+                        },
+                         "gender": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Gender", "locale": "en-US"},
+                                {"name": "Genre", "locale": "fr-FR"}
+                            ],
                         },
                     },
                 },
