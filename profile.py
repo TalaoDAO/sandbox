@@ -676,8 +676,8 @@ profile = {
                 "credential_definition": {
                     "type": ["VerifiableCredential", "VerifiableId"],
                     "order": [
-                        "firstname",
-                        "familyname",
+                        "firstName",
+                        "familyName",
                         "dateOfBirth",
                         "gender",
                         "email",
