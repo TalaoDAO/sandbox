@@ -735,7 +735,7 @@ profile = {
                                 {"name": "Délivré par", "locale": "fr-FR"}
                             ],
                         },
-                         "issuanceDate": {
+                         "dateIssued": {
                             "mandatory": True,
                             "display": [
                                 {"name": "Issuance date", "locale": "en-US"},
@@ -1193,7 +1193,8 @@ profile = {
                     "age_over_18", 
                     "age_over_65", 
                     "age_birth_year",
-                    "issuing_country"
+                    "issuing_country",
+                    "dateIssued"
                 ],
                 "claims": {
                         "given_name": {
@@ -1250,11 +1251,11 @@ profile = {
                             "display": [{"name": "Age birth year", "locale": "en-US"},
                                         {"name": "Année de naissance", "locale": "fr-FR"}],
                         },
-                        "issuance_date": {
+                        "dateIssued": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Issuance date", "locale": "en-US"},
-                                        {"name": "Date d'emission", "locale": "fr-FR"}],
+                                        {"name": "Délivré le", "locale": "fr-FR"}],
                         },
                         "expiry_date": {
                             "mandatory": True,
@@ -1307,12 +1308,13 @@ profile = {
                     "given_name",
                     "family_name",
                     "birth_date",
-                    "Gender",
+                    "gender",
                     "email",
                     "phone_number",
                     "nationality",
                     "is_over_18",
-                    "issuing_country"
+                    "issuing_country",
+                    "dateIssued"
                 ],
                 "claims": {
                     "given_name": {
@@ -1320,7 +1322,7 @@ profile = {
                         "display": [
                             {"name": "First Name", "locale": "en-US"},
                             {"name": "Vorname", "locale": "de-DE"},
-                            {"name": "Prenom", "locale": "fr-FR"},
+                            {"name": "Prénom(s)", "locale": "fr-FR"},
                         ],
                     },
                     "family_name": {
@@ -1365,11 +1367,24 @@ profile = {
                             "display": [{"name": "Issuing country", "locale": "en-US"},
                                         {"name": "Pays d'emission", "locale": "fr-FR"}],
                         },
+                     "dateIssued": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Issuance date", "locale": "en-US"},
+                                        {"name": "Délivré le", "locale": "fr-FR"}],
+                        },
                     "is_over_65":  {
                         "mandatory": True,
                         "display": [
                             {"name": "Aged over 65", "locale": "en-US"},
                             {"name": "Agé de plus de 65 ans", "locale": "fr-FR"},
+                        ],
+                    },
+                      "gender":  {
+                        "mandatory": True,
+                        "display": [
+                            {"name": "Gender", "locale": "en-US"},
+                            {"name": "Sexe", "locale": "fr-FR"},
                         ],
                     },
                 },
