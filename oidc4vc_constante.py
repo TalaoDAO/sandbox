@@ -1,4 +1,3 @@
-
 user = {
     "login_name": "",
     "did": "",
@@ -29,14 +28,11 @@ siopv2_draft = {
     "12": "draft 12",
 }
 
-
 oidc4vc_profile_list = {
     'DEFAULT': 'DEFAULT ldp_vc OIDC4VCI draft 11',
     'DEFAULT-JWT': 'DEFAULT jwt_vc_json OIDC4VCI draft 11',
     'EBSI-V3': 'EBSI OIDC4VCI Draft 11',
-    #'HEDERA': 'Greencypher project',
     'GAIN-POC': 'GAIN POC openid, SD-JWT implementation in progress',
-    'DIIP': 'Decentrtalized Identity Interop Profile (DIIP)',
     'DEFAULT-VC-JWT-OIDC4VCI12': 'jwt_vc_json with OIDC4VCI draft 12',
     'DEFAULT-VC-JWT-OIDC4VCI13': 'jwt_vc_json with OIDC4VCI draft 13 (DIIP V2.1)',
     'CUSTOM': 'CUSTOM profile',
@@ -45,12 +41,11 @@ oidc4vc_profile_list = {
     'VERIFIER-ALL': 'VERIFIER ALL'
 }
 
-
 #OIDC4VC Verifier for admin
 oidc4vc_verifier_credential_list = {
     #"DID": "Authentication",
     "None": "None",
-    'https://credentials.openid.net/gain-poc-simple-identity-credential': 'vct = https://credentials.openid.net/gain-poc-simple-identity-credential',
+    'https://credentials.openid.net/gain-poc-simple-identity-credential': 'IdentityCredential sd-jwt',
     'VerifiableId':  'Verifiable ID',
     'EUDI_PID_rule_book_1_0_0': 'PID for EUDI wallet',
     'VerifiableDiploma': 'EBSI Diploma',
