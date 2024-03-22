@@ -678,14 +678,19 @@ profile = {
                     "order": [
                         "firstName",
                         "familyName",
-                        "dateOfBirth"
+                        "dateOfBirth",
+                        "gender",
+                        "issuanceDate",
+                        "issuing_country",
+                        "email",
+                        "phone_number"
                     ],
                     "credentialSubject": {
                         "firstName": {
                             "mandatory": True,
                             "display": [
                                 {"name": "First name", "locale": "en-US"},
-                                {"name": "Prénom", "locale": "fr-FR"}         
+                                {"name": "Prénom(s)", "locale": "fr-FR"}         
                             ],
                         },
                         "familyName": {
@@ -699,7 +704,42 @@ profile = {
                             "mandatory": True,
                             "display": [
                                 {"name": "Date of birth", "locale": "en-US"},
-                                {"name": "Date de naissance", "locale": "fr-FR"}
+                                {"name": "Né(e) le", "locale": "fr-FR"}
+                            ],
+                        },
+                        "email": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Email", "locale": "en-US"},
+                                {"name": "Email", "locale": "fr-FR"}
+                            ],
+                        },
+                        "phone_number": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Phone number", "locale": "en-US"},
+                                {"name": "Téléphone", "locale": "fr-FR"}
+                            ],
+                        },
+                         "gender": {
+                            "mandatory": False,
+                            "display": [
+                                {"name": "Gender", "locale": "en-US"},
+                                {"name": "Sexe", "locale": "fr-FR"}
+                            ],
+                        },
+                         "issuing_country": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Issuing country", "locale": "en-US"},
+                                {"name": "Délivré par", "locale": "fr-FR"}
+                            ],
+                        },
+                         "issuanceDate": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Issuance date", "locale": "en-US"},
+                                {"name": "Délivré le", "locale": "fr-FR"}
                             ],
                         },
                     },
