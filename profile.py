@@ -680,7 +680,7 @@ profile = {
                         "familyName",
                         "dateOfBirth",
                         "gender",
-                        "issuanceDate",
+                        "dateIssued",
                         "issuing_country",
                         "email",
                         "phone_number"
@@ -722,7 +722,7 @@ profile = {
                             ],
                         },
                          "gender": {
-                            "mandatory": False,
+                            "mandatory": True,
                             "display": [
                                 {"name": "Gender", "locale": "en-US"},
                                 {"name": "Sexe", "locale": "fr-FR"}

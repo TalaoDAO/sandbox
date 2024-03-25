@@ -30,6 +30,8 @@ from routes import test_verifier_oidc4vc
 #from routes import web_wallet_test
 from routes import web_display_VP
 
+from routes import statuslist
+
 #from routes import ciba
 #from routes import jpma2jpma
 
@@ -83,6 +85,7 @@ test_issuer_oidc4vc.init_app(app, red, mode)
 test_verifier_oidc4vc.init_app(app, red, mode)
 #ciba.init_app(app, red, mode)
 #jpma2jpma.init_app(app, red, mode)
+statuslist.init_app(app, red, mode)
 
 sess = Session()
 sess.init_app(app)

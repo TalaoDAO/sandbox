@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/altmeIcon.png">
+    <title>Talao issuers and verifiers</title>
+    <link rel="stylesheet" href="/static/home.css">
+</head>
+
+
+<body>
+
+    {% include 'header.html' %}
+
+
+ 
+
+  <div id="mainBox" class="recursiveMainBox">
+
+    <h2>Active or revoke a SD-JWT credential</h2>
+    <p id="infotext"></p>
+   
+    <form action="/sandbox/issuer/statuslist" method="POST">
+    <div>
+    <center>
+        <div>
+          <div><label style="color:#050505"; >Status list index   </label><input type="text" required name="index"></div>
+        </div>
+        <br>
+        <div><button  style="background-color:#b7b4be;"name="button" value="revoke" type="submit">Revoke credential</button></div>
+        <br>
+        <div><button  style="background-color:#b7b4be;"name="button" value="active" type="submit">Active credential</button></div>
+
+
+        
+    </center>
+    </div>
+    </form>
+
+
+  </div>
+
+
+  
+
+
+  
+
+  {% include 'footer.html' %}
+
+</body>
+
+</html>

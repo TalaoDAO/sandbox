@@ -36,7 +36,7 @@
       "firstName": "Bianca",
       "dateOfBirth": "1930-10-01",
       "gender": "F",
-      "dateIssued": "2022-12-20T14:25:22Z"
+      "dateIssued": "2022-12-20"
     },
     "credentialSchema": {
       "id": "https://api-conformance.ebsi.eu/trusted-schemas-registry/v2/schemas/z22ZAMdQtNLwi51T2vdZXGGZaYyjrsuP1yzWyXZirCAHv",

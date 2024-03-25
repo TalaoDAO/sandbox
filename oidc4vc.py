@@ -230,6 +230,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
             "jwk": subject_key
         },
     }
+    if unsecured.get('status'): payload['status'] = unsecured['status']
     for claim in [attribute for attribute in disclosure_list if attribute != "disclosure"]:
         payload[claim] = unsecured[claim]
     if _sd: payload["_sd"] = _sd

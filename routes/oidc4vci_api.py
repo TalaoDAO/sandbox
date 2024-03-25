@@ -18,6 +18,7 @@ import pkce
 import requests
 import copy
 from jwcrypto import jwk
+from random import randint
 import contextlib
 
 logging.basicConfig(level=logging.INFO)
@@ -64,6 +65,7 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/<issuer_id>/jwks', view_func=issuer_jwks, methods=['GET', 'POST'])
 
     return
+
 
 
 def front_publish(stream_id, red, error=None, error_description=None):
@@ -951,6 +953,7 @@ async def issuer_credential(issuer_id, red, mode):
         access_token_data["c_nonce"],
         vc_format,
         mode.server + 'issuer/' + issuer_id,  # issuer
+        mode,
         wallet_jwk=wallet_jwk
     )
     logging.info("credential signed sent to wallet = %s", credential_signed)
@@ -1023,7 +1026,8 @@ async def issuer_deferred(issuer_id, red, mode):
         issuer_id,
         acceptance_token_data["c_nonce"],
         acceptance_token_data["format"],
-        mode.server + 'issuer/' + issuer_id
+        mode.server + 'issuer/' + issuer_id,
+        mode
     )
     if not credential_signed:
         return Response(**manage_error("internal_error", "Credential signature failed due to format", red, mode, request=request, status=404))
@@ -1082,13 +1086,20 @@ def oidc_issuer_stream(red):
     return Response(event_stream(red), headers=headers)
 
 
-async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, issuer, duration=365, wallet_jwk=None):
+async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, issuer, mode, duration=365, wallet_jwk=None):
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_did = issuer_data["did"]
     issuer_key = issuer_data["jwk"]
     issuer_vm = issuer_data["verification_method"]
     jti = 'urn:uuid:' + str(uuid.uuid1())
     if format == 'vc+sd-jwt':
+        credential["status"] = {
+            "status_list": {
+                "idx": randint(0, 99999),
+                "uri": mode.server + "sandbox/issuer/statuslist/1"
+            }
+        }
+        
         return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk)
     elif format in ['ldp_vc', 'jwt_vc_json-ld']:
         if wallet_did:
