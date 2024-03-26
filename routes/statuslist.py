@@ -23,12 +23,17 @@ def init_app(app, red, mode):
 
 
 def issuer_status_list(list_id):
+    if request.headers['Accept'] != "application/statuslist+jwt":
+        logging.info("Header Accept is incorrect")
     try:
         list_id = str(list_id)
         listname = "statuslist_ietf_" + list_id + ".txt"
         f = open(listname, "r")
         status_list_token = f.read() 
-        headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/statuslist+jwt'}
+        headers = {
+            'Cache-Control': 'no-store',
+            'Content-Type': 'application/statuslist+jwt'
+        }
         return Response(status_list_token, headers=headers)
     except:
         return jsonify("status list token not found"), 400
@@ -69,7 +74,6 @@ def sign_status_list_token(lst, mode):  # for sd-jwt
     token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
     token.make_signed_token(key)
     return token.serialize()
-
 
 
 def set_bit(v, index, x):
