@@ -23,8 +23,8 @@ def init_app(app, red, mode):
 
 
 def issuer_status_list(list_id):
-    if request.headers['Accept'] != "application/statuslist+jwt":
-        logging.info("Header Accept is incorrect")
+    print ("request headers for statuslist = ", request.headers)
+
     try:
         list_id = str(list_id)
         listname = "statuslist_ietf_" + list_id + ".txt"
