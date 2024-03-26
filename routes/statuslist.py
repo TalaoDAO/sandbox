@@ -45,10 +45,10 @@ def issuer_statuslist(mode):
     else:
         index = request.form['index']
         if request.form["button"] == "active":
-            update_status_list_token_file(1, int(index), True, 'ietf', mode)
+            update_status_list_token_file(1, int(index), False, 'ietf', mode)
             logging.info("active index = %s", index)
         else:
-            update_status_list_token_file(1, int(index), False, 'ietf', mode)
+            update_status_list_token_file(1, int(index), True, 'ietf', mode)
             logging.info("revoke index = %s", index)
         return redirect ("/sandbox/issuer/statuslist")
 
