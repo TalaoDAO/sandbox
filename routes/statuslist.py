@@ -19,12 +19,18 @@ ISSUER_DID = 'did:web:app.altme.io:issuer'
 def init_app(app, red, mode):
     app.add_url_rule('/sandbox/issuer/statuslist',  view_func=issuer_statuslist, methods=['GET', 'POST'], defaults={"mode":mode})
     app.add_url_rule('/sandbox/issuer/statuslist/<list_id>', view_func=issuer_status_list, methods=['GET'])
+
+    app.add_url_rule('/sandbox/issuer/bitstringstatuslist',  view_func=issuer_bitstringstatuslist, methods=['GET', 'POST'], defaults={"mode":mode})
+    app.add_url_rule('/sandbox/issuer/bitstringstatuslist/<list_id>', view_func=issuer_bitstring_status_list, methods=['GET'])
+
     return
 
 
 def issuer_status_list(list_id):
-    print ("request headers for statuslist = ", request.headers)
-
+    """
+    GET for IETF status list
+    """
+    logging.info("request headers for ietf statuslist = %s", request.headers['Accept'])
     try:
         list_id = str(list_id)
         listname = "statuslist_ietf_" + list_id + ".txt"
@@ -37,23 +43,62 @@ def issuer_status_list(list_id):
         return Response(status_list_token, headers=headers)
     except:
         return jsonify("status list token not found"), 400
+    
+
+def issuer_bitstring_status_list(list_id):
+    """
+    GET for W3C bitstring status list
+    """
+    logging.info("request headers for bitstring statuslist = %s", request.headers['Accept'])
+    try:
+        list_id = str(list_id)
+        listname = "statuslist_w3c_bitstring_" + list_id + ".txt"
+        f = open(listname, "r")
+        status_list_token = f.read() 
+        headers = {
+            'Cache-Control': 'no-store',
+            'Content-Type': 'application/statuslist+jwt'
+        }
+        return Response(status_list_token, headers=headers)
+    except:
+        return jsonify("bitstring status list token not found"), 400
 
 
 def issuer_statuslist(mode):
+    """
+    UX to revoke sd-jwt with  ietf statuslist
+    """
     if request.method == 'GET':
         return render_template ("statuslist.html")
     else:
         index = request.form['index']
         if request.form["button"] == "active":
-            update_status_list_token_file(1, int(index), False, 'ietf', mode)
+            update_status_list_token_file(1, int(index), False, mode)
             logging.info("active index = %s", index)
         else:
-            update_status_list_token_file(1, int(index), True, 'ietf', mode)
+            update_status_list_token_file(1, int(index), True, mode)
             logging.info("revoke index = %s", index)
         return redirect ("/sandbox/issuer/statuslist")
 
 
-def sign_status_list_token(lst, mode):  # for sd-jwt   
+def issuer_bitstringstatuslist(mode):
+    """
+    UX to revoke vc_jwt_json with w3c bitstring statuslist
+    """
+    if request.method == 'GET':
+        return render_template ("bitstringstatuslist.html")
+    else:
+        index = request.form['index']
+        if request.form["button"] == "active":
+            update_status_list_bitstring_file(1, int(index), False, mode)
+            logging.info("active index = %s", index)
+        else:
+            update_status_list_bitstring_file(1, int(index), True, mode)
+            logging.info("revoke index = %s", index)
+        return redirect ("/sandbox/issuer/bitstringstatuslist")
+
+
+def sign_status_list_token(lst, list_id, mode):  # for sd-jwt   
     key = json.loads(ISSUER_KEY) if isinstance(ISSUER_KEY, str) else ISSUER_KEY
     key = jwk.JWK(**key) 
     header = {
@@ -67,7 +112,41 @@ def sign_status_list_token(lst, mode):  # for sd-jwt
             "bits": 1,
             "lst": lst
         },
-        "sub": mode.server + "sandbox/issuer/statuslist/1",
+        "sub": mode.server + "sandbox/issuer/statuslist/" + list_id,
+        "exp": round(datetime.timestamp(datetime.now())) + 365*24*60*60,
+        "iss": ISSUER_DID,
+    }
+    token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
+    token.make_signed_token(key)
+    return token.serialize()
+
+
+def sign_status_list_bitstring_credential(lst, list_id, mode):  # for sd-jwt   
+    key = json.loads(ISSUER_KEY) if isinstance(ISSUER_KEY, str) else ISSUER_KEY
+    key = jwk.JWK(**key) 
+    header = {
+        "typ":"statuslist+json",
+        "alg": alg(key),
+        "kid": ISSUER_VM,
+    }
+    payload = {
+        "iat": round(datetime.timestamp(datetime.now())),
+        "vc" : {
+            "@context": [
+                "https://www.w3.org/ns/credentials/v2"
+            ],
+            "id": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id,
+            "type": ["VerifiableCredential", "BitstringStatusListCredential"],
+            "issuer": ISSUER_DID,
+            "validFrom":  datetime.now().replace(microsecond=0).isoformat() + "Z",
+            "credentialSubject": {
+                "id": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id + "#list",
+                "type": "BitstringStatusList",
+                "statusPurpose": "revocation",
+                "encodedList": lst
+            }
+        },
+        "sub": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id,
         "exp": round(datetime.timestamp(datetime.now())) + 365*24*60*60,
         "iss": ISSUER_DID,
     }
@@ -89,17 +168,22 @@ def set_status_list_frame(frame, index, status, standard):
     frame = bytearray(frame)
     index_byte = int(index/8)
     index_bit = index % 8
-    if standard == "w3c":
+    if standard == "w3c_bitstring":
         index_bit = 7 - index_bit
+    elif standard == "ietf":
+        pass
+    else:
+        logging.error("wrong standard")
     actual_byte = frame[index_byte]
     new_byte = set_bit(actual_byte, index_bit, status)
     frame[index_byte] = new_byte
     return frame
 
 
-def update_status_list_token_file(list_id, index, status, standard, mode):
+def update_status_list_token_file(list_id, index, status, mode):
     """
     status = false (1)
+    standard ! ietf
     """
     try:
         list_id = str(list_id)
@@ -114,18 +198,50 @@ def update_status_list_token_file(list_id, index, status, standard, mode):
     except:
         old_frame = bytearray(12500)
         logging.info("New empty frame created")
-    new_frame = set_status_list_frame(old_frame, index, status, standard)
+    new_frame = set_status_list_frame(old_frame, index, status, "ietf")
     new_lst = generate_ietf_lst(new_frame)
-    status_list_token = sign_status_list_token(new_lst, mode)
+    status_list_token = sign_status_list_token(new_lst, list_id, mode)
     try :
-        f = open("statuslist_ietf_1.txt", "w")
+        f = open("statuslist_ietf_" + list_id + ".txt", "w")
         f.write(status_list_token)
         f.close()
         logging.info("Success to store statuslist token file")
         return True
     except:
-       logging.info("Failed to store statuslist file")
-       return
+        logging.info("Failed to store ietf statuslist file")
+    return
+
+
+def update_status_list_bitstring_file(list_id, index, status, mode):
+    """
+    status = false (1)
+    standard ! w3c_bitstring
+    """
+    try:
+        list_id = str(list_id)
+        listname = "statuslist_w3c_bitstring_" + list_id + ".txt"
+        f = open(listname, "r")
+        status_list_token = f.read() 
+        lst = get_payload_from_token(status_list_token)['vc']['credentialSubject']["encodedList"]
+        lst += "=" * ((4 - len(lst) % 4) % 4)
+        lst = base64.urlsafe_b64decode(lst)
+        old_frame = gzip.decompress(lst)
+        logging.info("Existing frame loaded")
+    except:
+        old_frame = bytearray(16384)
+        logging.info("New empty frame created")
+    new_frame = set_status_list_frame(old_frame, index, status, "w3c_bitstring")
+    new_lst = generate_w3c_bitstring_lst(new_frame)
+    status_list_token = sign_status_list_bitstring_credential(new_lst, list_id,  mode)
+    try :
+        f = open("statuslist_w3c_bitstring_" + list_id + ".txt", "w")
+        f.write(status_list_token)
+        f.close()
+        logging.info("Success to store bitstring statuslist token file")
+        return True
+    except:
+        logging.info("Failed to store bitstring statuslist file")
+    return
 
 
 def generate_ietf_lst(frame):
@@ -133,10 +249,10 @@ def generate_ietf_lst(frame):
     c = base64.urlsafe_b64encode(compressed)
     return c.decode().replace("=", "")
 
-"""
-def generate_w3c_lst(frame):
-    compressed = gzip.compress(frame, level=9)
+
+def generate_w3c_bitstring_lst(frame):
+    compressed = gzip.compress(frame, compresslevel=9)
     c = base64.urlsafe_b64encode(compressed)
     return c.decode().replace("=", "")
-"""
+
 
