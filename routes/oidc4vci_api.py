@@ -294,7 +294,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                 if supported_vc.get('trust_framework'):
                     offer['trust_framework'] = supported_vc['trust_framework']
 
-    elif profile_data['oidc4vciDraft'] in ['11', '12']:
+    elif profile_data['oidc4vciDraft'] in ['11']:
         # https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html
         offer = {
             'credential_issuer': f'{mode.server}issuer/{issuer_id}',
@@ -712,7 +712,7 @@ def issuer_token(issuer_id, red, mode):
     
     # authorization_details in case of multiple VC of the same type
     authorization_details = []
-    if int(issuer_profile['oidc4vciDraft']) >= 12 and isinstance(vc, list):
+    if int(issuer_profile['oidc4vciDraft']) >= 13 and isinstance(vc, list):
         for vc_type in vc:
             types = vc_type["types"]
             vc_list = vc_type["list"]
@@ -854,6 +854,7 @@ async def issuer_credential(issuer_id, red, mode):
                     break
         if not credential_type:
             return Response(**manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
+    # TODO
     elif int(issuer_profile['oidc4vciDraft']) == 12:
         if result.get("credential_identifier"):  # draft = 12
             credential_identifier = result.get("credential_identifier")
@@ -899,19 +900,14 @@ async def issuer_credential(issuer_id, red, mode):
     logging.info("credential type = %s", credential_type)
     
     # deferred use case
-    if issuer_data.get("deferred_flow"):
+    if issuer_data.get("deferred_flow"): # draft 13 only
         logging.info("Deferred flow")
         deferred_random = str(uuid.uuid1())
         payload = {
             "c_nonce": str(uuid.uuid1()),
             "c_nonce_expires_in": ACCEPTANCE_TOKEN_LIFE,
-        }
-        if int(issuer_profile['oidc4vciDraft']) <= 12:
-            payload.update({"acceptance_token": deferred_random})
-        elif int(issuer_profile['oidc4vciDraft']) > 12:
-            payload.update({"transaction_id": deferred_random})
-        else:
-            return Response(**manage_error("invalid_request", "Deferred not supported", red, mode, request=request, stream_id=stream_id))
+        }   
+        payload.update({"transaction_id": deferred_random})
         deferred_data = {
             "issuer_id": issuer_id,
             "format": vc_format,
@@ -999,18 +995,23 @@ async def issuer_deferred(issuer_id, red, mode):
 
     # Check access token
     try:
-        acceptance_token = request.headers["Authorization"].split()[1]
+        access_token = request.headers["Authorization"].split()[1]
     except Exception:
-        return Response(**manage_error("invalid_request", "Acceptance token not passed in request header", red, mode, request=request))
+        return Response(**manage_error("invalid_request", "Access token not passed in request header", red, mode, request=request))
+    try :
+        transaction_id = request.json["transaction_id"]
+    except:
+        return Response(**manage_error("invalid_request", "Trasaction id not passed in request body", red, mode, request=request))
+
 
     # Offer expired, VC is no more available return 410
     try:
-        acceptance_token_data = json.loads(red.get(acceptance_token).decode())
+        transaction_id_data = json.loads(red.get(transaction_id).decode())
     except Exception:
-        return Response(**manage_error("invalid_token", "Acceptance token expired", red, mode, request=request, status=410))
+        return Response(**manage_error("invalid_transaction_id", "Transaction data expired", red, mode, request=request, status=410))
 
-    issuer_state = acceptance_token_data["issuer_state"]
-    credential_type = acceptance_token_data["credential_type"]
+    issuer_state = transaction_id_data["issuer_state"]
+    credential_type = transaction_id_data["credential_type"]
 
     # VC is not ready return 404
     try:
@@ -1022,10 +1023,10 @@ async def issuer_deferred(issuer_id, red, mode):
     # sign_credential
     credential_signed = await sign_credential(
         credential,
-        acceptance_token_data["subjectId"],
+        transaction_id_data["subjectId"],
         issuer_id,
-        acceptance_token_data["c_nonce"],
-        acceptance_token_data["format"],
+        transaction_id_data["c_nonce"],
+        transaction_id_data["format"],
         mode.server + 'issuer/' + issuer_id,
         mode
     )
@@ -1039,7 +1040,7 @@ async def issuer_deferred(issuer_id, red, mode):
 
     # Transfer VC
     payload = {
-        "format": acceptance_token_data["format"],
+        "format": transaction_id_data["format"],
         "credential": credential_signed,  # string or json depending on the format
         "c_nonce": str(uuid.uuid1()),
         "c_nonce_expires_in": C_NONCE_LIFE,
@@ -1118,6 +1119,14 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
         credential["validUntil"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
     elif format in ['jwt_vc_json', 'jwt_vc']:     # jwt_vc format is used for ebsi V3 only with draft 10
         credential = clean_jwt_vc_json(credential)
+        index = str(randint(0, 99999))
+        credential["credentialStatus"] = {
+            "id":  mode.server + "sandbox/issuer/bitstringstatuslist/1#" + index,
+            "type": "BitstringStatusListEntry",
+            "statusPurpose": "revocation",
+            "statusListIndex": index,
+            "statusListCredential":  mode.server + "sandbox/issuer/bitstringstatuslist/1"
+        }
     else:
         logging.error('credential format not supported %s', format)
         return

@@ -6,20 +6,17 @@ user = {
 
 vc_format = {
     "jwt_vc_json-ld": "jwt_vc_json-ld",
+    "jwt_vc_json": "jwt_vc_json",
     "ldp_vc": "ldp_vc",
-    "vc+sd-jwt": "vc+sd-jwt implementation in progress"
+    "vc+sd-jwt": "vc+sd-jwt"
 }
 
 oidc4vci_draft = {
-    "8": "draft 8",
     "11": "draft 11",
-    "12": "draft 12 implementation in progress",
-    "13": "draft 13 implementation in progress"
+    "13": "draft 13"
 }
 
 oidc4vp_draft = {
-    "10": "draft 10",
-    "13": "draft 13",
     "18": "draft 18",
     "20": "draft 20"
 }
@@ -33,7 +30,6 @@ oidc4vc_profile_list = {
     'DEFAULT-JWT': 'DEFAULT jwt_vc_json OIDC4VCI draft 11',
     'EBSI-V3': 'EBSI OIDC4VCI Draft 11',
     'GAIN-POC': 'GAIN POC openid, SD-JWT implementation in progress',
-    'DEFAULT-VC-JWT-OIDC4VCI12': 'jwt_vc_json with OIDC4VCI draft 12',
     'DEFAULT-VC-JWT-OIDC4VCI13': 'jwt_vc_json with OIDC4VCI draft 13 (DIIP V2.1)',
     'CUSTOM': 'CUSTOM profile',
     'BASELINE': 'Baseline Profile',
