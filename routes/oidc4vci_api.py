@@ -189,7 +189,7 @@ def credential_issuer_openid_configuration(issuer_id, mode):
             'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
             'pushed_authorization_request_endpoint' : mode.server +'issuer/' + issuer_id + '/authorize/par' 
         })
-        if issuer_data['profile'] == "HAIP":
+        if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
             as_config["require_pushed_authorization_requests"] = True
         credential_issuer_openid_configuration.update(as_config)
 
@@ -224,8 +224,8 @@ def as_openid_configuration(issuer_id, mode):
         'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
         'pushed_authorization_request_endpoint' : mode.server +'issuer/' + issuer_id + '/authorize/par' 
     }
-    if issuer_data['profile'] == "HAIP":
-            config["require_pushed_authorization_requests"] = True
+    if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
+        config["require_pushed_authorization_requests"] = True
     config.update(authorization_server_config)
     return config
 
@@ -240,7 +240,7 @@ def issuer_jwks(issuer_id):
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     pub_key = copy.copy(json.loads(issuer_data['jwk']))
     del pub_key['d']
-    pub_key['kid'] = thumbprint(pub_key)
+    pub_key['kid'] = pub_key.get('kid') if pub_key.get('kid') else thumbprint(pub_key)
     return jsonify({'keys': [pub_key]})
 
 
@@ -440,9 +440,9 @@ def issuer_authorize_par(issuer_id, red, mode):
     except Exception:
         logging.warning('issuer_id not found for %s', issuer_id)
         return
-    if issuer_data['profile'] == "HAIP":
+    if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
         if not request.form.get("client_assertion_type") or not request.form.get("client_assertion"):
-            return Response(**manage_error('invalid_request', 'HAIP request client assertion authentication', red, mode, request=request))
+            return Response(**manage_error('invalid_request', 'HAIP and POTENTIAL request client assertion authentication', red, mode, request=request))
         else:
             pass #TODO testing
     
@@ -524,7 +524,7 @@ def issuer_authorize(issuer_id, red, mode):
         state = request_uri_data['state']
         authorization_details = request_uri_data['authorization_details']
     else:
-        if issuer_data['profile'] == "HAIP":
+        if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
             return jsonify({
                 'error': 'access_denied',
                 'error_description': 'HAIP profile request PAR'
@@ -659,7 +659,7 @@ def issuer_token(issuer_id, red, mode):
             return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
         if not request.form.get('client_id')[:3] != "did":
             return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
-    elif issuer_data['profile'] == "HAIP":
+    elif issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
         if not request.form.get("client_assertion_type") or not request.form.get("client_assertion"):
             return Response(**manage_error('invalid_request', 'HAIP request client assertion authentication', red, mode, request=request))
     else:
