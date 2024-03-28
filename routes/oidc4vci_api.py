@@ -4,7 +4,7 @@ https://issuer.walt.id/issuer-api/default/oidc
 EBSI V2 https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html
 support Authorization code flow and pre-authorized code flow of OIDC4VCI
 """
-from flask import jsonify, request, render_template, Response, redirect, session
+from flask import jsonify, request, render_template, Response, redirect, session, flash
 import json
 from datetime import datetime, timedelta
 import uuid
@@ -508,12 +508,13 @@ def issuer_authorize_login(issuer_id, red):
         session['test'] = False
         return render_template('issuer_oidc/authorize.html', url= "/issuer/" + issuer_id + "/authorize/login")
     print("test = ",  request.form['test'])
-    print(red.get( request.form['test']))
-    if not red.get( request.form['test']).decode():
+    print(red.get(request.form['test']))
+    if not red.get( request.form['test']):
+        flash("Wrong test name", 'danger')
         return redirect ("/issuer/" + issuer_id + "/authorize/login") 
     session['login'] = True
     session['test'] = request.form['test']
-    return redirect ("/issuer/" + issuer_id + "/authorize/login?test=" + session['test']) 
+    return redirect ("/issuer/" + issuer_id + "/authorize?test=" + session['test']) 
     
 
 # authorization code endpoint
