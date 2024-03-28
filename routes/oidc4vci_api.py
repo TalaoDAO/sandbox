@@ -502,10 +502,12 @@ def issuer_authorize_par(issuer_id, red, mode):
 
 
 # login for authorization code flow
-def issuer_authorize_login(issuer_id):
+def issuer_authorize_login(issuer_id, red):
     if request.method == 'GET':
         return render_template('issuer_oidc/authorize.html', url= "/issuer/" + issuer_id + "/authorize/login")
     session['test'] = request.form['test']
+    if not red.get(session['test']):
+        return redirect ("/issuer/" + issuer_id + "/authorize/login") 
     session['login'] = True
     return redirect ("/issuer/" + issuer_id + "/authorize/login?test=" + session['test']) 
     
