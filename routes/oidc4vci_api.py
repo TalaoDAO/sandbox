@@ -509,7 +509,7 @@ def issuer_authorize_login(issuer_id, red):
         return render_template('issuer_oidc/authorize.html', url= "/issuer/" + issuer_id + "/authorize/login")
     print("test = ",  request.form['test'])
     print(red.get( request.form['test']))
-    if not red.get( request.form['test']):
+    if not red.get( request.form['test']).decode():
         return redirect ("/issuer/" + issuer_id + "/authorize/login") 
     session['login'] = True
     session['test'] = request.form['test']
