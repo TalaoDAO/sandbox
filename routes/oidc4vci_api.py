@@ -507,8 +507,6 @@ def issuer_authorize_login(issuer_id, red):
         session['login'] = False
         session['test'] = False
         return render_template('issuer_oidc/authorize.html', url= "/issuer/" + issuer_id + "/authorize/login")
-    print("test = ",  request.form['test'])
-    print(red.get(request.form['test']))
     if not red.get( request.form['test']):
         flash("Wrong test name", 'danger')
         return redirect ("/issuer/" + issuer_id + "/authorize/login") 
@@ -520,9 +518,7 @@ def issuer_authorize_login(issuer_id, red):
 # authorization code endpoint
 def issuer_authorize(issuer_id, red, mode):
     # user not logged
-    if not session.get('login'):
-        return redirect("/issuer/" + issuer_id + "/authorize/login")
-    session['login'] = False
+    #if not session.get('login'):
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     except Exception:
@@ -539,7 +535,7 @@ def issuer_authorize(issuer_id, red, mode):
             }), 403
         
         issuer_state = request_uri_data.get('issuer_state')
-        if not issuer_state: issuer_state = session['test']
+        #if not issuer_state: issuer_state = session['test']
         
         try:
             stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
@@ -573,7 +569,7 @@ def issuer_authorize(issuer_id, red, mode):
             }), 403
         try:
             issuer_state = request.args.get('issuer_state')
-            if not issuer_state: issuer_state = session['test']
+            #if not issuer_state: issuer_state = session['test']
             
             stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
         except Exception:
