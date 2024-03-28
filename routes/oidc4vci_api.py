@@ -54,7 +54,7 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-credential-issuer', view_func=credential_issuer_openid_configuration_endpoint, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/authorize', view_func=issuer_authorize, methods=['GET'], defaults={'red': red, 'mode': mode})
     
-    app.add_url_rule('/issuer/<issuer_id>/authorize/login', view_func=issuer_authorize_login, methods=['GET'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/issuer/<issuer_id>/authorize/login', view_func=issuer_authorize_login, methods=['GET', 'POST'])
 
     app.add_url_rule('/issuer/<issuer_id>/authorize/par', view_func=issuer_authorize_par, methods=['POST'], defaults={'red': red, 'mode':mode})
 
@@ -328,7 +328,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
             'credential_configuration_ids': credential_type,
         }
         if pre_authorized_code:
-            if  issuer_profile != "POTENTIAL":
+            #if  issuer_profile != "POTENTIAL":
                 offer['grants'] = {
                     'urn:ietf:params:oauth:grant-type:pre-authorized_code': {
                         'pre-authorized_code': pre_authorized_code
@@ -344,8 +344,8 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                             "description": "Please provide the one-time code which was sent via e-mail"
                         }
                     })
-            else:
-                pass # no garnt specified for POTENTIAL
+            #else:
+            #    pass # no grant specified for POTENTIAL
         else:
             offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
             """
@@ -502,14 +502,13 @@ def issuer_authorize_par(issuer_id, red, mode):
 
 
 # login for authorization code flow
-def issuer_authorize_login(issuer_id, red, mod):
+def issuer_authorize_login(issuer_id):
     if request.method == 'GET':
         return render_template('issuer_oidc/authorize.html', url = "/issuer/" + issuer_id + "/authorize/login")
     session['test'] = request.form['test']
     session['login'] = True
     return redirect ("/issuer/" + issuer_id + "/authorize/login?test=" + session['test']) 
     
-
 
 # authorization code endpoint
 def issuer_authorize(issuer_id, red, mode):
