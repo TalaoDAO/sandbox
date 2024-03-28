@@ -37,7 +37,7 @@ def thumbprint(key):
 
 
 # jwks endpoint
-def issuer_statuslist_jwks(issuer_id):
+def issuer_statuslist_jwks():
     pub_key = copy.copy(ISSUER_KEY)
     del pub_key['d']
     pub_key['kid'] = pub_key.get('kid') if pub_key.get('kid') else thumbprint(pub_key)

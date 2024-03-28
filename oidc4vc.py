@@ -206,7 +206,6 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
     HAIP : https://openid.net/specs/openid4vc-high-assurance-interoperability-profile-sd-jwt-vc-1_0-00.html
     """
     issuer_key = json.loads(issuer_key) if isinstance(issuer_key, str) else issuer_key
-    print("input issuer key in oidc = ", json.dumps(issuer_key, indent=4))
     _sd = []
     _disclosure = ""
     disclosure_list = unsecured.get("disclosure", [])
@@ -217,7 +216,6 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
         _sd.append(hash(disclosure))
     signer_key = jwk.JWK(**issuer_key)
     kid = issuer_key.get('kid') if issuer_key.get('kid') else signer_key.thumbprint()
-    print("outpiut kid in oidc = ", kid)
     header = {
         'typ': "vc+sd-jwt",
         'kid': kid,
