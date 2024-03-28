@@ -328,7 +328,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
             'credential_configuration_ids': credential_type,
         }
         if pre_authorized_code:
-            #if  issuer_profile != "POTENTIAL":
+            if  issuer_id not in ["grlvzckofy", "kivrsduinn" ] :
                 offer['grants'] = {
                     'urn:ietf:params:oauth:grant-type:pre-authorized_code': {
                         'pre-authorized_code': pre_authorized_code
