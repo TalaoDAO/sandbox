@@ -34,6 +34,7 @@ oidc4vc_profile_list = {
     'CUSTOM': 'CUSTOM profile',
     'BASELINE': 'Baseline Profile',
     'HAIP': 'HAIP-EUDI Wallet',
+    'POTENTIAL': 'LSP POTENTIAL',
     'VERIFIER-ALL': 'VERIFIER ALL'
 }
 

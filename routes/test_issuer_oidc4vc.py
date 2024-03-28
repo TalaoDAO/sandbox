@@ -468,8 +468,9 @@ def test_10(mode):
     else:       
         issuer_id = "kivrsduinn"
         client_secret = "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"
-
-    offer = ["VerifiableId", "EmailPass", "DBCGuest"]
+    
+    with open('./verifiable_credentials/Pid.json', 'r') as f:
+        credential = json.loads(f.read())
 
     headers = {
         'Content-Type': 'application/json',
@@ -477,9 +478,9 @@ def test_10(mode):
     }
     data = { 
         "issuer_id": issuer_id,
-        "vc": build_credential_offered(offer), 
+        "vc": {"Pid" : credential}, 
         "issuer_state": str(uuid.uuid1()),
-        "credential_type": offer,
+        "credential_type":  ['Pid'],
         "pre-authorized_code": True,
         "callback": mode.server + 'sandbox/issuer/callback',
         }
@@ -500,7 +501,9 @@ def test_11(mode):
         issuer_id = "kwcdgsspng"
         client_secret = "6f1dd8a5-42c3-11ee-b096-b5bae73ba948"
     
-    offer = ['VerifiableDiploma']
+    with open('./verifiable_credentials/Pid.json', 'r') as f:
+        credential = json.loads(f.read())
+   
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
@@ -508,9 +511,9 @@ def test_11(mode):
 
     data = { 
         "issuer_id" : issuer_id,
-        "vc": build_credential_offered(offer), 
+        "vc": {"Pid" : credential}, 
         "issuer_state": str(uuid.uuid1()),
-        "credential_type": offer,
+        "credential_type":  ['Pid'],
         "pre-authorized_code": False,
         "callback": mode.server + 'sandbox/issuer/callback',
         "user_pin_required": False

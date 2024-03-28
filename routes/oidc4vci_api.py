@@ -1117,6 +1117,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
         credential['validFrom'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
         # credential['expirationDate'] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
         credential["validUntil"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
+        
     elif format in ['jwt_vc_json', 'jwt_vc']:     # jwt_vc format is used for ebsi V3 only with draft 10
         credential = clean_jwt_vc_json(credential)
         index = str(randint(0, 99999))
