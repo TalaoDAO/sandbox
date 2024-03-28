@@ -27,5 +27,5 @@
   "issuing_authorithy": "Paris_prefecture",
   "picture": "https://talao.co/sandbox/image",
   
-  "disclosure": ["age_over_18", "vct", "picture", "disclosure"]
+  "disclosure": ["vct", "picture", "disclosure"]
 }
