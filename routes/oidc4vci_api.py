@@ -54,7 +54,7 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-credential-issuer', view_func=credential_issuer_openid_configuration_endpoint, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/authorize', view_func=issuer_authorize, methods=['GET'], defaults={'red': red, 'mode': mode})
     
-    app.add_url_rule('/issuer/<issuer_id>/authorize/login', view_func=issuer_authorize_login, methods=['GET', 'POST'])
+    app.add_url_rule('/issuer/<issuer_id>/authorize/login', view_func=issuer_authorize_login, methods=['GET', 'POST'], defaults={'red': red})
 
     app.add_url_rule('/issuer/<issuer_id>/authorize/par', view_func=issuer_authorize_par, methods=['POST'], defaults={'red': red, 'mode':mode})
 
