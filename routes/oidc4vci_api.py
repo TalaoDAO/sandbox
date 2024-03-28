@@ -67,7 +67,6 @@ def init_app(app, red, mode):
     return
 
 
-
 def front_publish(stream_id, red, error=None, error_description=None):
     # send event to front channel to go forward callback and send credential to wallet
     data = {'stream_id': stream_id}
@@ -319,23 +318,30 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
             'credential_configuration_ids': credential_type,
         }
         if pre_authorized_code:
-            offer['grants'] = {
-                'urn:ietf:params:oauth:grant-type:pre-authorized_code': {
-                    'pre-authorized_code': pre_authorized_code
-                }
-            }
-            if user_pin_required:
-                offer['grants'][
-                    'urn:ietf:params:oauth:grant-type:pre-authorized_code'
-                ].update({
-                    "tx_code": {
-                        "length": 4,
-                        "input_mode": "numeric",
-                        "description": "Please provide the one-time code which was sent via e-mail"
+            if  issuer_profile != "POTENTIAL":
+                offer['grants'] = {
+                    'urn:ietf:params:oauth:grant-type:pre-authorized_code': {
+                        'pre-authorized_code': pre_authorized_code
                     }
-                })
+                }
+                if user_pin_required:
+                    offer['grants'][
+                        'urn:ietf:params:oauth:grant-type:pre-authorized_code'
+                    ].update({
+                        "tx_code": {
+                            "length": 4,
+                            "input_mode": "numeric",
+                            "description": "Please provide the one-time code which was sent via e-mail"
+                        }
+                    })
+            else:
+                pass # no garnt specified for POTENTIAL
         else:
-            offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
+            if  issuer_profile == "POTENTIAL":
+                offer['grants'] = {'authorization_code': None}
+            else:
+                offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
+           
     return offer
 
 
@@ -910,6 +916,7 @@ async def issuer_credential(issuer_id, red, mode):
         payload.update({"transaction_id": deferred_random})
         deferred_data = {
             "issuer_id": issuer_id,
+            "access_token": access_token,
             "format": vc_format,
             "subjectId": iss,
             "issuer_state": access_token_data["issuer_state"],
@@ -1001,7 +1008,7 @@ async def issuer_deferred(issuer_id, red, mode):
     try :
         transaction_id = request.json["transaction_id"]
     except:
-        return Response(**manage_error("invalid_request", "Trasaction id not passed in request body", red, mode, request=request))
+        return Response(**manage_error("invalid_request", "Transaction id not passed in request body", red, mode, request=request))
 
 
     # Offer expired, VC is no more available return 410
@@ -1009,6 +1016,10 @@ async def issuer_deferred(issuer_id, red, mode):
         transaction_id_data = json.loads(red.get(transaction_id).decode())
     except Exception:
         return Response(**manage_error("invalid_transaction_id", "Transaction data expired", red, mode, request=request, status=410))
+
+    # check access token 
+    if access_token != transaction_id_data.get("access_token"):
+        return Response(**manage_error("invalid_request", "access token does not fit transaction_id", red, mode, request=request, status=410))
 
     issuer_state = transaction_id_data["issuer_state"]
     credential_type = transaction_id_data["credential_type"]
