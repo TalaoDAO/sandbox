@@ -635,6 +635,7 @@ def issuer_authorize(issuer_id, red, mode):
     resp = {'code': code}
     if state:
         resp['state'] = state
+    session['test'] = False
     return redirect(redirect_uri + '?' + urlencode(resp))
 
 
