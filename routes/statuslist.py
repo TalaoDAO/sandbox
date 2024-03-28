@@ -9,11 +9,12 @@ from jwcrypto import jwk, jwt
 import logging
 logging.basicConfig(level=logging.INFO)
 from flask import render_template, request, redirect, Response, jsonify
-
+import copy
 
 ISSUER_KEY = json.dumps(json.load(open('keys.json', 'r'))['talao_Ed25519_private_key'])
 ISSUER_VM = 'did:web:app.altme.io:issuer#key-1'
 ISSUER_DID = 'did:web:app.altme.io:issuer'
+
 
 
 def init_app(app, red, mode):
@@ -23,8 +24,31 @@ def init_app(app, red, mode):
     app.add_url_rule('/sandbox/issuer/bitstringstatuslist',  view_func=issuer_bitstringstatuslist, methods=['GET', 'POST'], defaults={"mode":mode})
     app.add_url_rule('/sandbox/issuer/bitstringstatuslist/<list_id>', view_func=issuer_bitstring_status_list, methods=['GET'])
 
+    app.add_url_rule('/sandbox/issuer/statuslist/jwks', view_func=issuer_statuslist_jwks, methods=['GET'])
+    app.add_url_rule('/sandbox/issuer/statuslist/.well-known/openid-configuration', view_func=issuer_statuslist_openid, methods=['GET'], defaults={"mode":mode})
+
+
     return
 
+
+def thumbprint(key):
+    signer_key = jwk.JWK(**key)
+    return signer_key.thumbprint()
+
+
+# jwks endpoint
+def issuer_statuslist_jwks(issuer_id):
+    pub_key = copy.copy(ISSUER_KEY)
+    del pub_key['d']
+    pub_key['kid'] = pub_key.get('kid') if pub_key.get('kid') else thumbprint(pub_key)
+    return jsonify({'keys': [pub_key]})
+
+def issuer_statuslist_openid(mode):
+    config = {
+        'issuer': mode.server + 'sandbiox/issuer/statuslist',
+        "jwks_uri" : mode.server + "sandbox/issuer/statuslist/jwks"
+    }
+    return jsonify(config)
 
 def issuer_status_list(list_id):
     """
@@ -101,10 +125,11 @@ def issuer_bitstringstatuslist(mode):
 def sign_status_list_token(lst, list_id, mode):  # for sd-jwt   
     key = json.loads(ISSUER_KEY) if isinstance(ISSUER_KEY, str) else ISSUER_KEY
     key = jwk.JWK(**key) 
+    kid = key.get('kid') if key.get('kid') else key.thumbprint()
     header = {
         "typ":"statuslist+jwt",
         "alg": alg(key),
-        "kid": ISSUER_VM,
+        "kid": kid,
     }
     payload = {
         "iat": round(datetime.timestamp(datetime.now())),
@@ -114,7 +139,7 @@ def sign_status_list_token(lst, list_id, mode):  # for sd-jwt
         },
         "sub": mode.server + "sandbox/issuer/statuslist/" + list_id,
         "exp": round(datetime.timestamp(datetime.now())) + 365*24*60*60,
-        "iss": ISSUER_DID,
+        "iss": mode.server + "/sandbox/issuer/statuslist",
     }
     token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
     token.make_signed_token(key)
