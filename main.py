@@ -359,6 +359,7 @@ class Issuer(Resource):
             logging.info("Deferred VC has been issued with issuer_state =  %s", issuer_state)
         else:
             # for authorization code flow
+            print('issuer state =', issuer_state)
             red.setex(issuer_state, API_LIFE, json.dumps(session_data))
 
         # for pre authorized code
