@@ -28,7 +28,7 @@ ACCESS_TOKEN_LIFE = 10000
 GRANT_LIFE = 5000
 C_NONCE_LIFE = 5000
 ACCEPTANCE_TOKEN_LIFE = 28 * 24 * 60 * 60
-
+STATUSLIST_ISSUER_KEY = json.dumps(json.load(open('keys.json', 'r'))['talao_Ed25519_private_key'])
 
 def init_app(app, red, mode):
     # endpoint for application if redirect to local page (test)
@@ -241,7 +241,14 @@ def issuer_jwks(issuer_id):
     pub_key = copy.copy(json.loads(issuer_data['jwk']))
     del pub_key['d']
     pub_key['kid'] = pub_key.get('kid') if pub_key.get('kid') else thumbprint(pub_key)
-    return jsonify({'keys': [pub_key]})
+    jwks ={'keys': [pub_key]}
+    # add statuslist issuer key
+    statuslist_key = copy.copy(json.loads(STATUSLIST_ISSUER_KEY))
+    del statuslist_key['d']
+    statuslist_key['kid'] = statuslist_key.get('kid') if statuslist_key.get('kid') else thumbprint(statuslist_key)
+    jwks['keys'].append(statuslist_key)
+    logging.info("jwks = %s", jwks)
+    return jsonify(jwks)
 
 
 def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state, user_pin_required, mode):
