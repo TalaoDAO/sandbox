@@ -12,8 +12,8 @@ from flask import render_template, request, redirect, Response, jsonify
 import copy
 
 ISSUER_KEY = json.dumps(json.load(open('keys.json', 'r'))['talao_Ed25519_private_key'])
-ISSUER_VM = 'did:web:app.altme.io:issuer#key-1'
-ISSUER_DID = 'did:web:app.altme.io:issuer'
+#ISSUER_VM = 'did:web:app.altme.io:issuer#key-1'
+#ISSUER_DID = 'did:web:app.altme.io:issuer'
 
 
 
@@ -45,7 +45,7 @@ def issuer_statuslist_jwks(issuer_id):
 
 def issuer_statuslist_openid(mode):
     config = {
-        'issuer': mode.server + 'sandbiox/issuer/statuslist',
+        'issuer': mode.server + 'sandbox/issuer/statuslist',
         "jwks_uri" : mode.server + "sandbox/issuer/statuslist/jwks"
     }
     return jsonify(config)
@@ -139,7 +139,7 @@ def sign_status_list_token(lst, list_id, mode):  # for sd-jwt
         },
         "sub": mode.server + "sandbox/issuer/statuslist/" + list_id,
         "exp": round(datetime.timestamp(datetime.now())) + 365*24*60*60,
-        "iss": mode.server + "/sandbox/issuer/statuslist",
+        "iss": mode.server + "sandbox/issuer/statuslist",
     }
     token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
     token.make_signed_token(key)
@@ -149,20 +149,22 @@ def sign_status_list_token(lst, list_id, mode):  # for sd-jwt
 def sign_status_list_bitstring_credential(lst, list_id, mode):  # for sd-jwt   
     key = json.loads(ISSUER_KEY) if isinstance(ISSUER_KEY, str) else ISSUER_KEY
     key = jwk.JWK(**key) 
+    kid = key.get('kid') if key.get('kid') else key.thumbprint()
     header = {
         "typ":"statuslist+json",
         "alg": alg(key),
-        "kid": ISSUER_VM,
+        "kid":  kid,
     }
     payload = {
         "iat": round(datetime.timestamp(datetime.now())),
+        "jti": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id,
         "vc" : {
             "@context": [
                 "https://www.w3.org/ns/credentials/v2"
             ],
             "id": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id,
             "type": ["VerifiableCredential", "BitstringStatusListCredential"],
-            "issuer": ISSUER_DID,
+            "issuer": mode.server + "/sandbox/issuer/statuslist",
             "validFrom":  datetime.now().replace(microsecond=0).isoformat() + "Z",
             "credentialSubject": {
                 "id": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id + "#list",
@@ -173,7 +175,7 @@ def sign_status_list_bitstring_credential(lst, list_id, mode):  # for sd-jwt
         },
         "sub": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id,
         "exp": round(datetime.timestamp(datetime.now())) + 365*24*60*60,
-        "iss": ISSUER_DID,
+        "iss": mode.server + "sandbox/issuer/statuslist",
     }
     token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
     token.make_signed_token(key)
