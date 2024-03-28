@@ -385,7 +385,7 @@ def test_7(mode):
     data = { 
         "issuer_id": issuer_id,
         "vc": build_credential_offered(offer), 
-        "issuer_state": str(uuid.uuid1()),
+        "issuer_state": "test7",
         "credential_type": offer,
         "pre-authorized_code": False,
         "callback": mode.server + 'sandbox/issuer/callback',
@@ -447,7 +447,7 @@ def test_9(mode): #
     data = { 
         "issuer_id": issuer_id,
         "vc": {"IdentityCredential" : credential}, 
-        "issuer_state": str(uuid.uuid1()),
+        "issuer_state": "test9",
         "pre-authorized_code": False,
         "credential_type": ['IdentityCredential'],
         "callback": mode.server + 'sandbox/issuer/callback',
@@ -512,7 +512,7 @@ def test_11(mode):
     data = { 
         "issuer_id" : issuer_id,
         "vc": {"Pid" : credential}, 
-        "issuer_state": str(uuid.uuid1()),
+        "issuer_state": "test11",
         "credential_type":  ['Pid'],
         "pre-authorized_code": False,
         "callback": mode.server + 'sandbox/issuer/callback',
@@ -551,7 +551,7 @@ def test_12(mode):
             "IdentityCredential" : credential1,
             "EudiPid": credential2
         }, 
-        "issuer_state": str(uuid.uuid1()),
+        "issuer_state": "test12",
         "pre-authorized_code": False,
         "credential_type": ['IdentityCredential', 'EudiPid'],
         "callback": mode.server + 'sandbox/issuer/callback',

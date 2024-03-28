@@ -53,6 +53,9 @@ def init_app(app, red, mode):
     # OIDC4VCI protocol with wallet
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-credential-issuer', view_func=credential_issuer_openid_configuration_endpoint, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/authorize', view_func=issuer_authorize, methods=['GET'], defaults={'red': red, 'mode': mode})
+    
+    app.add_url_rule('/issuer/<issuer_id>/authorize/login', view_func=issuer_authorize_login, methods=['GET'], defaults={'red': red, 'mode': mode})
+
     app.add_url_rule('/issuer/<issuer_id>/authorize/par', view_func=issuer_authorize_par, methods=['POST'], defaults={'red': red, 'mode':mode})
 
     app.add_url_rule('/issuer/<issuer_id>/token', view_func=issuer_token, methods=['POST'], defaults={'red': red, 'mode': mode},)
@@ -344,11 +347,13 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
             else:
                 pass # no garnt specified for POTENTIAL
         else:
+            offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
+            """
             if  issuer_profile == "POTENTIAL":
                 offer['grants'] = {'authorization_code': None}
             else:
                 offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
-           
+           """
     return offer
 
 
@@ -496,8 +501,22 @@ def issuer_authorize_par(issuer_id, red, mode):
     return Response(response=json.dumps(endpoint_response), headers=headers)
 
 
+# login for authorization code flow
+def issuer_authorize_login(issuer_id, red, mod):
+    if request.method == 'GET':
+        return render_template('issuer_oidc/authorize.html', url = "/issuer/" + issuer_id + "/authorize/login")
+    session['test'] = request.form['test']
+    session['login'] = True
+    return redirect ("/issuer/" + issuer_id + "/authorize/login?test=" + session['test']) 
+    
+
+
 # authorization code endpoint
 def issuer_authorize(issuer_id, red, mode):
+    # user not logged
+    if not session.get('login'):
+        return redirect("/issuer/" + issuer_id + "/authorize/login")
+    session['login'] = False
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     except Exception:
@@ -512,7 +531,10 @@ def issuer_authorize(issuer_id, red, mode):
                 'error': 'invalid_request',
                 'error_description': 'request is expired'
             }), 403
-        issuer_state = request_uri_data['issuer_state']
+        
+        issuer_state = request_uri_data.get('issuer_state')
+        if not issuer_state: issuer_state = session['test']
+        
         try:
             stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
         except:
@@ -544,7 +566,9 @@ def issuer_authorize(issuer_id, red, mode):
                 'error_description': 'redirect_uri is missing'
             }), 403
         try:
-            issuer_state = request.args['issuer_state']
+            issuer_state = request.args.get('issuer_state')
+            if not issuer_state: issuer_state = session['test']
+            
             stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
         except Exception:
             return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'issuer_state type is missing', stream_id, red, state))

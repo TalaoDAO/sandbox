@@ -346,7 +346,7 @@ class Issuer(Resource):
             "login": request.json.get("login"),
         }
         # For deferred API call only VC is stored in redis with issuer_state as key
-        if deferred_vc and red.get(issuer_state):
+        if deferred_vc and red.get(issuer_state): # red.get exists if the call without VC has been done previously
             session_data.update(
                 {
                     "deferred_vc": deferred_vc,
