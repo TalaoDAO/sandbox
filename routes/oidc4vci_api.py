@@ -344,8 +344,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                     }
                 })
         else:
-            #offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
-            if  issuer_id in ["pcbrwbvrsi", "kivrsduinn" ] : # test 10
+            if  issuer_id in ["pcbrwbvrsi", "kwcdgsspng" ] : # test 11 kwcdgsspng
                 pass
             else:
                 offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
@@ -428,12 +427,14 @@ def authorization_error(error, error_description, stream_id, red, state):
     """
     https://www.rfc-editor.org/rfc/rfc6749.html#page-26
     """
-    # front channel follow up
-    front_publish(stream_id, red, error=error, error_description=error_description)
     resp = {
         'error_description': error_description,
         'error': error
     }
+    # front channel follow up
+    if not stream_id:
+        return jsonify(resp)
+    front_publish(stream_id, red, error=error, error_description=error_description)
     if state:
         resp['state'] = state
     return urlencode(resp)
@@ -513,125 +514,112 @@ def issuer_authorize_login(issuer_id, red):
 # authorization code endpoint
 def issuer_authorize(issuer_id, red, mode):
     # user not logged
-    #if not session.get('login'):
-    try:
-        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-    except Exception:
-        logging.warning('issuer_id not found for %s', issuer_id)
-        return
-    if request_uri := request.args.get('request_uri'):
+    if not session.get('login'):
+        logging.info("User is not logged")
         try:
-            request_uri_data = json.loads(red.get(request_uri).decode())   
-        except:
-            logging.warning('redirect uri failed')
-            return jsonify({
-                'error': 'invalid_request',
-                'error_description': 'request is expired'
-            }), 403
+            issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+        except Exception:
+            logging.warning('issuer_id not found for %s', issuer_id)
+            return
         
-        issuer_state = request_uri_data.get('issuer_state')
-        #if not issuer_state: issuer_state = session['test']
+        # Push Authorization Request
+        if request_uri := request.args.get('request_uri'):
+            try:
+                request_uri_data = json.loads(red.get(request_uri).decode())   
+            except:
+                logging.warning('redirect uri failed')
+                return jsonify({
+                    'error': 'invalid_request',
+                    'error_description': 'request is expired'
+                }), 403
+            client_id = request_uri_data.get('client_id')
+            issuer_state = request_uri_data.get('issuer_state')
+            redirect_uri = request_uri_data.get('redirect_uri')
+            issuer_state = request_uri_data.get('client_id')
+            response_type = request_uri_data.get('response_type')
+            scope = request_uri_data.get('scope')
+            nonce = request_uri_data.get('nonce')
+            code_challenge = request_uri_data.get('code_challenge')
+            code_challenge_method = request_uri_data.get('code_challenge_method')
+            client_metadata = request_uri_data.get('client_metadata')
+            state = request_uri_data.get('state')
+            authorization_details = request_uri_data.get('authorization_details')
         
-        try:
-            stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
-        except:
-            logging.warning('stream_id is lost')
-            return jsonify({
-                'error': 'invalid_request',
-                'error_description': 'request is expired'
-            }), 403
-        redirect_uri = request_uri_data['redirect_uri']
-        response_type = request_uri_data['response_type']
-        scope = request_uri_data['scope']
-        nonce = request_uri_data['nonce']
-        code_challenge = request_uri_data['code_challenge']
-        code_challenge_method = request_uri_data['code_challenge_method']
-        client_metadata = request_uri_data['client_metadata']
-        state = request_uri_data['state']
-        authorization_details = request_uri_data['authorization_details']
-    else:
-        if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
-            return jsonify({
-                'error': 'access_denied',
-                'error_description': 'HAIP profile request PAR'
-            }), 403
-        try:
-            redirect_uri = request.args['redirect_uri']
-        except Exception:
-            return jsonify({
-                'error': 'access_denied',
-                'error_description': 'redirect_uri is missing'
-            }), 403
-        try:
-            issuer_state = request.args.get('issuer_state')
-            #if not issuer_state: issuer_state = session['test']
-            
-            stream_id = json.loads(red.get(issuer_state).decode())['stream_id']
-        except Exception:
-            return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'issuer_state type is missing', stream_id, red, state))
-        try:
-            response_type = request.args['response_type']
-        except Exception:
-            return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'response_type is missing', stream_id, red, state))
-        try:
-            scope = request.args['scope']
-        except Exception:
-            return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'scope is missing', stream_id, red, state))
-        nonce = request.args.get('nonce')
-        code_challenge = request.args.get('code_challenge')
-        code_challenge_method = request.args.get('code_challenge_method')
-        client_metadata = request.args.get('client_metadata')
-        state = request.args.get('state')  # wallet state
-        authorization_details = request.args.get('authorization_details')
-    try:
-        client_id = request.args['client_id']  # client_id of the wallet
-    except Exception:
-        return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Client id is missing', stream_id, red, state))
-
-    logging.info('client_id of the wallet = %s', client_id)
-    logging.info('redirect_uri = %s', redirect_uri)
-    logging.info('code_challenge = %s', code_challenge)
-    logging.info('client_metadata = %s', client_metadata)
-    logging.info('authorization details = %s', authorization_details)
-    logging.info('scope = %s', scope)
-
-    if response_type != 'code':
-        return redirect(redirect_uri + '?' + authorization_error('invalid_response_type', 'response_type not supported', stream_id, red, state))
-
-    offer_data = json.loads(red.get(issuer_state).decode())
+        # Standard Authorization code flow
+        else:
+            if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
+                return jsonify({
+                    'error': 'access_denied',
+                    'error_description': 'HAIP profile request PAR'
+                }), 403
+            try:
+                redirect_uri = request.args['redirect_uri']
+            except Exception:
+                return jsonify({
+                    'error': 'access_denied',
+                    'error_description': 'redirect_uri is missing'
+                }), 403            
+            try:
+                response_type = request.args['response_type']
+            except Exception:
+                return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'response_type is missing', None, red, state))
+            try:
+                scope = request.args['scope']
+            except Exception:
+                return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'scope is missing', None, red, state))
+            nonce = request.args.get('nonce')
+            client_id = request.args.get('client_id')
+            scope = request.args.get('scope')
+            code_challenge = request.args.get('code_challenge')
+            code_challenge_method = request.args.get('code_challenge_method')
+            client_metadata = request.args.get('client_metadata')
+            state = request.args.get('state')  # wallet state
+            issuer_state = request.args.get('issuer_state') 
+            authorization_details = request.args.get('authorization_details')
+        
+        logging.info('client_id of the wallet = %s', client_id)
+        logging.info('redirect_uri = %s', redirect_uri)
+        logging.info('code_challenge = %s', code_challenge)
+        logging.info('client_metadata = %s', client_metadata)
+        logging.info('authorization details = %s', authorization_details)
+        logging.info('scope = %s', scope)
+        if response_type != 'code':
+            return redirect(redirect_uri + '?' + authorization_error('invalid_response_type', 'response_type not supported', None, red, state))
+        
+        # redirect user to login screen
+        code_data = {
+            'client_id': client_id,
+            'scope': scope,
+            'nonce': nonce,
+            'authorization_details': authorization_details,
+            'redirect_uri': redirect_uri,
+            'issuer_id': issuer_id,
+            'issuer_state': issuer_state,
+            'state': state,
+            'code_challenge': code_challenge,
+            'code_challenge_method': code_challenge_method,
+        }
+        session['code_data'] = code_data
+        return redirect ("/issuer/" + issuer_id + "/authorize/login") 
+    
+    # return from login screen
+    logging.info("user is logged")
+    session['login'] = False
+    test = request.args.get('test')
+    offer_data = json.loads(red.get(test).decode())
     vc = offer_data['vc']
-    credential_type = offer_data['credential_type']
+    session['code_data']['stream_id'] = offer_data['stream_id']
+    session['code_data']['vc'] = vc
+    session['code_data']['credential_type'] = offer_data['credential_type']
 
     # Code creation
-    if profile[issuer_data['profile']].get('pre-authorized_code_as_jwt'):
-        code = oidc4vc.build_pre_authorized_code(
-            issuer_data['jwk'],
-            'https://self-issued.me/v2',
-            mode.server + 'issuer/' + issuer_id,
-            issuer_data['verification_method'],
-            nonce,
-        )
-    else:
-        code = str(uuid.uuid1()) + '.' + str(uuid.uuid1()) + '.' + str(uuid.uuid1())
-
-    code_data = {
-        'credential_type': credential_type,
-        'client_id': client_id,
-        'scope': scope,
-        'authorization_details': authorization_details,
-        'issuer_id': issuer_id,
-        'issuer_state': issuer_state,
-        'state': state,
-        'stream_id': stream_id,
-        'vc': vc,
-        'code_challenge': code_challenge,
-        'code_challenge_method': code_challenge_method,
-    }
-    red.setex(code, GRANT_LIFE, json.dumps(code_data))
+    code = str(uuid.uuid1()) #+ '.' + str(uuid.uuid1()) + '.' + str(uuid.uuid1())
+    red.setex(code, GRANT_LIFE, json.dumps(session['code_data']))
     resp = {'code': code}
-    if state:
-        resp['state'] = state
-    session['test'] = False
+    if session['code_data']['state']: resp['state'] = session['code_data']['state']
+    redirect_uri = session['code_data']['redirect_uri']
+    session.clear()
+    print("redirect = ", redirect_uri)
     return redirect(redirect_uri + '?' + urlencode(resp))
 
 

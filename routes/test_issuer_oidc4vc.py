@@ -479,7 +479,7 @@ def test_10(mode):
     data = { 
         "issuer_id": issuer_id,
         "vc": {"Pid" : credential}, 
-        "issuer_state": str(uuid.uuid1()),
+        "issuer_state": 'test10',
         "credential_type":  ['Pid'],
         "pre-authorized_code": False,
         "callback": mode.server + 'sandbox/issuer/callback',
