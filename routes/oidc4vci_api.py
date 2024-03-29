@@ -328,32 +328,27 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
             'credential_configuration_ids': credential_type,
         }
         if pre_authorized_code:
-            if  issuer_id not in ["grlvzckofy", "kivrsduinn" ] :
-                offer['grants'] = {
-                    'urn:ietf:params:oauth:grant-type:pre-authorized_code': {
-                        'pre-authorized_code': pre_authorized_code
-                    }
+            offer['grants'] = {
+                'urn:ietf:params:oauth:grant-type:pre-authorized_code': {
+                    'pre-authorized_code': pre_authorized_code
                 }
-                if user_pin_required:
-                    offer['grants'][
-                        'urn:ietf:params:oauth:grant-type:pre-authorized_code'
-                    ].update({
-                        "tx_code": {
-                            "length": 4,
-                            "input_mode": "numeric",
-                            "description": "Please provide the one-time code which was sent via e-mail"
-                        }
-                    })
-            #else:
-            #    pass # no grant specified for POTENTIAL
+            }
+            if user_pin_required:
+                offer['grants'][
+                    'urn:ietf:params:oauth:grant-type:pre-authorized_code'
+                ].update({
+                    "tx_code": {
+                        "length": 4,
+                        "input_mode": "numeric",
+                        "description": "Please provide the one-time code which was sent via e-mail"
+                    }
+                })
         else:
-            offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
-            """
-            if  issuer_profile == "POTENTIAL":
-                offer['grants'] = {'authorization_code': None}
+            #offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
+            if  issuer_id in ["grlvzckofy", "kivrsduinn" ] : # test 10
+                pass
             else:
                 offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
-           """
     return offer
 
 
