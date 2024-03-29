@@ -471,11 +471,10 @@ def issuer_authorize_par(issuer_id, red, mode):
             "client_id": request.form['client_id'],
             "response_type": request.form['response_type'],
             "scope": request.form['scope'],
-            "issuer_state": request.form['issuer_state'],
+            "issuer_state": request.form.get('issuer_state'),
         }
-        stream_id = json.loads(red.get(request.form['issuer_state']).decode())['stream_id']
     except Exception:
-        return Response(**authorization_error('invalid_request', 'Request format is incorrect', stream_id, red, None))
+        return Response(**manage_error('invalid_request', 'Request format is incorrect', None, red, None))
     request_uri_data.update({
         "nonce": request.form.get('nonce'),
         "code_challenge": request.form.get('code_challenge'),
