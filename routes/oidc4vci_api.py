@@ -345,7 +345,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                 })
         else:
             #offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
-            if  issuer_id in ["grlvzckofy", "kivrsduinn" ] : # test 10
+            if  issuer_id in ["pcbrwbvrsi", "kivrsduinn" ] : # test 10
                 pass
             else:
                 offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
