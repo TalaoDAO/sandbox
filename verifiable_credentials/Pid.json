@@ -12,7 +12,7 @@
     "region": "Lazio",
     "postal_code": "00100",
     "country": "IT",
-    "disclosure" : []
+    "disclosure" : ["region", "country"]
     },
 
   "place_of_birth": { 
@@ -35,7 +35,7 @@
         "18": true,            
         "21": true,            
         "65": false,
-        "disclosure" : []            
+        "disclosure" : ["65"]            
     },
     "gender": "male",
   
