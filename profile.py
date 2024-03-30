@@ -1398,6 +1398,28 @@ profile = {
                             "value_type": "string",
                             "display": [{"name": "Birth place", "locale": "en-US"},
                                         {"name": "Lieu de naissance", "locale": "fr-FR"}],
+                            "locality": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Locality", "locale": "en-US"},
+                                    {"name": "Ville", "locale": "fr-FR"}],
+                                },
+                            "region": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Region", "locale": "en-US"},
+                                    {"name": "Région", "locale": "fr-FR"}],
+                                },
+                            "country": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Country", "locale": "en-US"},
+                                    {"name": "Pays", "locale": "fr-FR"}],
+                                },
+                            
                         },
                         "nationalities": {
                             "mandatory": True,
@@ -1445,6 +1467,26 @@ profile = {
                                 "display": [
                                     {"name": "Country", "locale": "en-US"},
                                     {"name": "Pays", "locale": "fr-FR"}],
+                                },
+                        },
+                         "age_equal_or_over": {
+                            "mandatory": True,
+                            "value_type": "bool",
+                            "display": [{"name": "Age", "locale": "en-US"},
+                                        {"name": "Age", "locale": "fr-FR"}],
+                            "18": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Majority", "locale": "en-US"},
+                                    {"name": "Majorité", "locale": "fr-FR"}],
+                                },
+                            "65": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Senior", "locale": "en-US"},
+                                    {"name": "Senior", "locale": "fr-FR"}],
                                 },
                         },
                         "picture": {
