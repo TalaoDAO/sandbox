@@ -1368,6 +1368,8 @@ profile = {
                     "given_name",
                     "family_name",
                     "birthdate",
+                    "address",
+                    "gender",
                     "place_of_birth",
                     "nationalities",
                     "age_equal_or_over", 
@@ -1391,7 +1393,7 @@ profile = {
                             "display": [{"name": "Birth date", "locale": "en-US"},
                                         {"name": "Date de naissance", "locale": "fr-FR"}],
                         },
-                         "place_of_birth": {
+                         "birth_place": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Birth place", "locale": "en-US"},
@@ -1400,14 +1402,86 @@ profile = {
                         "nationalities": {
                             "mandatory": True,
                             "value_type": "string",
-                            "display": [{"name": "Nationality", "locale": "en-US"},
-                                        {"name": "Nationalité", "locale": "fr-FR"}],
+                            "display": [{"name": "Nationalities", "locale": "en-US"},
+                                        {"name": "Nationalités", "locale": "fr-FR"}],
                         },
-                        "age_equal_or_ove": {
+                          "gender": {
                             "mandatory": True,
-                            "value_type": "bool",
-                            "display": [{"name": "Majority", "locale": "en-US"},
-                                        {"name": "Majorité", "locale": "fr-FR"}],
+                            "value_type": "string",
+                            "display": [{"name": "Gender", "locale": "en-US"},
+                                        {"name": "Sexe", "locale": "fr-FR"}],
+                        },
+                        "address": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [
+                                {"name": "Address", "locale": "en-US"},
+                                {"name": "Adresse", "locale": "fr-FR"}
+                            ],
+                            "street_address": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Street address", "locale": "en-US"},
+                                    {"name": "Rue", "locale": "fr-FR"}],
+                                },
+                            "locality": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Locality", "locale": "en-US"},
+                                    {"name": "Ville", "locale": "fr-FR"}],
+                                },
+                            "region": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Region", "locale": "en-US"},
+                                    {"name": "Région", "locale": "fr-FR"}],
+                                },
+                            "country": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Country", "locale": "en-US"},
+                                    {"name": "Pays", "locale": "fr-FR"}],
+                                },
+                        },
+                        "picture": {
+                            "mandatory": True,
+                            "value_type": "image/jpeg",
+                            "display": [{"name": "Picture", "locale": "en-US"},
+                                        {"name": "Portrait", "locale": "fr-FR"}],
+                        },
+                         "age_birth_year": {
+                            "mandatory": True,
+                            "value_type": "integer",
+                            "display": [{"name": "Age birth year", "locale": "en-US"},
+                                        {"name": "Année de naissance", "locale": "fr-FR"}],
+                        },
+                        "dateIssued": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Issuance date", "locale": "en-US"},
+                                        {"name": "Délivré le", "locale": "fr-FR"}],
+                        },
+                        "expiry_date": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Expiry date", "locale": "en-US"},
+                                        {"name": "Date d'expiration", "locale": "fr-FR"}],
+                        },
+                        "issuing_country": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Issuing country", "locale": "en-US"},
+                                        {"name": "Pays d'emission", "locale": "fr-FR"}],
+                        },
+                         "issuing_authority": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Issuing autority", "locale": "en-US"},
+                                        {"name": "Authorité d'emission", "locale": "fr-FR"}],
                         },
                     },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],

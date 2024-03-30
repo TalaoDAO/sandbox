@@ -43,6 +43,7 @@ oidc4vc_verifier_credential_list = {
     #"DID": "Authentication",
     "None": "None",
     'https://credentials.openid.net/gain-poc-simple-identity-credential': 'IdentityCredential sd-jwt',
+    'https://example.eudi.eu/credential/pid/1.0': "PID for LSP POTENTIAL",
     'VerifiableId':  'Verifiable ID',
     'EUDI_PID_rule_book_1_0_0': 'PID for EUDI wallet',
     'VerifiableDiploma': 'EBSI Diploma',

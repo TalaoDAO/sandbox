@@ -56,8 +56,8 @@ class currentMode():
 			self.sys_path = '/home/thierry'
 			self.flaskserver = extract_ip()
 			self.IP = extract_ip()
-			self.server = "https://4bfc7921252c.ngrok.app/"
-			#self.server = 'http://' + self.flaskserver + ':3000/'
+			#self.server = "https://4bfc7921252c.ngrok.app/"
+			self.server = 'http://' + self.flaskserver + ':3000/'
 			self.port = 3000
 		else:
 			logging.error('environment variable problem')
