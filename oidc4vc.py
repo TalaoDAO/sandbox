@@ -198,7 +198,6 @@ def hash(text):
     m.update(text.encode())
     return base64.urlsafe_b64encode(m.digest()).decode().replace("=", "")
 
-
 def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*60):
     """
     https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-01.html
@@ -206,22 +205,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
     HAIP : https://openid.net/specs/openid4vc-high-assurance-interoperability-profile-sd-jwt-vc-1_0-00.html
     """
     issuer_key = json.loads(issuer_key) if isinstance(issuer_key, str) else issuer_key
-    _sd = []
-    _disclosure = ""
-    disclosure_list = unsecured.get("disclosure", [])
-    for claim in [attribute for attribute in unsecured.keys() if attribute not in disclosure_list]:
-        contents = json.dumps([salt(), claim, unsecured[claim]])
-        disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
-        _disclosure += "~" + disclosure 
-        _sd.append(hash(disclosure))
-    signer_key = jwk.JWK(**issuer_key)
-    kid = issuer_key.get('kid') if issuer_key.get('kid') else signer_key.thumbprint()
-    header = {
-        'typ': "vc+sd-jwt",
-        'kid': kid,
-        'alg': alg(issuer_key)
-    }
-    if subject_key.get("use"): del subject_key['use']
+    subject_key = json.loads(subject_key) if isinstance(subject_key, str) else subject_key
     payload = {
         'iss': issuer,
         'iat': math.ceil(datetime.timestamp(datetime.now())),
@@ -231,11 +215,61 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
             "jwk": subject_key
         },
     }
+    payload['_sd'] = []
+    _disclosure = ""
+    disclosure_list = unsecured.get("disclosure", [])
+    for claim in [attribute for attribute in unsecured.keys()]:
+        if claim == "disclosure":
+            pass
+        elif claim in disclosure_list:
+            payload[claim] = unsecured[claim]
+        elif isinstance(unsecured[claim], str) or  isinstance(unsecured[claim], bool) :
+            contents = json.dumps([salt(), claim, unsecured[claim]])
+            disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
+            _disclosure += "~" + disclosure 
+            payload['_sd'].append(hash(disclosure))
+        elif isinstance(unsecured[claim], dict):
+            payload.update({claim: {'_sd': []}})
+            nested_disclosure_list = unsecured[claim]["disclosure"]
+            for nested_claim in [attribute for attribute in unsecured[claim].keys()]:
+                if nested_claim == 'disclosure':
+                    pass
+                elif nested_claim in nested_disclosure_list:
+                    payload[claim][nested_claim] = unsecured[claim][nested_claim]
+                else:
+                    nested_contents = json.dumps([salt(), nested_claim, unsecured[claim][nested_claim]])
+                    nested_disclosure = base64.urlsafe_b64encode(nested_contents.encode()).decode().replace("=", "")
+                    _disclosure += "~" + nested_disclosure 
+                    payload[claim]['_sd'].append(hash(nested_disclosure))
+            if not payload[claim]['_sd']: del payload[claim]['_sd']
+        elif isinstance(unsecured[claim], list):
+            nb = len(unsecured[claim])
+            payload.update({claim: []})
+            for index in range(0,nb):
+                if isinstance(unsecured[claim][index], dict):
+                    nested_disclosure_list = unsecured[claim][index]["disclosure"]
+            for index in range(0,nb):
+                if isinstance(unsecured[claim][index], dict):
+                    pass
+                elif unsecured[claim][index] in nested_disclosure_list:
+                    payload[claim].append(unsecured[claim][index])
+                else:
+                    contents = json.dumps([salt(), unsecured[claim][index]])
+                    nested_disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
+                    _disclosure += "~" + nested_disclosure 
+                    payload[claim].append({"..." : hash(nested_disclosure)})
+        else:
+            logging.warning("type not supported")
+    logging.info("sd-jwt payload = %s", payload)
+    signer_key = jwk.JWK(**issuer_key)
+    kid = issuer_key.get('kid') if issuer_key.get('kid') else signer_key.thumbprint()
+    header = {
+        'typ': "vc+sd-jwt",
+        'kid': kid,
+        'alg': alg(issuer_key)
+    }
+    if subject_key.get("use"): del subject_key['use']
     if unsecured.get('status'): payload['status'] = unsecured['status']
-    for claim in [attribute for attribute in disclosure_list if attribute != "disclosure"]:
-        payload[claim] = unsecured[claim]
-    if _sd: payload["_sd"] = _sd
-    logging.info("sd-jwt payload = %s", json.dumps(payload, indent = 4))
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
     return token.serialize() + _disclosure + "~"

@@ -1393,7 +1393,7 @@ profile = {
                             "display": [{"name": "Birth date", "locale": "en-US"},
                                         {"name": "Date de naissance", "locale": "fr-FR"}],
                         },
-                         "birth_place": {
+                         "place_of_birth": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Birth place", "locale": "en-US"},
@@ -1452,12 +1452,6 @@ profile = {
                             "value_type": "image/jpeg",
                             "display": [{"name": "Picture", "locale": "en-US"},
                                         {"name": "Portrait", "locale": "fr-FR"}],
-                        },
-                         "age_birth_year": {
-                            "mandatory": True,
-                            "value_type": "integer",
-                            "display": [{"name": "Age birth year", "locale": "en-US"},
-                                        {"name": "Année de naissance", "locale": "fr-FR"}],
                         },
                         "dateIssued": {
                             "mandatory": True,

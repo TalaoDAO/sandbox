@@ -11,18 +11,21 @@
     "locality": "Rome",
     "region": "Lazio",
     "postal_code": "00100",
-    "country": "IT"
+    "country": "IT",
+    "disclosure" : []
     },
 
   "place_of_birth": { 
     "locality": "Leipzig",
     "region": "Saxony",
-    "country": "DD"
+    "country": "DD",
+    "disclosure": ["country"]
     },
 
     "nationalities": [
-    "DE",
-    "IT"
+      "DE",
+      "IT",
+      {"disclosure": ["DE"]}
     ],
     
     "age_equal_or_over": {   
@@ -31,10 +34,11 @@
         "16": true,           
         "18": true,            
         "21": true,            
-        "65": false            
+        "65": false,
+        "disclosure" : []            
     },
     "gender": "male",
   
-    "disclosure": ["vct", "vct#integrity", "disclosure"]
+    "disclosure": ["vct", "vct#integrity", "status", "gender"]
 }
 

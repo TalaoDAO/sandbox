@@ -4,13 +4,14 @@
   "family_name": "Doe",
   "birth_date": "2000-12-01",
   "birth_place": "Paris",
-  "nationalities": ["FR", "DE"],
+  "nationalities": ["FR", "DE", {"disclosure": []}],
   "address": { 
     "street_address": "123 Via Appia",
     "locality": "Rome",
     "region": "Lazio",
     "postal_code": "00100",
-    "country": "IT"
+    "country": "IT",
+    "disclosure": []
   },
   "age_equal_or_over": {   
     "12": true,        
@@ -18,7 +19,8 @@
     "16": true,           
     "18": true,            
     "21": true,            
-    "65": false            
+    "65": false,
+    "disclosure": []            
   },
   "gender": 1,
   "issuance_date": "2024-01-01",
@@ -27,5 +29,5 @@
   "issuing_authorithy": "Paris_prefecture",
   "picture": "https://talao.co/sandbox/image",
   
-  "disclosure": ["vct", "picture", "disclosure"]
+  "disclosure": ["vct", "picture"]
 }
