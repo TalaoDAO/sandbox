@@ -24,6 +24,7 @@ from profile import profile
 import pex
 import didkit
 import requests
+import x509
 
 logging.basicConfig(level=logging.INFO)
 
@@ -434,7 +435,7 @@ def wallet_openid_configuration():
     return jsonify(config)
 
 
-def build_jwt_request(key, kid, iss, aud, request) -> str:
+def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None) -> str:
     """
     For wallets natural person as jwk is added in header
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-proof-types
@@ -446,6 +447,13 @@ def build_jwt_request(key, kid, iss, aud, request) -> str:
         'alg': oidc4vc.alg(key),
         'kid': kid
     }
+    if client_id_scheme == "x509_san_dns":
+        header['x5c'] = x509.x5c_potential()
+    elif client_id_scheme == "verifier_attestation":
+        header['jwt'] = "verifier_attestation"
+    else:
+        pass
+    
     payload = {
         'iss': iss,
         'aud': aud,
@@ -631,7 +639,9 @@ def oidc4vc_login_qrcode(red, mode):
         authorization_request['response_uri'] = redirect_uri
 
     # Set client_id, use W3C DID identifier for client_id "on" ou None
-    if not verifier_data.get('client_id_as_DID'):
+    if verifier_data['profile'] == "POTENTIAL":
+        client_id = "talao.co"
+    elif not verifier_data.get('client_id_as_DID'):
         client_id = redirect_uri
     else:
         client_id = verifier_data['did']
@@ -651,7 +661,9 @@ def oidc4vc_login_qrcode(red, mode):
             client_metadata_uri = mode.server + "verifier/wallet/client_metadata_uri/" + verifier_id
         
         # client_id_scheme
-        if verifier_data['profile'] == "HAIP":
+        if verifier_data['profile'] == "POTENTIAL":
+            authorization_request['client_id_scheme'] = 'x509_san_dns'
+        elif verifier_data['profile'] == "HAIP":
             authorization_request['client_id_scheme'] = 'verifier_attestation'
         elif verifier_data.get('client_id_as_DID'):
             authorization_request['client_id_scheme'] = 'did'
@@ -701,11 +713,12 @@ def oidc4vc_login_qrcode(red, mode):
         verifier_data['verification_method'],
         verifier_data['did'],
         'https://self-issued.me/v2', # aud requires static siopv2 data
-        authorization_request
+        authorization_request,
+        client_id_scheme = authorization_request['client_id_scheme']
     )
 
     # QRCode preparation with authorization_request_displayed
-    if verifier_data.get('request_uri_parameter_supported') or verifier_data['profile'] == "HAIP":
+    if verifier_data.get('request_uri_parameter_supported') or verifier_data['profile'] in ["HAIP", "POTENTIAL"]:
         red.setex("request_uri_" + stream_id, QRCODE_LIFE, json.dumps(request_as_jwt))
         authorization_request_displayed = { 
             "client_id": client_id,
@@ -744,6 +757,7 @@ def oidc4vc_login_qrcode(red, mode):
         qrcode_page,
         url=url,
         request_uri=request_uri_jwt,
+        request_uri_header=json.dumps(oidc4vc.get_header_from_token(request_uri_jwt), indent=4),
         request_uri_payload=json.dumps(oidc4vc.get_payload_from_token(request_uri_jwt), indent=4),
         url_json= unquote(url),
         presentation_definition=json.dumps(presentation_definition, indent=4),
