@@ -448,7 +448,7 @@ def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None) -> str
         'kid': kid
     }
     if client_id_scheme == "x509_san_dns":
-        header['x5c'] = x509.x5c_potential()
+        header['x5c'] = x509.x509_san_dns_potential()
     elif client_id_scheme == "verifier_attestation":
         header['jwt'] = "verifier_attestation"
     else:
@@ -714,7 +714,7 @@ def oidc4vc_login_qrcode(red, mode):
         verifier_data['did'],
         'https://self-issued.me/v2', # aud requires static siopv2 data
         authorization_request,
-        client_id_scheme = authorization_request['client_id_scheme']
+        client_id_scheme = authorization_request.get('client_id_scheme')
     )
 
     # QRCode preparation with authorization_request_displayed

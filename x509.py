@@ -75,7 +75,7 @@ def generate_selfsigned_cert(hostname, key=None):
     return cert.public_bytes(encoding=serialization.Encoding.DER)
 
 
-def x5c_potential():
+def x509_san_dns_potential():
     hostname = "talao.co"
     a = generate_selfsigned_cert(hostname)
     return [base64.b64encode(a).decode()]
