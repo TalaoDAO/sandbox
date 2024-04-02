@@ -4,7 +4,11 @@
   "family_name": "Doe",
   "birth_date": "2000-12-01",
   "birth_place": "Paris",
-  "nationalities": ["FR", "DE", {"disclosure": []}],
+  "nationalities": [
+    "FR",
+    "DE",
+    {"disclosure": []}
+  ],
   "address": { 
     "street_address": "123 Via Appia",
     "locality": "Rome",
@@ -29,5 +33,5 @@
   "issuing_authorithy": "Paris_prefecture",
   "picture": "https://talao.co/sandbox/image",
   
-  "disclosure": ["vct", "picture"]
+  "disclosure": ["vct", "picture", "status"]
 }

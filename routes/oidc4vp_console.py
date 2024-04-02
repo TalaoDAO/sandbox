@@ -54,7 +54,7 @@ def oidc4vc_verifier_console_select(mode):
             data_dict = json.loads(data)
             id_token =  "Yes" if data_dict.get('id_token') == 'on' else 'No'
             vp_token =  "Yes" if data_dict.get('vp_token') == 'on' else 'No'
-            curve = json.loads(data_dict['jwk'])['crv']
+            curve = json.loads(data_dict['jwk']).get('crv')
             if data_dict.get('client_id_as_DID'):
                 client_id = data_dict['did']
             else: 

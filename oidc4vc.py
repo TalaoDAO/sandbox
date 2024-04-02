@@ -114,6 +114,7 @@ def pub_key(key):
     return Key.export_public(as_dict=True)
     
 
+
 def sign_jwt_vc(vc, kid, issuer_key, nonce, iss, jti, sub):
     """
     For issuer
@@ -218,19 +219,24 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
     payload['_sd'] = []
     _disclosure = ""
     disclosure_list = unsecured.get("disclosure", [])
+    if not disclosure_list: logging.warning("disclosure is missing for %s", claim)
     for claim in [attribute for attribute in unsecured.keys()]:
         if claim == "disclosure":
             pass
-        elif claim in disclosure_list: # disclose attribute
+        # for attribute to disclose
+        elif claim in disclosure_list:
             payload[claim] = unsecured[claim]
-        elif isinstance(unsecured[claim], str) or  isinstance(unsecured[claim], bool) : # undisclosed attribute
+        # for undisclosed attribute
+        elif isinstance(unsecured[claim], str) or  isinstance(unsecured[claim], bool) :
             contents = json.dumps([salt(), claim, unsecured[claim]])
             disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
             _disclosure += "~" + disclosure 
             payload['_sd'].append(hash(disclosure))
+        # for nested json
         elif isinstance(unsecured[claim], dict):
             payload.update({claim: {'_sd': []}})
-            nested_disclosure_list = unsecured[claim]["disclosure"]
+            nested_disclosure_list = unsecured[claim].get("disclosure")
+            if not nested_disclosure_list: logging.warning("disclosure is missing for %s", claim)
             for nested_claim in [attribute for attribute in unsecured[claim].keys()]:
                 if nested_claim == 'disclosure':
                     pass
@@ -242,12 +248,14 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
                     _disclosure += "~" + nested_disclosure 
                     payload[claim]['_sd'].append(hash(nested_disclosure))
             if not payload[claim]['_sd']: del payload[claim]['_sd']
+        # for list
         elif isinstance(unsecured[claim], list): # list
             nb = len(unsecured[claim])
             payload.update({claim: []})
             for index in range(0,nb):
                 if isinstance(unsecured[claim][index], dict):
-                    nested_disclosure_list = unsecured[claim][index]["disclosure"]
+                    nested_disclosure_list = unsecured[claim][index].get("disclosure")
+                    if not nested_disclosure_list: logging.warning("disclosure is missing for %s", claim)
             for index in range(0,nb):
                 if isinstance(unsecured[claim][index], dict):
                     pass

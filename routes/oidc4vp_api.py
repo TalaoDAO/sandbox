@@ -24,7 +24,7 @@ from profile import profile
 import pex
 import didkit
 import requests
-import x509
+import x509_verifier_attestation
 
 logging.basicConfig(level=logging.INFO)
 
@@ -443,16 +443,15 @@ def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None) -> str
     key = json.loads(key) if isinstance(key, str) else key
     signer_key = jwk.JWK(**key) 
     header = {
-        'typ':'JWT',
+        'typ': "oauth-authz-req+jwt",
         'alg': oidc4vc.alg(key),
-        'kid': kid
     }
     if client_id_scheme == "x509_san_dns":
-        header['x5c'] = x509.x509_san_dns_potential()
+        header['x5c'] = x509_verifier_attestation.build_x509_san_dns()
     elif client_id_scheme == "verifier_attestation":
-        header['jwt'] = "verifier_attestation"
+        header['jwt'] = x509_verifier_attestation.build_verifier_attestation()
     else:
-        pass
+        header['kid'] = kid
     
     payload = {
         'iss': iss,
@@ -630,8 +629,10 @@ def oidc4vc_login_qrcode(red, mode):
         "response_type": response_type,
         "state": str(uuid.uuid1()),  # unused
     }
-    
-    if response_type == 'id_token':
+    if verifier_data['profile'] in ["POTENTIAL", "HAIP"]:
+        authorization_request['response_mode'] = 'direct_post'
+        authorization_request['redirect_uri'] = redirect_uri                               
+    elif response_type == 'id_token':
         authorization_request['response_mode'] = 'post'
         authorization_request['redirect_uri'] = redirect_uri
     else:
@@ -661,9 +662,9 @@ def oidc4vc_login_qrcode(red, mode):
             client_metadata_uri = mode.server + "verifier/wallet/client_metadata_uri/" + verifier_id
         
         # client_id_scheme
-        if verifier_data['profile'] == "POTENTIAL":
+        if verifier_data['profile'] in ["POTENTIAL"]:
             authorization_request['client_id_scheme'] = 'x509_san_dns'
-        elif verifier_data['profile'] == "HAIP":
+        elif verifier_data['profile'] in ["HAIP"]:
             authorization_request['client_id_scheme'] = 'verifier_attestation'
         elif verifier_data.get('client_id_as_DID'):
             authorization_request['client_id_scheme'] = 'did'
