@@ -1120,6 +1120,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
     issuer_key = issuer_data["jwk"]
     issuer_vm = issuer_data["verification_method"]
     jti = 'urn:uuid:' + str(uuid.uuid1())
+    
     if format == 'vc+sd-jwt':
         credential["status"] = {
             "status_list": {
@@ -1127,7 +1128,6 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
                 "uri": mode.server + "sandbox/issuer/statuslist/1"
             }
         }
-        
         return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk)
     elif format in ['ldp_vc', 'jwt_vc_json-ld']:
         if wallet_did:

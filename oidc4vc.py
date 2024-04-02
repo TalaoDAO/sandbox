@@ -210,7 +210,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
         'iss': issuer,
         'iat': math.ceil(datetime.timestamp(datetime.now())),
         'exp': math.ceil(datetime.timestamp(datetime.now())) + duration,
-        "_sd_alg": "sha256",
+        "_sd_alg": "sha-256",
         "cnf": {
             "jwk": subject_key
         },
@@ -221,9 +221,9 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
     for claim in [attribute for attribute in unsecured.keys()]:
         if claim == "disclosure":
             pass
-        elif claim in disclosure_list:
+        elif claim in disclosure_list: # disclose attribute
             payload[claim] = unsecured[claim]
-        elif isinstance(unsecured[claim], str) or  isinstance(unsecured[claim], bool) :
+        elif isinstance(unsecured[claim], str) or  isinstance(unsecured[claim], bool) : # undisclosed attribute
             contents = json.dumps([salt(), claim, unsecured[claim]])
             disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
             _disclosure += "~" + disclosure 
@@ -242,7 +242,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
                     _disclosure += "~" + nested_disclosure 
                     payload[claim]['_sd'].append(hash(nested_disclosure))
             if not payload[claim]['_sd']: del payload[claim]['_sd']
-        elif isinstance(unsecured[claim], list):
+        elif isinstance(unsecured[claim], list): # list
             nb = len(unsecured[claim])
             payload.update({claim: []})
             for index in range(0,nb):
@@ -265,7 +265,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
     kid = issuer_key.get('kid') if issuer_key.get('kid') else signer_key.thumbprint()
     header = {
         'typ': "vc+sd-jwt",
-        'kid': kid,
+        #'kid': kid,
         'alg': alg(issuer_key)
     }
     if subject_key.get("use"): del subject_key['use']
