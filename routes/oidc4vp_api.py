@@ -640,7 +640,7 @@ def oidc4vc_login_qrcode(red, mode):
         authorization_request['response_uri'] = redirect_uri
 
     # Set client_id, use W3C DID identifier for client_id "on" ou None
-    if verifier_data['profile'] == "POTENTIAL":
+    if verifier_data['profile'] in ["POTENTIAL", "HAIP"]:
         client_id = "talao.co"
     elif not verifier_data.get('client_id_as_DID'):
         client_id = redirect_uri
@@ -662,9 +662,9 @@ def oidc4vc_login_qrcode(red, mode):
             client_metadata_uri = mode.server + "verifier/wallet/client_metadata_uri/" + verifier_id
         
         # client_id_scheme
-        if verifier_data['profile'] in ["POTENTIAL"]:
+        if verifier_data['profile'] in ["HAIP", "POTENTIAL"]:
             authorization_request['client_id_scheme'] = 'x509_san_dns'
-        elif verifier_data['profile'] in ["HAIP"]:
+        elif verifier_data['profile'] in []:
             authorization_request['client_id_scheme'] = 'verifier_attestation'
         elif verifier_data.get('client_id_as_DID'):
             authorization_request['client_id_scheme'] = 'did'
