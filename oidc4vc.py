@@ -277,7 +277,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
     kid = issuer_key.get('kid') if issuer_key.get('kid') else signer_key.thumbprint()
     header = {
         'typ': "vc+sd-jwt",
-        #'kid': kid,
+        'kid': kid,
         'alg': alg(issuer_key)
     }
     if subject_key.get("use"): del subject_key['use']
