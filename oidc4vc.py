@@ -258,6 +258,8 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
                 if isinstance(unsecured[claim][index], dict):
                     nested_disclosure_list = unsecured[claim][index].get("disclosure", [])
                     if not nested_disclosure_list: logging.warning("disclosure is missing for %s", claim)
+                else:
+                    nested_disclosure_list = []
             for index in range(0,nb):
                 if isinstance(unsecured[claim][index], dict):
                     pass
