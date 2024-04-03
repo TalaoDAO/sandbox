@@ -234,8 +234,9 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
             payload['_sd'].append(hash(disclosure))
         # for nested json
         elif isinstance(unsecured[claim], dict):
+            print("claim = ", claim)
             payload.update({claim: {'_sd': []}})
-            nested_disclosure_list = unsecured[claim].get("disclosure")
+            nested_disclosure_list = unsecured[claim].get("disclosure", [])
             if not nested_disclosure_list: logging.warning("disclosure is missing for %s", claim)
             for nested_claim in [attribute for attribute in unsecured[claim].keys()]:
                 if nested_claim == 'disclosure':
@@ -250,11 +251,12 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
             if not payload[claim]['_sd']: del payload[claim]['_sd']
         # for list
         elif isinstance(unsecured[claim], list): # list
+            print("claim = ", claim)
             nb = len(unsecured[claim])
             payload.update({claim: []})
             for index in range(0,nb):
                 if isinstance(unsecured[claim][index], dict):
-                    nested_disclosure_list = unsecured[claim][index].get("disclosure")
+                    nested_disclosure_list = unsecured[claim][index].get("disclosure", [])
                     if not nested_disclosure_list: logging.warning("disclosure is missing for %s", claim)
             for index in range(0,nb):
                 if isinstance(unsecured[claim][index], dict):
