@@ -74,7 +74,7 @@ def build_x509_san_dns():
     a = generate_selfsigned_cert(hostname)
     return [base64.b64encode(a).decode()]
 
-def build_verifier_attestation() -> str:
+def build_verifier_attestation(client_id) -> str:
     """
     OIDC4VP
     """
@@ -89,7 +89,7 @@ def build_verifier_attestation() -> str:
     }
     payload = {
         'iss': "did:web:talao.co",
-        'sub': "did:web:talao.co",
+        'sub': client_id,
         "cnf": {
             "jwk": public_key
         },

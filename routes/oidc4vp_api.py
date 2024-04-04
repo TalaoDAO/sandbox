@@ -435,7 +435,7 @@ def wallet_openid_configuration():
     return jsonify(config)
 
 
-def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None) -> str:
+def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None, client_id=None) -> str:
     """
     For wallets natural person as jwk is added in header
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-proof-types
@@ -449,7 +449,7 @@ def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None) -> str
     if client_id_scheme == "x509_san_dns":
         header['x5c'] = x509_verifier_attestation.build_x509_san_dns()
     elif client_id_scheme == "verifier_attestation":
-        header['jwt'] = x509_verifier_attestation.build_verifier_attestation()
+        header['jwt'] = x509_verifier_attestation.build_verifier_attestation(client_id)
     else:
         header['kid'] = kid
     
@@ -715,7 +715,8 @@ def oidc4vc_login_qrcode(red, mode):
         verifier_data['did'],
         'https://self-issued.me/v2', # aud requires static siopv2 data
         authorization_request,
-        client_id_scheme = authorization_request.get('client_id_scheme')
+        client_id_scheme = authorization_request.get('client_id_scheme'),
+        client_id=client_id
     )
 
     # QRCode preparation with authorization_request_displayed
