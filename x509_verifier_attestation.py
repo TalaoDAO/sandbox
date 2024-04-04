@@ -87,6 +87,7 @@ def build_verifier_attestation(client_id) -> str:
         'typ': "verifier-attestation+jwt",
         'alg': alg(rsa_key),
     }
+    if not client_id: client_id = "did:web:talao.co"
     payload = {
         'iss': "did:web:talao.co",
         'sub': client_id,
