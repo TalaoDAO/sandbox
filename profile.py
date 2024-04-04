@@ -14,7 +14,7 @@ profile = {
         "siopv2_prefix": "openid-vc://",
         "oidc4vp_prefix": "openid-vc://",
         "credentials_types_supported": [
-            "VerifiableDiploma",
+            "VerifiableDiploma2",
             "VerifiableId",
             "EmailPass",
         ],
@@ -24,15 +24,25 @@ profile = {
                 "types": [
                     "VerifiableCredential",
                     "VerifiableAttestation",
-                    "VerifiableDiploma",
+                    "VerifiableDiploma2",
                 ],
                 "cryptographic_binding_methods_supported": ["DID"],
                 "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
                 "display": [
                     {
-                        "name": "Verifiable diploma",
+                        "name": "EU Diploma",
                         "locale": "en-US",
                         "description": "This the official EBSI VC Diploma",
+                        "background_color": "#3B6F6D",
+                        "text_color": "#FFFFFF",
+                        "logo": {
+                            "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
+                            "alt_text": "An orange block shape, with the text Dutch Blockchain Coalition next to it, portraying the logo of the Dutch Blockchain Coalition.",
+                        },
+                        "background_image": {
+                            "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
+                            "alt_text": "Connected open cubes in blue with one orange cube as a background of the card",
+                        },
                     }
                 ],
                 "trust_framework": {
@@ -42,16 +52,22 @@ profile = {
                 },
                 "credentialSubject": {
                     "givenNames": {
-                        "mandatory": True,
-                        "display": [{"name": "First Name", "locale": "en-US"}],
+                        "display": [
+                            {"name": "First Name", "locale": "en-US"},
+                             {"name": "Prénom", "locale": "fr-FR"},                           
+                            ],
                     },
                     "familyName": {
-                        "mandatory": True,
-                        "display": [{"name": "Family Name", "locale": "en-US"}],
+                        "display": [
+                            {"name": "Family Name", "locale": "en-US"},
+                            {"name": "Nom", "locale": "fr-FR"}
+                            ],
                     },
                     "dateOfBirth": {
-                        "mandatory": True,
-                        "display": [{"name": "Birth Date", "locale": "en-US"}],
+                        "display": [
+                            {"name": "Birth Date", "locale": "en-US"},
+                            {"name": "Date de naissance", "locale": "fr-FR"},
+                        ],
                     },
                 },
             },

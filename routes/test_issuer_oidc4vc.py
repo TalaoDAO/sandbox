@@ -139,7 +139,7 @@ def test_1(mode):
         issuer_id = "zxhaokccsi"
         client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
 
-    vc = 'VerifiableDiploma'
+    vc = 'VerifiableDiploma2'
     with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
         credential = json.loads(f.read())
     credential['id'] = "urn:uuid:" + str(uuid.uuid4())

@@ -8,6 +8,7 @@ import logging
 import math
 import hashlib
 from random import randbytes
+import x509_attestation
 logging.basicConfig(level=logging.INFO)
 
 """
@@ -185,7 +186,7 @@ def sign_jwt_vp(vc, audience, holder_vm, holder_did, nonce, vp_id, holder_key):
         },
         "nonce": nonce
     }
-    token = jwt.JWT(header=header,claims=payload, algs=[alg(holder_key)])
+    token = jwt.JWT(header=header, claims=payload, algs=[alg(holder_key)])
     token.make_signed_token(signer_key)
     return token.serialize()
 
@@ -198,6 +199,7 @@ def hash(text):
     m = hashlib.sha256()
     m.update(text.encode())
     return base64.urlsafe_b64encode(m.digest()).decode().replace("=", "")
+
 
 def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*60):
     """
@@ -219,7 +221,8 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
     payload['_sd'] = []
     _disclosure = ""
     disclosure_list = unsecured.get("disclosure", [])
-    if not disclosure_list: logging.warning("disclosure is missing for %s", claim)
+    if not disclosure_list:
+        logging.warning("disclosure is missing in sd-jwt")
     for claim in [attribute for attribute in unsecured.keys()]:
         if claim == "disclosure":
             pass
@@ -237,7 +240,8 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
             print("claim = ", claim)
             payload.update({claim: {'_sd': []}})
             nested_disclosure_list = unsecured[claim].get("disclosure", [])
-            if not nested_disclosure_list: logging.warning("disclosure is missing for %s", claim)
+            if not nested_disclosure_list:
+                logging.warning("disclosure is missing for %s", claim)
             for nested_claim in [attribute for attribute in unsecured[claim].keys()]:
                 if nested_claim == 'disclosure':
                     pass
@@ -254,10 +258,11 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
             print("claim = ", claim)
             nb = len(unsecured[claim])
             payload.update({claim: []})
-            for index in range(0,nb):
+            for index in range(0, nb):
                 if isinstance(unsecured[claim][index], dict):
                     nested_disclosure_list = unsecured[claim][index].get("disclosure", [])
-                    if not nested_disclosure_list: logging.warning("disclosure is missing for %s", claim)
+                    if not nested_disclosure_list:
+                        logging.warning("disclosure is missing for %s", claim)
                 else:
                     nested_disclosure_list = []
             for index in range(0,nb):
@@ -278,6 +283,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
     header = {
         'typ': "vc+sd-jwt",
         'kid': kid,
+        'x5c': x509_attestation.build_x509_san_dns(hostname=issuer),
         'alg': alg(issuer_key)
     }
     if subject_key.get("use"): del subject_key['use']

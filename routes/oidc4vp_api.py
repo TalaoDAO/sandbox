@@ -24,7 +24,7 @@ from profile import profile
 import pex
 import didkit
 import requests
-import x509_verifier_attestation
+import x509_attestation
 
 logging.basicConfig(level=logging.INFO)
 
@@ -447,9 +447,9 @@ def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None, client
         'alg': oidc4vc.alg(key),
     }
     if client_id_scheme == "x509_san_dns":
-        header['x5c'] = x509_verifier_attestation.build_x509_san_dns()
+        header['x5c'] = x509_attestation.build_x509_san_dns()
     elif client_id_scheme == "verifier_attestation":
-        header['jwt'] = x509_verifier_attestation.build_verifier_attestation(client_id)
+        header['jwt'] = x509_attestation.build_verifier_attestation(client_id)
     else:
         header['kid'] = kid
     
