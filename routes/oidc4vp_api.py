@@ -662,9 +662,9 @@ def oidc4vc_login_qrcode(red, mode):
             client_metadata_uri = mode.server + "verifier/wallet/client_metadata_uri/" + verifier_id
         
         # client_id_scheme
-        if verifier_data['profile'] in ["HAIP", "POTENTIAL"]:
+        if verifier_data['profile'] in ["POTENTIAL"]:
             authorization_request['client_id_scheme'] = 'x509_san_dns'
-        elif verifier_data['profile'] in []:
+        elif verifier_data['profile'] in ["HAIP"]:
             authorization_request['client_id_scheme'] = 'verifier_attestation'
         elif verifier_data.get('client_id_as_DID'):
             authorization_request['client_id_scheme'] = 'did'
