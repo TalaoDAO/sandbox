@@ -30,6 +30,7 @@ C_NONCE_LIFE = 5000
 ACCEPTANCE_TOKEN_LIFE = 28 * 24 * 60 * 60
 STATUSLIST_ISSUER_KEY = json.dumps(json.load(open('keys.json', 'r'))['talao_Ed25519_private_key'])
 
+
 def init_app(app, red, mode):
     # endpoint for application if redirect to local page (test)
     app.add_url_rule(
@@ -159,7 +160,7 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         'credential_endpoint': mode.server + 'issuer/' + issuer_id + '/credential',
         'deferred_credential_endpoint': mode.server + 'issuer/' + issuer_id + '/deferred',
     }
-   
+
     # Credentials supported section
     cs = issuer_profile.get('credentials_supported')
     if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
@@ -225,10 +226,10 @@ def as_openid_configuration(issuer_id, mode):
         'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/authorize',
         'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token',
         'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
-        'pushed_authorization_request_endpoint' : mode.server +'issuer/' + issuer_id + '/authorize/par' 
+        'pushed_authorization_request_endpoint': mode.server +'issuer/' + issuer_id + '/authorize/par' 
     }
-    if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
-        config["require_pushed_authorization_requests"] = True
+    if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
+        config['require_pushed_authorization_requests'] = True
     config.update(authorization_server_config)
     return config
 
@@ -250,7 +251,7 @@ def issuer_jwks(issuer_id):
     del statuslist_key['d']
     statuslist_key['kid'] = statuslist_key.get('kid') if statuslist_key.get('kid') else thumbprint(statuslist_key)
     jwks['keys'].append(statuslist_key)
-    logging.info("jwks = %s", jwks)
+    logging.info('jwks = %s', jwks)
     return jsonify(jwks)
 
 
@@ -337,14 +338,14 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                 offer['grants'][
                     'urn:ietf:params:oauth:grant-type:pre-authorized_code'
                 ].update({
-                    "tx_code": {
-                        "length": 4,
-                        "input_mode": "numeric",
-                        "description": "Please provide the one-time code which was sent via e-mail"
+                    'tx_code': {
+                        'length': 4,
+                        'input_mode': 'numeric',
+                        'description': 'Please provide the one-time code which was sent via e-mail'
                     }
                 })
         else:
-            if  issuer_id in ["pcbrwbvrsi", "kwcdgsspng" ] : # test 11 kwcdgsspng
+            if  issuer_id in ['pcbrwbvrsi', 'kwcdgsspng' ] : # test 11 kwcdgsspng
                 pass
             else:
                 offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
@@ -442,14 +443,14 @@ def authorization_error(error, error_description, stream_id, red, state):
 
 # pushed authorization endpoint endpoint
 def issuer_authorize_par(issuer_id, red, mode):
-    logging.info("request body = %s", json.dumps(request.form, indent=4))
+    logging.info('request body = %s', json.dumps(request.form, indent=4))
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     except Exception:
         logging.warning('issuer_id not found for %s', issuer_id)
         return
-    if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
-        if not request.form.get("client_assertion_type") or not request.form.get("client_assertion"):
+    if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
+        if not request.form.get('client_assertion_type') or not request.form.get('client_assertion'):
             return Response(**manage_error('invalid_request', 'HAIP and POTENTIAL request client assertion authentication', red, mode, request=request))
         else:
             pass #TODO testing
@@ -457,41 +458,41 @@ def issuer_authorize_par(issuer_id, red, mode):
     # Check content of client assertion and proof of possession (PoP)
     if request.form.get('client_assertion'):
         client_assertion = request.form.get('client_assertion').split("~")[0]
-        logging.info("client _assertion = %s", client_assertion)
+        logging.info('client _assertion = %s', client_assertion)
         if request.form.get('client_id') != oidc4vc.get_payload_from_token(client_assertion).get('sub'):
             return Response(**manage_error('invalid_request', 'client_id does not match client assertion sub', red, mode, request=request))
         PoP = request.form.get('client_assertion').split("~")[1]
-        logging.info("proof of possession = %s", PoP)
+        logging.info('proof of possession = %s', PoP)
         if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(PoP).get('iss'):
             return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
 
     try:
         request_uri_data = {
-            "redirect_uri": request.form['redirect_uri'],
-            "client_id": request.form['client_id'],
-            "response_type": request.form['response_type'],
-            "scope": request.form['scope'],
-            "issuer_state": request.form.get('issuer_state'),
+            'redirect_uri': request.form['redirect_uri'],
+            'client_id': request.form['client_id'],
+            'response_type': request.form['response_type'],
+            'scope': request.form['scope'],
+            'issuer_state': request.form.get('issuer_state'),
         }
     except Exception:
         return Response(**manage_error('invalid_request', 'Request format is incorrect', None, red, None))
     request_uri_data.update({
-        "nonce": request.form.get('nonce'),
-        "code_challenge": request.form.get('code_challenge'),
-        "code_challenge_method": request.form.get('code_challenge_method'),
-        "client_metadata": request.form.get('client_metadata'),
-        "state": request.form.get('state'),
-        "authorization_details": request.form.get('authorization_details')
+        'nonce': request.form.get('nonce'),
+        'code_challenge': request.form.get('code_challenge'),
+        'code_challenge_method': request.form.get('code_challenge_method'),
+        'client_metadata': request.form.get('client_metadata'),
+        'state': request.form.get('state'),
+        'authorization_details': request.form.get('authorization_details')
     })
-    request_uri = "urn:ietf:params:oauth:request_uri:" + str(uuid.uuid1())
+    request_uri = 'urn:ietf:params:oauth:request_uri:' + str(uuid.uuid1())
     red.setex(request_uri, 50, json.dumps(request_uri_data))
     endpoint_response = {
-        "request_uri": request_uri,
-        "expires_in": 50
+        'request_uri': request_uri,
+        'expires_in': 50
     }
     headers = {
-        "Cache-Control": "no-store",
-        "Content-Type": "application/json"
+        'Cache-Control': 'no-store',
+        'Content-Type': 'application/json'
     }
     return Response(response=json.dumps(endpoint_response), headers=headers)
 
@@ -501,20 +502,20 @@ def issuer_authorize_login(issuer_id, red):
     if request.method == 'GET':
         session['login'] = False
         session['test'] = False
-        return render_template('issuer_oidc/authorize.html', url= "/issuer/" + issuer_id + "/authorize/login")
+        return render_template('issuer_oidc/authorize.html', url= '/issuer/' + issuer_id + '/authorize/login')
     if not red.get( request.form['test']):
-        flash("Wrong test name", 'danger')
-        return redirect ("/issuer/" + issuer_id + "/authorize/login") 
+        flash('Wrong test name', 'danger')
+        return redirect ('/issuer/' + issuer_id + '/authorize/login') 
     session['login'] = True
     session['test'] = request.form['test']
-    return redirect ("/issuer/" + issuer_id + "/authorize?test=" + session['test']) 
+    return redirect ('/issuer/' + issuer_id + '/authorize?test=' + session['test']) 
     
 
 # authorization code endpoint
 def issuer_authorize(issuer_id, red, mode):
     # user not logged
     if not session.get('login'):
-        logging.info("User is not logged")
+        logging.info('User is not logged')
         try:
             issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
         except Exception:
@@ -546,7 +547,7 @@ def issuer_authorize(issuer_id, red, mode):
         
         # Standard Authorization code flow
         else:
-            if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
+            if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
                 return jsonify({
                     'error': 'access_denied',
                     'error_description': 'HAIP profile request PAR'
@@ -599,10 +600,10 @@ def issuer_authorize(issuer_id, red, mode):
             'code_challenge_method': code_challenge_method,
         }
         session['code_data'] = code_data
-        return redirect ("/issuer/" + issuer_id + "/authorize/login") 
+        return redirect ('/issuer/' + issuer_id + '/authorize/login') 
     
     # return from login screen
-    logging.info("user is logged")
+    logging.info('user is logged')
     session['login'] = False
     test = request.args.get('test')
     offer_data = json.loads(red.get(test).decode())
@@ -618,7 +619,7 @@ def issuer_authorize(issuer_id, red, mode):
     if session['code_data']['state']: resp['state'] = session['code_data']['state']
     redirect_uri = session['code_data']['redirect_uri']
     session.clear()
-    print("redirect = ", redirect_uri)
+    print('redirect = ', redirect_uri)
     return redirect(redirect_uri + '?' + urlencode(resp))
 
 
@@ -670,13 +671,13 @@ def issuer_token(issuer_id, red, mode):
     logging.info('client authentication method = %s', client_authentication_method)
 
     # Profile check
-    if issuer_profile in ["EBSI-V3", "DIIP"]:
+    if issuer_profile in ['EBSI-V3', 'DIIP']:
         if not request.form.get('client_id'):
             return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
-        if not request.form.get('client_id')[:3] != "did":
+        if not request.form.get('client_id')[:3] != 'did':
             return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
-    elif issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
-        if not request.form.get("client_assertion_type") or not request.form.get("client_assertion"):
+    elif issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
+        if not request.form.get('client_assertion_type') or not request.form.get('client_assertion'):
             return Response(**manage_error('invalid_request', 'HAIP request client assertion authentication', red, mode, request=request))
     else:
         pass
@@ -684,11 +685,11 @@ def issuer_token(issuer_id, red, mode):
     # Check content of client assertion and proof of possession (PoP)
     if client_authentication_method == 'client_secret_jwt':
         client_assertion = request.form.get('client_assertion').split("~")[0]
-        logging.info("client _assertion = %s", client_assertion)
+        logging.info('client _assertion = %s', client_assertion)
         if request.form.get('client_id') != oidc4vc.get_payload_from_token(client_assertion).get('sub'):
             return Response(**manage_error('invalid_request', 'client_id does not match client assertion subject', red, mode, request=request))
         PoP = request.form.get('client_assertion').split("~")[1]
-        logging.info("proof of possession = %s", PoP)
+        logging.info('proof of possession = %s', PoP)
         if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(PoP).get('iss'):
             return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
 
@@ -708,63 +709,63 @@ def issuer_token(issuer_id, red, mode):
             return Response(**manage_error('access_denied', 'Code verifier is incorrect', red, mode, request=request, stream_id=stream_id, status=404))
 
     # PIN code
-    if data.get("user_pin_required") and not user_pin:
-        return Response(**manage_error("invalid_request", "User pin is missing", red, mode, request=request, stream_id=stream_id))
-    logging.info('user_pin = %s', data.get("user_pin"))
-    if data.get("user_pin_required") and data.get("user_pin") != user_pin:
-        return Response(**manage_error("access_denied", "User pin is incorrect", red, mode, request=request, stream_id=stream_id, status=404))
+    if data.get('user_pin_required') and not user_pin:
+        return Response(**manage_error('invalid_request', 'User pin is missing', red, mode, request=request, stream_id=stream_id))
+    logging.info('user_pin = %s', data.get('user_pin'))
+    if data.get('user_pin_required') and data.get('user_pin') != user_pin:
+        return Response(**manage_error('access_denied', 'User pin is incorrect', red, mode, request=request, stream_id=stream_id, status=404))
 
     # token endpoint response
     access_token = str(uuid.uuid1())
     refresh_token = str(uuid.uuid1())
-    vc = data.get("vc")
+    vc = data.get('vc')
     endpoint_response = {
-        "access_token": access_token,
-        "c_nonce": str(uuid.uuid1()),
-        "token_type": "Bearer",
-        "expires_in": ACCESS_TOKEN_LIFE,
-        "c_nonce_expires_in": 1704466725,
-        "refresh_token": refresh_token
+        'access_token': access_token,
+        'c_nonce': str(uuid.uuid1()),
+        'token_type': 'Bearer',
+        'expires_in': ACCESS_TOKEN_LIFE,
+        'c_nonce_expires_in': 1704466725,
+        'refresh_token': refresh_token
     }
-    if issuer_profile == "GAIN-POC":
+    if issuer_profile == 'GAIN-POC':
         endpoint_response.update({
-            "scope": None,
-            "refresh_token": refresh_token
+            'scope': None,
+            'refresh_token': refresh_token
         })
     
     # authorization_details in case of multiple VC of the same type
     authorization_details = []
     if int(issuer_profile['oidc4vciDraft']) >= 13 and isinstance(vc, list):
         for vc_type in vc:
-            types = vc_type["types"]
-            vc_list = vc_type["list"]
-            identifiers = [one_vc["identifier"] for one_vc in vc_list]
+            types = vc_type['types']
+            vc_list = vc_type['list']
+            identifiers = [one_vc['identifier'] for one_vc in vc_list]
             authorization_details.append(
                 {
-                    "type": "openid_credential",
-                    "format": "jwt_vc_json",
-                    "credential_definition": {
-                        "type": types
+                    'type': 'openid_credential',
+                    'format': 'jwt_vc_json',
+                    'credential_definition': {
+                        'type': types
                     },
-                    "credential_identifiers": identifiers,
+                    'credential_identifiers': identifiers,
                 }
             )
-        logging.info("token endpoint response with authorization details")
-        endpoint_response["authorization_details"] = authorization_details
+        logging.info('token endpoint response with authorization details')
+        endpoint_response['authorization_details'] = authorization_details
 
     access_token_data = {
-        "expires_at": datetime.timestamp(datetime.now()) + ACCESS_TOKEN_LIFE,
-        "c_nonce": endpoint_response.get("c_nonce"),
-        "credential_type": data.get("credential_type"),
-        "vc": data.get("vc"),
-        "authorization_details": authorization_details,
-        "stream_id": data.get("stream_id"),
-        "issuer_state": data.get("issuer_state"),
-        "client_id": request.form.get('client_id')
+        'expires_at': datetime.timestamp(datetime.now()) + ACCESS_TOKEN_LIFE,
+        'c_nonce': endpoint_response.get('c_nonce'),
+        'credential_type': data.get('credential_type'),
+        'vc': data.get('vc'),
+        'authorization_details': authorization_details,
+        'stream_id': data.get('stream_id'),
+        'issuer_state': data.get('issuer_state'),
+        'client_id': request.form.get('client_id')
     }
     logging.info('token endpoint response = %s', json.dumps(endpoint_response, indent=4))
     red.setex(access_token, ACCESS_TOKEN_LIFE, json.dumps(access_token_data))
-    headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
+    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(endpoint_response), headers=headers)
 
 
@@ -774,20 +775,20 @@ async def issuer_credential(issuer_id, red, mode):
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-credential-endpoint
 
     """
-    logging.info("credential endpoint request %s", json.dumps(request.json, indent=4))
+    logging.info('credential endpoint request %s', json.dumps(request.json, indent=4))
     
     # Check access token
     try:
-        access_token = request.headers["Authorization"].split()[1]
+        access_token = request.headers['Authorization'].split()[1]
     except Exception:
-        return Response(**manage_error("invalid_token", "Access token not passed in request header", red, mode, request=request))
+        return Response(**manage_error('invalid_token', 'Access token not passed in request header', red, mode, request=request))
     try:
         access_token_data = json.loads(red.get(access_token).decode())
     except Exception:
-        return Response(**manage_error("invalid_token", "Access token expired", red, mode, request=request))
+        return Response(**manage_error('invalid_token', 'Access token expired', red, mode, request=request))
 
     # to manage followup screen
-    stream_id = access_token_data.get("stream_id")
+    stream_id = access_token_data.get('stream_id')
     
     # issuer profile
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
@@ -798,54 +799,54 @@ async def issuer_credential(issuer_id, red, mode):
     try:
         result = request.json
     except Exception:
-        return Response(**manage_error("invalid_request", "Invalid request format", red, mode, request=request, stream_id=stream_id))
+        return Response(**manage_error('invalid_request', 'Invalid request format', red, mode, request=request, stream_id=stream_id))
 
     # check vc format
-    vc_format = result.get("format")
-    logging.info("format in credential request = %s", vc_format)
-    if vc_format and vc_format not in ["ldp_vc", "vc+sd-jwt", "jwt_vc_json", "jwt_vc_json-ld", "jwt_vc"]:
-        return Response(**manage_error("unsupported_credential_format", "Invalid VC format : " + vc_format, red, mode, request=request, stream_id=stream_id))
+    vc_format = result.get('format')
+    logging.info('format in credential request = %s', vc_format)
+    if vc_format and vc_format not in ['ldp_vc', 'vc+sd-jwt', 'jwt_vc_json', 'jwt_vc_json-ld', 'jwt_vc']:
+        return Response(**manage_error('unsupported_credential_format', 'Invalid VC format : ' + vc_format, red, mode, request=request, stream_id=stream_id))
     if int(issuer_profile['oidc4vciDraft']) >= 13:
-        if result.get('format') == "vc+sd-jwt" and not result.get("vct"):
-            return Response(**manage_error("invalid_request", "Invalid request format, vct is missing for vc+sd-jwt format", red, mode, request=request, stream_id=stream_id))
+        if result.get('format') == 'vc+sd-jwt' and not result.get('vct'):
+            return Response(**manage_error('invalid_request', 'Invalid request format, vct is missing for vc+sd-jwt format', red, mode, request=request, stream_id=stream_id))
 
     # check types
     if int(issuer_profile['oidc4vciDraft']) < 13:
-        if vc_format in ["ldp_vc", "jwt_vc_json", "jwt_vc_json-ld", "jwt_vc"] and not result.get('types') :
-            return Response(**manage_error("unsupported_credential_format", "Invalid VC format, types is missing", red, mode, request=request, stream_id=stream_id))
+        if vc_format in ['ldp_vc', 'jwt_vc_json', 'jwt_vc_json-ld', 'jwt_vc'] and not result.get('types') :
+            return Response(**manage_error('unsupported_credential_format', 'Invalid VC format, types is missing', red, mode, request=request, stream_id=stream_id))
 
     # check proof if it exists depending on type of proof
-    proof = result.get("proof")
+    proof = result.get('proof')
     if proof:
-        proof_type = result["proof"]["proof_type"]
+        proof_type = result['proof']['proof_type']
         if proof_type == 'jwt':
-            proof = result["proof"]["jwt"]
+            proof = result['proof']['jwt']
             proof_header = oidc4vc.get_header_from_token(proof)
             proof_payload = oidc4vc.get_payload_from_token(proof)
             logging.info('Proof header = %s', json.dumps(proof_header, indent=4))
             logging.info('Proof payload = %s', json.dumps(proof_payload, indent=4))
             try:
-                oidc4vc.verif_token(proof, access_token_data["c_nonce"])
-                logging.info("proof is validated")
+                oidc4vc.verif_token(proof, access_token_data['c_nonce'])
+                logging.info('proof is validated')
             except Exception as e:
-                return Response(**manage_error("invalid_proof", "Proof of key ownership, signature verification error: " + str(e), red, mode, request=request, stream_id=stream_id))
+                return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id))
             wallet_jwk = proof_header.get('jwk')  # GAIN POC
             if not wallet_jwk:  # Baseline profile with kid
                 wallet_jwk = oidc4vc.resolve_did(proof_header.get('kid'))
-            iss = proof_payload.get("iss")
+            iss = proof_payload.get('iss')
             if access_token_data['client_id'] and iss != access_token_data['client_id']:
-                return Response(**manage_error("invalid_proof", "iss of proof of key is different from client_id", red, mode, request=request, stream_id=stream_id))
+                return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
         elif proof_type == 'ldp_vp':
-            proof = result["proof"]["ldp_vp"]
+            proof = result['proof']['ldp_vp']
             proof = json.dumps(proof) if isinstance(proof, dict) else proof
             proof_check = await didkit.verify_presentation(proof, '{}')
             iss = json.loads(proof)['holder']
             wallet_jwk = None
-            logging.info("ldp_vp proof check  = %s", proof_check)
+            logging.info('ldp_vp proof check  = %s', proof_check)
             if iss != access_token_data['client_id']:
-                return Response(**manage_error("invalid_proof", "iss of proof of key is different from client_id in token request", red, mode, request=request, stream_id=stream_id))
+                return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id in token request', red, mode, request=request, stream_id=stream_id))
         else:
-            return Response(**manage_error("invalid_proof", "The credential proof type is not supported", red, mode, request=request, stream_id=stream_id))
+            return Response(**manage_error('invalid_proof', 'The credential proof type is not supported', red, mode, request=request, stream_id=stream_id))
     else:
         logging.warning('No proof available -> Bearer credential, iss = client_id')
         wallet_jwk = None
@@ -853,36 +854,36 @@ async def issuer_credential(issuer_id, red, mode):
             iss = None  # wallet_did
         else:
             iss = access_token_data['client_id']  # wallet_did
-    logging.info("iss / wallet_did = %s", iss)
+    logging.info('iss / wallet_did = %s', iss)
 
     # Get credential type requested
     credential_identifier = None
     credential_type = None
     if int(issuer_profile['oidc4vciDraft']) >= 13:
-        credentials_supported = list(issuer_profile["credentials_supported"].keys())
-        if vc_format == "vc+sd-jwt" and result.get('vct'):  # draft 13 with vc+sd-jwt"
+        credentials_supported = list(issuer_profile['credentials_supported'].keys())
+        if vc_format == 'vc+sd-jwt' and result.get('vct'):  # draft 13 with vc+sd-jwt'
             vct = result.get('vct')
             for vc in credentials_supported:
-                if issuer_profile["credentials_supported"][vc]['vct'] == vct:
+                if issuer_profile['credentials_supported'][vc]['vct'] == vct:
                     credential_type = vc
                     break
         else:
             vc_type = result['credential_definition'].get('type')
             vc_type.sort()
             for vc in credentials_supported:
-                issuer_profile["credentials_supported"][vc]['credential_definition']['type'].sort()
-                if issuer_profile["credentials_supported"][vc]['credential_definition']['type'] == vc_type:
+                issuer_profile['credentials_supported'][vc]['credential_definition']['type'].sort()
+                if issuer_profile['credentials_supported'][vc]['credential_definition']['type'] == vc_type:
                     credential_type = vc
                     break
         if not credential_type:
-            return Response(**manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
+            return Response(**manage_error('invalid_request', 'VC type not found', red, mode, request=request, stream_id=stream_id))
     # TODO
     elif int(issuer_profile['oidc4vciDraft']) == 12:
-        if result.get("credential_identifier"):  # draft = 12
-            credential_identifier = result.get("credential_identifier")
-            logging.info("credential identifier = %s", credential_identifier)
+        if result.get('credential_identifier'):  # draft = 12
+            credential_identifier = result.get('credential_identifier')
+            logging.info('credential identifier = %s', credential_identifier)
         else:
-            credentials_supported = issuer_profile["credentials_supported"]
+            credentials_supported = issuer_profile['credentials_supported']
             types = result.get('types')
             types.sort()
             for vc in credentials_supported:
@@ -891,10 +892,10 @@ async def issuer_credential(issuer_id, red, mode):
                     credential_type = vc['id']
                     break
             if not credential_type:
-                return Response(**manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
+                return Response(**manage_error('invalid_request', 'VC type not found', red, mode, request=request, stream_id=stream_id))
     elif int(issuer_profile['oidc4vciDraft']) == 11:
-        credentials_supported = issuer_profile["credentials_supported"]
-        if vc_format == "vc+sd-jwt" and result.get('vct'):  # draft 11 with vc+sd-jwt"
+        credentials_supported = issuer_profile['credentials_supported']
+        if vc_format == 'vc+sd-jwt' and result.get('vct'):  # draft 11 with vc+sd-jwt'
             vct = result.get('vct')
             for vc in credentials_supported:
                 if vc['vct'] == vct:
@@ -909,39 +910,39 @@ async def issuer_credential(issuer_id, red, mode):
                     credential_type = vc['id']
                     break
         if not credential_type:
-            return Response(**manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
+            return Response(**manage_error('invalid_request', 'VC type not found', red, mode, request=request, stream_id=stream_id))
     elif int(issuer_profile['oidc4vciDraft']) < 11:
-        for one_type in result["types"]:
-            if one_type not in ["VerifiableCredential", "VerifiableAttestation"]:
+        for one_type in result['types']:
+            if one_type not in ['VerifiableCredential', 'VerifiableAttestation']:
                 credential_type = one_type
                 break
         if not credential_type:
-            return Response(**manage_error("invalid_request", "VC type not found", red, mode, request=request, stream_id=stream_id))
+            return Response(**manage_error('invalid_request', 'VC type not found', red, mode, request=request, stream_id=stream_id))
     else:
-        return Response(**manage_error("invalid_request", "Invalid request format", red, mode, request=request, stream_id=stream_id))
-    logging.info("credential type = %s", credential_type)
+        return Response(**manage_error('invalid_request', 'Invalid request format', red, mode, request=request, stream_id=stream_id))
+    logging.info('credential type = %s', credential_type)
     
     # deferred use case
-    if issuer_data.get("deferred_flow"): # draft 13 only
-        logging.info("Deferred flow")
+    if issuer_data.get('deferred_flow'): # draft 13 only
+        logging.info('Deferred flow')
         deferred_random = str(uuid.uuid1())
         payload = {
-            "c_nonce": str(uuid.uuid1()),
-            "c_nonce_expires_in": ACCEPTANCE_TOKEN_LIFE,
+            'c_nonce': str(uuid.uuid1()),
+            'c_nonce_expires_in': ACCEPTANCE_TOKEN_LIFE,
         }   
-        payload.update({"transaction_id": deferred_random})
+        payload.update({'transaction_id': deferred_random})
         deferred_data = {
-            "issuer_id": issuer_id,
-            "access_token": access_token,
-            "format": vc_format,
-            "subjectId": iss,
-            "issuer_state": access_token_data["issuer_state"],
-            "credential_type": credential_type,
-            "c_nonce": payload['c_nonce'],
-            "c_nonce_expires_at": datetime.timestamp(datetime.now()) + ACCEPTANCE_TOKEN_LIFE,
+            'issuer_id': issuer_id,
+            'access_token': access_token,
+            'format': vc_format,
+            'subjectId': iss,
+            'issuer_state': access_token_data['issuer_state'],
+            'credential_type': credential_type,
+            'c_nonce': payload['c_nonce'],
+            'c_nonce_expires_at': datetime.timestamp(datetime.now()) + ACCEPTANCE_TOKEN_LIFE,
         }
         red.setex(deferred_random, ACCEPTANCE_TOKEN_LIFE, json.dumps(deferred_data))
-        headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
+        headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
         return Response(response=json.dumps(payload), headers=headers)
 
     # get credential to issue
@@ -1128,7 +1129,11 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
                 "uri": mode.server + "sandbox/issuer/statuslist/1"
             }
         }
-        return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk)
+        if issuer_id in ['raamxepqex', 'tdiwmpyhzc']:
+            x5c = True
+        else:
+            x5c = False
+        return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk, x5c=x5c)
     elif format in ['ldp_vc', 'jwt_vc_json-ld']:
         if wallet_did:
             credential['credentialSubject']['id'] = wallet_did

@@ -42,24 +42,6 @@
       "request_object"
     ]
   },
-  "vp_formats_supported": {
-    "jwt_vp": {
-      "alg_values_supported": [
-        "ES256",
-        "ES256K",
-        "EdDSA",
-        "RS256"
-      ]
-    },
-    "jwt_vc": {
-      "alg_values_supported": [
-        "ES256",
-        "ES256K",
-        "EdDSA",
-        "RS256"
-      ]
-    }
-  },
   "subject_syntax_types_supported": [
     "urn:ietf:params:oauth:jwk-thumbprint",
     "did:key",

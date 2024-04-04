@@ -40,7 +40,9 @@ def oidc4vc_issuer_select():
         data_dict = json.loads(issuer_data)         
         client_id = data_dict['client_id']
         if data_dict['user'] == "all" or session['login_name'] in [data_dict['user'], "admin"]:
-            curve = json.loads(data_dict['jwk'])['crv']
+            curve = json.loads(data_dict['jwk']).get('crv')
+            if not curve:
+                curve = 'RSA'
             vm = data_dict['verification_method']
             issuer = """<tr>
                 <td>""" + data_dict.get('application_name', "unknown") + """</td>

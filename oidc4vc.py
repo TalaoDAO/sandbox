@@ -201,7 +201,7 @@ def hash(text):
     return base64.urlsafe_b64encode(m.digest()).decode().replace("=", "")
 
 
-def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*60):
+def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*60, x5c=False):
     """
     https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-01.html
     GAIN POC https://gist.github.com/javereec/48007399d9876d71f523145da307a7a3
@@ -282,10 +282,12 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
     kid = issuer_key.get('kid') if issuer_key.get('kid') else signer_key.thumbprint()
     header = {
         'typ': "vc+sd-jwt",
-        'kid': kid,
-        'x5c': x509_attestation.build_x509_san_dns(hostname=issuer),
         'alg': alg(issuer_key)
     }
+    if x5c:
+        header['x5c'] = x509_attestation.build_x509_san_dns(hostname=issuer)
+    else:
+        header['kid'] = kid
     if subject_key.get("use"): del subject_key['use']
     if unsecured.get('status'): payload['status'] = unsecured['status']
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
