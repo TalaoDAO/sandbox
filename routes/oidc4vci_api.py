@@ -600,7 +600,7 @@ def issuer_authorize(issuer_id, red, mode):
             'code_challenge_method': code_challenge_method,
         }
         session['code_data'] = code_data
-        return redirect ('/issuer/' + issuer_id + '/authorize/login') 
+        return redirect('/issuer/' + issuer_id + '/authorize/login') 
     
     # return from login screen
     logging.info('user is logged')
@@ -608,9 +608,13 @@ def issuer_authorize(issuer_id, red, mode):
     test = request.args.get('test')
     offer_data = json.loads(red.get(test).decode())
     vc = offer_data['vc']
-    session['code_data']['stream_id'] = offer_data['stream_id']
-    session['code_data']['vc'] = vc
-    session['code_data']['credential_type'] = offer_data['credential_type']
+    try:
+        session['code_data']['stream_id'] = offer_data['stream_id']
+        session['code_data']['vc'] = vc
+        session['code_data']['credential_type'] = offer_data['credential_type']
+    except Exception:
+        logging.error('code_data key error oidc_vci 612')
+        return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Session expired', None, red, state))
 
     # Code creation
     code = str(uuid.uuid1()) #+ '.' + str(uuid.uuid1()) + '.' + str(uuid.uuid1())
