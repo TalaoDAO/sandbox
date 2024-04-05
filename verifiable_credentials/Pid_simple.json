@@ -1,0 +1,13 @@
+{
+  "vct": "https://example.eudi.eu/credential/pid/1.0",
+
+  "given_name": "Patrick",
+  "family_name": "Doe",
+  "birthdate": "2000-12-01",
+
+ 
+
+  
+    "disclosure": ["vct"]
+}
+
