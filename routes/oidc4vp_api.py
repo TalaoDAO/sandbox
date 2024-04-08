@@ -53,7 +53,7 @@ def init_app(app, red, mode):
     # endpoints for wallet
     app.add_url_rule('/verifier/wallet',  view_func=oidc4vc_login_qrcode, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/verifier/wallet/.well-known/openid-configuration',  view_func=wallet_openid_configuration, methods = ['GET'])
-    app.add_url_rule('/verifier/wallet/endpoint/<stream_id>',  view_func=oidc4vc_login_endpoint, methods=['POST'],  defaults={'red': red}) # redirect_uri for PODST
+    app.add_url_rule('/verifier/wallet/endpoint/<stream_id>',  view_func=oidc4vc_response_endpoint, methods=['POST'],  defaults={'red': red}) # redirect_uri for PODST
     app.add_url_rule('/verifier/wallet/request_uri/<stream_id>',  view_func=oidc4vc_request_uri, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/verifier/wallet/client_metadata_uri/<verifier_id>',  view_func=wallet_metadata_uri, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/verifier/wallet/presentation_definition_uri/<verifier_id>',  view_func=presentation_definition_uri, methods=['GET'], defaults={'red': red})
@@ -427,6 +427,8 @@ def oidc4vc_userinfo(red):
         headers = {'WWW-Authenticate': 'Bearer realm="userinfo", error="invalid_token", error_description = "The access token expired"'}
         return Response(status=401,headers=headers)
     
+    
+    
 ################################# SIOPV2 + OIDC4VP ###########################################
 
 
@@ -628,17 +630,14 @@ def oidc4vc_login_qrcode(red, mode):
     authorization_request = { 
         "response_type": response_type,
         "state": str(uuid.uuid1()),  # unused
+        "response_uri": redirect_uri,
     }
-    if verifier_data['profile'] in ["POTENTIAL", "HAIP"]:
-        authorization_request['response_mode'] = 'direct_post'
-        authorization_request['redirect_uri'] = redirect_uri                               
-    elif response_type == 'id_token':
-        authorization_request['response_mode'] = 'post'
-        authorization_request['redirect_uri'] = redirect_uri
+    if verifier_data.get('jarm'):
+        authorization_request["response_mode"] = "direct_post.jwt"
     else:
-        authorization_request['response_mode'] = 'direct_post'
-        authorization_request['response_uri'] = redirect_uri
+        authorization_request["response_mode"] = "direct_post"
 
+    
     # Set client_id, use W3C DID identifier for client_id "on" ou None
     if verifier_data['profile'] in ["POTENTIAL", "HAIP"]:
         client_id = "talao.co"
@@ -677,7 +676,7 @@ def oidc4vc_login_qrcode(red, mode):
             presentation_definition_uri = mode.server + 'verifier/wallet/presentation_definition_uri/' + verifier_id
     else:
         presentation_definition = None
-         
+        
     # SIOPV2
     if 'id_token' in response_type:
         authorization_request['scope'] = 'openid'
@@ -789,26 +788,12 @@ def oidc4vc_request_uri(stream_id, red):
     return Response(payload, headers=headers)
 
 
-async def oidc4vc_login_endpoint(stream_id, red):
+async def oidc4vc_response_endpoint(stream_id, red):
     logging.info("Enter wallet response endpoint")
     """
-    https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#section-6.2
+    Endpoint for the direct post of the wallet
     
     """
-    access = True
-    qrcode_status = "Unknown"
-
-    try:
-        qrcode_status = "ok"
-        data = json.loads(red.get(stream_id).decode())
-        verifier_id = data['verifier_id']
-        verifier_data = json.loads(read_oidc4vc_verifier(verifier_id))
-        logging.info('Profile = %s', verifier_data['profile'])
-    except Exception:
-        qrcode_status = "QR code expired"
-        logging.info("QR code expired")
-        access = False
-
     # prepare the verifier response to wallet
     response_format = "Unknown"
     vc_type = "Unknown"
@@ -823,15 +808,34 @@ async def oidc4vc_login_endpoint(stream_id, red):
     vp_token_payload = {}
     id_token_payload = {}
     profile_status = 'Unknown'
+    access = True
+    qrcode_status = "Unknown"
+
+    try:
+        qrcode_status = "ok"
+        data = json.loads(red.get(stream_id).decode())
+        verifier_id = data['verifier_id']
+        verifier_data = json.loads(read_oidc4vc_verifier(verifier_id))
+        logging.info('Profile = %s', verifier_data['profile'])
+    except Exception:
+        qrcode_status = "QR code expired"
+        logging.info("QR code expired")
+        access = False
 
     # get id_token, vp_token and presentation_submission
     if access:
-        vp_token = request.form.get('vp_token')
-        id_token = request.form.get('id_token')
-        presentation_submission = request.form.get('presentation_submission')
+        if request.form.get('response'):
+            response = oidc4vc.get_payload_from_token(request.form['response'])
+            logging.info("JARM mode")
+            # TODO check JARM signature
+        else:
+            response = request.form
+        vp_token = response.get('vp_token')
+        id_token = response.get('id_token')
+        presentation_submission = response.get('presentation_submission')
         response_format = "ok"
         logging.info('id_token received = %s', id_token)
-        state = request.form.get('id_token')
+        state = response.get('id_token')
 
         # check types of vp
         if vp_token:
@@ -1021,7 +1025,7 @@ async def oidc4vc_login_endpoint(stream_id, red):
             else:
                 logging.info('Profile DEFAULT is respected')
         else:
-           pass
+            pass
         
     status_code = 200 if access else 400
     

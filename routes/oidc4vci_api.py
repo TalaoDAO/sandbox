@@ -505,10 +505,10 @@ def issuer_authorize_login(issuer_id, red):
         return render_template('issuer_oidc/authorize.html', url= '/issuer/' + issuer_id + '/authorize/login')
     if not red.get( request.form['test']):
         flash('Wrong test name', 'danger')
-        return redirect ('/issuer/' + issuer_id + '/authorize/login') 
+        return redirect('/issuer/' + issuer_id + '/authorize/login') 
     session['login'] = True
     session['test'] = request.form['test']
-    return redirect ('/issuer/' + issuer_id + '/authorize?test=' + session['test']) 
+    return redirect('/issuer/' + issuer_id + '/authorize?test=' + session['test']) 
     
 
 # authorization code endpoint
@@ -526,7 +526,7 @@ def issuer_authorize(issuer_id, red, mode):
         if request_uri := request.args.get('request_uri'):
             try:
                 request_uri_data = json.loads(red.get(request_uri).decode())   
-            except:
+            except Exception:
                 logging.warning('redirect uri failed')
                 return jsonify({
                     'error': 'invalid_request',

@@ -122,6 +122,7 @@ client_data_pattern_oidc4vc = {
     "siopv2Draft": "12",
     "oidc4vpDraft": "18",
     "vc_format": "ldp_vc",
+    "jarm": None,
     "credential_manifest_support": 'on',
     "pkce": None,
     "id_token": "on",
