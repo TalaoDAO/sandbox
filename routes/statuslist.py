@@ -16,7 +16,6 @@ ISSUER_KEY = json.dumps(json.load(open('keys.json', 'r'))['talao_Ed25519_private
 #ISSUER_DID = 'did:web:app.altme.io:issuer'
 
 
-
 def init_app(app, red, mode):
     app.add_url_rule('/sandbox/issuer/statuslist',  view_func=issuer_statuslist, methods=['GET', 'POST'], defaults={"mode":mode})
     app.add_url_rule('/sandbox/issuer/statuslist/<list_id>', view_func=issuer_status_list, methods=['GET'])
@@ -26,7 +25,6 @@ def init_app(app, red, mode):
 
     app.add_url_rule('/sandbox/issuer/statuslist/jwks', view_func=issuer_statuslist_jwks, methods=['GET'])
     app.add_url_rule('/sandbox/issuer/statuslist/.well-known/openid-configuration', view_func=issuer_statuslist_openid, methods=['GET'], defaults={"mode":mode})
-
 
     return
 
@@ -43,12 +41,14 @@ def issuer_statuslist_jwks():
     pub_key['kid'] = pub_key.get('kid') if pub_key.get('kid') else thumbprint(pub_key)
     return jsonify({'keys': [pub_key]})
 
+
 def issuer_statuslist_openid(mode):
     config = {
         'issuer': mode.server + 'sandbox/issuer/statuslist',
-        "jwks_uri" : mode.server + "sandbox/issuer/statuslist/jwks"
+        "jwks_uri": mode.server + "sandbox/issuer/statuslist/jwks"
     }
     return jsonify(config)
+
 
 def issuer_status_list(list_id):
     """
@@ -65,7 +65,7 @@ def issuer_status_list(list_id):
             'Content-Type': 'application/statuslist+jwt'
         }
         return Response(status_list_token, headers=headers)
-    except:
+    except Exception:
         return jsonify("status list token not found"), 400
     
 
@@ -78,13 +78,13 @@ def issuer_bitstring_status_list(list_id):
         list_id = str(list_id)
         listname = "statuslist_w3c_bitstring_" + list_id + ".txt"
         f = open(listname, "r")
-        status_list_token = f.read() 
+        status_list_token = f.read()
         headers = {
             'Cache-Control': 'no-store',
             'Content-Type': 'application/statuslist+jwt'
         }
         return Response(status_list_token, headers=headers)
-    except:
+    except Exception:
         return jsonify("bitstring status list token not found"), 400
 
 
@@ -93,7 +93,7 @@ def issuer_statuslist(mode):
     UX to revoke sd-jwt with  ietf statuslist
     """
     if request.method == 'GET':
-        return render_template ("statuslist.html")
+        return render_template("statuslist.html")
     else:
         index = request.form['index']
         if request.form["button"] == "active":
@@ -102,7 +102,7 @@ def issuer_statuslist(mode):
         else:
             update_status_list_token_file(1, int(index), True, mode)
             logging.info("revoke index = %s", index)
-        return redirect ("/sandbox/issuer/statuslist")
+        return redirect("/sandbox/issuer/statuslist")
 
 
 def issuer_bitstringstatuslist(mode):
@@ -110,7 +110,7 @@ def issuer_bitstringstatuslist(mode):
     UX to revoke vc_jwt_json with w3c bitstring statuslist
     """
     if request.method == 'GET':
-        return render_template ("bitstringstatuslist.html")
+        return render_template("bitstringstatuslist.html")
     else:
         index = request.form['index']
         if request.form["button"] == "active":
@@ -119,7 +119,7 @@ def issuer_bitstringstatuslist(mode):
         else:
             update_status_list_bitstring_file(1, int(index), True, mode)
             logging.info("revoke index = %s", index)
-        return redirect ("/sandbox/issuer/bitstringstatuslist")
+        return redirect("/sandbox/issuer/bitstringstatuslist")
 
 
 def sign_status_list_token(lst, list_id, mode):  # for sd-jwt   
@@ -183,12 +183,12 @@ def sign_status_list_bitstring_credential(lst, list_id, mode):  # for sd-jwt
 
 
 def set_bit(v, index, x):
-  """Set the index:th bit of v to 1 if x is truthy, else to 0, and return the new value."""
-  mask = 1 << index   # Compute mask, an integer with just bit 'index' set.
-  v &= ~mask          # Clear the bit indicated by the mask (if x is False)
-  if x:
-    v |= mask         # If x was True, set the bit indicated by the mask.
-  return v   
+    """Set the index:th bit of v to 1 if x is truthy, else to 0, and return the new value."""
+    mask = 1 << index   # Compute mask, an integer with just bit 'index' set.
+    v &= ~mask          # Clear the bit indicated by the mask (if x is False)
+    if x:
+        v |= mask         # If x was True, set the bit indicated by the mask.
+    return v   
 
 
 def set_status_list_frame(frame, index, status, standard):
@@ -222,19 +222,19 @@ def update_status_list_token_file(list_id, index, status, mode):
         lst = base64.urlsafe_b64decode(lst)
         old_frame = zlib.decompress(lst)
         logging.info("Existing frame loaded")
-    except:
+    except Exception:
         old_frame = bytearray(12500)
         logging.info("New empty frame created")
     new_frame = set_status_list_frame(old_frame, index, status, "ietf")
     new_lst = generate_ietf_lst(new_frame)
     status_list_token = sign_status_list_token(new_lst, list_id, mode)
-    try :
+    try:
         f = open("statuslist_ietf_" + list_id + ".txt", "w")
         f.write(status_list_token)
         f.close()
         logging.info("Success to store statuslist token file")
         return True
-    except:
+    except Exception:
         logging.info("Failed to store ietf statuslist file")
     return
 
@@ -254,19 +254,19 @@ def update_status_list_bitstring_file(list_id, index, status, mode):
         lst = base64.urlsafe_b64decode(lst)
         old_frame = gzip.decompress(lst)
         logging.info("Existing frame loaded")
-    except:
+    except Exception:
         old_frame = bytearray(16384)
         logging.info("New empty frame created")
     new_frame = set_status_list_frame(old_frame, index, status, "w3c_bitstring")
     new_lst = generate_w3c_bitstring_lst(new_frame)
     status_list_token = sign_status_list_bitstring_credential(new_lst, list_id,  mode)
-    try :
+    try:
         f = open("statuslist_w3c_bitstring_" + list_id + ".txt", "w")
         f.write(status_list_token)
         f.close()
         logging.info("Success to store bitstring statuslist token file")
         return True
-    except:
+    except Exception:
         logging.info("Failed to store bitstring statuslist file")
     return
 

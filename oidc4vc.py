@@ -44,7 +44,7 @@ alg value https://www.rfc-editor.org/rfc/rfc7518#page-6
 +--------------+-------------------------------+--------------------+
     """
 
-    if curve in  ['P-256', 'P-384', 'P-521', 'secp256k1']:
+    if curve in ['P-256', 'P-384', 'P-521', 'secp256k1']:
         key = jwk.JWK.generate(kty='EC', crv=curve)
     elif curve == 'RSA':
         key = jwk.JWK.generate(kty='RSA', size=2048)
@@ -115,7 +115,6 @@ def pub_key(key):
     return Key.export_public(as_dict=True)
     
 
-
 def sign_jwt_vc(vc, kid, issuer_key, nonce, iss, jti, sub):
     """
     For issuer
@@ -131,20 +130,17 @@ def sign_jwt_vc(vc, kid, issuer_key, nonce, iss, jti, sub):
         'kid': kid,
         'alg': alg(issuer_key)
     }
-    try:
-        payload = {
-            'iss': iss,
-            'nonce': nonce,
-            'iat': math.floor(datetime.timestamp(datetime.now())),
-            'nbf': math.floor(datetime.timestamp(datetime.now())),
-            'exp': math.floor(datetime.timestamp(datetime.now())) + 365*24*60*60, 
-            'jti': jti
-        }
-        if sub:
-            payload['sub'] = sub
-    except Exception as e:
-        logging.info("jwt signing error = %s", str(e))
-        return
+
+    payload = {
+        'iss': iss,
+        'nonce': nonce,
+        'iat': math.floor(datetime.timestamp(datetime.now())),
+        'nbf': math.floor(datetime.timestamp(datetime.now())),
+        'exp': math.floor(datetime.timestamp(datetime.now())) + 365*24*60*60, 
+        'jti': jti
+    }
+    if sub:
+        payload['sub'] = sub
     payload['vc'] = vc
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
@@ -390,16 +386,10 @@ def verif_token(token, nonce, aud=None):
 
 
 def get_payload_from_token(token) -> dict:
-    """
-    For verifier
-    check the signature and return None if failed
-    """
-    try:
-        payload = token.split('.')[1]
-        payload += "=" * ((4 - len(payload) % 4) % 4) # solve the padding issue of the base64 python lib
-        return json.loads(base64.urlsafe_b64decode(payload).decode())
-    except Exception:
-        return {}
+    payload = token.split('.')[1]
+    payload += "=" * ((4 - len(payload) % 4) % 4) # solve the padding issue of the base64 python lib
+    return json.loads(base64.urlsafe_b64decode(payload).decode())
+
 
 def get_header_from_token(token):
     header = token.split('.')[0]
@@ -407,25 +397,22 @@ def get_header_from_token(token):
     return json.loads(base64.urlsafe_b64decode(header).decode())
 
 
-def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce):
-    """
-    For wallets natural person as jwk is added in header
-    https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-proof-types
-    """
+def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce, jwk=False):
     key = json.loads(key) if isinstance(key, str) else key
     signer_key = jwk.JWK(**key) 
     header = {
-        'typ':'openid4vci-proof+jwt',
+        'typ': 'openid4vci-proof+jwt',
         'alg': alg(key),
-        'kid': kid
-        #'jwk': signer_key.export(private_key=False, as_dict=True)
     }
-
+    if jwk:
+        header['jwk'] = signer_key.export(private_key=False, as_dict=True)
+    else:
+        header['kid'] = kid
     payload = {
-        'iss': signer_did, # client id of the clent making the credential request
+        'iss': signer_did,  # client id of the clent making the credential request
         'nonce': nonce,
         'iat': datetime.timestamp(datetime.now()),
-        'aud': aud # Credential Issuer URL
+        'aud': aud  # Credential Issuer URL
     }  
     token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
     token.make_signed_token(signer_key)
@@ -450,7 +437,7 @@ def thumbprint_str(key):
     return signer_key.thumbprint()
     
 
-def verification_method(did, key): # = kid
+def verification_method(did, key):  # = kid
     key = json.loads(key) if isinstance(key, str) else key
     signer_key = jwk.JWK(**key) 
     thumb_print = signer_key.thumbprint()
@@ -459,7 +446,7 @@ def verification_method(did, key): # = kid
 
 def resolve_did_web(did) -> str:
     """
-    get DID dcomuent for the did:web
+    get DID document for the did:web
     """
     if did.split(':')[1] != 'web':
         return
@@ -524,50 +511,3 @@ def get_issuer_registry_data(did):
     except Exception:
         logging.error('registry data in invalid format')
         return
-
-
-########################## TEST VECTORS
-
-# EBSI TEST VECTORS
-
-alice_key = {
-    "kty": "EC",
-    "d": "d_PpSCGQWWgUc1t4iLLH8bKYlYfc9Zy_M7TsfOAcbg8",
-    "use": "sig",
-    "crv": "P-256",
-    "x": "ngy44T1vxAT6Di4nr-UaM9K3Tlnz9pkoksDokKFkmNc",
-    "y": "QCRfOKlSM31GTkb4JHx3nXB4G_jSPMsbdjzlkT_UpPc",
-    "alg": "ES256",
-}
-
-alice_DID = "did:ebsi:znxntxQrN369GsNyjFjYb8fuvU7g3sJGyYGwMTcUGdzuy"
-KID       = "did:ebsi:znxntxQrN369GsNyjFjYb8fuvU7g3sJGyYGwMTcUGdzuy#qujALp4bIDg5qs4lGuG_1OLycbh3ZyUfL-SJwiM9YjQ",
-
-"""
-{'crv': 'P-256', 'd': 'fdoUpbYXqQwLdA59KAGjHDK-tfSwILl6KOgmUR-9G-E', 'kty': 'EC', 'x': 'swb4CEhlK9LVttgfhkTE3fyzh3CVJOJWZFwnpvws06w', 'y': '61sQzFW216xWdfXhWi7oHzLH7AW55Sb_cRnpvMt0o_c'}
-did:ebsi:zmBbuRFdCyzo8YXxdFfiWiDm5SYbAAXM2Qks824hv1WKK
-did:ebsi:zmBbuRFdCyzo8YXxdFfiWiDm5SYbAAXM2Qks824hv1WKK#kHl_qBhwIoW9hiQDYDVxxg4vDt6vbg-_YCHXY3Piwso
-
-
-{'crv': 'secp256k1', 'd': 'btbbhfOMozv735FBv1vE7oajjrvgjOmFz0RPPrKGIhI', 'kty': 'EC', 'x': 'jueEqLxxzNYzjuitj-6wQVjMKHtbVkz336BWmrv2n5k', 'y': 'fy-awzXPdLe_AzKvDHWMWxpVvDsXv_jZ3WcOxdaZ5CQ'}
-did:ebsi:ztMVxH9gTfWxLVePz348Rme8fZqNL5vn7wJ8Ets2fAgSX
-did:ebsi:ztMVxH9gTfWxLVePz348Rme8fZqNL5vn7wJ8Ets2fAgSX#-wRjA5dN5TJvZH_epIsrzZvAt28DHwPXloQvMVWevqw
-
-
-key = jwk.JWK.generate(kty='EC', crv='P-256')
-key = jwk.JWK.generate(kty='EC', crv='secp256k1')
-my_key = json.loads(key.export(private_key=True))   #doctest: +ELLIPSIS
-print(my_key)
-print(did_ebsi(my_key))
-print(verification_method_ebsi(my_key))
-"""
-
-
-
-# MAIN entry point for test
-if __name__ == '__main__':
-    # info release
-    logging.info('flask test serveur run with debug mode')
-    did = "did:ion:EiClkZMDxPKqC9c-umQfTkR8vvZ9JPhl_xLDI9Nfk38w5w"
-    vm = did + "#someKeyId"
-    resolve_did(vm)
