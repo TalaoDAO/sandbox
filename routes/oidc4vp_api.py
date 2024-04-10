@@ -825,6 +825,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
     # get id_token, vp_token and presentation_submission
     if access:
         if request.form.get('response'):
+            print("request form response jarm = ", request.form.get('response'))
             response = oidc4vc.get_payload_from_token(request.form['response'])
             logging.info("JARM mode = ", response)
             # TODO check JARM signature
