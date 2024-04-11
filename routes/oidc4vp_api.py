@@ -1051,7 +1051,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
         "nonce_status": nonce_status,
         "aud_status": aud_status,
         "response_format": response_format,
-        "id_token_nonce": id_token_nonce,
+        #"id_token_nonce": id_token_nonce,
         "id_token_status": id_token_status,
         "vp_token_status": vp_token_status,
         "status_code": status_code,
