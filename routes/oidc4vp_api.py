@@ -458,17 +458,18 @@ def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None, client
             header['kid'] = signer_key.thumbprint()
         else:
             header['kid'] = key['kid']
-    else:
+    else:  # DID by default
         header['kid'] = kid
     
     payload = {
         'iss': iss,
         'aud': aud,
-        'exp': datetime.timestamp(datetime.now()) + 1000,
+        'exp': datetime.timestamp(datetime.now()) + 1000
     }
     payload |= request
     token = jwt.JWT(header=header, claims=payload, algs=[oidc4vc.alg(key)])
     token.make_signed_token(signer_key)
+    # todo do not sign teh token
     return token.serialize()
 
 
@@ -654,10 +655,10 @@ def oidc4vc_login_qrcode(red, mode):
     
     authorization_request['client_id'] = client_id
     wallet_metadata = build_verifier_metadata(verifier_id, redirect_uri)
+    authorization_request['nonce'] = nonce 
 
     # OIDC4VP
     if 'vp_token' in response_type:
-        authorization_request['nonce'] = nonce 
         presentation_definition = prez.get()
         authorization_request['aud'] = 'https://self-issued.me/v2'
             
