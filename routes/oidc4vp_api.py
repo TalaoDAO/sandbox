@@ -443,6 +443,7 @@ def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None, client
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-proof-types
     """
     key = json.loads(key) if isinstance(key, str) else key
+    print(key)
     signer_key = jwk.JWK(**key) 
     header = {
         'typ': "oauth-authz-req+jwt",
@@ -452,6 +453,11 @@ def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None, client
         header['x5c'] = x509_attestation.build_x509_san_dns()
     elif client_id_scheme == "verifier_attestation":
         header['jwt'] = x509_attestation.build_verifier_attestation(client_id)
+    elif client_id_scheme == "redirect_uri":
+        if not key.get('kid'):
+            header['kid'] = signer_key.thumbprint()
+        else:
+            header['kid'] = key['kid']
     else:
         header['kid'] = kid
     
@@ -690,7 +696,7 @@ def oidc4vc_login_qrcode(red, mode):
     }
     red.setex(stream_id, QRCODE_LIFE, json.dumps(data))
 
-    # Request for uri    
+    # Request uri    
     if 'vp_token' in response_type:
         if not verifier_data.get('client_metadata_uri'):
             if verifier_data.get('request_uri_parameter_supported'):
@@ -825,9 +831,8 @@ async def oidc4vc_response_endpoint(stream_id, red):
     # get id_token, vp_token and presentation_submission
     if access:
         if request.form.get('response'):
-            print("request form response jarm = ", request.form.get('response'))
             response = oidc4vc.get_payload_from_token(request.form['response'])
-            logging.info("JARM mode = ", response)
+            logging.info("JARM mode = %s", response)
             # TODO check JARM signature
         else:
             response = request.form
@@ -1045,6 +1050,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
         "nonce_status": nonce_status,
         "aud_status": aud_status,
         "response_format": response_format,
+        "id_token_nonce": id_token_nonce,
         "id_token_status": id_token_status,
         "vp_token_status": vp_token_status,
         "status_code": status_code,
