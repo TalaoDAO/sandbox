@@ -27,8 +27,8 @@ def init_app(app,red, mode):
     
     app.add_url_rule('/sandbox/verifier/callback',  view_func=verifier_callback, methods=['GET'])   
     app.add_url_rule('/sandbox/verifier/callback2',  view_func=verifier_callback2, methods=['GET'], defaults={'mode': mode})   
-    app.add_url_rule('/sandbox/verifier/callback2_1',  view_func=verifier_callback2_1, methods=['GET'])   
-    app.add_url_rule('/sandbox/verifier/callback3',  view_func=verifier_callback3, methods=['GET'])   
+    app.add_url_rule('/sandbox/verifier/callback2_1',  view_func=verifier_callback2_1, methods=['GET'])
+    app.add_url_rule('/sandbox/verifier/callback3',  view_func=verifier_callback3, methods=['GET'])
 
     
     # Test
@@ -82,13 +82,14 @@ def verifier_oidc_test(mode):
     subtitle_test_8 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_8))["page_subtitle"]
     title_test_9 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_9))["page_title"]
     subtitle_test_9 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_9))["page_subtitle"]
+    
     title_test_10 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_10))["page_title"]
     subtitle_test_10 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_10))["page_subtitle"]
+    
     title_test_11 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_11))["page_title"]
     subtitle_test_11 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_11))["page_subtitle"]
     title_test_12 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_12))["page_title"]
     subtitle_test_12 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_12))["page_subtitle"]
-
 
     return render_template(
         'verifier_oidc/wallet_verifier_test.html',
@@ -261,9 +262,9 @@ def verifier_callback3():
     return render_template(
         'verifier_oidc/vcsd_jwt_test.html',
         raw=token,
-        vcsd_jwt_header = json.dumps(vcsd_jwt_header, indent=4),
-        vcsd_jwt_payload = json.dumps(vcsd_jwt_payload, indent=4),
-        disclosure= disclosure,
+        vcsd_jwt_header=json.dumps(vcsd_jwt_header, indent=4),
+        vcsd_jwt_payload=json.dumps(vcsd_jwt_payload, indent=4),
+        disclosure=disclosure,
         kbjwt_header=json.dumps(kbjwt_header, indent=4),
         kbjwt_payload=json.dumps(kbjwt_payload, indent=4),
         )

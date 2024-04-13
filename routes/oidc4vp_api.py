@@ -207,8 +207,9 @@ def oidc4vc_authorize(red, mode):
                 logging.info(" code_wallet_data['vp_token_payload'] = %s", code_wallet_data['vp_token_payload'])
             id_token = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
             resp = {"id_token": id_token} 
-            logging.info("redirect to application with id-token = %s", id_token)
-            return redirect(code_data['redirect_uri'] + sep + urlencode(resp))
+            redirect_url = code_data['redirect_uri'] + sep + urlencode(resp)
+            logging.info("redirect url to application with id-token = %s", redirect_url)
+            return redirect(redirect_url)
 
         else:
             logging.error("session expired")
