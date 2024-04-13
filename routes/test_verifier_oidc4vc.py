@@ -247,7 +247,8 @@ def verifier_callback():
 # for sd-jwt
 def verifier_callback3():
     token = request.args.get("id_token")
-    vcsd = oidc4vc.get_payload_from_token(token)['vc+sd-jwt'].split("~")
+    #vcsd = oidc4vc.get_payload_from_token(token)['vc+sd-jwt'].split("~")
+    vcsd = token.split("~")
     vcsd_jwt_payload = oidc4vc.get_payload_from_token(vcsd[0])
     vcsd_jwt_header = oidc4vc.get_header_from_token(vcsd[0])
     disclosure = ""

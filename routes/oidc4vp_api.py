@@ -199,16 +199,17 @@ def oidc4vc_authorize(red, mode):
                 return redirect(redirect_uri + sep + urlencode(resp)) 
             if code_wallet_data['vp_type'] == 'ldp_vp':
                 vp = code_wallet_data['vp_token_payload']
+                id_token = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
+            elif code_wallet_data['vp_type'] == "vc+sd-jwt":
+                #vp = {"vc+sd-jwt" : code_wallet_data['vp_token_payload']}
+                id_token = code_wallet_data['vp_token_payload']
             else:
-                if code_wallet_data['vp_type'] == "vc+sd-jwt":
-                    vp = {"vc+sd-jwt" : code_wallet_data['vp_token_payload']}
-                else:
-                    vp = code_wallet_data['vp_token_payload'].get('vp')
+                vp = code_wallet_data['vp_token_payload'].get('vp')
                 logging.info(" code_wallet_data['vp_token_payload'] = %s", code_wallet_data['vp_token_payload'])
-            id_token = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
+                id_token = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
             resp = {"id_token": id_token} 
             redirect_url = code_data['redirect_uri'] + sep + urlencode(resp)
-            logging.info("redirect url to application with id-token = %s", redirect_url)
+            #logging.info("redirect url to application with id-token = %s", redirect_url)
             return redirect(redirect_url)
 
         else:
@@ -959,7 +960,9 @@ async def oidc4vc_response_endpoint(stream_id, red):
                 logging.info("disclosure #%s = %s", i, base64.urlsafe_b64decode(_disclosure.encode()).decode())
                 disc = base64.urlsafe_b64decode(_disclosure.encode()).decode()
                 disclosure.append(disc)
-            logging.info("vp token sihature not checked yet")
+            logging.info("vp token signature not checked yet")
+            vp_token_payload = vp_token
+            print("vp token = ", vp_token)
         else: # ldp_vp
             verifyResult = json.loads(await didkit.verify_presentation(vp_token, "{}"))
             vp_token_status = verifyResult
@@ -1077,9 +1080,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
         except Exception:
             sub = "Error"
     
-    if vp_type == "vc+sd-jwt":
-        vp_token_payload = vp_token
-        print("vp token payload = ", vp_token)
+    
     
     wallet_data = json.dumps({
                     "access": access,
