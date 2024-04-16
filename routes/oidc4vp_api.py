@@ -496,6 +496,8 @@ def build_verifier_metadata(client_id, redirect_uri) -> dict:
     verifier_profile = profile[verifier_data['profile']]
     if verifier_profile['verifier_vp_type'] == 'jwt_vp':
         verifier_metadata = json.load(open('verifier_metadata_jwt.json', 'r'))
+    elif verifier_profile['verifier_vp_type'] == 'vc+sd-jwt':
+        verifier_metadata = json.load(open('verifier_metadata_vc+sd_jwt.json', 'r'))
     else:       
         verifier_metadata = json.load(open('verifier_metadata_ldp.json', 'r')) 
     verifier_metadata['request_uri_parameter_supported'] = bool(verifier_data.get('request_uri_parameter_supported'))

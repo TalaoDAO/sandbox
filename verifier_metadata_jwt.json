@@ -18,12 +18,6 @@
     "EdDSA",
     "RS256"
   ],
-  "request_object_signing_alg_values_supported": [
-    "ES256",
-    "ES256K",
-    "EdDSA",
-    "RS256"
-  ],
   "vp_formats": {
     "jwt_vp": {
         "alg_values_supported": [
@@ -35,6 +29,7 @@
         }
     },
   "subject_syntax_types_supported": [
+    "urn:ietf:params:oauth:jwk-thumbprint", 
     "did:key",
     "did:ebsi",
     "did:tz",
