@@ -146,20 +146,20 @@ def oidc4vc_verifier_console(mode):
             if key == session['client_data'].get('vc_5', 'DID'):
                 vc_select_5 += "<option selected value=" + key + ">" + value + "</option>"
             else:
-                vc_select_5 +=  "<option value=" + key + ">" + value + "</option>"
+                vc_select_5 += "<option value=" + key + ">" + value + "</option>"
         
         vc_select_6 = str()
         for key, value in credential_list.items():
             if key ==   session['client_data'].get('vc_6', "DID"):
-                vc_select_6 +=  "<option selected value=" + key + ">" + value + "</option>"
+                vc_select_6 += "<option selected value=" + key + ">" + value + "</option>"
             else:
-                vc_select_6 +=  "<option value=" + key + ">" + value + "</option>"
+                vc_select_6 += "<option value=" + key + ">" + value + "</option>"
         vc_select_7 = str()
         for key, value in credential_list.items():
             if key ==   session['client_data'].get('vc_7', "DID"):
-                vc_select_7 +=  "<option selected value=" + key + ">" + value + "</option>"
+                vc_select_7 += "<option selected value=" + key + ">" + value + "</option>"
             else:
-                vc_select_7 +=  "<option value=" + key + ">" + value + "</option>"
+                vc_select_7 += "<option value=" + key + ">" + value + "</option>"
         vc_select_8 = str()
         for key, value in credential_list.items():
             if key ==   session['client_data'].get('vc_8', "DID"):
@@ -206,13 +206,21 @@ def oidc4vc_verifier_console(mode):
                 for i in ["1", "2", "3", "4"]:
                     vc = 'vc_' + i
                     reason = 'reason_' + i
-                    if session['client_data'][vc] != 'None'  :
+                    if session['client_data'][vc] not in ['None', "$.nationalities"]:
                         prez.add_constraint_with_type_array(
                             "$.type",
                             session['client_data'][vc],
                             "Input descriptor for credential " + i,
                             session['client_data'][reason],
-                            id = session['client_data'][vc].lower() + '_' + i
+                            id=session['client_data'][vc].lower() + '_' + i
+                        )
+                    elif session['client_data'][vc] == "$.nationalities":
+                        prez.add_constraint_with_type_array(
+                            "$.nationalities",
+                            session['client_data'][vc],
+                            "Input descriptor for credential " + i,
+                            session['client_data'][reason],
+                            id=session['client_data'][vc].lower() + '_' + i
                         ) 
             elif profile[session['client_data']['profile']].get("verifier_vp_type") == 'vc+sd-jwt':
                 if not prez:

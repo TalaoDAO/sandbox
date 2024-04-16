@@ -166,27 +166,50 @@ class Presentation_Definition:
                 }
             )
 
-    def add_constraint_with_type_array(self, path, pattern, name, purpose, id= str(uuid.uuid1())):
-        self.pd['input_descriptors'].append(
-            {   
-                "id": id,
-                "name": name,
-                "purpose": purpose,
-                "constraints": {
-                    "fields": [
-                        {
-                            "path": [path],
-                            "filter": {
-                                "type": "array",
-                                "contains": {
-                                    "const": pattern
+    def add_constraint_with_type_array(self, path, pattern, name, purpose, id=str(uuid.uuid1())):
+        if pattern == "$.nationalities":
+            self.pd['input_descriptors'].append(
+                {
+                    "id": id,
+                    "name": name,
+                    "purpose": purpose,
+                    "constraints": {
+                        "limit_disclosure": "required",
+                        "fields": [
+                            {
+                                "path": ["$.nationalities"],
+                                "filter": {
+                                    "type": "array",
+                                    "contains": {
+                                        "const": "IT"
+                                    }
                                 }
                             }
-                        }
-                    ]
+                        ]
+                    }
                 }
-            }
-        )
+            )
+        else:
+            self.pd['input_descriptors'].append(
+                {   
+                    "id": id,
+                    "name": name,
+                    "purpose": purpose,
+                    "constraints": {
+                        "fields": [
+                            {
+                                "path": [path],
+                                "filter": {
+                                    "type": "array",
+                                    "contains": {
+                                        "const": pattern
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            )
         
     def add_filter(self, descriptor_id, path, pattern):
         for desc in self.pd['input_descriptors']:

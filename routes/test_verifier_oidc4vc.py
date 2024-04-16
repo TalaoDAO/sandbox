@@ -20,10 +20,9 @@ def init_app(app,red, mode):
     
     app.add_url_rule('/over18',  view_func=verifier_test_10, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/verifier/test_10',  view_func=verifier_test_10, methods=['GET'], defaults={'mode': mode})
- 
     app.add_url_rule('/sandbox/verifier/test_11',  view_func=verifier_test_11, methods=['GET'], defaults={'mode': mode})
-
     app.add_url_rule('/sandbox/verifier/test_12',  view_func=verifier_test_12, methods=['GET'], defaults={'mode': mode})
+    app.add_url_rule('/sandbox/verifier/test_13',  view_func=verifier_test_13, methods=['GET'], defaults={'mode': mode})
     
     app.add_url_rule('/sandbox/verifier/callback',  view_func=verifier_callback, methods=['GET'])   
     app.add_url_rule('/sandbox/verifier/callback2',  view_func=verifier_callback2, methods=['GET'], defaults={'mode': mode})   
@@ -49,6 +48,8 @@ def verifier_oidc_test(mode):
         verifier_id_test_10 = "qixvcqlwbq"
         verifier_id_test_11 = "icopdwkfhd"
         verifier_id_test_12 = "woxvjqkbrb"
+        verifier_id_test_13 = "mnpqhqqrlw"
+
 
     else:
         verifier_id_test_1 = "rxukghiksb"
@@ -63,6 +64,8 @@ def verifier_oidc_test(mode):
         verifier_id_test_10 = "ifdpawlhsw"
         verifier_id_test_11 = "pvtrczpaeg"
         verifier_id_test_12 = "fzqtmovhto"
+        verifier_id_test_13 = "nyudzjxuhj"
+
 
     title_test_1 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_1))["page_title"]
     subtitle_test_1 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_1))["page_subtitle"]
@@ -90,6 +93,8 @@ def verifier_oidc_test(mode):
     subtitle_test_11 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_11))["page_subtitle"]
     title_test_12 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_12))["page_title"]
     subtitle_test_12 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_12))["page_subtitle"]
+    title_test_13 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_13))["page_title"]
+    subtitle_test_13 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_13))["page_subtitle"]
 
     return render_template(
         'verifier_oidc/wallet_verifier_test.html',
@@ -116,7 +121,9 @@ def verifier_oidc_test(mode):
         title_test_11=title_test_11,
         subtitle_test_11=subtitle_test_11,
         title_test_12=title_test_12,
-        subtitle_test_12=subtitle_test_12
+        subtitle_test_12=subtitle_test_12,
+        subtitle_test_13=subtitle_test_13
+
     )
 
 
@@ -239,6 +246,15 @@ def verifier_test_12(mode):
     url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
     return redirect(url)
 
+
+def verifier_test_13(mode):
+    session['verified'] = False
+    if mode.myenv == 'aws':
+        client_id = "mnpqhqqrlw"
+    else:
+        client_id = "nyudzjxuhj"
+    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
+    return redirect(url)
 
 def verifier_callback():
     return jsonify(request.args)

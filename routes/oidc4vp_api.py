@@ -556,9 +556,17 @@ def oidc4vc_login_qrcode(red, mode):
             reason = 'reason_' + i
             print("verifier type = ",  profile[verifier_data['profile']].get("verifier_vp_type"))
             if verifier_data[vc] != 'None':
-                if verifier_data.get('filter_type_array'):
+                if verifier_data.get('filter_type_array') and verifier_data[vc] != "$.nationalities":
                     prez.add_constraint_with_type_array(
                         "$.type",
+                        verifier_data[vc],
+                        "Input descriptor for credential " + i,
+                        verifier_data[reason],
+                        id= verifier_data[vc].lower() + '_' + i
+                    )
+                elif verifier_data.get('filter_type_array') and verifier_data[vc] == "$.nationalities":
+                    prez.add_constraint_with_type_array(
+                        "$.nationalities",
                         verifier_data[vc],
                         "Input descriptor for credential " + i,
                         verifier_data[reason],

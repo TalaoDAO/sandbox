@@ -25,7 +25,7 @@
     "nationalities": [
       "DE",
       "IT",
-      {"disclosure": ["DE"]}
+      {"disclosure": []}
     ],
     
     "age_equal_or_over": {   
