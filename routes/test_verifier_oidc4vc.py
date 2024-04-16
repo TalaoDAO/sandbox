@@ -66,7 +66,6 @@ def verifier_oidc_test(mode):
         verifier_id_test_12 = "fzqtmovhto"
         verifier_id_test_13 = "nyudzjxuhj"
 
-
     title_test_1 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_1))["page_title"]
     subtitle_test_1 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_1))["page_subtitle"]
     title_test_2 = json.loads(db_api.read_oidc4vc_verifier(verifier_id_test_2))["page_title"]
@@ -122,6 +121,7 @@ def verifier_oidc_test(mode):
         subtitle_test_11=subtitle_test_11,
         title_test_12=title_test_12,
         subtitle_test_12=subtitle_test_12,
+        title_test_13=title_test_13,
         subtitle_test_13=subtitle_test_13
 
     )
@@ -255,6 +255,7 @@ def verifier_test_13(mode):
         client_id = "nyudzjxuhj"
     url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
     return redirect(url)
+
 
 def verifier_callback():
     return jsonify(request.args)
