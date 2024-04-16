@@ -184,15 +184,15 @@ def oidc4vc_verifier_console(mode):
         vc_select_11 = str()
         for key, value in credential_list.items():
             if key ==   session['client_data'].get('vc_11', "DID"):
-                vc_select_11 +=  "<option selected value=" + key + ">" + value + "</option>"
+                vc_select_11 += "<option selected value=" + key + ">" + value + "</option>"
             else:
-                vc_select_11 +=  "<option value=" + key + ">" + value + "</option>"
+                vc_select_11 += "<option value=" + key + ">" + value + "</option>"
         vc_select_12 = str()
         for key, value in credential_list.items():
             if key ==  session['client_data'].get('vc_12', "DID"):
-                vc_select_12 +=  "<option selected value=" + key + ">" + value + "</option>"
+                vc_select_12 += "<option selected value=" + key + ">" + value + "</option>"
             else:
-                vc_select_12 +=  "<option value=" + key + ">" + value + "</option>"
+                vc_select_12 += "<option value=" + key + ">" + value + "</option>"
 
         # presentation definition calculation
         if session['client_data'].get('vp_token'):
@@ -223,6 +223,14 @@ def oidc4vc_verifier_console(mode):
                     if session['client_data'][vc] != 'None'  :
                         prez.add_constraint(
                             "$.vct",
+                            session['client_data'][vc],
+                            "Input descriptor for credential " + i,
+                            session['client_data'][reason],
+                            id=session['client_data'][vc].lower() + '_' + i
+                        )
+                    elif session['client_data'][vc] != "$.age_equal_or_over.18":
+                        prez.add_constraint(
+                            "$.age_equal_or_over.18",
                             session['client_data'][vc],
                             "Input descriptor for credential " + i,
                             session['client_data'][reason],

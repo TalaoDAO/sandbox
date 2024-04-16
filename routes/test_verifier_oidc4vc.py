@@ -206,7 +206,7 @@ def verifier_test_9(mode):
             client_id = "rkubsscrkt"
         else:
             client_id = "zvuzyxjhjk"
-        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
+        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
         return redirect(url)
 
 

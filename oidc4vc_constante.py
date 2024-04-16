@@ -42,6 +42,7 @@ oidc4vc_profile_list = {
 oidc4vc_verifier_credential_list = {
     #"DID": "Authentication",
     "None": "None",
+    "$.age_equal_or_over.18": "PID with age over 18",
     'https://credentials.openid.net/gain-poc-simple-identity-credential': 'IdentityCredential sd-jwt',
     'https://example.eudi.eu/credential/pid/1.0': "PID for LSP POTENTIAL",
     'VerifiableId':  'Verifiable ID',

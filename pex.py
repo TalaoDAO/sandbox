@@ -52,7 +52,7 @@ class Presentation_Definition:
                 "ldp_vc": {
                     "proof_type": LDP_PROOF_TYPE
                 },
-                 "jwt_vc_json": {
+                "jwt_vc_json": {
                     "alg": JWT_ALG
                 }
             })
@@ -64,7 +64,7 @@ class Presentation_Definition:
                 "ldp_vp": {
                     "proof_type": LDP_PROOF_TYPE
                 },
-                 "jwt_vp_json": {
+                "jwt_vp_json": {
                     "alg": JWT_ALG
                 }
             })
@@ -114,7 +114,7 @@ class Presentation_Definition:
                 }
             })
 
-    def add_constraint(self, path, pattern, name, purpose, id= str(uuid.uuid1())):
+    def add_constraint(self, path, pattern, name, purpose, id=str(uuid.uuid1())):
         if not pattern:
             self.pd['input_descriptors'].append(
                 {   
@@ -125,6 +125,22 @@ class Presentation_Definition:
                         "fields": [
                             {
                                 "path": [path]
+                            }
+                        ]
+                    }
+                }
+            )
+        elif pattern == "$.age_equal_or_over.18":
+            self.pd['input_descriptors'].append(
+                {   
+                    "id": id,
+                    "name": name,
+                    "purpose": purpose,
+                    "constraints": {
+                        "limit_disclosure": "required",
+                        "fields": [
+                            {
+                                "path": ["$.age_equal_or_over.18"]
                             }
                         ]
                     }
@@ -149,7 +165,6 @@ class Presentation_Definition:
                     }
                 }
             )
-
 
     def add_constraint_with_type_array(self, path, pattern, name, purpose, id= str(uuid.uuid1())):
         self.pd['input_descriptors'].append(
@@ -274,7 +289,7 @@ class Presentation_Definition:
 
 # MAIN entry point for test
 if __name__ == '__main__':
-  
+
     myprez = Presentation_Definition("test", "This a test")  
     #myprez.add_constraint("$.credentialSubject.firstName", "", "", "", id="descriptor_1")
     myprez.add_filter('descriptor_1', '$.credentialSubject.lastName', '')

@@ -183,9 +183,9 @@ def oidc4vc_authorize(red, mode):
             logging.info("response_type = code: successful redirect to client with code = %s", code) 
             resp = {'code': code,  'state': code_data.get('state')} if code_data.get('state') else {'code': code}
             logging.info('response to redirect_uri = %s', resp)
-            return redirect(code_data['redirect_uri'] + '?' + urlencode(resp)) 
+            return redirect(code_data['redirect_uri'] + '?' + urlencode(resp))
 
-        # implicit flow -> redirect with id_token
+        # implicit flow -> redirect with id_token USED FOR TESTING PURPOSE ON SANDBOX
         elif code_data['response_type'] == 'id_token':
             logging.info("response_type = id_token") 
             sep = "?" if code_data['response_mode'] == 'query' else "#"
@@ -352,9 +352,12 @@ def oidc4vc_token(red, mode):
         return manage_error("invalid_grant")
     if code_wallet_data['vp_type'] == 'ldp_vp':
         vp = code_wallet_data['vp_token_payload']
+        id_token = oidc4vc_build_id_token(client_id, code_wallet_data['sub'], data['nonce'], vp, mode)
+    elif code_wallet_data['vp_type'] == 'vc+sd-jwt':
+        id_token = code_wallet_data['vp_token_payload']
     else:
         vp = code_wallet_data['vp_token_payload'].get('vp')
-    id_token = oidc4vc_build_id_token(client_id, code_wallet_data['sub'], data['nonce'], vp, mode)
+        id_token = oidc4vc_build_id_token(client_id, code_wallet_data['sub'], data['nonce'], vp, mode)
     logging.info('id_token and access_token sent to client from token endpoint')
     access_token = str(uuid.uuid1())
     endpoint_response = {
@@ -564,6 +567,14 @@ def oidc4vc_login_qrcode(red, mode):
                 elif profile[verifier_data['profile']].get("verifier_vp_type") == 'vc+sd-jwt':
                     prez.add_constraint(
                         "$.vct",
+                        verifier_data[vc],
+                        "Input descriptor for credential " + i,
+                        verifier_data[reason],
+                        id=verifier_data[vc].lower() + '_' + i
+                    )
+                elif profile[verifier_data['profile']].get("verifier_vp_type") == 'vc+sd-jwt' and verifier_data[vc] == "$.age_equal_or_over.18":
+                    prez.add_constraint(
+                        "$.age_equal_or_over.18",
                         verifier_data[vc],
                         "Input descriptor for credential " + i,
                         verifier_data[reason],
