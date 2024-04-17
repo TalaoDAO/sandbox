@@ -431,8 +431,7 @@ def oidc4vc_userinfo(red):
         logging.warning("access token expired")
         headers = {'WWW-Authenticate': 'Bearer realm="userinfo", error="invalid_token", error_description = "The access token expired"'}
         return Response(status=401,headers=headers)
-    
-    
+
     
 ################################# SIOPV2 + OIDC4VP ###########################################
 
@@ -499,7 +498,8 @@ def build_verifier_metadata(client_id, redirect_uri) -> dict:
     elif verifier_profile['verifier_vp_type'] == 'vc+sd-jwt':
         verifier_metadata = json.load(open('verifier_metadata_vc+sd_jwt.json', 'r'))
     else:       
-        verifier_metadata = json.load(open('verifier_metadata_ldp.json', 'r')) 
+        verifier_metadata = json.load(open('verifier_metadata_ldp.json', 'r'))
+        
     verifier_metadata['request_uri_parameter_supported'] = bool(verifier_data.get('request_uri_parameter_supported'))
     verifier_metadata['request_parameter_supported'] = bool(verifier_data.get('request_parameter_supported'))
     verifier_metadata['redirect_uris'] = [redirect_uri]

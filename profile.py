@@ -1423,6 +1423,54 @@ profile = {
                             "display": [{"name": "Nationalities", "locale": "en-US"},
                                         {"name": "Nationalités", "locale": "fr-FR"}],
                         },
+                        "age_equal_or_over": {
+                            "mandatory": True,
+                            "value_type": "bool",
+                            "display": [{"name": "Age", "locale": "en-US"},
+                                        {"name": "Age", "locale": "fr-FR"}],
+                            "12": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Over 12", "locale": "en-US"},
+                                    {"name": "Plus de 12 ans", "locale": "fr-FR"}],
+                                },
+                            "14": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Over 14", "locale": "en-US"},
+                                    {"name": "Plus de 14 ans", "locale": "fr-FR"}],
+                                },
+                            "16": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Over 16", "locale": "en-US"},
+                                    {"name": "Plus de 16 ans", "locale": "fr-FR"}],
+                                },
+                            "18": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Over 18", "locale": "en-US"},
+                                    {"name": "Plus de 18 ans", "locale": "fr-FR"}],
+                                },
+                            "21": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Over 21", "locale": "en-US"},
+                                    {"name": "Plus de 21 ans", "locale": "fr-FR"}],
+                                },
+                            "65": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Senior", "locale": "en-US"},
+                                    {"name": "Senior", "locale": "fr-FR"}],
+                                },
+                        },
                         "address": {
                             "mandatory": True,
                             "value_type": "string",
@@ -1539,13 +1587,13 @@ profile = {
                             "display": [{"name": "Family Name", "locale": "en-US"},
                                         {"name": "Nom", "locale": "fr-FR"}],
                         },
-                         "birthdate": {
+                        "birthdate": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Birth date", "locale": "en-US"},
                                         {"name": "Date de naissance", "locale": "fr-FR"}],
                         },
-                         "place_of_birth": {
+                        "place_of_birth": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Birth place", "locale": "en-US"},
@@ -1579,7 +1627,7 @@ profile = {
                             "display": [{"name": "Nationalities", "locale": "en-US"},
                                         {"name": "Nationalités", "locale": "fr-FR"}],
                         },
-                          "gender": {
+                        "gender": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Gender", "locale": "en-US"},
@@ -1621,17 +1669,45 @@ profile = {
                                     {"name": "Pays", "locale": "fr-FR"}],
                                 },
                         },
-                         "age_equal_or_over": {
+                        "age_equal_or_over": {
                             "mandatory": True,
                             "value_type": "bool",
                             "display": [{"name": "Age", "locale": "en-US"},
                                         {"name": "Age", "locale": "fr-FR"}],
+                            "12": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Over 12", "locale": "en-US"},
+                                    {"name": "Plus de 12 ans", "locale": "fr-FR"}],
+                                },
+                            "14": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Over 14", "locale": "en-US"},
+                                    {"name": "Plus de 14 ans", "locale": "fr-FR"}],
+                                },
+                            "16": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Over 16", "locale": "en-US"},
+                                    {"name": "Plus de 16 ans", "locale": "fr-FR"}],
+                                },
                             "18": {
                                 "mandatory": True,
                                 "value_type": "string",
                                 "display": [
-                                    {"name": "Majority", "locale": "en-US"},
-                                    {"name": "Majorité", "locale": "fr-FR"}],
+                                    {"name": "Over 18", "locale": "en-US"},
+                                    {"name": "Plus de 18 ans", "locale": "fr-FR"}],
+                                },
+                            "21": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Over 21", "locale": "en-US"},
+                                    {"name": "Plus de 21 ans", "locale": "fr-FR"}],
                                 },
                             "65": {
                                 "mandatory": True,
