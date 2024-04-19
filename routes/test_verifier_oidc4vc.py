@@ -135,6 +135,8 @@ def verifier_test_1(mode): # Tezos EBSI
             client_id = "rxukghiksb"
         url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&nonce=100&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect(url)
+    else:
+        return jsonify("Unauthorized"), 400
 
 
 def verifier_test_3(mode):
@@ -145,6 +147,8 @@ def verifier_test_3(mode):
             client_id = "ybbiskyifx"
         url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&nonce=100&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect(url)
+    else:
+        return jsonify("Unauthorized"), 400
 
 
 def verifier_test_2(mode):
@@ -155,6 +159,8 @@ def verifier_test_2(mode):
             client_id = "paqqladucu"
         url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect(url)
+    else:
+        return jsonify("Unauthorized"), 400
 
 
 def verifier_test_4(mode): 
@@ -165,6 +171,8 @@ def verifier_test_4(mode):
             client_id = "gbypcbxtum"
         url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&nonce=500&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect(url)
+    else:
+        return jsonify("Unauthorized"), 400
 
 
 def verifier_test_5(mode):
@@ -175,6 +183,8 @@ def verifier_test_5(mode):
             client_id = "iddznwujyy"
         url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=SMS:33607182594&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect(url)
+    else:
+        return jsonify("Unauthorized"), 400
 
 
 def verifier_test_6(mode):
@@ -185,6 +195,8 @@ def verifier_test_6(mode):
             client_id = "ejqwxtjdlu"
         url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect(url)
+    else:
+        return jsonify("Unauthorized"), 400
 
 
 def verifier_test_7(mode):
@@ -195,6 +207,8 @@ def verifier_test_7(mode):
             client_id = "ypsfdlfoti"
         url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect(url)
+    else:
+        return jsonify("Unauthorized"), 400
 
 
 def verifier_test_8(mode):
@@ -205,6 +219,8 @@ def verifier_test_8(mode):
             client_id = "uxcdccjhmq"
         url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
         return redirect(url)
+    else:
+        return jsonify("Unauthorized"), 400
     
 
 def verifier_test_9(mode):
@@ -215,6 +231,8 @@ def verifier_test_9(mode):
             client_id = "zvuzyxjhjk"
         url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
         return redirect(url)
+    else:
+        return jsonify("Unauthorized"), 400
 
 
 def verifier_test_10(mode):
@@ -255,6 +273,7 @@ def verifier_test_13(mode):
         client_id = "nyudzjxuhj"
     url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
     return redirect(url)
+
 
 
 def verifier_callback():

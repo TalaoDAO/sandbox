@@ -38,21 +38,33 @@
                 "kty": "OKP",
                 "x": "FUoLewH4w4-KdaPH2cjZbL--CKYxQRWR05Yd_bIbhQo"
             }
+        },
+        {
+            "id": "did:web:talao.co#key-4",
+            "type": "Ed25519VerificationKey2018",
+            "controller": "did:web:talao.co",
+            "publicKeyBase58": "2S73k5pn5umfnaW31qx6dXFndEn6SmWw7LpgSjNNC5BF"
         }
     ],
     "authentication" : [
-        "did:web:talao.co#key-1"
+        "did:web:talao.co#key-1",
+        "did:web:talao.co#key-2",
+        "did:web:talao.co#key-3",
+        "did:web:talao.co#key-4"
     ],
     "assertionMethod" : [
         "did:web:talao.co#key-1",
         "did:web:talao.co#key-2",
-        "did:web:talao.co#key-3"
+        "did:web:talao.co#key-3",
+        "did:web:talao.co#key-4"
     ],
     "keyAgreement" : [
-        "did:web:talao.co#key-3"
+        "did:web:talao.co#key-3",
+        "did:web:talao.co#key-4"
     ],
     "capabilityInvocation":[
-        "did:web:talao.co#key-1"
+        "did:web:talao.co#key-1",
+        "did:web:talao.co#key-4"
     ],
     "service": [
         {
