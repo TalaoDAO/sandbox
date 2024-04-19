@@ -1210,5 +1210,5 @@ def clean_jwt_vc_json(credential):
         del vc['validFrom']
         del vc['validUntil']
         del vc['credentialStatus']
-        del vc['credentialSchema']
+        #del vc['credentialSchema']
     return vc

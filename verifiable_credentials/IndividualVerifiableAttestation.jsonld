@@ -1,0 +1,26 @@
+{
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://europa.eu/schemas/v-id/2020/v1",
+        "https://europa.eu/schemas/eidas/2020/v1"
+    ],
+    "id": "",
+    "type": [
+        "VerifiableCredential",
+        "VerifiableAttestation",
+        "individualVerifiableAttestation"
+    ],
+    "issuer": "",
+    "credentialSubject": {
+        "id": "",
+        "familyName": "",
+        "firstName": "",
+        "dateOfBirth": "",
+        "placeOfBirth": "",
+        "gender": ""
+    },
+    "credentialSchema": {
+        "id": "https://europa.eu/tsr-vid/verifiableid1.json",
+        "type": "FullJsonSchemaValidator2021"
+    }
+}

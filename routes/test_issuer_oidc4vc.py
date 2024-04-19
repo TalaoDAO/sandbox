@@ -22,6 +22,8 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/issuer/test_11',  view_func=test_11, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_12',  view_func=test_12, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_13',  view_func=test_13, methods=['GET'], defaults={'mode': mode})
+    app.add_url_rule('/sandbox/issuer/test_14',  view_func=test_14, methods=['GET'], defaults={'mode': mode})
+
 
     app.add_url_rule('/sandbox/issuer/callback',  view_func=issuer_callback, methods=['GET'])
     # test
@@ -53,6 +55,8 @@ def issuer_oidc_test(mode):
         issuer_id_test_11 = "pcbrwbvrsi"
         issuer_id_test_12 = "hrngdrpura"
         issuer_id_test_13 = "eyulcaatwc"
+        issuer_id_test_14 = "kucdqzidbs"
+
     else:
         issuer_id_test_1 = "zxhaokccsi"
         issuer_id_test_2 = "mjdgqkkmcf"
@@ -67,6 +71,7 @@ def issuer_oidc_test(mode):
         issuer_id_test_11 = "kwcdgsspng"
         issuer_id_test_12 = "wixtxxvbxw"
         issuer_id_test_13 = "ywmtotgmsi"
+        issuer_id_test_14 = "azjkjzlfku"
 
     title_test_1 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_1))["page_title"]
     subtitle_test_1 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_1))["page_subtitle"]
@@ -94,6 +99,8 @@ def issuer_oidc_test(mode):
     subtitle_test_12 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_12))["page_subtitle"]
     title_test_13 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_13))["page_title"]
     subtitle_test_13 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_13))["page_subtitle"]
+    title_test_14 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_14))["page_title"]
+    subtitle_test_14 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_14))["page_subtitle"]
 
     return render_template(
         'issuer_oidc/wallet_issuer_test.html',
@@ -122,7 +129,9 @@ def issuer_oidc_test(mode):
         title_test_12=title_test_12,
         subtitle_test_12=subtitle_test_12,
         title_test_13=title_test_13,
-        subtitle_test_13=subtitle_test_13
+        subtitle_test_13=subtitle_test_13,
+        title_test_14=title_test_14,
+        subtitle_test_14=subtitle_test_14
     )
 
 
@@ -510,7 +519,7 @@ def test_11(mode):
     
     with open('./verifiable_credentials/Pid.json', 'r') as f:
         credential = json.loads(f.read())
-   
+
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
@@ -606,6 +615,44 @@ def test_13(mode):
     except Exception:
         return jsonify("No qr code")
     return redirect(qrcode) 
+
+
+def test_14(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
+    if mode.myenv == 'aws':
+        issuer_id = "kucdqzidbs"
+        client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
+    else: 
+        issuer_id = "azjkjzlfku"
+        client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
+
+    vc = 'IndividualVerifiableAttestation'
+    with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
+        credential = json.loads(f.read())
+    credential['id'] = "urn:uuid:" + str(uuid.uuid4())
+    credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+    credential['issued'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+    credential['validFrom'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
+    credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
+    
+    headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': client_secret
+    }
+    data = { 
+        "issuer_id": issuer_id,
+        "vc": {vc: credential}, 
+        "issuer_state": str(uuid.uuid1()),
+        "credential_type": vc,
+        "pre-authorized_code": True,
+        "callback": mode.server + 'sandbox/issuer/callback',
+        }
+    resp = requests.post(api_endpoint, headers=headers, json=data)
+    try:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
+        return jsonify("No qr code")
+    return redirect(qrcode)
 
 
 def build_credential_offered(offer):

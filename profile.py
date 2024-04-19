@@ -17,6 +17,7 @@ profile = {
             "VerifiableDiploma2",
             "VerifiableId",
             "EmailPass",
+            "IndividualVerifiableAttestation"
         ],
         "credentials_supported": [
             {
@@ -54,7 +55,51 @@ profile = {
                     "givenNames": {
                         "display": [
                             {"name": "First Name", "locale": "en-US"},
-                             {"name": "Prénom", "locale": "fr-FR"},                           
+                            {"name": "Prénom", "locale": "fr-FR"},                           
+                            ],
+                    },
+                    "familyName": {
+                        "display": [
+                            {"name": "Family Name", "locale": "en-US"},
+                            {"name": "Nom", "locale": "fr-FR"}
+                            ],
+                    },
+                    "dateOfBirth": {
+                        "display": [
+                            {"name": "Birth Date", "locale": "en-US"},
+                            {"name": "Date de naissance", "locale": "fr-FR"},
+                        ],
+                    },
+                },
+            },
+            {
+                "format": "jwt_vc",
+                "types": [
+                    "VerifiableCredential",
+                    "VerifiableAttestation",
+                    "IndividualVerifiableAttestation",
+                ],
+                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "display": [
+                    {
+                        "name": "Individual attestation",
+                        "locale": "en-US",
+                        "description": "This is the EBSI Individual Verifiable Attestation",
+                        "background_color": "#3B6F6D",
+                        "text_color": "#FFFFFF"
+                    }
+                ],
+                "trust_framework": {
+                    "name": "ebsi",
+                    "type": "Accreditation",
+                    "uri": "TIR link towards accreditation",
+                },
+                "credentialSubject": {
+                    "givenNames": {
+                        "display": [
+                            {"name": "First Name", "locale": "en-US"},
+                            {"name": "Prénom", "locale": "fr-FR"},                           
                             ],
                     },
                     "familyName": {
