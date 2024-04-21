@@ -13,11 +13,11 @@
     "issuer": "",
     "credentialSubject": {
         "id": "",
-        "familyName": "",
-        "firstName": "",
-        "dateOfBirth": "",
-        "placeOfBirth": "",
-        "gender": ""
+        "familyName": "DOE",
+        "firstName": "John",
+        "dateOfBirth": "2000-23-12",
+        "placeOfBirth": "Paris",
+        "gender": "male"
     },
     "credentialSchema": {
         "id": "https://europa.eu/tsr-vid/verifiableid1.json",

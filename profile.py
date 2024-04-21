@@ -96,22 +96,34 @@ profile = {
                     "uri": "TIR link towards accreditation",
                 },
                 "credentialSubject": {
-                    "givenNames": {
+                    "firstName": {
                         "display": [
                             {"name": "First Name", "locale": "en-US"},
-                            {"name": "Prénom", "locale": "fr-FR"},                           
-                            ],
+                            {"name": "Prénom", "locale": "fr-FR"}                    
+                        ]
                     },
                     "familyName": {
                         "display": [
                             {"name": "Family Name", "locale": "en-US"},
                             {"name": "Nom", "locale": "fr-FR"}
-                            ],
+                        ]
                     },
                     "dateOfBirth": {
                         "display": [
                             {"name": "Birth Date", "locale": "en-US"},
                             {"name": "Date de naissance", "locale": "fr-FR"},
+                        ]
+                    },
+                    "placeOfBirth": {
+                        "display": [
+                            {"name": "Birth Place", "locale": "en-US"},
+                            {"name": "Lieu de naissance", "locale": "fr-FR"},
+                        ]
+                    },
+                    "issuing_country": {
+                        "display": [
+                            {"name": "Issued by", "locale": "en-US"},
+                            {"name": "Délivré par", "locale": "fr-FR"},
                         ],
                     },
                 },
@@ -410,7 +422,7 @@ profile = {
                         "mandatory": True,
                         "display": [{"name": "Family Name", "locale": "en-US"}],
                     },
-                     "dateOfBirth": {
+                    "dateOfBirth": {
                         "mandatory": True,
                         "display": [{"name": "Date of Birth", "locale": "en-US"}],
                     },
