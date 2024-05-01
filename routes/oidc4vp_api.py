@@ -1061,8 +1061,10 @@ async def oidc4vc_response_endpoint(stream_id, red):
         
     status_code = 200 if access else 400
     
-    if state:
+    try:
         state_status = state
+    except Exception:
+        state_status = "Unknown"
         
     detailed_response = {
         "created": datetime.timestamp(datetime.now()),
@@ -1100,8 +1102,6 @@ async def oidc4vc_response_endpoint(stream_id, red):
             sub = vp_sub
         except Exception:
             sub = "Error"
-    
-    
     
     wallet_data = json.dumps({
                     "access": access,
