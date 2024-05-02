@@ -5,6 +5,7 @@ import uuid
 import logging
 from urllib.parse import urlencode
 import didkit
+import time
 
 logging.basicConfig(level=logging.INFO)
 
@@ -109,6 +110,7 @@ async def test_VP_presentation_display(red):
         except :
             return jsonify('server problem')
         try :
+            time.sleep(10)
             presentation_result = await didkit.verify_presentation(presentation_json, '{}')
         except :
             return jsonify('This verifiable presentation does not fit the W3C standards. Contact us for more details at contact@talao.io')
