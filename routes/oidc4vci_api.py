@@ -775,10 +775,7 @@ def issuer_token(issuer_id, red, mode):
 
 # credential endpoint
 async def issuer_credential(issuer_id, red, mode):
-    """
-    https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-credential-endpoint
-
-    """
+    logging.info('credential endoint header %s', request.headers)
     logging.info('credential endpoint request %s', json.dumps(request.json, indent=4))
     
     # Check access token
