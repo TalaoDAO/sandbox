@@ -38,6 +38,9 @@
         "disclosure" : ["65"]            
     },
     "gender": "male",
+    "issuing_country": "DE",
+    "issuing_authority": "DE",
+
   
     "disclosure": ["vct", "vct#integrity", "status", "gender"]
 }
