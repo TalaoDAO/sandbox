@@ -110,7 +110,7 @@ class Presentation_Definition:
             self.pd['format'] = dict()
         self.pd["format"].update({
                 "vc+sd-jwt": {
-                    "alg": jwt_alg
+                    "sd-jwt_alg_values": jwt_alg
                 }
             })
 

@@ -20,7 +20,7 @@
     ],
     "vp_formats": {
         "vc+sd-jwt": {
-            "alg_values_supported": [
+            "sd-jwt_alg_values": [
                 "ES256",
                 "ES256K",
                 "EdDSA",
