@@ -25,6 +25,12 @@
                 "ES256K",
                 "EdDSA",
                 "RS256"
+            ],
+            "kb-jwt_alg_values": [
+                "ES256",
+                "ES256K",
+                "EdDSA",
+                "RS256"
             ]
         }
     },

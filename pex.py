@@ -110,8 +110,10 @@ class Presentation_Definition:
             self.pd['format'] = dict()
         self.pd["format"].update({
                 "vc+sd-jwt": {
-                    "sd-jwt_alg_values": jwt_alg
+                    "sd-jwt_alg_values": jwt_alg,
+                    "kb-jwt_alg_values": jwt_alg,
                 }
+
             })
 
     def add_constraint(self, path, pattern, name, purpose, id=str(uuid.uuid1())):
