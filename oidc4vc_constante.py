@@ -45,7 +45,7 @@ oidc4vc_verifier_credential_list = {
     "$.age_equal_or_over.18": "PID with age over 18",
     "$.nationalities": "PID with nationalities IT",
     'https://credentials.openid.net/gain-poc-simple-identity-credential': 'IdentityCredential sd-jwt',
-    'https://example.eudi.eu/credential/pid/1.0': "PID for LSP POTENTIAL",
+    'urn.eu.europa.ec.eudi:pid:1': "PID for LSP POTENTIAL",
     'VerifiableId':  'Verifiable ID',
     'AscsUserCredential' : 'ASCS credential for DENIM',
     'EUDI_PID_rule_book_1_0_0': 'PID for EUDI wallet',

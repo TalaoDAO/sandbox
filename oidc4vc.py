@@ -341,7 +341,13 @@ def resolve_did(vm) -> dict:
             logging.info('Access to Talao Universal Resolver')
         except Exception:
             logging.error('cannot access to Talao Universal Resolver for %s', vm)
-            return
+            url = 'https://dev.uniresolver.io/1.0/identifiers/' + did
+            try:
+                r = requests.get(url, timeout=5)
+                logging.info('Access to Public Universal Resolver')
+            except Exception:
+                logging.warning('fails to access to both universal resolver')
+                return
         did_document = r.json()
         for verificationMethod in did_document['didDocument']['verificationMethod']:
             if vm == verificationMethod['id'] or '#' + vm.split('#')[1] == verificationMethod['id']:

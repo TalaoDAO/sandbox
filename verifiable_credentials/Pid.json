@@ -1,5 +1,5 @@
 {
-  "vct": "https://example.eudi.eu/credential/pid/1.0",
+  "vct": "urn.eu.europa.ec.eudi:pid:1",
   "vct#integrity": "sha256-jo8433ot48utul8ura33",
 
   "given_name": "Patrick",

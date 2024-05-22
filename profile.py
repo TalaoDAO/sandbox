@@ -1812,7 +1812,7 @@ profile = {
                     "ES384",
                     "RS256",
                 ],
-                "vct": "https://example.eudi.eu/credential/pid/1.0",
+                "vct": "urn.eu.europa.ec.eudi:pid:1",
                 "display": [
                     {
                         "name": "PID",
