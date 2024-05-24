@@ -67,8 +67,8 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/error_uri', view_func=wallet_error_uri, methods=['GET'])
     
     # to manage different specs and interpretations
-    app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-vc-issuer', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
-    app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-issuer', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
+    #app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-vc-issuer', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
+    #app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-issuer', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/.well-known/jwt-vc-issuer/issuer/<issuer_id>', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/.well-known/jwt-issuer/issuer/<issuer_id>', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
 
