@@ -66,6 +66,7 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/credential_offer_uri/<id>', view_func=issuer_credential_offer_uri, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/issuer/error_uri', view_func=wallet_error_uri, methods=['GET'])
     
+    # to manage different specs and interpretations
     app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-vc-issuer', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-issuer', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/.well-known/jwt-vc-issuer/issuer/<issuer_id>', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
@@ -207,9 +208,21 @@ def credential_issuer_openid_configuration(issuer_id, mode):
 
 # jwt vc issuer openid configuration
 def openid_jwt_vc_issuer_configuration(issuer_id, mode):
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    pub_key = copy.copy(json.loads(issuer_data['jwk']))
+    del pub_key['d']
+    pub_key['kid'] = pub_key.get('kid') if pub_key.get('kid') else thumbprint(pub_key)
+    jwks ={'keys': [pub_key]}
+    # add statuslist issuer key
+    statuslist_key = copy.copy(json.loads(STATUSLIST_ISSUER_KEY))
+    del statuslist_key['d']
+    statuslist_key['kid'] = statuslist_key.get('kid') if statuslist_key.get('kid') else thumbprint(statuslist_key)
+    jwks['keys'].append(statuslist_key)
+    logging.info('jwks = %s', jwks)
     config = {
         'issuer': mode.server + 'issuer/' + issuer_id,
-        'jwks_uri': mode.server + 'issuer/' + issuer_id + '/jwks'
+        #'jwks_uri': mode.server + 'issuer/' + issuer_id + '/jwks', 
+        'jwks': jwks
     }
     return jsonify(config)
 
