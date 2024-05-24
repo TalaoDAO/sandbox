@@ -1,6 +1,5 @@
 {
   "vct": "urn:eu.europa.ec.eudi:pid:1",
-  "vct#integrity": "sha256-jo8433ot48utul8ura33",
 
   "given_name": "Patrick",
   "family_name": "Doe",
@@ -43,6 +42,6 @@
     "issuing_authority": "DE",
 
   
-    "disclosure": ["vct", "vct#integrity", "status", "gender"]
+    "disclosure": ["vct", "status", "gender"]
 }
 
