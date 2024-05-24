@@ -6,7 +6,8 @@
   "family_name": "Doe",
   "birthdate": "2000-12-01",
 
-  "address": {          
+  "address": { 
+    "formatted": "123 Via Appia, Rome, 00100 Lazio, Italy",        
     "street_address": "123 Via Appia",
     "locality": "Rome",
     "region": "Lazio",

@@ -33,24 +33,10 @@ STATUSLIST_ISSUER_KEY = json.dumps(json.load(open('keys.json', 'r'))['talao_Ed25
 
 def init_app(app, red, mode):
     # endpoint for application if redirect to local page (test)
-    app.add_url_rule(
-        '/sandbox/ebsi/issuer/<issuer_id>/<stream_id>',
-        view_func=oidc_issuer_landing_page,
-        methods=['GET', 'POST'],
-        defaults={'red': red, 'mode': mode},
-    )
-    app.add_url_rule(
-        '/sandbox/ebsi/issuer_stream',
-        view_func=oidc_issuer_stream,
-        methods=['GET', 'POST'],
-        defaults={'red': red},
-    )
-    app.add_url_rule(
-        '/sandbox/ebsi/issuer_followup/<stream_id>',
-        view_func=oidc_issuer_followup,
-        methods=['GET'],
-        defaults={'red': red},
-    )
+    app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/<stream_id>', view_func=oidc_issuer_landing_page, methods=['GET', 'POST'],defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/sandbox/ebsi/issuer_stream', view_func=oidc_issuer_stream, methods=['GET', 'POST'], defaults={'red': red})
+    app.add_url_rule('/sandbox/ebsi/issuer_followup/<stream_id>', view_func=oidc_issuer_followup, methods=['GET'], defaults={'red': red})
+    
     # OIDC4VCI protocol with wallet
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-credential-issuer', view_func=credential_issuer_openid_configuration_endpoint, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/authorize', view_func=issuer_authorize, methods=['GET'], defaults={'red': red, 'mode': mode})
@@ -67,8 +53,8 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/error_uri', view_func=wallet_error_uri, methods=['GET'])
     
     # to manage different specs and interpretations
-    #app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-vc-issuer', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
-    #app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-issuer', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
+    app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-vc-issuer', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
+    app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-issuer', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/.well-known/jwt-vc-issuer/issuer/<issuer_id>', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/.well-known/jwt-issuer/issuer/<issuer_id>', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
 
