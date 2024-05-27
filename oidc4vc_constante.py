@@ -18,11 +18,18 @@ oidc4vci_draft = {
 
 oidc4vp_draft = {
     "18": "draft 18",
-    "20": "draft 20"
+    "20": "draft 20",
+    "21": "draft 21"
 }
 
 siopv2_draft = {
     "12": "draft 12",
+}
+
+predefined_presentation_uri_list = {
+    'None' : 'None',
+    'netcetera_1': 'Netcetera 1',
+    'netcetera_2': 'Netcetera 2'
 }
 
 oidc4vc_profile_list = {
@@ -132,6 +139,7 @@ client_data_pattern_oidc4vc = {
     "credential_offer_uri": None,
     "client_metadata_uri": None,
     "presentation_definition_uri": None,
+    "predefined_presentation_definition": 'None',
     "filter_type_array": None,
     "deferred_flow": None,
     "vc": "DID",

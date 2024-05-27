@@ -6,7 +6,7 @@ import db_api
 from profile import profile
 import oidc4vc
 import pex
-from oidc4vc_constante import oidc4vc_verifier_credential_list, guest_oidc4vc_verifier_credential_list
+from oidc4vc_constante import oidc4vc_verifier_credential_list, guest_oidc4vc_verifier_credential_list, predefined_presentation_uri_list
 from oidc4vc_constante import oidc4vc_verifier_landing_page_style_list, oidc4vc_profile_list, guest_oidc4vc_verifier_landing_page_style_list
 
 logging.basicConfig(level=logging.INFO)
@@ -115,6 +115,14 @@ def oidc4vc_verifier_console(mode):
         else:
             credential_list = guest_oidc4vc_verifier_credential_list
             
+        presentation_definition_uri_select = str()
+        for key, value in predefined_presentation_uri_list.items():
+            if key == session['client_data'].get('predefined_presentation_definition', 'None'):
+                print('key = ', key)
+                presentation_definition_uri_select +=  "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                presentation_definition_uri_select +=  "<option value=" + key + ">" + value + "</option>"
+
         vc_select_1 = str()
         for key, value in credential_list.items():
             if key == session['client_data'].get('vc_1', 'DID'):
@@ -236,7 +244,7 @@ def oidc4vc_verifier_console(mode):
                             session['client_data'][reason],
                             id=session['client_data'][vc].lower() + '_' + i
                         )
-                    elif session['client_data'][vc] != "$.age_equal_or_over.18":
+                    elif session['client_data'][vc] == "$.age_equal_or_over.18":
                         prez.add_constraint(
                             "$.age_equal_or_over.18",
                             session['client_data'][vc],
@@ -244,6 +252,8 @@ def oidc4vc_verifier_console(mode):
                             session['client_data'][reason],
                             id=session['client_data'][vc].lower() + '_' + i
                         )
+                    else:
+                        break
             else:
                 if not prez:
                     prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
@@ -312,7 +322,11 @@ def oidc4vc_verifier_console(mode):
                 prez.add_format_sd_jwt()
             else:
                 pass
-            presentation_definition = prez.get()
+            print('presentation definition lu dans le fichier = ', session['client_data'].get("predefined_presentation_definition"))
+            if session['client_data'].get("predefined_presentation_definition") in ['None', None]:
+                presentation_definition = prez.get()
+            else:
+                presentation_definition = json.load(open(session['client_data'].get("predefined_presentation_definition") + '.json', 'r'))
         else:
             presentation_definition = ""
 
@@ -373,6 +387,7 @@ def oidc4vc_verifier_console(mode):
             vc_select_10=vc_select_10,
             vc_select_11=vc_select_11,
             vc_select_12=vc_select_12,
+            presentation_definition_uri_select=presentation_definition_uri_select,
             login_name=session['login_name']
         )
     if request.method == 'POST':
@@ -440,6 +455,9 @@ def oidc4vc_verifier_console(mode):
             session['client_data']['vc_10'] = request.form['vc_10']
             session['client_data']['vc_11'] = request.form['vc_11']
             session['client_data']['vc_12'] = request.form['vc_12']
+
+            session['client_data']['predefined_presentation_definition'] = request.form['predefined_presentation_definition']
+            print('predefined presentation saveed in file = ', session['client_data'].get('predefined_presentation_uri', 'None'))
 
             session['client_data']['user'] = request.form['user_name']
             session['client_data']['qrcode_message'] = request.form['qrcode_message']

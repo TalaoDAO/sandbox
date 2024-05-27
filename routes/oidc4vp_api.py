@@ -682,7 +682,13 @@ def oidc4vc_login_qrcode(red, mode):
 
     # OIDC4VP
     if 'vp_token' in response_type:
-        presentation_definition = prez.get()
+        if verifier_data.get('predefined_presentation_definition') in [None, 'None']:
+            print('no predefined presentation definition')
+            presentation_definition = prez.get()
+            print(presentation_definition)
+        else:
+            presentation_definition = json.load( open(verifier_data.get('predefined_presentation_definition') +'.json', 'r'))
+        
         authorization_request['aud'] = 'https://self-issued.me/v2'
             
         # client_metadata uri
