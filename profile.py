@@ -374,6 +374,116 @@ profile = {
             "urn:ietf:params:oauth:grant-type:pre-authorized_code",
         ],
     },
+      "DEFAULT-DRAFT13": {
+        "oidc4vciDraft": "13",
+        "siopv2Draft": "12",
+        "oidc4vpDraft": "20",
+        "vc_format": "ldp_vc",
+        "verifier_vp_type": "ldp_vp",
+        "oidc4vci_prefix": "openid-credential-offer://",
+        "authorization_server_support": False,
+        "credentials_as_json_object_array": False,
+        "schema_for_type": False,
+        "credential_manifest_support": False,
+        "siopv2_prefix": "openid-vc://",
+        "oidc4vp_prefix": "openid-vc://",
+        "credentials_types_supported": [
+            "Over18",
+            "EmailPass",
+            "VerifiableId"
+        ],
+        "trust_framework": {"name": "default", "type": "Accreditation"},
+        "credential_configurations_supported": {
+            "EmailPass": {
+                "format": "ldp_vc",
+                "scope": "EmailPass_scope",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "EmailPass", "VerifiableId"]
+                },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "display": [{"name": "Proof of Email", "locale": "en-US"}],
+                "credentialSubject": {
+                        "email": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Email", "locale": "en-US"},
+                                {"name": "Email", "locale": "fr-FR"}         
+                            ],
+                        }
+                },
+            },
+            "VerifiableId" : {
+                "format": "ldp_vc",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "VerifiableId"]
+                },
+                "cryptographic_binding_methods_supported": ["DID"],
+                   "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "display": [
+                    {
+                        "name": "Verifiable Id",
+                        "description": "This credential is a proof of your identity. You can use it when you need to prove your identity with services that have already adopted a decentralized identity system.",
+                        "locale": "en-GB",
+                    }
+                ],
+                "credentialSubject": {
+                    "firstName": {
+                        "mandatory": True,
+                        "display": [{"name": "First Name", "locale": "en-US"}],
+                    },
+                    "familyName": {
+                        "mandatory": True,
+                        "display": [{"name": "Family Name", "locale": "en-US"}],
+                    },
+                    "gender": {
+                        "mandatory": True,
+                        "display": [{"name": "Gender", "locale": "en-US"}],
+                    },
+                    "dateOfBirth": {
+                        "mandatory": True,
+                        "display": [{"name": "Birth Date", "locale": "en-US"}],
+                    },
+                    "dateIssued": {
+                        "mandatory": True,
+                        "display": [{"name": "Issue Date", "locale": "en-US"}],
+                    },
+                },
+            },
+             "Over18": {
+                "format": "ldp_vc",
+                "scope": "Over18_scope",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "Over18"]
+                },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "display": [
+                    {"name": "Over 18yo proof", "locale": "en-US"}, 
+                    {"name": "Preuve de majorité", "locale": "fr-US"}
+                ],
+            },
+        },
+        "grant_types_supported": [
+            "authorization_code",
+            "urn:ietf:params:oauth:grant-type:pre-authorized_code",
+        ],
+    },
     "DEFAULT-JWT": {
         "oidc4vciDraft": "11",
         "siopv2Draft": "12",
@@ -542,7 +652,7 @@ profile = {
                         "description": "This card is a proof of ownership of your email. You can use it when you need to prove your email ownership with services that have already adopted the verifiable and decentralized identity system.",
                         "locale": "en-GB",
                     }
-                ],
+                ]
             },
             {
                 "id": "PhoneProof",
@@ -583,7 +693,7 @@ profile = {
             "Over18",
             "DBCGuest"
         ],
-        "credentials_supported": {
+        "credential_configurations_supported": {
             "DBCGuest": {
                 "display": [
                     {
@@ -821,7 +931,7 @@ profile = {
         "siopv2_prefix": "openid-vc://",
         "oidc4vp_prefix": "openid-vc://",
         "credentials_types_supported": ["IdentityCredential", "EudiPid"],
-        "credentials_supported": {
+        "credential_configurations_supported": {
              "EudiPid": {
                 "format": "vc+sd-jwt",
                 "scope": "EudiPid_scope",
@@ -1064,7 +1174,7 @@ profile = {
         "siopv2_prefix": "openid-vc://",
         "oidc4vp_prefix": "openid-vc://",
         "credentials_types_supported": ["IdentityCredential"],
-        "credentials_supported": {
+        "credential_configurations_supported": {
             "IdentityCredential": {
                 "format": "vc+sd-jwt",
                 "scope": "identityCredential_scope",
@@ -1173,7 +1283,7 @@ profile = {
         "siopv2_prefix": "haip://",
         "oidc4vp_prefix": "haip://",
         "credentials_types_supported": ["IdentityCredential", "EudiPid"],
-        "credentials_supported": {
+        "credential_configurations_supported": {
             "EudiPid": {
                 "format": "vc+sd-jwt",
                 "scope": "EudiPid_scope",
@@ -1433,7 +1543,7 @@ profile = {
         "siopv2_prefix": "haip://",
         "oidc4vp_prefix": "haip://",
         "credentials_types_supported": ["Pid", "EudiPid"],
-        "credentials_supported": {
+        "credential_configurations_supported": {
             "EudiPid": {
                 "format": "vc+sd-jwt",
                 "scope": "EudiPid_scope",

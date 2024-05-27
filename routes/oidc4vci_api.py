@@ -154,11 +154,14 @@ def credential_issuer_openid_configuration(issuer_id, mode):
     }
 
     # Credentials supported section
-    cs = issuer_profile.get('credentials_supported')
     if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
-        credential_issuer_openid_configuration.update({'credential_configurations_supported': cs})
+        credential_issuer_openid_configuration.update(
+            {'credential_configurations_supported':  issuer_profile.get('credential_configurations_supported')}
+        )
     else:
-        credential_issuer_openid_configuration.update({'credentials_supported': cs})
+        credential_issuer_openid_configuration.update(
+            {'credentials_supported': issuer_profile.get('credentials_supported')}
+        )
 
     # setup credential manifest as optional
     if issuer_profile.get('credential_manifest_support'):
@@ -867,19 +870,19 @@ async def issuer_credential(issuer_id, red, mode):
     credential_identifier = None
     credential_type = None
     if int(issuer_profile['oidc4vciDraft']) >= 13:
-        credentials_supported = list(issuer_profile['credentials_supported'].keys())
+        credentials_supported = list(issuer_profile['credential_configurations_supported'].keys())
         if vc_format == 'vc+sd-jwt' and result.get('vct'):  # draft 13 with vc+sd-jwt'
             vct = result.get('vct')
             for vc in credentials_supported:
-                if issuer_profile['credentials_supported'][vc]['vct'] == vct:
+                if issuer_profile['credential_configurations_supported'][vc]['vct'] == vct:
                     credential_type = vc
                     break
         else:
             vc_type = result['credential_definition'].get('type')
             vc_type.sort()
             for vc in credentials_supported:
-                issuer_profile['credentials_supported'][vc]['credential_definition']['type'].sort()
-                if issuer_profile['credentials_supported'][vc]['credential_definition']['type'] == vc_type:
+                issuer_profile['credential_configurations_supported'][vc]['credential_definition']['type'].sort()
+                if issuer_profile['credential_configurations_supported'][vc]['credential_definition']['type'] == vc_type:
                     credential_type = vc
                     break
         if not credential_type:

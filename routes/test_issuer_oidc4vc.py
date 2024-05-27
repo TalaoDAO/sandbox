@@ -306,7 +306,7 @@ def test_5(mode):
         "pre-authorized_code": True,
         "credential_type": ['VerifiableId'],
         "callback": mode.server + 'sandbox/issuer/callback',
-        "user_pin_required": True,
+        "user_pin_required": False,
         "user_pin": "4444",
         }
 

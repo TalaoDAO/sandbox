@@ -27,6 +27,7 @@ siopv2_draft = {
 
 oidc4vc_profile_list = {
     'DEFAULT': 'DEFAULT ldp_vc OIDC4VCI draft 11',
+    'DEFAULT-DRAFT13': 'DEFAULT ldp_vc OIDC4VCI draft 13',
     'DEFAULT-JWT': 'DEFAULT jwt_vc_json OIDC4VCI draft 11',
     'EBSI-V3': 'EBSI OIDC4VCI Draft 11',
     'GAIN-POC': 'GAIN POC openid, SD-JWT implementation in progress',
