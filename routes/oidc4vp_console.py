@@ -498,8 +498,10 @@ async def oidc4vc_verifier_advanced():
 
         did = session['client_data'].get('did', "")
         did_document = oidc4vc.did_resolve_lp(did)
-        jwk = json.dumps(json.loads(session['client_data']['jwk']), indent=4)
-    
+        try:
+            jwk = json.dumps(json.loads(session['client_data']['jwk']), indent=4)
+        except:
+            jwk = "Key error"
         return render_template(
             'verifier_oidc/verifier_advanced.html',
             client_id=session['client_data']['client_id'],
