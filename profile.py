@@ -1557,6 +1557,7 @@ profile = {
                     "age_equal_or_over", 
                     "age_birth_year",
                     "issuing_country",
+                    "issuing_authority",
                     "dateIssued"
                 ],
                 "claims": {
@@ -1645,6 +1646,13 @@ profile = {
                                 {"name": "Address", "locale": "en-US"},
                                 {"name": "Adresse", "locale": "fr-FR"}
                             ],
+                            "formatted": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Formatted", "locale": "en-US"},
+                                    {"name": "Complete", "locale": "fr-FR"}],
+                                },
                             "street_address": {
                                 "mandatory": True,
                                 "value_type": "string",
