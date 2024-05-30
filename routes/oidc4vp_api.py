@@ -857,6 +857,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
         qrcode_status = "QR code expired"
         logging.info("QR code expired")
         access = False
+        id_token = vp_token = False
 
     # get id_token, vp_token and presentation_submission
     if access:
