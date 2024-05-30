@@ -1646,13 +1646,6 @@ profile = {
                                 {"name": "Address", "locale": "en-US"},
                                 {"name": "Adresse", "locale": "fr-FR"}
                             ],
-                            "formatted": {
-                                "mandatory": True,
-                                "value_type": "string",
-                                "display": [
-                                    {"name": "Formatted", "locale": "en-US"},
-                                    {"name": "Complete", "locale": "fr-FR"}],
-                                },
                             "street_address": {
                                 "mandatory": True,
                                 "value_type": "string",
@@ -1748,6 +1741,8 @@ profile = {
                     "place_of_birth",
                     "nationalities",
                     "age_equal_or_over", 
+                    "issuing_country",
+                    "issuing_authority"
                 ],
                 "claims": {
                         "given_name": {
