@@ -37,10 +37,9 @@ oidc4vc_profile_list = {
     'DEFAULT-DRAFT13': 'DEFAULT ldp_vc OIDC4VCI draft 13',
     'DEFAULT-JWT': 'DEFAULT jwt_vc_json OIDC4VCI draft 11',
     'EBSI-V3': 'EBSI OIDC4VCI Draft 11',
-    'GAIN-POC': 'GAIN POC openid, SD-JWT implementation in progress',
     'DEFAULT-VC-JWT-OIDC4VCI13': 'jwt_vc_json with OIDC4VCI draft 13 (DIIP V2.1)',
     'CUSTOM': 'CUSTOM profile',
-    'BASELINE': 'Baseline Profile',
+    'BASELINE': 'OWF Baseline Profile',
     'HAIP': 'HAIP-EUDI Wallet',
     'POTENTIAL': 'LSP POTENTIAL',
     'VERIFIER-ALL': 'VERIFIER ALL'
