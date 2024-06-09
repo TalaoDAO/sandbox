@@ -423,19 +423,19 @@ def test_8(mode):
     with open('./verifiable_credentials/Pid.json', 'r') as f:
         credential_1 = json.loads(f.read())
         credential_1["nationalities"] = ["DE", "IT"]
-    with open('./verifiable_credentials/EudiPid.json', 'r') as f:
-        credential_2 = json.loads(f.read())
-        credential_2["nationalities"] = ["DE", "FR"]
+    #with open('./verifiable_credentials/EudiPid.json', 'r') as f:
+    #    credential_2 = json.loads(f.read())
+    #    credential_2["nationalities"] = ["DE", "FR"]
         
     data = { 
         "issuer_id": issuer_id,
         "vc": {
             "Pid": credential_1, 
-            "EudiPid": credential_2
+            #"EudiPid": credential_2
         },
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
-        "credential_type": ['Pid', 'EudiPid'],
+        "credential_type": ['Pid'],
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)

@@ -554,7 +554,7 @@ def issuer_authorize(issuer_id, red, mode):
         
         # Standard Authorization code flow
         else:
-            if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
+            if issuer_data['profile'] in ["NONE"]:  # ['HAIP', 'POTENTIAL']:  TODO For LSP interop event track 2 light profile
                 return jsonify({
                     'error': 'access_denied',
                     'error_description': 'HAIP profile request PAR'
