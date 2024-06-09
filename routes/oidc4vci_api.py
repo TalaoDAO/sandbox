@@ -188,8 +188,8 @@ def credential_issuer_openid_configuration(issuer_id, mode):
             'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
             'pushed_authorization_request_endpoint' : mode.server +'issuer/' + issuer_id + '/authorize/par' 
         })
-        if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
-            as_config["require_pushed_authorization_requests"] = True
+        #if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
+        #    as_config["require_pushed_authorization_requests"] = True
         credential_issuer_openid_configuration.update(as_config)
 
     return credential_issuer_openid_configuration
@@ -235,8 +235,8 @@ def as_openid_configuration(issuer_id, mode):
         'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
         'pushed_authorization_request_endpoint': mode.server +'issuer/' + issuer_id + '/authorize/par' 
     }
-    if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
-        config['require_pushed_authorization_requests'] = True
+    #if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
+    #    config['require_pushed_authorization_requests'] = True
     config.update(authorization_server_config)
     return config
 
@@ -456,13 +456,13 @@ def issuer_authorize_par(issuer_id, red, mode):
     except Exception:
         logging.warning('issuer_id not found for %s', issuer_id)
         return
-    if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
-        if not request.form.get('client_assertion_type') or not request.form.get('client_assertion'):
-            return Response(**manage_error('invalid_request', 'HAIP and POTENTIAL request client assertion authentication', red, mode, request=request))
-        else:
-            pass #TODO testing
+    #if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
+    #    if not request.form.get('client_assertion_type') or not request.form.get('client_assertion'):
+    #        return Response(**manage_error('invalid_request', 'HAIP and POTENTIAL request client assertion authentication', red, mode, request=request))
+    #    else:
+    #        pass #TODO testing
     
-    # Check content of client assertion and proof of possession (PoP)
+    # Check content of client assertion and proof of possession (DPoP)
     if request.form.get('client_assertion'):
         client_assertion = request.form.get('client_assertion').split("~")[0]
         logging.info('client _assertion = %s', client_assertion)
