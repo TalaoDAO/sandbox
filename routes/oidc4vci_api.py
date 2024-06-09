@@ -186,7 +186,7 @@ def credential_issuer_openid_configuration(issuer_id, mode):
             'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/authorize',
             'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token',
             'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
-            #'pushed_authorization_request_endpoint' : mode.server +'issuer/' + issuer_id + '/authorize/par' 
+            'pushed_authorization_request_endpoint' : mode.server +'issuer/' + issuer_id + '/authorize/par' 
         })
         #if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
         #    as_config["require_pushed_authorization_requests"] = True
@@ -233,7 +233,7 @@ def as_openid_configuration(issuer_id, mode):
         'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/authorize',
         'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token',
         'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
-        #'pushed_authorization_request_endpoint': mode.server +'issuer/' + issuer_id + '/authorize/par' 
+        'pushed_authorization_request_endpoint': mode.server +'issuer/' + issuer_id + '/authorize/par' 
     }
     #if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
     #    config['require_pushed_authorization_requests'] = True
