@@ -191,7 +191,7 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         #if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
         #    as_config["require_pushed_authorization_requests"] = True
         if issuer_id == "grlvzckofy" :
-            as_config["require_pushed_authorization_requests"] = True
+            as_config["require_pushed_authorization_requests"] = True # test 1O as PAR is mandatory
         credential_issuer_openid_configuration.update(as_config)
 
     return credential_issuer_openid_configuration
@@ -240,7 +240,7 @@ def as_openid_configuration(issuer_id, mode):
     #if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
     #    config['require_pushed_authorization_requests'] = True
     if issuer_id == "grlvzckofy" :
-        config["require_pushed_authorization_requests"] = True
+        config["require_pushed_authorization_requests"] = True # test 1O as PAR is mandatory
     config.update(authorization_server_config)
     return config
 
@@ -437,6 +437,8 @@ def authorization_error(error, error_description, stream_id, red, state):
 
 # pushed authorization endpoint endpoint
 def issuer_authorize_par(issuer_id, red, mode):
+    if issuer_id == 'pcbrwbvrsi':  # No PAR for EUDI Ligh Test 11
+        return Response(**manage_error('invalid_request', 'PAR is incorrect for this test ', None, red, None))
     logging.info('request body = %s', json.dumps(request.form, indent=4))
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
