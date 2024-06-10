@@ -190,6 +190,8 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         })
         #if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
         #    as_config["require_pushed_authorization_requests"] = True
+        if issuer_id == "grlvzckofy" :
+            as_config["require_pushed_authorization_requests"] = True
         credential_issuer_openid_configuration.update(as_config)
 
     return credential_issuer_openid_configuration
@@ -237,6 +239,8 @@ def as_openid_configuration(issuer_id, mode):
     }
     #if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
     #    config['require_pushed_authorization_requests'] = True
+    if issuer_id == "grlvzckofy" :
+        config["require_pushed_authorization_requests"] = True
     config.update(authorization_server_config)
     return config
 
