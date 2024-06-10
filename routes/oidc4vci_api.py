@@ -438,6 +438,7 @@ def authorization_error(error, error_description, stream_id, red, state):
 # pushed authorization endpoint endpoint
 def issuer_authorize_par(issuer_id, red, mode):
     if issuer_id == 'pcbrwbvrsi':  # No PAR for EUDI Ligh Test 11
+        logging.warning("PAR is not accepted for theis test")
         return Response(**manage_error('invalid_request', 'PAR is incorrect for this test ', None, red, None))
     logging.info('request body = %s', json.dumps(request.form, indent=4))
     try:
