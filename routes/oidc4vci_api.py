@@ -465,6 +465,8 @@ def issuer_authorize_par(issuer_id, red, mode):
         logging.info('proof of possession = %s', DPoP)
         if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(DPoP).get('iss'):
             return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
+    else:
+        logging.warning("client assertion is missing")
     try:
         request_uri_data = {
             'redirect_uri': request.form['redirect_uri'],
