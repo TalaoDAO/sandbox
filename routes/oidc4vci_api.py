@@ -343,10 +343,10 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                     }
                 })
         else:
-            if  issuer_id in ['pcbrwbvrsi', 'kwcdgsspng' ] : # test 11 kwcdgsspng
-                pass
-            else:
-                offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
+            #if  issuer_id in ['pcbrwbvrsi', 'kwcdgsspng' ] : # test 11 kwcdgsspng
+            #    pass
+            #else:
+            offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
     return offer
 
 
@@ -458,11 +458,13 @@ def issuer_authorize_par(issuer_id, red, mode):
         logging.info('client _assertion = %s', client_assertion)
         if request.form.get('client_id') != oidc4vc.get_payload_from_token(client_assertion).get('sub'):
             return Response(**manage_error('invalid_request', 'client_id does not match client assertion sub', red, mode, request=request))
-        PoP = request.form.get('client_assertion').split("~")[1]
-        logging.info('proof of possession = %s', PoP)
-        if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(PoP).get('iss'):
+        try:
+            DPoP = request.form.get('client_assertion').split("~")[1]
+        except:
+            return Response(**manage_error('invalid_request', 'DPoP is missing', red, mode, request=request))
+        logging.info('proof of possession = %s', DPoP)
+        if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(DPoP).get('iss'):
             return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
-
     try:
         request_uri_data = {
             'redirect_uri': request.form['redirect_uri'],
