@@ -1429,7 +1429,7 @@ profile = {
         "vc_format": "vc+sd-jwt",
         "verifier_vp_type": "vc+sd-jwt",
         "oidc4vci_prefix": "haip://",
-        "authorization_server_support": False,
+        "authorization_server_support": True,
         "credentials_as_json_object_array": False,
         "siopv2_prefix": "haip://",
         "oidc4vp_prefix": "haip://",

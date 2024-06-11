@@ -153,6 +153,27 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         'deferred_credential_endpoint': mode.server + 'issuer/' + issuer_id + '/deferred',
     }
 
+    # setup authorization server if needed
+    if issuer_profile.get('authorization_server_support'):
+        if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
+            credential_issuer_openid_configuration['authorization_servers'] = [mode.server + 'issuer/' + issuer_id]
+        else:
+            credential_issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id
+
+    else:
+        as_config = json.load(open('authorization_server_config.json'))
+        as_config.update({
+            'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/authorize',
+            'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token',
+            'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
+            'pushed_authorization_request_endpoint' : mode.server +'issuer/' + issuer_id + '/authorize/par' 
+        })
+        #if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
+        #    as_config["require_pushed_authorization_requests"] = True
+        if issuer_id == "grlvzckofy" :
+            as_config["require_pushed_authorization_requests"] = True # test 1O as PAR is mandatory
+        credential_issuer_openid_configuration.update(as_config)
+
     # Credentials supported section
     if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
         credential_issuer_openid_configuration.update(
@@ -177,22 +198,7 @@ def credential_issuer_openid_configuration(issuer_id, mode):
                 logging.warning('credential manifest not found for %s', _vc)
         credential_issuer_openid_configuration['credential_manifests'] = cm
 
-    # setup authorization server if needed
-    if issuer_profile.get('authorization_server_support'):
-        credential_issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id
-    else:
-        as_config = json.load(open('authorization_server_config.json'))
-        as_config.update({
-            'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/authorize',
-            'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token',
-            'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
-            'pushed_authorization_request_endpoint' : mode.server +'issuer/' + issuer_id + '/authorize/par' 
-        })
-        #if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
-        #    as_config["require_pushed_authorization_requests"] = True
-        if issuer_id == "grlvzckofy" :
-            as_config["require_pushed_authorization_requests"] = True # test 1O as PAR is mandatory
-        credential_issuer_openid_configuration.update(as_config)
+   
 
     return credential_issuer_openid_configuration
 
@@ -332,6 +338,8 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                     'pre-authorized_code': pre_authorized_code
                 }
             }
+            if profile_data['authorization_server_support'] and int(profile_data["oidc4vciDraft"]) >= 13:
+                offer['grants']['urn:ietf:params:oauth:grant-type:pre-authorized_code'].update({"authorization_server" : mode.server + 'issuer/' + issuer_id})
             if user_pin_required:
                 offer['grants'][
                     'urn:ietf:params:oauth:grant-type:pre-authorized_code'
@@ -347,6 +355,8 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
             #    pass
             #else:
             offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
+            if profile_data['authorization_server_support'] and int(profile_data["oidc4vciDraft"]) >= 13:
+                offer['grants']['authorization_code'].update({"authorization_server" : mode.server + 'issuer/' + issuer_id})
     return offer
 
 
