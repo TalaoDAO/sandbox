@@ -156,7 +156,7 @@ def credential_issuer_openid_configuration(issuer_id, mode):
     # setup authorization server if needed
     if issuer_profile.get('authorization_server_support'):
         if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
-            credential_issuer_openid_configuration['authorization_servers'] = [mode.server + 'issuer/' + issuer_id]
+            credential_issuer_openid_configuration['authorization_servers'] = [mode.server + 'issuer/' + issuer_id, "https://fake.com/as"]
         else:
             credential_issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id
 
@@ -197,8 +197,6 @@ def credential_issuer_openid_configuration(issuer_id, mode):
             except Exception:
                 logging.warning('credential manifest not found for %s', _vc)
         credential_issuer_openid_configuration['credential_manifests'] = cm
-
-   
 
     return credential_issuer_openid_configuration
 
