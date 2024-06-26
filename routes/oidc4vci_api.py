@@ -827,7 +827,7 @@ async def issuer_credential(issuer_id, red, mode):
             proof_payload = oidc4vc.get_payload_from_token(proof)
             logging.info('Proof header = %s', json.dumps(proof_header, indent=4))
             logging.info('Proof payload = %s', json.dumps(proof_payload, indent=4))
-            if not proof_payload.get('c_nonce'):
+            if not proof_payload.get('nonce'):
                 return Response(**manage_error('invalid_proof', 'c_nonce is missing', red, mode, request=request, stream_id=stream_id, status=403))
             try:
                 oidc4vc.verif_token(proof, access_token_data['c_nonce'])
