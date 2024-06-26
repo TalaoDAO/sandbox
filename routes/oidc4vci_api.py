@@ -976,7 +976,7 @@ async def issuer_credential(issuer_id, red, mode):
         credential,
         iss,  # wallet_did
         issuer_id,
-        access_token_data["c_nonce"],
+        access_token_data.get("c_nonce", "nonce"),
         vc_format,
         mode.server + 'issuer/' + issuer_id,  # issuer
         mode,
