@@ -732,10 +732,10 @@ def issuer_token(issuer_id, red, mode):
     vc = data.get('vc')
     endpoint_response = {
         'access_token': access_token,
-        #'c_nonce': str(uuid.uuid1()),
+        'c_nonce': str(uuid.uuid1()),
         'token_type': 'Bearer',
         'expires_in': ACCESS_TOKEN_LIFE,
-        #'c_nonce_expires_in': 1704466725,
+        'c_nonce_expires_in': 1704466725,
         'refresh_token': refresh_token
     }
     # authorization_details in case of multiple VC of the same type
@@ -760,7 +760,7 @@ def issuer_token(issuer_id, red, mode):
 
     access_token_data = {
         'expires_at': datetime.timestamp(datetime.now()) + ACCESS_TOKEN_LIFE,
-        #'c_nonce': endpoint_response.get('c_nonce'),
+        'c_nonce': endpoint_response.get('c_nonce'),
         'credential_type': data.get('credential_type'),
         'vc': data.get('vc'),
         'authorization_details': authorization_details,
