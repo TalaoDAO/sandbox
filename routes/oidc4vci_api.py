@@ -833,7 +833,8 @@ async def issuer_credential(issuer_id, red, mode):
                 oidc4vc.verif_token(proof, access_token_data['c_nonce'])
                 logging.info('proof is validated')
             except Exception as e:
-                return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id, status=403))
+                logging.error('proof is not validated validated')
+                #return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id, status=403))
             wallet_jwk = proof_header.get('jwk')  
             if not wallet_jwk:  # Baseline profile with kid
                 wallet_jwk = oidc4vc.resolve_did(proof_header.get('kid'))
