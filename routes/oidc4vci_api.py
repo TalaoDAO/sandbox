@@ -827,12 +827,12 @@ async def issuer_credential(issuer_id, red, mode):
             proof_payload = oidc4vc.get_payload_from_token(proof)
             logging.info('Proof header = %s', json.dumps(proof_header, indent=4))
             logging.info('Proof payload = %s', json.dumps(proof_payload, indent=4))
-            try:
-                oidc4vc.verif_token(proof, access_token_data['c_nonce'])
-                logging.info('proof is validated')
-            except Exception as e:
-                return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id, status=403))
-            wallet_jwk = proof_header.get('jwk')  # GAIN POC
+            #try:
+            #    oidc4vc.verif_token(proof, access_token_data['c_nonce'])
+            #    logging.info('proof is validated')
+            #except Exception as e:
+            #    return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id, status=403))
+            wallet_jwk = proof_header.get('jwk')  
             if not wallet_jwk:  # Baseline profile with kid
                 wallet_jwk = oidc4vc.resolve_did(proof_header.get('kid'))
             iss = proof_payload.get('iss')
@@ -848,19 +848,18 @@ async def issuer_credential(issuer_id, red, mode):
             logging.info('ldp_vp proof check  = %s', proof_check)
             if iss != access_token_data['client_id']:
                 logging.warning('iss %s of proof of key is different from client_id %s', iss,access_token_data['client_id'] )
-                #return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id in token request', red, mode, request=request, stream_id=stream_id))
+                #return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id in token request', red, mode, request=, stream_id=stream_id))
         else:
-            return Response(**manage_error('invalid_proof', 'The credential proof type is not supported', red, mode, request=request, stream_id=stream_id))
+            return Response(**manage_error('invalid_proof', 'The credential withoout proof type is not supported', red, mode, request=request, stream_id=stream_id))
     else:
-        return Response(**manage_error('invalid_proof', 'The credential proof type is not supported', red, mode, request=request, stream_id=stream_id, status=403))
-        """
+        #return Response(**manage_error('invalid_proof', 'The credential without proof is not supported', red, mode, request=request, stream_id=stream_id, status=403))
         logging.warning('No proof available -> Bearer credential, iss = client_id')
         wallet_jwk = None
         if vc_format == 'ldp_vc':
             iss = None  # wallet_did
         else:
             iss = access_token_data['client_id']  # wallet_did
-        """
+        
     logging.info('iss / wallet_did = %s', iss)
 
     # Get credential type requested
