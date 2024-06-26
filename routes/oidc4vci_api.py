@@ -112,9 +112,6 @@ def manage_error(error, error_description, red, mode, request=None, stream_id=No
     Return error code to wallet and front channel
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-credential-error-response
     """
-    # console
-    logging.warning('manage error = %s', error_description)
-
     # front channel
     if stream_id:
         front_publish(stream_id, red, error=error, error_description=error_description)
@@ -124,8 +121,14 @@ def manage_error(error, error_description, red, mode, request=None, stream_id=No
         'error': error,
         'error_description': error_description,
     }
+    if error == 'invalid_proof':
+        payload['c_nonce'] = str(uuid.uuid1())
+        payload['c_nonce_expires_in'] = 86400
+    
     if request:
         payload['error_uri'] = error_uri_build(request, error, error_description, mode)
+    
+    logging.info('endpoint error response = %s', json.dumps(payload, indent=4))
 
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return {'response': json.dumps(payload), 'status': status, 'headers': headers}
@@ -241,10 +244,8 @@ def as_openid_configuration(issuer_id, mode):
         'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
         'pushed_authorization_request_endpoint': mode.server +'issuer/' + issuer_id + '/authorize/par' 
     }
-    #if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
-    #    config['require_pushed_authorization_requests'] = True
-    if issuer_id == "grlvzckofy" :
-        config["require_pushed_authorization_requests"] = True # test 1O as PAR is mandatory
+    if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
+        config['require_pushed_authorization_requests'] = True
     config.update(authorization_server_config)
     return config
 
@@ -349,9 +350,6 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                     }
                 })
         else:
-            #if  issuer_id in ['pcbrwbvrsi', 'kwcdgsspng' ] : # test 11 kwcdgsspng
-            #    pass
-            #else:
             offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
             if profile_data['authorization_server_support'] and int(profile_data["oidc4vciDraft"]) >= 13:
                 offer['grants']['authorization_code'].update({"authorization_server" : mode.server + 'issuer/' + issuer_id})
@@ -734,18 +732,12 @@ def issuer_token(issuer_id, red, mode):
     vc = data.get('vc')
     endpoint_response = {
         'access_token': access_token,
-        'c_nonce': str(uuid.uuid1()),
+        #'c_nonce': str(uuid.uuid1()),
         'token_type': 'Bearer',
         'expires_in': ACCESS_TOKEN_LIFE,
-        'c_nonce_expires_in': 1704466725,
+        #'c_nonce_expires_in': 1704466725,
         'refresh_token': refresh_token
     }
-    if issuer_profile == 'GAIN-POC':
-        endpoint_response.update({
-            'scope': None,
-            'refresh_token': refresh_token
-        })
-    
     # authorization_details in case of multiple VC of the same type
     authorization_details = []
     if int(issuer_profile['oidc4vciDraft']) >= 13 and isinstance(vc, list):
@@ -768,7 +760,7 @@ def issuer_token(issuer_id, red, mode):
 
     access_token_data = {
         'expires_at': datetime.timestamp(datetime.now()) + ACCESS_TOKEN_LIFE,
-        'c_nonce': endpoint_response.get('c_nonce'),
+        #'c_nonce': endpoint_response.get('c_nonce'),
         'credential_type': data.get('credential_type'),
         'vc': data.get('vc'),
         'authorization_details': authorization_details,
@@ -839,7 +831,7 @@ async def issuer_credential(issuer_id, red, mode):
                 oidc4vc.verif_token(proof, access_token_data['c_nonce'])
                 logging.info('proof is validated')
             except Exception as e:
-                return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id))
+                return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id, status=403))
             wallet_jwk = proof_header.get('jwk')  # GAIN POC
             if not wallet_jwk:  # Baseline profile with kid
                 wallet_jwk = oidc4vc.resolve_did(proof_header.get('kid'))
@@ -860,12 +852,15 @@ async def issuer_credential(issuer_id, red, mode):
         else:
             return Response(**manage_error('invalid_proof', 'The credential proof type is not supported', red, mode, request=request, stream_id=stream_id))
     else:
+        return Response(**manage_error('invalid_proof', 'The credential proof type is not supported', red, mode, request=request, stream_id=stream_id, status=403))
+        """
         logging.warning('No proof available -> Bearer credential, iss = client_id')
         wallet_jwk = None
         if vc_format == 'ldp_vc':
             iss = None  # wallet_did
         else:
             iss = access_token_data['client_id']  # wallet_did
+        """
     logging.info('iss / wallet_did = %s', iss)
 
     # Get credential type requested
@@ -888,7 +883,7 @@ async def issuer_credential(issuer_id, red, mode):
                     credential_type = vc
                     break
         if not credential_type:
-            return Response(**manage_error('invalid_request', 'VC type not found', red, mode, request=request, stream_id=stream_id))
+            return Response(**manage_error('unsupported_credential_type', 'VC type not found', red, mode, request=request, stream_id=stream_id))
     # TODO
     elif int(issuer_profile['oidc4vciDraft']) == 12:
         if result.get('credential_identifier'):  # draft = 12
@@ -904,7 +899,7 @@ async def issuer_credential(issuer_id, red, mode):
                     credential_type = vc['id']
                     break
             if not credential_type:
-                return Response(**manage_error('invalid_request', 'VC type not found', red, mode, request=request, stream_id=stream_id))
+                return Response(**manage_error('unsupported_credential_type', 'VC type not found', red, mode, request=request, stream_id=stream_id))
     elif int(issuer_profile['oidc4vciDraft']) == 11:
         credentials_supported = issuer_profile['credentials_supported']
         if vc_format == 'vc+sd-jwt' and result.get('vct'):  # draft 11 with vc+sd-jwt'
@@ -922,14 +917,14 @@ async def issuer_credential(issuer_id, red, mode):
                     credential_type = vc['id']
                     break
         if not credential_type:
-            return Response(**manage_error('invalid_request', 'VC type not found', red, mode, request=request, stream_id=stream_id))
+            return Response(**manage_error('unsupported_credential_type', 'VC type not found', red, mode, request=request, stream_id=stream_id))
     elif int(issuer_profile['oidc4vciDraft']) < 11:
         for one_type in result['types']:
             if one_type not in ['VerifiableCredential', 'VerifiableAttestation']:
                 credential_type = one_type
                 break
         if not credential_type:
-            return Response(**manage_error('invalid_request', 'VC type not found', red, mode, request=request, stream_id=stream_id))
+            return Response(**manage_error('unsupported_credential_type', 'VC type not found', red, mode, request=request, stream_id=stream_id))
     else:
         return Response(**manage_error('invalid_request', 'Invalid request format', red, mode, request=request, stream_id=stream_id))
     logging.info('credential type = %s', credential_type)
