@@ -453,7 +453,7 @@ def issuer_authorize_par(issuer_id, red, mode):
         logging.warning('issuer_id not found for %s', issuer_id)
         return
     if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
-        if not request.form.get('client_assertion_type') and not request.headers.get('OAuth-Client-Attestation'):
+        if not request.form.get('client_assertion_type') or not request.headers.get('OAuth-Client-Attestation'):
             return Response(**manage_error('invalid_request', 'HAIP and POTENTIAL request client assertion authentication', red, mode, request=request))
     
     # Check content of client assertion and proof of possession (DPoP)
@@ -699,7 +699,7 @@ def issuer_token(issuer_id, red, mode):
         if not request.form.get('client_id')[:3] != 'did':
             return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
     elif issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
-        if not request.form.get('client_assertion_type') and not request.form.get('OAuth-Client-Attestation'):
+        if not request.form.get('client_assertion_type') or not request.form.get('OAuth-Client-Attestation'):
             return Response(**manage_error('invalid_request', 'HAIP request client assertion authentication', red, mode, request=request))
     else:
         pass
