@@ -452,9 +452,9 @@ def issuer_authorize_par(issuer_id, red, mode):
     except Exception:
         logging.warning('issuer_id not found for %s', issuer_id)
         return
-    if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
-        if not request.form.get('client_assertion_type') or not request.headers.get('OAuth-Client-Attestation'):
-            return Response(**manage_error('invalid_request', 'HAIP and POTENTIAL request client assertion authentication', red, mode, request=request))
+    #if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
+    #    if not request.form.get('client_assertion_type') or not request.headers.get('OAuth-Client-Attestation'):
+    #        return Response(**manage_error('invalid_request', 'HAIP and POTENTIAL request client assertion authentication', red, mode, request=request))
     
     # Check content of client assertion and proof of possession (DPoP)
     if request.form.get('client_assertion'):
@@ -680,7 +680,7 @@ def issuer_token(issuer_id, red, mode):
         return Response(**manage_error('invalid_request', 'Request format is incorrect, redirect_uri is missing', red, mode, request=request))
 
     # display client_authentication method
-    if request.form.get('assertion') or request.form.get('client_assertion') or request.headers.get('OAuth-Client-Attestation'):
+    if request.form.get('assertion') or request.form.get('client_assertion') or request.headers.get('Oauth-Client-Attestation'):
         client_authentication_method = 'client_secret_jwt'
     elif request.headers.get('Authorization'):
         client_authentication_method = 'client_secret_basic'
@@ -698,9 +698,9 @@ def issuer_token(issuer_id, red, mode):
             return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
         if not request.form.get('client_id')[:3] != 'did':
             return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
-    elif issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
-        if not request.form.get('client_assertion_type') or not request.form.get('Oauth-Client-Attestation'):
-            return Response(**manage_error('invalid_request', 'HAIP request client assertion authentication', red, mode, request=request))
+    #elif issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
+    #    if not request.form.get('client_assertion_type') or not request.form.get('Oauth-Client-Attestation'):
+    #        return Response(**manage_error('invalid_request', 'HAIP request client assertion authentication', red, mode, request=request))
     else:
         pass
     
