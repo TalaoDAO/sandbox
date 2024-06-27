@@ -470,13 +470,13 @@ def issuer_authorize_par(issuer_id, red, mode):
         if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(DPoP).get('iss'):
             return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
     
-    elif request.headers.get('OAuth-Client-Attestation'):
-        client_assertion = request.headers.get('OAuth-Client-Attestation')
+    elif request.headers.get('Oauth-Client-Attestation'):
+        client_assertion = request.headers.get('Oauth-Client-Attestation')
         logging.info('OAuth-Client-Attestation = %s', client_assertion)
         if request.form.get('client_id') != oidc4vc.get_payload_from_token(client_assertion).get('sub'):
             return Response(**manage_error('invalid_request', 'client_id does not match client assertion sub', red, mode, request=request))
         try:
-            DPoP = request.headers.get('OAuth-Client-Attestation-PoP')
+            DPoP = request.headers.get('Oauth-Client-Attestation-Pop')
         except:
             return Response(**manage_error('invalid_request', 'PoP is missing', red, mode, request=request))
         logging.info('OAuth-Client-Attestation-PoP = %s', DPoP)
@@ -699,7 +699,7 @@ def issuer_token(issuer_id, red, mode):
         if not request.form.get('client_id')[:3] != 'did':
             return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
     elif issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
-        if not request.form.get('client_assertion_type') or not request.form.get('OAuth-Client-Attestation'):
+        if not request.form.get('client_assertion_type') or not request.form.get('Oauth-Client-Attestation'):
             return Response(**manage_error('invalid_request', 'HAIP request client assertion authentication', red, mode, request=request))
     else:
         pass
@@ -708,11 +708,11 @@ def issuer_token(issuer_id, red, mode):
     if client_authentication_method == 'client_secret_jwt':
         try:
             # https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-03.html
-            client_assertion = request.headers.get('OAuth-Client-Attestation')
+            client_assertion = request.headers.get('Oauth-Client-Attestation')
             logging.info('OAuth-Client-Attestation = %s', client_assertion)
             if request.form.get('client_id') != oidc4vc.get_payload_from_token(client_assertion).get('sub'):
                 return Response(**manage_error('invalid_request', 'client_id does not match client assertion subject', red, mode, request=request))
-            PoP = request.headers.get('OAuth-Client-Attestation-PoP')
+            PoP = request.headers.get('Oauth-Client-Attestation-Pop')
             logging.info('OAuth-Client-Attestation-PoP = %s', PoP)
             if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(PoP).get('iss'):
                 return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
