@@ -159,8 +159,8 @@ def credential_issuer_openid_configuration(issuer_id, mode):
     # setup authorization server if needed
     if issuer_profile.get('authorization_server_support'):
         if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
-            credential_issuer_openid_configuration['authorization_servers'] = [mode.server + 'issuer/' + issuer_id, "https://fake.com/issuer/as"]
-            credential_issuer_openid_configuration['jwks_uri'] = mode.server + 'issuer/' + issuer_id + '/jwks',
+            credential_issuer_openid_configuration['authorization_servers'] = [mode.server + 'issuer/' + issuer_id, "https://fake.com/as"]
+            #credential_issuer_openid_configuration['jwks_uri'] = mode.server + 'issuer/' + issuer_id + '/jwks'
         else:
             credential_issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id
 
@@ -172,9 +172,11 @@ def credential_issuer_openid_configuration(issuer_id, mode):
             'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
             'pushed_authorization_request_endpoint' : mode.server +'issuer/' + issuer_id + '/authorize/par' 
         })
-        if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
-            as_config["require_pushed_authorization_requests"] = True
-
+        #if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
+        #    as_config["require_pushed_authorization_requests"] = True
+        if issuer_id == "grlvzckofy" :
+            as_config["require_pushed_authorization_requests"] = True # test 1O as PAR is mandatory
+        credential_issuer_openid_configuration.update(as_config)
 
     # Credentials supported section
     if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
