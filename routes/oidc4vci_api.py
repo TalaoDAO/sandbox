@@ -444,7 +444,7 @@ def authorization_error(error, error_description, stream_id, red, state):
 
 # pushed authorization endpoint endpoint
 def issuer_authorize_par(issuer_id, red, mode):
-    logging.info('request header = %s', json.dumps(request.headers, indent=4))
+    logging.info('request header = %s', request.headers)
     logging.info('request body = %s', json.dumps(request.form, indent=4))
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
