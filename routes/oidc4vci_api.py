@@ -160,7 +160,7 @@ def credential_issuer_openid_configuration(issuer_id, mode):
     if issuer_profile.get('authorization_server_support'):
         if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
             credential_issuer_openid_configuration['authorization_servers'] = [mode.server + 'issuer/' + issuer_id, "https://fake.com/as"]
-            #credential_issuer_openid_configuration['jwks_uri'] = mode.server + 'issuer/' + issuer_id + '/jwks'
+            credential_issuer_openid_configuration['jwks_uri'] = mode.server + 'issuer/' + issuer_id + '/jwks'
         else:
             credential_issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id
 
@@ -172,10 +172,10 @@ def credential_issuer_openid_configuration(issuer_id, mode):
             'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
             'pushed_authorization_request_endpoint' : mode.server +'issuer/' + issuer_id + '/authorize/par' 
         })
-        #if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
-        #    as_config["require_pushed_authorization_requests"] = True
-        if issuer_id == "grlvzckofy" :
-            as_config["require_pushed_authorization_requests"] = True # test 1O as PAR is mandatory
+        if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
+            as_config["require_pushed_authorization_requests"] = True
+        #if issuer_id == "grlvzckofy" :
+        #    as_config["require_pushed_authorization_requests"] = True # test 1O as PAR is mandatory
         credential_issuer_openid_configuration.update(as_config)
 
     # Credentials supported section
@@ -452,7 +452,7 @@ def issuer_authorize_par(issuer_id, red, mode):
         logging.warning('issuer_id not found for %s', issuer_id)
         return
     if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
-        if not request.form.get('client_assertion_type') or not request.headers.get('Oauth-Client-Attestation'):
+        if not request.form.get('client_assertion_type') and not request.headers.get('Oauth-Client-Attestation'):
             return Response(**manage_error('invalid_request', 'HAIP and POTENTIAL request client assertion authentication', red, mode, request=request))
     
     # Check content of client assertion and proof of possession (DPoP)
@@ -697,9 +697,10 @@ def issuer_token(issuer_id, red, mode):
             return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
         if not request.form.get('client_id')[:3] != 'did':
             return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
+    
     elif issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
-        if not request.form.get('client_assertion_type') or not request.form.get('Oauth-Client-Attestation'):
-            return Response(**manage_error('invalid_request', 'HAIP request client assertion authentication', red, mode, request=request))
+        if not request.form.get('client_assertion_type') and not request.headers.get('Oauth-Client-Attestation'):
+            return Response(**manage_error('invalid_request', 'HAIP requests client assertion authentication', red, mode, request=request))
     else:
         pass
     
