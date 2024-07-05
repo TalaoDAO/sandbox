@@ -1,6 +1,6 @@
 profile = {
     "EBSI-V3": {
-        "oidc4vciDraft": "11",
+        "oidc4vciDraft": "10",
         "siopv2Draft": "12",
         "oidc4vpDraft": "13",
         "vc_format": "jwt_vc",

@@ -29,7 +29,8 @@ siopv2_draft = {
 predefined_presentation_uri_list = {
     'None' : 'None',
     'netcetera_1': 'Netcetera 1',
-    'netcetera_2': 'Netcetera 2'
+    'netcetera_2': 'Netcetera 2',
+    'email_without_filter': 'Email without filter'
 }
 
 oidc4vc_profile_list = {
