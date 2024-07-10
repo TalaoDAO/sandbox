@@ -30,7 +30,8 @@ predefined_presentation_uri_list = {
     'None' : 'None',
     'netcetera_1': 'Netcetera 1',
     'netcetera_2': 'Netcetera 2',
-    'email_without_filter': 'Email without filter'
+    'email_without_filter_jwt': 'Email without filter jwt',
+    'email_without_filter_ldp': 'Email without filter ldp'
 }
 
 oidc4vc_profile_list = {

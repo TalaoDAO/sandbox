@@ -696,15 +696,16 @@ def oidc4vc_login_qrcode(red, mode):
             red.setex("client_metadata_" + verifier_id, QRCODE_LIFE, json.dumps(wallet_metadata))
             client_metadata_uri = mode.server + "verifier/wallet/client_metadata_uri/" + verifier_id
         
-        # client_id_scheme
-        if verifier_data['profile'] in ["POTENTIAL"]:
-            authorization_request['client_id_scheme'] = 'x509_san_dns'
-        elif verifier_data['profile'] in ["HAIP"]:
-            authorization_request['client_id_scheme'] = 'verifier_attestation'
-        elif verifier_data.get('client_id_as_DID'):
-            authorization_request['client_id_scheme'] = 'did'
-        else:
-            authorization_request['client_id_scheme'] = 'redirect_uri'
+        # client_id_scheme depending of OIDC4VP draft
+        if int(verifier_profile['oidc4vpDraft']) > 13:
+            if verifier_data['profile'] in ["POTENTIAL"]:
+                authorization_request['client_id_scheme'] = 'x509_san_dns'
+            elif verifier_data['profile'] in ["HAIP"]:
+                authorization_request['client_id_scheme'] = 'verifier_attestation'
+            elif verifier_data.get('client_id_as_DID'):
+                authorization_request['client_id_scheme'] = 'did'
+            else:
+                authorization_request['client_id_scheme'] = 'redirect_uri'
 
         # presentation_definition_uri
         if verifier_data.get('presentation_definition_uri'):

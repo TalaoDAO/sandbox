@@ -284,7 +284,10 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
         header['x5c'] = x509_attestation.build_x509_san_dns(hostname=issuer)
     else:
         header['kid'] = kid
-    if subject_key.get("use"): del subject_key['use']
+    try:
+        if subject_key.get("use"): del subject_key['use']
+    except:
+        print("error, subject_key = none")
     if unsecured.get('status'): payload['status'] = unsecured['status']
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
