@@ -20,6 +20,9 @@ def init_app(app, red, mode):
     app.add_url_rule('/sandbox/issuer/statuslist',  view_func=issuer_statuslist, methods=['GET', 'POST'], defaults={"mode":mode})
     app.add_url_rule('/sandbox/issuer/statuslist/<list_id>', view_func=issuer_status_list, methods=['GET'])
 
+    app.add_url_rule('/sandbox/issuer/statuslist/api', view_func=issuer_status_list_api, methods=['POST'],  defaults={"mode":mode})
+
+
     app.add_url_rule('/sandbox/issuer/bitstringstatuslist',  view_func=issuer_bitstringstatuslist, methods=['GET', 'POST'], defaults={"mode":mode})
     app.add_url_rule('/sandbox/issuer/bitstringstatuslist/<list_id>', view_func=issuer_bitstring_status_list, methods=['GET'])
 
@@ -205,6 +208,37 @@ def set_status_list_frame(frame, index, status, standard):
     new_byte = set_bit(actual_byte, index_bit, status)
     frame[index_byte] = new_byte
     return frame
+
+
+def issuer_status_list_api(mode):
+    """
+    status = false to suspend
+    curl -d "status=false" -d "index=1000" -H "Content-Type: application/x-www-form-urlencoded"  -H "Authorization: Bearer token" -X POST http://192.168.1.156:3000/sandbox/issuer/statuslist/api
+
+    """
+    try:
+        bearer = request.headers.get('Authorization').split()[1]
+        if bearer != "token":
+            payload = {
+                'error': 'Unauthorized',
+                'error_description': "incorrect token",
+            }
+            headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
+            return {'response': json.dumps(payload), 'status': 404, 'headers': headers}
+        index = int(request.form.get('index'))
+        status = request.form.get('status')
+    except Exception:
+        payload = {
+                'error': 'invalid_request',
+                'error_description': "invalid",
+            }
+        headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
+        return {'response': json.dumps(payload), 'status': status, 'headers': headers}
+
+    print ("index = ", index, type(index), " status =", status, type(status))
+    update_status_list_token_file("1", index, status, mode)
+    return "ok", 200
+
 
 
 def update_status_list_token_file(list_id, index, status, mode):
