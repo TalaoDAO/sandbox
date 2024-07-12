@@ -212,8 +212,9 @@ def set_status_list_frame(frame, index, status, standard):
 
 def issuer_status_list_api(mode):
     """
-    status = false to suspend
+     status = True (bool) -> revoke
     curl -d "status=false" -d "index=1000" -H "Content-Type: application/x-www-form-urlencoded"  -H "Authorization: Bearer token" -X POST http://192.168.1.156:3000/sandbox/issuer/statuslist/api
+    curl -d "status=suspended" -d "index=5320" -H "Content-Type: application/x-www-form-urlencoded"  -H "Authorization: Bearer token" -X POST http://talao.co/sandbox/issuer/statuslist/api
 
     """
     try:
@@ -235,15 +236,19 @@ def issuer_status_list_api(mode):
         headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
         return {'response': json.dumps(payload), 'status': status, 'headers': headers}
 
-    print ("index = ", index, type(index), " status =", status, type(status))
+    if status in ["suspended", "revoked"]:
+        status = True
+    else:
+        status = False
     update_status_list_token_file("1", index, status, mode)
     return "ok", 200
 
 
 
 def update_status_list_token_file(list_id, index, status, mode):
+    print(status, type(status))
     """
-    status = false (1)
+    status = True (bool) -> revoke
     standard ! ietf
     """
     try:
