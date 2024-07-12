@@ -1858,8 +1858,32 @@ profile = {
         "credentials_as_json_object_array": False,
         "siopv2_prefix": "haip://",
         "oidc4vp_prefix": "haip://",
-        "credentials_types_supported": ["Pid", "DBCGuest"],
+        "credentials_types_supported": ["Pid", "DBCGuest", "EmailPass"],
         "credential_configurations_supported": {
+            "EmailPass": {
+                "format": "ldp_vc",
+                "scope": "EmailPass_scope",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "EmailPass", "VerifiableId"]
+                },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "display": [{"name": "Proof of Email", "locale": "en-US"}],
+                "credentialSubject": {
+                        "email": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Email", "locale": "en-US"},
+                                {"name": "Email", "locale": "fr-FR"}         
+                            ],
+                        }
+                },
+            },
             "DBCGuest": {
                 "display": [
                     {

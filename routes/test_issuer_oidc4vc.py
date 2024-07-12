@@ -670,19 +670,19 @@ def test_15(mode):
     else:       
         issuer_id = "znyvjvylrh"
         client_secret = "72155eb7-3b5b-11ee-a601-b33f6ebca22b"
-    offer = ["DBCGuest", "Pid"]
+    offer = ["DBCGuest", "Pid", "EmailPass"]
     with open('./verifiable_credentials/Pid.json', 'r') as f:
         credential = json.loads(f.read())
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
     }
-    print(build_credential_offered(["DBCGuest"]))
     data = { 
         "issuer_id": issuer_id,
         "vc": {
             "Pid" : credential,
-            "DBCGuest": build_credential_offered(["DBCGuest"])["DBCGuest"]
+            "DBCGuest": build_credential_offered(["DBCGuest"])["DBCGuest"],
+            "EmailPass": build_credential_offered(["EmailPass"])["EmailPass"]
         },
         "issuer_state": "test7",
         "credential_type": offer,
