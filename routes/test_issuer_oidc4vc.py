@@ -662,7 +662,7 @@ def test_14(mode):
     return redirect(qrcode)
 
 
-def test_15(mode): # 
+def test_15(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
         issuer_id = "jfzmmdaedq"
@@ -670,18 +670,23 @@ def test_15(mode): #
     else:       
         issuer_id = "znyvjvylrh"
         client_secret = "72155eb7-3b5b-11ee-a601-b33f6ebca22b"
+    offer = ["DBCGuest", "Pid"]
+    with open('./verifiable_credentials/Pid.json', 'r') as f:
+        credential = json.loads(f.read())
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
     }
-    with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
-        credential = json.loads(f.read())
+    print(build_credential_offered(["DBCGuest"]))
     data = { 
         "issuer_id": issuer_id,
-        "vc": {"IdentityCredential" : credential}, 
-        "issuer_state": "test9",
+        "vc": {
+            "Pid" : credential,
+            "DBCGuest": build_credential_offered(["DBCGuest"])["DBCGuest"]
+        },
+        "issuer_state": "test7",
+        "credential_type": offer,
         "pre-authorized_code": True,
-        "credential_type": ['IdentityCredential'],
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json=data)
@@ -690,6 +695,8 @@ def test_15(mode): #
     except Exception:
         return jsonify("No qr code")
     return redirect(qrcode) 
+
+
 
 
 def build_credential_offered(offer):

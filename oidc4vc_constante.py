@@ -44,7 +44,8 @@ oidc4vc_profile_list = {
     'BASELINE': 'OWF Baseline Profile',
     'HAIP': 'HAIP-EUDI Wallet',
     'POTENTIAL': 'LSP POTENTIAL',
-    'VERIFIER-ALL': 'VERIFIER ALL'
+    'VERIFIER-ALL': 'VERIFIER ALL',
+    'ISSUER-ALL': 'Mix of VC format with OIDC4VCI Draft 13'
 }
 
 #OIDC4VC Verifier for admin

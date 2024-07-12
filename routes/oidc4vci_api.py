@@ -896,7 +896,7 @@ async def issuer_credential(issuer_id, red, mode):
         if vc_format == 'vc+sd-jwt' and result.get('vct'):  # draft 13 with vc+sd-jwt'
             vct = result.get('vct')
             for vc in credentials_supported:
-                if issuer_profile['credential_configurations_supported'][vc]['vct'] == vct:
+                if issuer_profile['credential_configurations_supported'][vc].get('vct') == vct:
                     credential_type = vc
                     break
         else:
