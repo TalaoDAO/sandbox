@@ -398,7 +398,7 @@ profile = {
                 "format": "ldp_vc",
                 "scope": "EmailPass_scope",
                 "credential_definition": {
-                    "type": ["VerifiableCredential", "EmailPass", "VerifiableId"]
+                    "type": ["VerifiableCredential", "EmailPass"]
                 },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [
@@ -1864,7 +1864,7 @@ profile = {
                 "format": "ldp_vc",
                 "scope": "EmailPass_scope",
                 "credential_definition": {
-                    "type": ["VerifiableCredential", "EmailPass", "VerifiableId"]
+                    "type": ["VerifiableCredential", "EmailPass"]
                 },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [
