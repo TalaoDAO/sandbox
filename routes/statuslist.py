@@ -57,7 +57,7 @@ def issuer_status_list(list_id):
     """
     GET for IETF status list
     """
-    logging.info("request headers for ietf statuslist = %s", request.headers['Accept'])
+    logging.info("request headers for ietf statuslist = %s", list_id)
     try:
         list_id = str(list_id)
         listname = "statuslist_ietf_" + list_id + ".txt"
@@ -76,7 +76,7 @@ def issuer_bitstring_status_list(list_id):
     """
     GET for W3C bitstring status list
     """
-    logging.info("request headers for bitstring statuslist = %s", request.headers['Accept'])
+    logging.info("request headers for bitstring statuslist = %s", list_id)
     try:
         list_id = str(list_id)
         listname = "statuslist_w3c_bitstring_" + list_id + ".txt"
@@ -214,7 +214,7 @@ def issuer_status_list_api(mode):
     """
      status = True (bool) -> revoke
     curl -d "status=false" -d "index=1000" -H "Content-Type: application/x-www-form-urlencoded"  -H "X-Api-Key: 123456" -X POST http://192.168.0.20:3000/sandbox/issuer/statuslist/api
-    curl -d "status=suspended" -d "index=5320" -H "Content-Type: application/x-www-form-urlencoded"  -H "X-Api-Key: 123456" -X POST http://talao.co/sandbox/issuer/statuslist/api
+    curl -d "status=suspended" -d "index=5320" -H "Content-Type: application/x-www-form-urlencoded"  -H "X-Api-Key: 123456" -X POST https://talao.co/sandbox/issuer/statuslist/api
 
     """
     try:
