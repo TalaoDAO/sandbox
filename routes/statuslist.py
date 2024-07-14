@@ -213,40 +213,47 @@ def set_status_list_frame(frame, index, status, standard):
 def issuer_status_list_api(mode):
     """
      status = True (bool) -> revoke
-    curl -d "status=false" -d "index=1000" -H "Content-Type: application/x-www-form-urlencoded"  -H "Authorization: Bearer token" -X POST http://192.168.1.156:3000/sandbox/issuer/statuslist/api
-    curl -d "status=suspended" -d "index=5320" -H "Content-Type: application/x-www-form-urlencoded"  -H "Authorization: Bearer token" -X POST http://talao.co/sandbox/issuer/statuslist/api
+    curl -d "status=false" -d "index=1000" -H "Content-Type: application/x-www-form-urlencoded"  -H "X-Api-Key: 123456" -X POST http://192.168.0.20:3000/sandbox/issuer/statuslist/api
+    curl -d "status=suspended" -d "index=5320" -H "Content-Type: application/x-www-form-urlencoded"  -H "X-Api-Key: 123456" -X POST http://talao.co/sandbox/issuer/statuslist/api
 
     """
     try:
-        bearer = request.headers.get('Authorization').split()[1]
-        if bearer != "token":
+        key = request.headers.get('X-Api-Key')
+        if key != "123456":
             payload = {
-                'error': 'Unauthorized',
-                'error_description': "incorrect token",
+                'error': 'access_denied',
+                'error_description': "incorrect API KEY",
             }
             headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
-            return {'response': json.dumps(payload), 'status': 404, 'headers': headers}
+            return {'response': json.dumps(payload), 'status': 401, 'headers': headers}
         index = int(request.form.get('index'))
         status = request.form.get('status')
     except Exception:
         payload = {
                 'error': 'invalid_request',
-                'error_description': "invalid",
+                'error_description': "Bad Request",
             }
         headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
-        return {'response': json.dumps(payload), 'status': status, 'headers': headers}
+        return {'response': json.dumps(payload), 'status': 400, 'headers': headers}
 
     if status in ["suspended", "revoked"]:
         status = True
+        logging.info("index %s is suspended", index)
     else:
         status = False
-    update_status_list_token_file("1", index, status, mode)
-    return "ok", 200
+        logging.info("index %s is activated", index)
+    if not update_status_list_token_file("1", index, status, mode):
+        payload = {
+                'error': 'server_error',
+                'error_description': "Status list saving error",
+            }
+        headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
+        return {'response': json.dumps(payload), 'status': 500, 'headers': headers}
+    return 'ok', 200
 
 
 
 def update_status_list_token_file(list_id, index, status, mode):
-    print(status, type(status))
     """
     status = True (bool) -> revoke
     standard ! ietf
@@ -274,7 +281,7 @@ def update_status_list_token_file(list_id, index, status, mode):
         logging.info("Success to store statuslist token file")
         return True
     except Exception:
-        logging.info("Failed to store ietf statuslist file")
+        logging.error("Failed to store ietf statuslist file")
     return
 
 
