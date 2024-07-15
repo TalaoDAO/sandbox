@@ -100,10 +100,11 @@ def oidc4vc_build_id_token(client_id, sub, nonce, vp, mode):
             if isinstance(vc, str):
                 vc = convert_jwt2jsonld_vc(vc)
                 if not vc: return
+            print(" build id token with vc = ", vc)
             if vc['credentialSubject']['type'] == 'EmailPass':
                 payload['email'] = vc['credentialSubject']['email']
             elif vc['credentialSubject']['type'] == 'PhoneProof':
-                payload['email'] = vc['credentialSubject']['phone']
+                payload['phone'] = vc['credentialSubject']['phone']
             elif vc['credentialSubject']['type'] == 'VerifiableId':
                 payload['given_name'] = vc['credentialSubject'].get('firstName')
                 payload['family_name'] = vc['credentialSubject'].get('familyName')
