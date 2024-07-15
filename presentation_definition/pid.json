@@ -1,0 +1,36 @@
+{
+  "id": "pid",
+  "input_descriptors": [
+    {
+      "id": "pid_credential",
+      "format": {
+        "vc+sd-jwt": {
+          "sd-jwt_alg_values": [
+            "ES256",
+            "ES256K",
+            "EdDSA"
+          ],
+          "kb-jwt_alg_values": [
+            "ES256",
+            "ES256K",
+            "EdDSA"
+          ]
+        }
+      },
+      "constraints": {
+        "limit_disclosure": "required",
+        "fields": [
+          {
+            "path": [
+              "$.vct"
+            ],
+            "filter": {
+              "type": "string",
+              "const": "urn:eu.europa.ec.eudi:pid:1"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

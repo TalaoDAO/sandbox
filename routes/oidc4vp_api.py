@@ -100,12 +100,11 @@ def oidc4vc_build_id_token(client_id, sub, nonce, vp, mode):
             if isinstance(vc, str):
                 vc = convert_jwt2jsonld_vc(vc)
                 if not vc: return
-            print(" build id token with vc = ", vc)
-            if vc['credentialSubject']['type'] == 'EmailPass':
+            if 'EmailPass' in vc['type'] :
                 payload['email'] = vc['credentialSubject']['email']
-            elif vc['credentialSubject']['type'] == 'PhoneProof':
+            elif 'PhoneProof' in vc['type']:
                 payload['phone'] = vc['credentialSubject']['phone']
-            elif vc['credentialSubject']['type'] == 'VerifiableId':
+            elif 'VerifiableId'in vc['type']:
                 payload['given_name'] = vc['credentialSubject'].get('firstName')
                 payload['family_name'] = vc['credentialSubject'].get('familyName')
                 payload['birthdate'] = vc['credentialSubject'].get('dateOfBirth')
@@ -113,10 +112,14 @@ def oidc4vc_build_id_token(client_id, sub, nonce, vp, mode):
                     payload['birthplace'] = vc['credentialSubject'].get('placeOfBirth')
                 if vc['credentialSubject'].get('gender'):
                     payload['gender'] = vc['credentialSubject'].get('gender')
-            elif vc['credentialSubject']['type'] == 'Over18':
+            elif 'Over18' in vc['type']:
                 payload['is_over_18'] = True
-            elif vc['credentialSubject']['type'] == 'Over15':
+            elif 'Over15' in vc['type']:
                 payload['is_over_15'] = True
+            elif 'DBCGuest' in vc['type']:
+                payload['firstName'] = vc['credentialSubject'].get('firstName')
+                payload['lastName'] = vc['credentialSubject'].get('lastName')
+                payload['email'] = vc['credentialSubject'].get('email')
             else:
                 logging.info("VC type not supported in id_token")
             

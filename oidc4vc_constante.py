@@ -28,10 +28,12 @@ siopv2_draft = {
 
 predefined_presentation_uri_list = {
     'None' : 'None',
-    'netcetera_1': 'Netcetera 1',
-    'netcetera_2': 'Netcetera 2',
-    'email_without_filter_jwt': 'Email without filter jwt',
-    'email_without_filter_ldp': 'Email without filter ldp'
+    'presentation_definition/netcetera_1': 'Netcetera 1',
+    'presentation_definition/netcetera_2': 'Netcetera 2',
+    'presentation_definition/email_without_filter_jwt': 'Email without filter jwt',
+    'presentation_definition/email_without_filter_ldp': 'Email without filter ldp',
+    'presentation_definition/pid': 'PID through vct'
+
 }
 
 oidc4vc_profile_list = {
@@ -55,7 +57,7 @@ oidc4vc_verifier_credential_list = {
     "$.age_equal_or_over.18": "PID with age over 18",
     "$.nationalities": "PID with nationalities IT",
     'https://credentials.openid.net/gain-poc-simple-identity-credential': 'IdentityCredential sd-jwt',
-    'urn:eu.europa.ec.eudi:pid:1': '(PID sd-jwt)',
+    'urn:eu.europa.ec.eudi:pid:1': 'PID sd-jwt',
     'VerifiableId':  'Verifiable ID',
     'AscsUserCredential' : 'ASCS credential for DENIM',
     'EUDI_PID_rule_book_1_0_0': 'PID for EUDI wallet',

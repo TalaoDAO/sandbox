@@ -1,0 +1,39 @@
+{
+    "id": "5188cgfe-3b8d-11ef-9c7e-31a372359459",
+    "input_descriptors": [
+        {
+            "id": "emailpass_1",
+            "name": "Input descriptor for credential 1",
+            "purpose": "This is purpose 1 ",
+            "constraints": {
+                "fields": [
+                    {
+                        "path": [
+                            "$.credentialSubject.email"
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "name": "Test #6",
+    "purpose": "Altme presentation definition subset of PEX v2.0",
+    "format": {
+        "ldp_vp": {
+            "proof_type": [
+                "JsonWebSignature2020",
+                "Ed25519Signature2018",
+                "EcdsaSecp256k1Signature2019",
+                "RsaSignature2018"
+            ]
+        },
+        "ldp_vc": {
+            "proof_type": [
+                "JsonWebSignature2020",
+                "Ed25519Signature2018",
+                "EcdsaSecp256k1Signature2019",
+                "RsaSignature2018"
+            ]
+        }
+    }
+}
