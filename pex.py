@@ -164,7 +164,7 @@ class Presentation_Definition:
                                 "path": [path],
                                 "filter": {
                                     "type": "string",
-                                    "pattern": pattern
+                                    "const": pattern
                                 }
                             }
                         ]
@@ -227,7 +227,7 @@ class Presentation_Definition:
                             "path": [path],
                             "filter": {
                                 "type": "string",
-                                "pattern": pattern
+                                "const": pattern
                             }
                         }
                     )
@@ -256,7 +256,7 @@ class Presentation_Definition:
                                 "path": [path],
                                 "filter": {
                                     "type": "string",
-                                    "pattern": pattern
+                                    "const": pattern
                                 }
                             }
                         ]
