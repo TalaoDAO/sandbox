@@ -66,6 +66,10 @@ class Presentation_Definition:
                 },
                 "jwt_vp_json": {
                     "alg": JWT_ALG
+                },
+                "vc+sd-jwt": {
+                    "sd-jwt_alg_values": JWT_ALG,
+                    "kb-jwt_alg_values": JWT_ALG,
                 }
             })
     

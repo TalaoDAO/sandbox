@@ -62,6 +62,7 @@ oidc4vc_verifier_credential_list = {
     'VerifiableDiploma': 'EBSI Diploma',
     'EmployeeCredential': 'Employee Credential',
     'EmailPass': 'Email proof',
+    'DBCGuest': 'DBC Guesr',
     'PhoneProof': 'Phone proof',
     'WalletCredential': 'Device information',
     "Over18": "Over18",

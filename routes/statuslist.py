@@ -212,7 +212,7 @@ def set_status_list_frame(frame, index, status, standard):
 
 def issuer_status_list_api(mode):
     """
-     status = True (bool) -> revoke
+    @status = "suspended" to suspend or revoke 
     curl -d "status=false" -d "index=1000" -H "Content-Type: application/x-www-form-urlencoded"  -H "X-Api-Key: 123456" -X POST http://192.168.0.20:3000/sandbox/issuer/statuslist/api
     curl -d "status=suspended" -d "index=5320" -H "Content-Type: application/x-www-form-urlencoded"  -H "X-Api-Key: 123456" -X POST https://talao.co/sandbox/issuer/statuslist/api
 
