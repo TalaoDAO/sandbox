@@ -766,6 +766,9 @@ def oidc4vc_login_qrcode(red, mode):
     elif verifier_data.get('client_id_scheme') == "did":
         iss = verifier_data['did']
         key = verifier_data['jwk']
+    elif verifier_data.get('client_id_scheme') == 'x509_san_dns':
+        iss = client_id
+        key = verifier_data['jwk']
     else:
         iss = verifier_data['did']
         key = verifier_data['jwk']
@@ -908,7 +911,6 @@ async def oidc4vc_response_endpoint(stream_id, red):
         if vp_token:
             if len(vp_token.split("~")) > 1:
                 vp_type = "vc+sd-jwt"
-                logging.info("vp_token sd-jwt = %s", vp_token)
             elif vp_token[:2] == "ey":
                 vp_type = "jwt_vp"
             elif json.loads(vp_token).get("@context"):

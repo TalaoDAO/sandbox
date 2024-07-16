@@ -263,7 +263,7 @@ def test_4(mode):
     
     with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
         credential_verifiableid = json.loads(f.read())
-    with open('./verifiable_credentials/EudiPid.json', 'r') as f:
+    with open('./verifiable_credentials/Pid.json', 'r') as f:
         credential_eudipid = json.loads(f.read())
         
     headers = {
@@ -277,7 +277,7 @@ def test_4(mode):
             'EudiPid': credential_eudipid
         }, 
         "issuer_state": str(uuid.uuid1()),
-        "credential_type": ['IdentityCredential', 'EudiPid'],
+        "credential_type": ['IdentityCredential', 'Pid'],
         "pre-authorized_code": True,
         "user_pin_required": False,
         "callback": mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
@@ -565,18 +565,18 @@ def test_12(mode):
     }
     with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
         credential1 = json.loads(f.read())
-    with open('./verifiable_credentials/EudiPid.json', 'r') as f:
+    with open('./verifiable_credentials/Pid.json', 'r') as f:
         credential2 = json.loads(f.read())
     
     data = { 
         "issuer_id": issuer_id,
         "vc": {
             "IdentityCredential" : credential1,
-            "EudiPid": credential2
+            "Pid": credential2
         }, 
         "issuer_state": "test12",
         "pre-authorized_code": False,
-        "credential_type": ['IdentityCredential', 'EudiPid'],
+        "credential_type": ['IdentityCredential', 'Pid'],
         "callback": mode.server + 'sandbox/issuer/callback',
     }
     resp = requests.post(api_endpoint, headers=headers, json=data)
@@ -602,16 +602,16 @@ def test_13(mode):
     }
     with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
         credential1 = json.loads(f.read())
-    with open('./verifiable_credentials/EudiPid.json', 'r') as f:
+    with open('./verifiable_credentials/Pid.json', 'r') as f:
         credential2 = json.loads(f.read())
     data = { 
         "issuer_id": issuer_id,
         "vc": {
             "IdentityCredential": credential1,
-            "EudiPid": credential2}, 
+            "Pid": credential2}, 
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
-        "credential_type": ['IdentityCredential', 'EudiPid'],
+        "credential_type": ['IdentityCredential', 'Pid'],
         "user_pin_required": True,
         "user_pin": "4444",
         "callback": mode.server + 'sandbox/issuer/callback',
