@@ -15,6 +15,7 @@
         <a class="nav-link" href="/sandbox/saas4ssi/dids">Our
             DIDs</a>
         {% endif %}
+
         {% if not session['is_connected'] %}
         <div class="dropdown">
             <button onclick="myFunction()" class="dropbtn nav-link">Developers</button>
@@ -31,13 +32,9 @@
         {% endif %}
 
         {% if session['is_connected'] %}
-        <a class="nav-link" href="/sandbox/saas4ssi/logout">Logout</a>
-        {% else %}
-        <a class="nav-link" href="/sandbox/saas4ssi/signup">Register</a>
+        <a class="nav-link" href="/sandbox/saas4ssi/logout">Logout</a>    
         {% endif %}
-        {% if not session['is_connected'] %}
-        <a class="nav-link" href="/sandbox/saas4ssi/login_2">Login</a>
-        {% endif %}
+
         {% if not session['is_connected'] %}
         <a id="downloadNavBar" class="altmeTheme" href="https://talao.io"><p id="downloadNavBarP" class="altmeTheme">DOWNLOAD ALTME</p><img src="/static/img/arrow-right.png" id="arrow-rightNavBar"></a>
         {% endif %}

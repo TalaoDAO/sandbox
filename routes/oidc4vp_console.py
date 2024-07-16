@@ -61,16 +61,13 @@ def oidc4vc_verifier_console_select(mode):
             except:
                 curve = "Unknown"
             if not curve: curve = "RSA"
-            if data_dict.get('client_id_as_DID'):
-                client_id = data_dict['did']
-            else: 
-                client_id = "redirect_uri"
+            client_id_scheme = data_dict.get('client_id_scheme', "Unknown")
             try:
                 if data_dict['user'] == "all" or session['login_name'] in [data_dict['user'], "admin"]:
                     verifier = """<tr>
                         <td>""" + data_dict.get('application_name', "") + """</td>
                         <td>""" + data_dict['user'][:20] + """...</td>
-                        <td>""" + client_id + """</td>
+                        <td>""" + client_id_scheme + """</td>
                         <td>""" + data_dict.get('profile', 'Unknwon') + """</td>
                         <td>""" + id_token + """</td>
                         <td>""" + vp_token + """</td>
