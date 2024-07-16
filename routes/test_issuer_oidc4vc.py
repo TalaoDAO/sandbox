@@ -504,7 +504,7 @@ def test_10(mode):
         "vc": {"Pid" : credential}, 
         "issuer_state": 'test10',
         "credential_type":  ['Pid'],
-        "pre-authorized_code": False,
+        "pre-authorized_code": True,
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
