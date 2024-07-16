@@ -233,7 +233,6 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
             payload['_sd'].append(hash(disclosure))
         # for nested json
         elif isinstance(unsecured[claim], dict):
-            print("claim = ", claim)
             payload.update({claim: {'_sd': []}})
             nested_disclosure_list = unsecured[claim].get("disclosure", [])
             if not nested_disclosure_list:
@@ -251,7 +250,6 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
             if not payload[claim]['_sd']: del payload[claim]['_sd']
         # for list
         elif isinstance(unsecured[claim], list): # list
-            print("claim = ", claim)
             nb = len(unsecured[claim])
             payload.update({claim: []})
             for index in range(0, nb):
@@ -287,7 +285,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
     try:
         if subject_key.get("use"): del subject_key['use']
     except:
-        print("error, subject_key = none")
+        logging.error("error, subject_key = none")
     if unsecured.get('status'): payload['status'] = unsecured['status']
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)

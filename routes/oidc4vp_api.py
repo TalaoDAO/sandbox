@@ -25,6 +25,7 @@ import pex
 import didkit
 import requests
 import x509_attestation
+import base64
 
 logging.basicConfig(level=logging.INFO)
 
@@ -450,22 +451,23 @@ def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None, client
     For wallets natural person as jwk is added in header
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-proof-types
     """
-    key = json.loads(key) if isinstance(key, str) else key
-    print(key)
-    signer_key = jwk.JWK(**key) 
+    if key:
+        key = json.loads(key) if isinstance(key, str) else key
+        signer_key = jwk.JWK(**key) 
+        alg = oidc4vc.alg(key)
+    else:
+        alg = "none"
+        signer_key = None
     header = {
         'typ': "oauth-authz-req+jwt",
-        'alg': oidc4vc.alg(key),
+        'alg': alg,
     }
     if client_id_scheme == "x509_san_dns":
         header['x5c'] = x509_attestation.build_x509_san_dns()
     elif client_id_scheme == "verifier_attestation":
         header['jwt'] = x509_attestation.build_verifier_attestation(client_id)
     elif client_id_scheme == "redirect_uri":
-        if not key.get('kid'):
-            header['kid'] = signer_key.thumbprint()
-        else:
-            header['kid'] = key['kid']
+        pass
     else:  # DID by default
         header['kid'] = kid
     
@@ -475,10 +477,16 @@ def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None, client
         'exp': datetime.timestamp(datetime.now()) + 1000
     }
     payload |= request
-    token = jwt.JWT(header=header, claims=payload, algs=[oidc4vc.alg(key)])
-    token.make_signed_token(signer_key)
-    # todo do not sign teh token
-    return token.serialize()
+    if key:
+        token = jwt.JWT(header=header, claims=payload, algs=[alg])
+        token.make_signed_token(signer_key)
+        return token.serialize()
+    else:
+        token = base64.urlsafe_b64encode(json.dumps(header).encode()).decode()
+        token += '.'
+        token += base64.urlsafe_b64encode(json.dumps(payload).encode()).decode()
+        return token
+   
 
 
 def wallet_metadata_uri(verifier_id, red):
@@ -560,7 +568,6 @@ def oidc4vc_login_qrcode(red, mode):
         for i in ["1", "2", "3", "4"]:
             vc = 'vc_' + i
             reason = 'reason_' + i
-            print("verifier type = ",  profile[verifier_data['profile']].get("verifier_vp_type"))
             if verifier_data[vc] != 'None':
                 if verifier_data.get('filter_type_array') and verifier_data[vc] != "$.nationalities":
                     prez.add_constraint_with_type_array(
@@ -672,11 +679,13 @@ def oidc4vc_login_qrcode(red, mode):
         authorization_request["response_mode"] = "direct_post"
 
     
-    # Set client_id, use W3C DID identifier for client_id "on" ou None
-    if verifier_data['profile'] in ["POTENTIAL", "HAIP"]:
+    # Set client_id
+    if verifier_data.get('client_id_scheme') == "x509_san_dns":
         client_id = "talao.co"
-    elif not verifier_data.get('client_id_as_DID'):
+    elif verifier_data.get('client_id_scheme') == "redirect_uri":
         client_id = redirect_uri
+    elif verifier_data.get('client_id_scheme') == "did":
+        client_id = verifier_data['did']
     else:
         client_id = verifier_data['did']
     
@@ -687,9 +696,9 @@ def oidc4vc_login_qrcode(red, mode):
     # OIDC4VP
     if 'vp_token' in response_type:
         if verifier_data.get('predefined_presentation_definition') in [None, 'None']:
-            print('no predefined presentation definition')
+            logging.info('no predefined presentation definition')
             presentation_definition = prez.get()
-            print(presentation_definition)
+            logging.info("presentation_definition = %s", presentation_definition)
         else:
             presentation_definition = json.load( open(verifier_data.get('predefined_presentation_definition') +'.json', 'r'))
         
@@ -702,12 +711,14 @@ def oidc4vc_login_qrcode(red, mode):
         
         # client_id_scheme depending of OIDC4VP draft
         if int(verifier_profile['oidc4vpDraft']) > 13:
-            if verifier_data['profile'] in ["POTENTIAL"]:
+            if verifier_data['profile'] in ["POTENTIAL"] or verifier_data.get('client_id_scheme') == "x509_san_dns" :
                 authorization_request['client_id_scheme'] = 'x509_san_dns'
-            elif verifier_data['profile'] in ["HAIP"]:
+            elif verifier_data['profile'] in ["HAIP"] or verifier_data.get('client_id_scheme') == "verifier_attestation":
                 authorization_request['client_id_scheme'] = 'verifier_attestation'
-            elif verifier_data.get('client_id_as_DID'):
+            elif verifier_data.get('client_id_scheme') == "did":
                 authorization_request['client_id_scheme'] = 'did'
+            elif verifier_data.get('client_id_scheme') == "none":
+                pass # client_id_scheme is optional
             else:
                 authorization_request['client_id_scheme'] = 'redirect_uri'
 
@@ -749,26 +760,37 @@ def oidc4vc_login_qrcode(red, mode):
         authorization_request['registration'] = wallet_metadata
     
     # manage request_uri as jwt
+    if verifier_data.get('client_id_scheme') == "redirect_uri":
+        iss = client_id
+        key = None
+    elif verifier_data.get('client_id_scheme') == "did":
+        iss = verifier_data['did']
+        key = verifier_data['jwk']
+    else:
+        iss = verifier_data['did']
+        key = verifier_data['jwk']
+       
     request_as_jwt = build_jwt_request(
-        verifier_data['jwk'],
+        key,
         verifier_data['verification_method'],
-        verifier_data['did'],
+        iss,
         'https://self-issued.me/v2', # aud requires static siopv2 data
         authorization_request,
-        client_id_scheme = authorization_request.get('client_id_scheme'),
+        client_id_scheme = verifier_data.get('client_id_scheme'),
         client_id=client_id
     )
 
     # QRCode preparation with authorization_request_displayed
-    if verifier_data.get('request_uri_parameter_supported') or verifier_data['profile'] in ["HAIP", "POTENTIAL"]:
+    if verifier_data.get('request_uri_parameter_supported') or verifier_data['profile'] in ["HAIP", "POTENTIAL"]: # request uri as jwt
         red.setex("request_uri_" + stream_id, QRCODE_LIFE, json.dumps(request_as_jwt))
         authorization_request_displayed = { 
             "client_id": client_id,
             "request_uri": mode.server + "verifier/wallet/request_uri/" + stream_id 
         }
+    elif verifier_data.get('request_parameter_supported'):
+        authorization_request['request'] = request_as_jwt
+        authorization_request_displayed = authorization_request
     else:
-        if 'vp_token' not in response_type and verifier_data.get('request_parameter_supported'):
-            authorization_request['request'] = request_as_jwt
         authorization_request_displayed = authorization_request
 
     url = prefix + '?' + urlencode(authorization_request_displayed)
@@ -780,7 +802,7 @@ def oidc4vc_login_qrcode(red, mode):
     if response_type == "id_token" and not verifier_data.get('request_uri_parameter_supported'):
         url += '&registration=' + quote(json.dumps(wallet_metadata))
     
-    # get request uri jwt
+    # get request uri as jwt
     try:
         r = requests.get(authorization_request_displayed['request_uri'])
         request_uri_jwt = r.content.decode()
@@ -829,6 +851,9 @@ def oidc4vc_request_uri(stream_id, red):
     return Response(payload, headers=headers)
 
 
+
+
+
 async def oidc4vc_response_endpoint(stream_id, red):
     logging.info("Enter wallet response endpoint")
     """
@@ -868,7 +893,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
     if access:
         if request.form.get('response'):
             response = oidc4vc.get_payload_from_token(request.form['response'])
-            logging.info("JARM mode = %s", response)
+            logging.info("JARM mode")
             # TODO check JARM signature
         else:
             response = request.form
@@ -883,6 +908,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
         if vp_token:
             if len(vp_token.split("~")) > 1:
                 vp_type = "vc+sd-jwt"
+                logging.info("vp_token sd-jwt = %s", vp_token)
             elif vp_token[:2] == "ey":
                 vp_type = "jwt_vp"
             elif json.loads(vp_token).get("@context"):
@@ -985,17 +1011,20 @@ async def oidc4vc_response_endpoint(stream_id, red):
         elif vp_type == "vc+sd-jwt":
             vcsd_jwt = vp_token.split("~")
             nb_disclosure = len(vcsd_jwt)
-            print("nb of disclosure =", nb_disclosure - 2 )
+            logging.info("nb of disclosure = %s", nb_disclosure - 2 )
             disclosure = []
             for i in range (1, nb_disclosure-1):
                 _disclosure = vcsd_jwt[i]
                 _disclosure += "=" * ((4 - len(_disclosure) % 4) % 4)
-                logging.info("disclosure #%s = %s", i, base64.urlsafe_b64decode(_disclosure.encode()).decode())
-                disc = base64.urlsafe_b64decode(_disclosure.encode()).decode()
-                disclosure.append(disc)
+                try:
+                    logging.info("disclosure #%s = %s", i, base64.urlsafe_b64decode(_disclosure.encode()).decode())
+                    disc = base64.urlsafe_b64decode(_disclosure.encode()).decode()
+                    disclosure.append(disc)
+                except:
+                    print("i = ", i)
+                    print("_disclosure = ", _disclosure)
             logging.info("vp token signature not checked yet")
             vp_token_payload = vp_token
-            print("vp token = ", vp_token)
         else: # ldp_vp
             verifyResult = json.loads(await didkit.verify_presentation(vp_token, "{}"))
             vp_token_status = verifyResult
@@ -1029,7 +1058,6 @@ async def oidc4vc_response_endpoint(stream_id, red):
     if access and vp_token:
         if vp_type == "ldp_vp":
             vp_sub = json.loads(vp_token)['holder']
-            print("vp_sub = ", vp_sub)
             if json.loads(vp_token)['proof'].get('challenge') == nonce:
                 nonce_status = "ok"
             else:

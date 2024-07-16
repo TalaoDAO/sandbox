@@ -1,0 +1,83 @@
+{
+  "id": "pid_mandatory_and_optional_attributes",
+  "input_descriptors": [
+    {
+      "id": "pid_credential",
+      "format": {
+        "vc+sd-jwt": {
+          "sd-jwt_alg_values": [
+            "ES256",
+            "ES256K",
+            "EdDSA"
+          ],
+          "kb-jwt_alg_values": [
+            "ES256",
+            "ES256K",
+            "EdDSA"
+          ]
+        }
+      },
+      "constraints": {
+        "limit_disclosure": "required",
+        "fields": [
+          {
+            "path": [
+              "$.vct"
+            ],
+            "filter": {
+              "type": "string",
+              "const": "urn:eu.europa.ec.eudi:pid:1"
+            }
+          },
+          {
+            "path": [
+              "$.family_name"
+            ]
+          },
+          {
+            "path": [
+              "$.given_name"
+            ]
+          },
+          {
+            "path": [
+              "$.birthdate"
+            ]
+          },
+          {
+            "path": [
+              "$.iat"
+            ]
+          },
+{
+            "path": [
+              "$.exp"
+            ]
+          },
+          {
+            "path": [
+              "$.issuing_authority"
+            ]
+          },
+          {
+            "path": [
+              "$.issuing_country"
+            ]
+          },
+          {
+            "path": [
+              "$.age_equal_or_over.18"
+            ],
+            "optional": true
+          },
+          {
+            "path": [
+              "$.address.formatted"
+            ],
+            "optional": true
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -26,6 +26,15 @@ siopv2_draft = {
     "12": "draft 12",
 }
 
+client_id_scheme_list = {
+    "none": "none",
+    "did": "did",
+    "redirect_uri": "redirect_uri",
+    "verifier_attestation": "verifier_attestation",
+    "x509_san_dns": "x509_san_dns"
+}
+
+
 predefined_presentation_uri_list = {
     'None' : 'None',
     'presentation_definition/netcetera_1': 'Netcetera 1',
@@ -134,6 +143,7 @@ client_data_pattern_oidc4vc = {
     "credential_manifest_support": 'on',
     "pkce": None,
     "id_token": "on",
+    "client_id_scheme": "did",  # for OIDC4VP draft 13
     "client_id_as_DID": "on",  # for siopv2 request
     "issuer_id_as_url": None,  # for OIDV4CI  issuer
     "vp_token": None,

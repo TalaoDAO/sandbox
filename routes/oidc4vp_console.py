@@ -8,6 +8,8 @@ import oidc4vc
 import pex
 from oidc4vc_constante import oidc4vc_verifier_credential_list, guest_oidc4vc_verifier_credential_list, predefined_presentation_uri_list
 from oidc4vc_constante import oidc4vc_verifier_landing_page_style_list, oidc4vc_profile_list, guest_oidc4vc_verifier_landing_page_style_list
+from oidc4vc_constante import client_id_scheme_list
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -121,10 +123,16 @@ def oidc4vc_verifier_console(mode):
         presentation_definition_uri_select = str()
         for key, value in predefined_presentation_uri_list.items():
             if key == session['client_data'].get('predefined_presentation_definition', 'None'):
-                print('key = ', key)
                 presentation_definition_uri_select +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
                 presentation_definition_uri_select +=  "<option value=" + key + ">" + value + "</option>"
+
+        client_id_scheme_select = str()
+        for key, value in client_id_scheme_list.items():
+            if key == session['client_data'].get('client_id_scheme', 'None'):
+                client_id_scheme_select +=  "<option selected value=" + key + ">" + value + "</option>"
+            else:
+                client_id_scheme_select +=  "<option value=" + key + ">" + value + "</option>"
 
         vc_select_1 = str()
         for key, value in credential_list.items():
@@ -324,8 +332,10 @@ def oidc4vc_verifier_console(mode):
             elif profile[session['client_data']['profile']].get("verifier_vp_type") == 'vc+sd-jwt':
                 prez.add_format_sd_jwt()
             else:
-                pass
-            print('presentation definition lu dans le fichier = ', session['client_data'].get("predefined_presentation_definition"))
+                logging.error("vc format not supported")
+                return redirect('/sandbox/saas4ssi')
+            
+            logging.info('presentation definition is read from file  = %s', session['client_data'].get("predefined_presentation_definition"))
             if session['client_data'].get("predefined_presentation_definition") in ['None', None]:
                 presentation_definition = prez.get()
             else:
@@ -346,7 +356,6 @@ def oidc4vc_verifier_console(mode):
             id_token="checked" if session['client_data'].get('id_token')  else "",
             vp_token="checked" if session['client_data'].get('vp_token') else "",
             group="checked" if session['client_data'].get('group') else "",
-            client_id_as_DID="checked" if session['client_data'].get('client_id_as_DID') else "",
             group_B="checked" if session['client_data'].get('group_B') else "",
             filter_type_array="checked" if session['client_data'].get('filter_type_array') else "" ,
             presentation_definition_uri="checked" if session['client_data'].get('presentation_definition_uri') else "" ,
@@ -391,6 +400,7 @@ def oidc4vc_verifier_console(mode):
             vc_select_11=vc_select_11,
             vc_select_12=vc_select_12,
             presentation_definition_uri_select=presentation_definition_uri_select,
+            client_id_scheme_select=client_id_scheme_select,
             login_name=session['login_name']
         )
     if request.method == 'POST':
@@ -419,7 +429,6 @@ def oidc4vc_verifier_console(mode):
             session['client_data']['standalone'] = request.form.get('standalone') 
             session['client_data']['pkce'] = request.form.get('pkce') 
             session['client_data']['id_token'] = request.form.get('id_token') 
-            session['client_data']['client_id_as_DID'] = request.form.get('client_id_as_DID') 
             session['client_data']['vp_token'] = request.form.get('vp_token') 
             session['client_data']['group'] = request.form.get('group') 
             session['client_data']['group_B'] = request.form.get('group_B') 
@@ -460,7 +469,7 @@ def oidc4vc_verifier_console(mode):
             session['client_data']['vc_12'] = request.form['vc_12']
 
             session['client_data']['predefined_presentation_definition'] = request.form['predefined_presentation_definition']
-            print('predefined presentation saveed in file = ', session['client_data'].get('predefined_presentation_uri', 'None'))
+            session['client_data']['client_id_scheme'] = request.form['client_id_scheme']
 
             session['client_data']['user'] = request.form['user_name']
             session['client_data']['qrcode_message'] = request.form['qrcode_message']

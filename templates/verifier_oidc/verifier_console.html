@@ -137,14 +137,14 @@
                                   <div class="col">
                                     <div class="form-check">
                                       <input class="form-check-input" type="checkbox" {{request_uri_parameter_supported}} name="request_uri_parameter_supported" id="flexCheckDefault_1">
-                                      <label class="form-check-label" for="flexCheckDefault_1">request_uri</label>
+                                      <label class="form-check-label" for="flexCheckDefault_1">request as jwt by reference</label>
                                     </div>
                                   </div> 
 
                                   <div class="col">
                                     <div class="form-check">
                                       <input class="form-check-input" type="checkbox" {{request_parameter_supported}} name="request_parameter_supported" id="flexCheckDefault_1">
-                                      <label class="form-check-label" for="flexCheckDefault_1">request as a jwt (id_token only)</label>
+                                      <label class="form-check-label" for="flexCheckDefault_1">request as jwt by value</label>
                                     </div>
                                   </div> 
 
@@ -158,13 +158,14 @@
                             
                               </div>
                               <div class="form-row mb-3">
-
-                                <div class="col-3">
-                                  <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" {{client_id_as_DID}} name="client_id_as_DID" id="flexCheckDefault_1">
-                                    <label class="form-check-label" for="flexCheckDefault_1">Client_id as a DID</label>
-                                  </div>
-                                </div> 
+                                
+                                  <div class="col-3">
+                                    <div class="form-group"><label>Client_id_scheme</label><select name="client_id_scheme" class="form-control">
+                                      {{client_id_scheme_select|safe}}  
+                                      </select></div>
+                                </div>  
+                                
+                                
 
                                 <div class="col-3">
                                   <div class="form-check">
@@ -176,7 +177,7 @@
                                 <div class="col-3">
                                   <div class="form-check">
                                     <input class="form-check-input" type="checkbox" {{jarm}} name="jarm" id="flexCheckDefault_1">
-                                    <label class="form-check-label" for="flexCheckDefault_1">JARM</label>
+                                    <label class="form-check-label" for="flexCheckDefault_1">direct_post.jwt</label>
                                   </div>
                                 </div>
                               
