@@ -260,28 +260,21 @@ def test_4(mode):
     else: 
         issuer_id = "raamxepqex"
         client_secret = "5381c36b-45c2-11ee-ac39-9db132f0e4a1"
-    
-    with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
-        credential_verifiableid = json.loads(f.read())
-    with open('./verifiable_credentials/Pid.json', 'r') as f:
-        credential_eudipid = json.loads(f.read())
-        
+
+    offer = ["EmailPass", "VerifiableId", "Over18", "DBCGuest"]
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
     }
     data = { 
         "issuer_id": issuer_id,
-        "vc": {
-            'IdentityCredential': credential_verifiableid,
-            'EudiPid': credential_eudipid
-        }, 
-        "issuer_state": str(uuid.uuid1()),
-        "credential_type": ['IdentityCredential', 'Pid'],
+        "vc": build_credential_offered(offer), 
+        "issuer_state": "test7",
+        "credential_type": offer,
         "pre-authorized_code": True,
-        "user_pin_required": False,
-        "callback": mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
-    }
+        "callback": mode.server + 'sandbox/issuer/callback',
+        }
+    
     resp = requests.post(api_endpoint, headers=headers, json=data)
     try:
         qrcode = resp.json()['redirect_uri']
