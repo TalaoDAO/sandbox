@@ -18,7 +18,7 @@
         }
       },
       "constraints": {
-        "limited_disclorure": "required",
+        "limited_disclosure": "required",
         "fields": [
           {
             "path": [
