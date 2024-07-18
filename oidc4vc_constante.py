@@ -41,7 +41,8 @@ predefined_presentation_uri_list = {
     'presentation_definition/netcetera_2': 'Netcetera 2',
     'presentation_definition/email_without_filter_jwt': 'Email without filter jwt',
     'presentation_definition/email_without_filter_ldp': 'Email without filter ldp',
-    'presentation_definition/pid': 'PID through vct'
+    'presentation_definition/pid': 'PID through vct',
+    'presentation_definition/pid_with_required': 'PID with limited disclosure'
 
 }
 
