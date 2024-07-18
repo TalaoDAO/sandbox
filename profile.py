@@ -1138,13 +1138,13 @@ profile = {
                 "vct": "urn:eu.europa.ec.eudi:pid:1",
                 "display": [
                     {
-                        "name": "PID",
+                        "name": "Person ID",
                         "locale": "en-US",
                         "background_color": "#14107c",
                         "text_color": "#FFFFFF",
                     },
                     {
-                        "name": "PID",
+                        "name": "Person ID",
                         "locale": "fr-FR",
                         "background_color": "#14107c",
                         "text_color": "#FFFFFF",
@@ -1230,7 +1230,7 @@ profile = {
                 "vct": "EUDI_PID_rule_book_1_0_0",
                 "display": [
                     {
-                        "name": "EUDI PID",
+                        "name": "EU Person ID",
                         "locale": "en-US",
                         "background_color": "#14107c",
                         "text_color": "#FFFFFF",
@@ -1600,13 +1600,13 @@ profile = {
                 "vct": "urn:eu.europa.ec.eudi:pid:1",
                 "display": [
                     {
-                        "name": "PID",
+                        "name": "Person ID",
                         "locale": "en-US",
                         "background_color": "#14107c",
                         "text_color": "#FFFFFF",
                     },
                     {
-                        "name": "PID",
+                        "name": "Person ID",
                         "locale": "fr-FR",
                         "background_color": "#14107c",
                         "text_color": "#FFFFFF",
@@ -1742,7 +1742,7 @@ profile = {
                 "vct": "EUDI_PID_rule_book_1_0_0",
                 "display": [
                     {
-                        "name": "EUDI PID",
+                        "name": "EU Person ID",
                         "locale": "en-US",
                         "background_color": "#14107c",
                         "text_color": "#FFFFFF",
@@ -2051,7 +2051,7 @@ profile = {
                 "vct": "EUDI_PID_rule_book_1_0_0",
                 "display": [
                     {
-                        "name": "EUDI PID",
+                        "name": "EU Person ID",
                         "locale": "en-US",
                         "background_color": "#14107c",
                         "text_color": "#FFFFFF",
@@ -2264,13 +2264,13 @@ profile = {
                 "vct": "urn:eu.europa.ec.eudi:pid:1",
                 "display": [
                     {
-                        "name": "PID",
+                        "name": "Person ID",
                         "locale": "en-US",
                         "background_color": "#14107c",
                         "text_color": "#FFFFFF",
                     },
                     {
-                        "name": "PID",
+                        "name": "Person ID",
                         "locale": "fr-FR",
                         "background_color": "#14107c",
                         "text_color": "#FFFFFF",
@@ -2581,13 +2581,13 @@ profile = {
                 "vct": "urn:eu.europa.ec.eudi:pid:1",
                 "display": [
                     {
-                        "name": "PID",
+                        "name": "Person ID",
                         "locale": "en-US",
                         "background_color": "#14107c",
                         "text_color": "#FFFFFF",
                     },
                     {
-                        "name": "PID",
+                        "name": "Person ID",
                         "locale": "fr-FR",
                         "background_color": "#14107c",
                         "text_color": "#FFFFFF",
