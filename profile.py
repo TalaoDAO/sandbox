@@ -374,7 +374,7 @@ profile = {
             "urn:ietf:params:oauth:grant-type:pre-authorized_code",
         ],
     },
-      "DEFAULT-DRAFT13": {
+    "DEFAULT-DRAFT13": {
         "oidc4vciDraft": "13",
         "siopv2Draft": "12",
         "oidc4vpDraft": "20",
@@ -424,7 +424,7 @@ profile = {
                     "type": ["VerifiableCredential", "VerifiableId"]
                 },
                 "cryptographic_binding_methods_supported": ["DID"],
-                   "credential_signing_alg_values_supported": [
+                "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
                     "ES384",
@@ -460,7 +460,7 @@ profile = {
                     },
                 },
             },
-             "Over18": {
+            "Over18": {
                 "format": "ldp_vc",
                 "scope": "Over18_scope",
                 "credential_definition": {
@@ -694,6 +694,127 @@ profile = {
             "DBCGuest"
         ],
         "credential_configurations_supported": {
+            "IBANLegalPerson": {
+                "display": [
+                    {
+                        "name": "IBAN legal person",
+                        "description": "IBAN legal person",
+                        "text_color": "#FBFBFB",
+                        "logo": {
+                            "url": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
+                            "alt_text": "ABN Amro logo"
+                        },
+                        "background_image": {
+                            "url": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
+                            "alt_text": "ABN Amro Card"
+                        }
+                    },
+                    {
+                        "locale": "en-US",
+                        "name": "IBAN legal person",
+                        "description": "IBAN legal person",
+                        "text_color": "#FBFBFB",
+                        "logo": {
+                            "url": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
+                            "alt_text": "ABN Amro logo"
+                        },
+                        "background_image": {
+                            "url": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
+                            "alt_text": "ABN Amro Card"
+                        }
+                    },
+                    {
+                        "locale": "nl-NL",
+                        "name": "IBAN legal person",
+                        "description": "IBAN legal person",
+                        "text_color": "#FBFBFB",
+                        "logo": {
+                            "url": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
+                            "alt_text": "ABN Amro logo"
+                        },
+                        "background_image": {
+                            "url": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
+                            "alt_text": "ABN Amro Card"
+                        }
+                    }
+                ],
+                "id": "IBANLegalPerson",
+                "credential_definition": {
+                    "type": [
+                        "VerifiableCredential",
+                        "IBANLegalPerson"
+                    ],
+                    "credentialSubject": {
+                        "bankName": {
+                            "display": [
+                                {
+                                    "name": "Bank name",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "Bank naam",
+                                    "locale": "nl-NL"
+                                }
+                            ]
+                        },
+                        "leiCodeBank": {
+                            "display": [
+                                {
+                                    "name": "LEI code",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "LEI code",
+                                    "locale": "nl-NL"
+                                }
+                            ]
+                        },
+                        "swiftNumber": {
+                            "display": [
+                                {
+                                    "name": "SWIFT code",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "SWIFT code",
+                                    "locale": "nl-NL"
+                                }
+                            ]
+                        },
+                        "iban": {
+                            "display": [
+                                {
+                                    "name": "IBAN",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "IBAN",
+                                    "locale": "nl-NL"
+                                }
+                            ]
+                        },
+                        "accountHolder": {
+                            "display": [
+                                {
+                                    "name": "Account Holder",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "Rekeninghouder",
+                                    "locale": "nl-NL"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "format": "jwt_vc_json",
+                "cryptographic_binding_methods_supported": [
+                    "did:jwk"
+                ],
+                "cryptographic_suites_supported": [
+                    "ES256"
+                ]
+            },
             "DBCGuest": {
                 "display": [
                     {
@@ -824,21 +945,21 @@ profile = {
                                 {"name": "Téléphone", "locale": "fr-FR"}
                             ],
                         },
-                         "gender": {
+                        "gender": {
                             "mandatory": True,
                             "display": [
                                 {"name": "Gender", "locale": "en-US"},
                                 {"name": "Sexe", "locale": "fr-FR"}
                             ],
                         },
-                         "issuing_country": {
+                        "issuing_country": {
                             "mandatory": True,
                             "display": [
                                 {"name": "Issuing country", "locale": "en-US"},
                                 {"name": "Délivré par", "locale": "fr-FR"}
                             ],
                         },
-                         "dateIssued": {
+                        "dateIssued": {
                             "mandatory": True,
                             "display": [
                                 {"name": "Issuance date", "locale": "en-US"},
@@ -878,7 +999,7 @@ profile = {
                 ],
                 "display": [{"name": "Proof of Email", "locale": "en-GB"}],
             },
-             "Over18": {
+            "Over18": {
                 "format": "jwt_vc_json",
                 "scope": "Over18_scope",
                 "credential_definition": {
@@ -1121,7 +1242,7 @@ profile = {
                             "display": [{"name": "Issuing country", "locale": "en-US"},
                                         {"name": "Pays d'emission", "locale": "fr-FR"}],
                         },
-                         "issuing_authority": {
+                        "issuing_authority": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Issuing autority", "locale": "en-US"},
@@ -1151,7 +1272,7 @@ profile = {
                     }
                 ],
             },
-             "EudiPid": {
+            "EudiPid": {
                 "format": "vc+sd-jwt",
                 "scope": "EudiPid_scope",
                 "order": [
@@ -1183,7 +1304,7 @@ profile = {
                             "display": [{"name": "Birth date", "locale": "en-US"},
                                         {"name": "Date de naissance", "locale": "fr-FR"}],
                         },
-                         "birth_place": {
+                        "birth_place": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Birth place", "locale": "en-US"},
@@ -1213,7 +1334,7 @@ profile = {
                             "display": [{"name": "Picture", "locale": "en-US"},
                                         {"name": "Portrait", "locale": "fr-FR"}],
                         },
-                         "age_birth_year": {
+                        "age_birth_year": {
                             "mandatory": True,
                             "value_type": "integer",
                             "display": [{"name": "Age birth year", "locale": "en-US"},
@@ -1278,7 +1399,7 @@ profile = {
                             {"name": "Nom", "locale": "fr-FR"},
                         ],
                     },
-                     "birth_date": {
+                    "birth_date": {
                         "mandatory": True,
                         "display": [
                             {"name": "Birth date", "locale": "en-US"},
@@ -1299,7 +1420,7 @@ profile = {
                             {"name": "Email", "locale": "fr-FR"},
                         ],
                     },
-                     "phone_number": {
+                    "phone_number": {
                         "mandatory": True,
                         "display": [
                             {"name": "Phone number", "locale": "en-US"},
@@ -1313,7 +1434,7 @@ profile = {
                             {"name": "Nationalité", "locale": "fr-FR"},
                         ],
                     },
-                     "issuing_country": {
+                    "issuing_country": {
                         "mandatory": True,
                         "display": [
                             {"name": "Issuing country", "locale": "en-US"},

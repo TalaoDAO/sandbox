@@ -718,7 +718,6 @@ def test_16(mode):
     data = { 
         "issuer_id": issuer_id,
         "vc": {
-            "Pid" : credential,
             "DBCGuest": build_credential_offered(["DBCGuest"])["DBCGuest"],
             "EmailPass": build_credential_offered(["EmailPass"])["EmailPass"]
         },
