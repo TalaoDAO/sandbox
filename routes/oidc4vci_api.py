@@ -403,8 +403,8 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
             + '?credential_offer_uri='
             + credential_offer_uri
         )
-
     qrcode_page = issuer_data.get('issuer_landing_page')
+
     logging.info('QR code page = %s', qrcode_page)
     return render_template(
         qrcode_page,

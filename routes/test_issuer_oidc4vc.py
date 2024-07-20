@@ -24,6 +24,8 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/issuer/test_13',  view_func=test_13, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_14',  view_func=test_14, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_15',  view_func=test_15, methods=['GET'], defaults={'mode': mode})
+    app.add_url_rule('/sandbox/issuer/test_16',  view_func=test_16, methods=['GET'], defaults={'mode': mode})
+
 
 
     app.add_url_rule('/sandbox/issuer/callback',  view_func=issuer_callback, methods=['GET'])
@@ -58,6 +60,8 @@ def issuer_oidc_test(mode):
         issuer_id_test_13 = "eyulcaatwc"
         issuer_id_test_14 = "kucdqzidbs"
         issuer_id_test_15 = "jfzmmdaedq"
+        issuer_id_test_16 = "gssmaqetje"
+
 
     else:
         issuer_id_test_1 = "zxhaokccsi"
@@ -75,6 +79,8 @@ def issuer_oidc_test(mode):
         issuer_id_test_13 = "ywmtotgmsi"
         issuer_id_test_14 = "azjkjzlfku"
         issuer_id_test_15 = "znyvjvylrh"
+        issuer_id_test_16 = "lxvmyjevie"
+
 
     title_test_1 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_1))["page_title"]
     subtitle_test_1 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_1))["page_subtitle"]
@@ -106,6 +112,8 @@ def issuer_oidc_test(mode):
     subtitle_test_14 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_14))["page_subtitle"]
     title_test_15 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_15))["page_title"]
     subtitle_test_15 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_15))["page_subtitle"]
+    title_test_16 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_16))["page_title"]
+    subtitle_test_16 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_16))["page_subtitle"]
 
     return render_template(
         'issuer_oidc/wallet_issuer_test.html',
@@ -138,7 +146,9 @@ def issuer_oidc_test(mode):
         title_test_14=title_test_14,
         subtitle_test_14=subtitle_test_14,
         title_test_15=title_test_15,
-        subtitle_test_15=subtitle_test_15
+        subtitle_test_15=subtitle_test_15,
+        title_test_16=title_test_16,
+        subtitle_test_16=subtitle_test_16
     )
 
 
@@ -690,7 +700,39 @@ def test_15(mode):
     return redirect(qrcode) 
 
 
-
+def test_16(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
+    if mode.myenv == 'aws':
+        issuer_id = "gssmaqetje"
+        client_secret = "7f888504-6ab4-11ee-938e-0a1628958560"
+    else:       
+        issuer_id = "lxvmyjevie"
+        client_secret = "72155eb7-3b5b-11ee-a601-b33f6ebca22b"
+    offer = ["DBCGuest", "Pid", "EmailPass"]
+    with open('./verifiable_credentials/Pid.json', 'r') as f:
+        credential = json.loads(f.read())
+    headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': client_secret
+    }
+    data = { 
+        "issuer_id": issuer_id,
+        "vc": {
+            "Pid" : credential,
+            "DBCGuest": build_credential_offered(["DBCGuest"])["DBCGuest"],
+            "EmailPass": build_credential_offered(["EmailPass"])["EmailPass"]
+        },
+        "issuer_state": "test7",
+        "credential_type": offer,
+        "pre-authorized_code": True,
+        "callback": mode.server + 'sandbox/issuer/callback',
+        }
+    resp = requests.post(api_endpoint, headers=headers, json=data)
+    try:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
+        return jsonify("No qr code")
+    return redirect(qrcode) 
 
 def build_credential_offered(offer):
     credential_offered = dict()
