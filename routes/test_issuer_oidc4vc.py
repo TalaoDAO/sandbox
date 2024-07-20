@@ -708,8 +708,8 @@ def test_16(mode):
     else:       
         issuer_id = "lxvmyjevie"
         client_secret = "72155eb7-3b5b-11ee-a601-b33f6ebca22b"
-    offer = ["DBCGuest", "Pid", "EmailPass"]
-    with open('./verifiable_credentials/Pid.json', 'r') as f:
+    offer = ["IBANLegalPerson"]
+    with open('./verifiable_credentials/IBANLegalPerson.jsonld', 'r') as f:
         credential = json.loads(f.read())
     headers = {
         'Content-Type': 'application/json',
@@ -718,8 +718,7 @@ def test_16(mode):
     data = { 
         "issuer_id": issuer_id,
         "vc": {
-            "DBCGuest": build_credential_offered(["DBCGuest"])["DBCGuest"],
-            "EmailPass": build_credential_offered(["EmailPass"])["EmailPass"]
+            "IBANLegalPerson": credential
         },
         "issuer_state": "test7",
         "credential_type": offer,
@@ -733,7 +732,16 @@ def test_16(mode):
         return jsonify("No qr code")
     return redirect(qrcode) 
 
+
 def build_credential_offered(offer):
+    """_summary_
+
+    Args:
+        offer (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     credential_offered = dict()
     if isinstance(offer, str):
         offer = [offer]

@@ -691,7 +691,8 @@ profile = {
             "EmailPass",
             "PhoneProof",
             "Over18",
-            "DBCGuest"
+            "DBCGuest",
+            "IBANLegalPerson"
         ],
         "credential_configurations_supported": {
             "IBANLegalPerson": {
@@ -2685,7 +2686,7 @@ profile = {
                             "display": [{"name": "Issuing country", "locale": "en-US"},
                                         {"name": "Pays d'emission", "locale": "fr-FR"}],
                         },
-                         "issuing_authority": {
+                        "issuing_authority": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Issuing autority", "locale": "en-US"},
@@ -2723,7 +2724,7 @@ profile = {
         "schema_for_type": False,
         "credential_manifest_support": False,
     },
-     "VERIFIER-ALL": {
+    "VERIFIER-ALL": {
         "oidc4vciDraft": "13",
         "siopv2Draft": "12",
         "oidc4vpDraft": "20",

@@ -1,0 +1,16 @@
+{
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1"
+    ],
+    "type": [
+        "VerifiableCredential",
+        "IBANLegalPerson"
+    ],
+    "credentialSubject": {
+        "bankName": "ABN AMRO",
+        "leiCodeBank": "09099876FT65",
+        "swiftNumber": "58AFYT76",
+        "iban": "FR76 89789765 976965 54",
+        "id": ""
+    }
+}

@@ -1,0 +1,50 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    {
+      "EthereumAssociatedAddress": {
+        "@context": {
+          "@protected": true,
+          "@version": 1.1,
+          "accountName": "schema:identifier",
+          "associatedAddress": "https://github.com/TalaoDAO/context#associatedaddress",
+          "cryptoWalletPayload": "schema:identifier",
+          "cryptoWalletSignature": "schema:identifier",
+          "id": "@id",
+          "issuedBy": {
+            "@context": {
+              "@protected": true,
+              "@version": 1.1,
+              "logo": {
+                "@id": "schema:logo",
+                "@type": "@id"
+              },
+              "name": "schema:legalName",
+              "schema": "https://schema.org/"
+            },
+            "@id": "schema:issuedBy"
+          },
+          "schema": "https://schema.org/",
+          "type": "@type"
+        },
+        "@id": "https://github.com/TalaoDAO/context#ethereumassociatedaddress"
+      }
+    }
+  ],
+  "id": "urn:uuid:910e718e-d4eb-42d7-9bbf-7159bd76a17c",
+  "type": [
+    "VerifiableCredential",
+    "EthereumAssociatedAddress"
+  ],
+  "credentialSubject": {
+    "id": "did:clé:z6MkuJ4WC5s7aDRg89qxDUDmRBUZv6VPvvoeHhUaiJFBZWa9",
+    "type": "EthereumAssociatedAddress",
+    "associatedAddress": "0x1109823b6317d343fbeb2ae017987cebaddab3f4",
+    "issuedBy": {
+      "name": "My wallet"
+    },
+    "accountName": "My Account 4"
+  },
+  "issuer": "did:pkh:eth:0x1109823b6317d343fbeb2ae017987cebaddab3f4",
+  "issuanceDate": "2024-05-02T16:19:10Z"
+}
