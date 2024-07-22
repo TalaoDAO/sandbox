@@ -674,6 +674,373 @@ profile = {
             "urn:ietf:params:oauth:grant-type:pre-authorized_code",
         ],
     },
+    "DEFAULT-VC-JWT-OIDC4VCI13": {   # DIIP v2.1
+        "oidc4vciDraft": "13",
+        "siopv2Draft": "12",
+        "oidc4vpDraft": "18",
+        "vc_format": "jwt_vc_json",
+        "verifier_vp_type": "jwt_vp_json",
+        "oidc4vci_prefix": "openid-credential-offer://",
+        "authorization_server_support": False,
+        "credentials_as_json_object_array": False,
+        "siopv2_prefix": "openid-vc://",
+        "oidc4vp_prefix": "openid-vc://",
+        "credentials_types_supported": [
+            "EmployeeCredential",
+            "VerifiableId",
+            "EmailPass",
+            "PhoneProof",
+            "Over18",
+            "DBCGuest",
+            "IBANLegalPerson"
+        ],
+        "credential_configurations_supported": {
+            "IBANLegalPerson": {
+                "display": [
+                    {
+                        "name": "IBAN legal person",
+                        "description": "IBAN legal person",
+                        "text_color": "#FBFBFB",
+                        "logo": {
+                            "url": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
+                            "alt_text": "ABN Amro logo"
+                        },
+                        "background_image": {
+                            "url": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
+                            "alt_text": "ABN Amro Card"
+                        }
+                    },
+                    {
+                        "locale": "en-US",
+                        "name": "IBAN legal person",
+                        "description": "IBAN legal person",
+                        "text_color": "#FBFBFB",
+                        "logo": {
+                            "url": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
+                            "alt_text": "ABN Amro logo"
+                        },
+                        "background_image": {
+                            "url": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
+                            "alt_text": "ABN Amro Card"
+                        }
+                    },
+                    {
+                        "locale": "nl-NL",
+                        "name": "IBAN legal person",
+                        "description": "IBAN legal person",
+                        "text_color": "#FBFBFB",
+                        "logo": {
+                            "url": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
+                            "alt_text": "ABN Amro logo"
+                        },
+                        "background_image": {
+                            "url": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
+                            "alt_text": "ABN Amro Card"
+                        }
+                    }
+                ],
+                "id": "IBANLegalPerson",
+                "credential_definition": {
+                    "type": [
+                        "VerifiableCredential",
+                        "IBANLegalPerson"
+                    ],
+                    "credentialSubject": {
+                        "bankName": {
+                            "display": [
+                                {
+                                    "name": "Bank name",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "Bank naam",
+                                    "locale": "nl-NL"
+                                }
+                            ]
+                        },
+                        "leiCodeBank": {
+                            "display": [
+                                {
+                                    "name": "LEI code",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "LEI code",
+                                    "locale": "nl-NL"
+                                }
+                            ]
+                        },
+                        "swiftNumber": {
+                            "display": [
+                                {
+                                    "name": "SWIFT code",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "SWIFT code",
+                                    "locale": "nl-NL"
+                                }
+                            ]
+                        },
+                        "iban": {
+                            "display": [
+                                {
+                                    "name": "IBAN",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "IBAN",
+                                    "locale": "nl-NL"
+                                }
+                            ]
+                        },
+                        "accountHolder": {
+                            "display": [
+                                {
+                                    "name": "Account Holder",
+                                    "locale": "en-US"
+                                },
+                                {
+                                    "name": "Rekeninghouder",
+                                    "locale": "nl-NL"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "format": "jwt_vc_json",
+                "cryptographic_binding_methods_supported": [
+                    "did:jwk"
+                ],
+                "cryptographic_suites_supported": [
+                    "ES256"
+                ]
+            },
+            "DBCGuest": {
+                "display": [
+                    {
+                        "name": "DBC Guest (DIIP)",
+                        "description": "The DBC Guest credential is a DIIP example.",
+                        "background_color": "#3B6F6D",
+                        "text_color": "#FFFFFF",
+                        "logo": {
+                            "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
+                            "alt_text": "An orange block shape, with the text Dutch Blockchain Coalition next to it, portraying the logo of the Dutch Blockchain Coalition.",
+                        },
+                        "background_image": {
+                            "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
+                            "alt_text": "Connected open cubes in blue with one orange cube as a background of the card",
+                        },
+                    },
+                    {
+                        "locale": "en-US",
+                        "name": "DBC Guest (DIIP)",
+                        "description": "The DBC guest credential is a DIIP example.",
+                        "background_color": "#3B6F6D",
+                        "text_color": "#FFFFFF",
+                        "logo": {
+                            "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
+                            "alt_text": "An orange block shape, with the text Dutch Blockchain Coalition next to it, portraying the logo of the Dutch Blockchain Coalition.",
+                        },
+                        "background_image": {
+                            "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
+                            "alt_text": "Connected open cubes in blue with one orange cube as a background of the card",
+                        },
+                    },
+                    {
+                        "locale": "nl-NL",
+                        "name": "DBC gast (DIIP)",
+                        "description": "De DBC gast credential is een DIIP voorbeeld.",
+                        "background_color": "#3B6F6D",
+                        "text_color": "#FFFFFF",
+                        "logo": {
+                            "url": "https://dutchblockchaincoalition.org/assets/images/icons/Logo-DBC.png",
+                            "alt_text": "Aaneengesloten open blokken in de kleur blauw, met een blok in de kleur oranje, die tesamen de achtergrond van de kaart vormen.",
+                        },
+                        "background_image": {
+                            "url": "https://i.ibb.co/CHqjxrJ/dbc-card-hig-res.png",
+                            "alt_text": "Connected open cubes in blue with one orange cube as a background of the card",
+                        },
+                    },
+                ],
+                "format": "jwt_vc_json",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "DBCGuest"]
+                },
+                "scope": "DBCGuest_scope",
+            },   
+            "EmployeeCredential": {
+                "format": "jwt_vc_json",
+                "scope": "EmployeeCredential_scope",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "EmployeeCredential"]
+                },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "display": [
+                    {
+                        "name": "Employee Credential",
+                        "locale": "en-US",
+                        "logo": {
+                            "url": "https://exampleuniversity.com/public/logo.png",
+                            "alt_text": "a square logo of a university",
+                        },
+                        "background_color": "#12107c",
+                        "text_color": "#FFFFFF",
+                    }
+                ],
+            },
+            "VerifiableId": {
+                "format": "jwt_vc_json",
+                "scope": "VerifiableId_scope",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "VerifiableId"],
+                    "order": [
+                        "firstName",
+                        "familyName",
+                        "dateOfBirth",
+                        "gender",
+                        "dateIssued",
+                        "issuing_country",
+                        "email",
+                        "phone_number"
+                    ],
+                    "credentialSubject": {
+                        "firstName": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "First name", "locale": "en-US"},
+                                {"name": "Prénom(s)", "locale": "fr-FR"}         
+                            ],
+                        },
+                        "familyName": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Family name", "locale": "en-US"},
+                                {"name": "Nom", "locale": "fr-FR"}                                
+                            ],
+                        },
+                        "dateOfBirth": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Date of birth", "locale": "en-US"},
+                                {"name": "Né(e) le", "locale": "fr-FR"}
+                            ],
+                        },
+                        "email": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Email", "locale": "en-US"},
+                                {"name": "Email", "locale": "fr-FR"}
+                            ],
+                        },
+                        "phone_number": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Phone number", "locale": "en-US"},
+                                {"name": "Téléphone", "locale": "fr-FR"}
+                            ],
+                        },
+                        "gender": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Gender", "locale": "en-US"},
+                                {"name": "Sexe", "locale": "fr-FR"}
+                            ],
+                        },
+                        "issuing_country": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Issuing country", "locale": "en-US"},
+                                {"name": "Délivré par", "locale": "fr-FR"}
+                            ],
+                        },
+                        "dateIssued": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Issuance date", "locale": "en-US"},
+                                {"name": "Délivré le", "locale": "fr-FR"}
+                            ],
+                        },
+                    },
+                },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "display": [
+                    {
+                        "name": "Verifiable Id",
+                        "locale": "en-US",
+                        "background_color": "#12107c",
+                        "text_color": "#FFFFFF",
+                    }
+                ],
+            },
+            "EmailPass": {
+                "format": "jwt_vc_json",
+                "scope": "EmailPass_scope",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "EmailPass"]
+                },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "display": [{"name": "Proof of Email", "locale": "en-GB"}],
+            },
+            "Over18": {
+                "format": "jwt_vc_json",
+                "scope": "Over18_scope",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "Over18"]
+                },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "display": [
+                    {"name": "Over 18yo proof", "locale": "en-GB"}, 
+                    {"name": "Preuve de majorité", "locale": "fr-GB"}
+                ],
+            },
+            "PhoneProof": {
+                "format": "jwt_vc_json",
+                "scope": "PhoneProof_scope",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "PhoneProof"]
+                },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "display": [{"name": "Proof of phone number", "locale": "en-GB"}],
+            },
+        },
+        "grant_types_supported": [
+            "authorization_code",
+            "urn:ietf:params:oauth:grant-type:pre-authorized_code",
+        ],
+        "schema_for_type": False,
+        "credential_manifest_support": False,
+    },
     "LEGAL": {   # DIIP v2.1 for legal person
         "oidc4vciDraft": "13",
         "siopv2Draft": "12",
