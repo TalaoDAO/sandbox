@@ -70,7 +70,6 @@ def web_wallet_openid_configuration():
 def wallet_issuer(red, mode):
     if request.method == 'GET':
         my_list = list_wallet_issuer()
-        print("my list = ", my_list)
         issuer_list = ""
         for issuer in my_list:
             name = json.loads(issuer)["name"]
@@ -275,8 +274,9 @@ def credential_request(issuer, access_token, vct, type, format, proof) :
         })
     else:
         data.update({  
-            "credential_definition":{
-                "type": type
+            "credential_definition": {
+                "type": type,
+                "types": type
             }
         })
 
