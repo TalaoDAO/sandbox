@@ -170,12 +170,13 @@ def credential_select():
     metadata = json.dumps(issuer_config['credential_configurations_supported'][vc])
     pre_authorized_code = request.form.get("pre_authorized_code")
     credential = get_credential(vc, issuer, pre_authorized_code)
-    create_wallet_credential(
-        {
-            "credential": credential,
-            "metadata": metadata
-        }
-    )
+    if credential:
+        create_wallet_credential(
+            {
+                "credential": credential,
+                "metadata": metadata
+            }
+        )
     return redirect("/wallet")   
 
 
@@ -333,6 +334,7 @@ def  pre_authorized_code_flow(issuer, code, vct, type, format):
 
     if result.get('error') :
         logging.warning('credential endpoint error return code = %s', result)
+        return
     # credential received
     logging.info("'credential endpoint response = %s", result)  
     return result["credential"]
