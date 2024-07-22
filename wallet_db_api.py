@@ -44,9 +44,9 @@ def create_wallet_issuer(data):
     return create(data, 'wallet_issuer.db')
 
 
-def create(data: any, db: str):
-    if not isinstance(data, str):
-        data = json.dumps(data)
+def create(data: any, db: str) -> str:
+    if not isinstance(data, dict):
+        data = json.loads(data)
     letters = string.ascii_lowercase
     id = ''.join(random.choice(letters) for i in range(10))
     data['id'] = id
@@ -54,13 +54,13 @@ def create(data: any, db: str):
     c = conn.cursor()
     db_data = {
         "id": id,
-        "data": data
+        "data": json.dumps(data)
     }
     try:
         c.execute("INSERT INTO client VALUES (:id,:data)", db_data)
     except Exception:
-        logging.error('DB error')
-        return None
+        logging.error('DB error %s', db)
+        return
     conn.commit()
     conn.close()
     return id

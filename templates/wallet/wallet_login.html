@@ -35,6 +35,8 @@
                                                 <div class="text-center"><h4 class="mb-4">Sign-In</h4></div>
                                                 <form class="user" action="/wallet" method="POST">
                                                     <input class="form-control" type="text" value="{{credential_offer_uri}}"  name="credential_offer_uri" hidden>
+                                                    <input class="form-control" type="text" value="{{credential_offer}}"  name="credential_offer" hidden>
+
                                                     <div class="form-group">
                                                         <label>Username</label>
                                                         <input class="form-control" type="text" title="Enter your username"  name="username" style="color: rgb(133,135,150);" required>
@@ -44,7 +46,7 @@
                                                         <input required="" class="form-control"  type="password" title=""  name="password" style="color: rgb(133,135,150);">
                                                     </div>
                                                     <br>
-                                                    <button class="btn btn-block  btn-user"style="background-color: {{page_background_color}} " type="submit">Next</button>
+                                                    <button class="btn btn-block  btn-user" type="submit">Next</button>
                                                 </form>                                             
                                             
                                             </div>        

@@ -95,19 +95,23 @@ def wallet_verifier(red, mode):
         return render_template('wallet/wallet_verifier.html')
 
 
+# alao.co/wallet?credential_offer=%7B"grants"%3A%7B"urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Apre-authorized_code"%3A%7B"pre-authorized_code"%3A"8TDZnJdgfDdyA4opbZy3va"%7D%7D%2C"credential_configuration_ids"%3A%5B"IBANLegalPerson"%5D%2C"credential_issuer"%3A"https%3A%2F%2Fagent.abn.demo.sphereon.com"%7D
+
+
 def wallet(red, mode):
     if request.method == 'GET':
         if not session.get("wallet_connected"):
+            credential_offer = request.args.get('credential_offer')
             credential_offer_uri = request.args.get('credential_offer_uri')
             return render_template(
                 "wallet/wallet_login.html",
                 credential_offer_uri=credential_offer_uri,
+                credential_offer=credential_offer,
                 title="My Wallet"
             )
         else:
             my_list = list_wallet_credential()
             credential_list = ""
-            print("my list = ", my_list)
             for credential in my_list:
                 token = json.loads(credential)['credential']
                 payload = get_payload_from_token(token)
@@ -115,13 +119,13 @@ def wallet(red, mode):
                 for vc in vc_type:
                     if vc != "VerifiableCredential":
                         break
-                exp = date.fromtimestamp(payload['exp'])
-                print(exp, type(exp))
+                exp = str(date.fromtimestamp(payload['exp']))
+                iat = str(date.fromtimestamp(payload['iat']))
                 cred = """<tr>
                     <td>""" + vc + """</td>
                     <td>""" + payload['jti'] + """...</td>
-                    <td>""" + str(date.fromtimestamp(payload['exp'])) + """</td>
-                    <td>""" + str(date.fromtimestamp(payload['iat'])) + """</td>
+                    <td>""" + exp + """</td>
+                    <td>""" + iat + """</td>
                     <td>""" + "Active" + """</td>
                     <td>""" + payload["iss"] + """...</td>
                     </tr>"""
@@ -134,12 +138,16 @@ def wallet(red, mode):
     else:
         session["wallet_connected"] = True
         credential_offer_uri = request.form.get('credential_offer_uri')
-        if credential_offer_uri in [None, "None"]:
+        credential_offer = request.form.get('credential_offer')
+        if credential_offer_uri != "None":
+            r = requests.get(credential_offer_uri)
+            credential_offer = r.json()
+            if r.status_code == 404:
+                return jsonify('credential offer expired')
+        elif credential_offer != "None":
+            credential_offer = json.loads(credential_offer)
+        else:
             return redirect("/wallet")
-        r = requests.get(credential_offer_uri)
-        credential_offer = r.json()
-        if r.status_code == 404:
-            return jsonify('credential offer expired')
         credentials = credential_offer['credential_configuration_ids']
         issuer = credential_offer['credential_issuer']
         pre_authorized_code = credential_offer['grants'].get('urn:ietf:params:oauth:grant-type:pre-authorized_code', [{}])['pre-authorized_code']
@@ -169,14 +177,12 @@ def credential_select():
 
 def offer_select(issuer_id):
     issuer_list = list_wallet_issuer()
-    print("issuer list = ", issuer_list)
     for iss in issuer_list:
         if issuer_id == json.loads(iss)['id']:
             issuer = json.loads(iss)['url']
             break
     issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
     issuer_config = requests.get(issuer_config_url).json()
-    print("issuer config = ", issuer_config)
     offer_list = issuer_config['credential_configurations_supported'].keys()
     print("offer list = ", offer_list)
     offer_select_list = ""
@@ -189,22 +195,6 @@ def offer_select(issuer_id):
         )
 
 
-
-    """
-    {
-  "credential_configuration_ids": [
-    "IBANLegalPerson"
-  ], 
-  "credential_issuer": "http://192.168.1.156:3000/issuer/lxvmyjevie", 
-  "grants": {
-    "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
-      "pre-authorized_code": "085499f1-4759-11ef-bea4-cb2921f6ac73"
-    }
-  }
-}
-    
-    
-    """
 
 def get_credential(credential, issuer, pre_authorized_code):
     issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
