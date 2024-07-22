@@ -326,7 +326,9 @@ def resolve_did(vm) -> dict:
         logging.info('wallet jwk EBSI-V3= %s', jwk)
         return json.loads(jwk)
     elif did.split(':')[1] == "jwk":
-        return json.loads(base64.urlsafe_b64decode(did.split('did:jwk:')[1]))
+        key = did.split(':')[2]
+        key += "=" * ((4 - len(key) % 4) % 4)
+        return json.loads(base64.urlsafe_b64decode(key))
     elif did.split(':')[1] == "web":
         logging.info("did:web")
         did_document = resolve_did_web(did)

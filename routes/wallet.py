@@ -88,7 +88,8 @@ def wallet_issuer(red, mode):
             issuer_list=issuer_list,
             title="Discover"
             )
-    
+    else:
+        return redirect("/wallet")
     
 def wallet_verifier(red, mode):
     if request.method == 'GET':
@@ -165,34 +166,43 @@ def wallet(red, mode):
 def credential_select():
     vc = request.form.get("vc")
     issuer = request.form.get("issuer")
+    issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
+    issuer_config = requests.get(issuer_config_url).json()
+    metadata = json.dumps(issuer_config['credential_configurations_supported'][vc])
     pre_authorized_code = request.form.get("pre_authorized_code")
     credential = get_credential(vc, issuer, pre_authorized_code)
     create_wallet_credential(
         {
-            "credential": credential
+            "credential": credential,
+            "metadata": metadata
         }
     )
     return redirect("/wallet")   
 
 
 def offer_select(issuer_id):
-    issuer_list = list_wallet_issuer()
-    for iss in issuer_list:
-        if issuer_id == json.loads(iss)['id']:
-            issuer = json.loads(iss)['url']
-            break
-    issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
-    issuer_config = requests.get(issuer_config_url).json()
-    offer_list = issuer_config['credential_configurations_supported'].keys()
-    print("offer list = ", offer_list)
-    offer_select_list = ""
-    for offer in offer_list:
-        offer_select_list += "<option value=" + offer + ">" + offer + "</option>"
-    return render_template(
-        "wallet/offer_select.html",
-        offer_select_list=offer_select_list,
-        title="Select an offer"
+    if request.method == 'GET':
+        issuer_list = list_wallet_issuer()
+        for iss in issuer_list:
+            if issuer_id == json.loads(iss)['id']:
+                issuer = json.loads(iss)['url']
+                break
+        issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
+        issuer_config = requests.get(issuer_config_url).json()
+        offer_list = issuer_config['credential_configurations_supported'].keys()
+        offer_select_list = ""
+        for offer in offer_list:
+            offer_select_list += "<option value=" + offer + ">" + offer + "</option>"
+        return render_template(
+            "wallet/offer_select.html",
+            offer_select_list=offer_select_list,
+            title="Select an offer",
+            issuer_id=issuer_id
         )
+    else:
+        offer = request.form.get("offer")
+        print("offer selected = ", offer)
+        return jsonify(offer)
 
 
 
@@ -228,7 +238,8 @@ def token_request(issuer, code) :
     data = {
         "grant_type" : 'urn:ietf:params:oauth:grant-type:pre-authorized_code',
         "pre-authorized_code" : code,
-        "client_id" : client_id,
+        #"client_id" : client_id,
+        "client_id" : DID,
         "redirect_uri" : "WALLET_REDIRECT_URI",
         "tx_code" : 4444
     }
@@ -277,21 +288,18 @@ def credential_request(issuer, access_token, vct, type, format, proof) :
     return resp.json()
 
 
-def build_proof_of_key(key, aud, wallet_did, nonce):
-    """
-    For wallets natural person as jwk is added in header
-    https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-proof-types
-    """
+def build_proof_of_key(key, aud, nonce):
     key = json.loads(key) if isinstance(key, str) else key
     signer_key = jwk.JWK(**key) 
     header = {
         'typ':'openid4vci-proof+jwt',
         'alg': 'ES256',
-        'jwk': pub_key
+        "kid": VM
     }
 
     payload = {
-        'iss': client_id, # client id of the clent making the credential request
+        #'iss': client_id, # client id of the clent making the credential request
+        'iss': DID,
         'nonce': nonce,
         'iat': datetime.timestamp(datetime.now()),
         'aud': aud # Credential Issuer URL
@@ -317,7 +325,7 @@ def  pre_authorized_code_flow(issuer, code, vct, type, format):
     logging.info('access token received = %s', access_token)
     
     #build proof of key ownership
-    proof = build_proof_of_key(KEY_DICT, issuer , DID, c_nonce)
+    proof = build_proof_of_key(KEY_DICT, issuer , c_nonce)
     logging.info("proof of key ownership sent = %s", proof)
 
     # credential request
