@@ -258,6 +258,8 @@ def token_request(issuer, code) :
     return resp.json()
 
 
+
+
 def credential_request(issuer, access_token, vct, type, format, proof) :
     issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
     issuer_config = requests.get(issuer_config_url).json()
@@ -284,7 +286,18 @@ def credential_request(issuer, access_token, vct, type, format, proof) :
         data.update({  
             "credential_definition": {
                 "type": type,
-                "types": type  # for testing purpose only
+                "credentialSubject": {
+                        "bankName": {
+                        },
+                        "leiCodeBank": {
+                        },
+                        "swiftNumber": {
+                        },
+                        "iban": {
+                        },
+                        "accountHolder": {
+                        }
+                    }
             }
         })
 
