@@ -708,9 +708,11 @@ def test_16(mode):
     else:       
         issuer_id = "lxvmyjevie"
         client_secret = "72155eb7-3b5b-11ee-a601-b33f6ebca22b"
-    offer = ["IBANLegalPerson"]
+    offer = ["IBANLegalPerson", "BankAccountBalance"]
     with open('./verifiable_credentials/IBANLegalPerson.jsonld', 'r') as f:
-        credential = json.loads(f.read())
+        credential_1 = json.loads(f.read())
+    with open('./verifiable_credentials/BankAccountBalance.jsonld', 'r') as f:
+        credential_2 = json.loads(f.read())
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
@@ -718,7 +720,8 @@ def test_16(mode):
     data = { 
         "issuer_id": issuer_id,
         "vc": {
-            "IBANLegalPerson": credential
+            "IBANLegalPerson": credential_1,
+            "BankAccountBalance": credential_2
         },
         "issuer_state": "test7",
         "credential_type": offer,

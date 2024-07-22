@@ -24,6 +24,8 @@ from routes import saas4ssi
 # OIDC4VC
 from routes import oidc4vp_api, oidc4vp_console
 from routes import oidc4vci_api, oidc4vci_console
+from routes import wallet
+
 # for testing purpose
 from routes import test_issuer_oidc4vc
 from routes import test_verifier_oidc4vc
@@ -70,11 +72,15 @@ app.config['SESSION_FILE_THRESHOLD'] = 100
 app.config['SECRET_KEY'] = "sandbox" + mode.password
 app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["jpeg", "jpg", "png", "gif"]
 
-# OIDC4VC wallet
+# OIDC4VC issuer and verfier
 oidc4vp_console.init_app(app, red, mode)
 oidc4vp_api.init_app(app, red, mode)
 oidc4vci_console.init_app(app, red, mode)
 oidc4vci_api.init_app(app, red, mode)
+
+#OIDC4VC web wallet
+wallet.init_app(app, red, mode)
+
 # MAIN functions
 saas4ssi.init_app(app, red, mode)
 

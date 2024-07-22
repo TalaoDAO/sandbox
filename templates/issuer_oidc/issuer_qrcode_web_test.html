@@ -41,11 +41,13 @@
                 </div>             
               </div>
 
-                <form class="text-center" action="/sandbox" method="post">
+                <form class="text-center" action="/issuer/{{issuer_id}}/redirect" method="post">
 
                     <div id="divFormTest">
+                      <input hidden type="text" name="arg_for_web_wallet" value= "{{arg_for_web_wallet}}">
+
                         <br>
-                        <input size="30" type="text" name="wabe_wallet" placeholder="Web wallet URL">
+                        <input size="30" type="text" name="web_wallet_url" placeholder="Web wallet URL">
                        
                             <button id="submitDeffered" type="submit">GO</button>
                     </div>
@@ -61,7 +63,7 @@
           </div>
 
           <div class="text-center mt-5">
-            <h2>QR code json</h2><br>
+            <h2>Offer</h2><br>
           <textarea rows="30" cols="150">{{url_data|safe}}</textarea>
           </div>
           

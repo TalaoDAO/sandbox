@@ -57,7 +57,8 @@ oidc4vc_profile_list = {
     'HAIP': 'HAIP-EUDI Wallet',
     'POTENTIAL': 'LSP POTENTIAL',
     'VERIFIER-ALL': 'VERIFIER ALL',
-    'ISSUER-ALL': 'Mix of VC format with OIDC4VCI Draft 13'
+    'ISSUER-ALL': 'Mix of VC format with OIDC4VCI Draft 13',
+    'LEGAL': "Company - Legal Person - DIIP V 2.1"
 }
 
 #OIDC4VC Verifier for admin

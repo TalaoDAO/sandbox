@@ -52,6 +52,10 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/credential_offer_uri/<id>', view_func=issuer_credential_offer_uri, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/issuer/error_uri', view_func=wallet_error_uri, methods=['GET'])
     
+    # OIDC4VCI protocol with web wallet
+    app.add_url_rule('/issuer/<issuer_id>/redirect', view_func=issuer_web_wallet_redirect, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+
+    
     # to manage different specs and interpretations
     app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-vc-issuer', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-issuer', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
@@ -391,6 +395,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     json_url = {'credential_offer': offer}
 
     # credential offer is passed by reference: credential offer uri
+    arg_for_web_wallet = ""
     if issuer_data.get('credential_offer_uri'):
         id = str(uuid.uuid1())
         credential_offer_uri = (
@@ -403,14 +408,15 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
             + '?credential_offer_uri='
             + credential_offer_uri
         )
+        arg_for_web_wallet = '?credential_offer_uri=' + credential_offer_uri
     qrcode_page = issuer_data.get('issuer_landing_page')
-
-    logging.info('QR code page = %s', qrcode_page)
+    logging.info('QR code page file = %s', qrcode_page)
     return render_template(
         qrcode_page,
         openid_credential_configuration=json.dumps(credential_issuer_openid_configuration(issuer_id, mode), indent=4),
         openid_configuration=json.dumps(as_openid_configuration(issuer_id, mode), indent=4),
         url_data=json.dumps(json_url, indent=6),
+        arg_for_web_wallet=arg_for_web_wallet,
         url=url_to_display,
         deeplink_altme=mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display}),
         deeplink_talao=mode.deeplink_talao + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display}),
@@ -423,6 +429,19 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
         landing_page_url=issuer_data['landing_page_url'],
         issuer_state=request.args.get('issuer_state'),
     )
+
+
+def issuer_web_wallet_redirect(issuer_id, red, mode):
+    arg_for_web_wallet = request.form['arg_for_web_wallet']
+    web_wallet_url = request.form["web_wallet_url"]
+    wallet_config_url = web_wallet_url + '/.well-known/openid-configuration'
+    wallet_config = requests.get(wallet_config_url).json()
+    wallet_credential_offer_endpoint = wallet_config.get('credential_offer_endpoint')
+    if not wallet_credential_offer_endpoint:
+        logging.error("wallet credential offer endpoint not found")
+        return jsonify("wallet credential offer endpoint not found"), 400
+    redirect_uri = wallet_credential_offer_endpoint + arg_for_web_wallet
+    return redirect(redirect_uri)
 
 
 def authorization_error(error, error_description, stream_id, red, state):
