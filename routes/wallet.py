@@ -41,7 +41,7 @@ pub_key_json = json.dumps(pub_key).replace(" ", "")
 DID = "did:jwk:" + base64.urlsafe_b64encode(pub_key_json.encode()).decode().replace("=", "")
 VM = DID + "#0"
 
-logo = "/static/img/altme_logo_2.png"
+logo = ""
 
 
 def init_app(app, red, mode):
@@ -66,8 +66,7 @@ def update():
     logo = config["generalOptions"]["companyLogo"]
     print("logo = ", logo)
     return redirect("/wallet")
-    
-    
+
 
 def web_wallet_openid_configuration():
     config = {
