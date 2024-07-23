@@ -129,8 +129,8 @@ def get_wallet_configuration():
     return
 
 
-get_wallet_attestation()
-get_wallet_configuration()
+#get_wallet_attestation()
+#get_wallet_configuration()
 
 """
 # wallet sign request with assertion and login:password
