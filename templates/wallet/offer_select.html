@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<!-- offer_select.html -->
-<html style="background-color: {{ page_background_color }} ">
+<html>
+
+<head>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=300px, initial-scale=1, maximum-scale=1">  
@@ -8,71 +9,64 @@
         <title>{{company_name}}</title>
         <link rel = "stylesheet" type= "text/css" href= "{{ url_for('static', filename='bootstrap.min.css') }}">
     </head>
+</head>
 
-<body>
-    <div id="content_desktop" class="d-none d-sm-block"  style="background-color: {{page_background_color}} " >
-        <div id="wrapper">
-            <div class="d-flex flex-column">
+<body id="page-top">
+  <div id="wrapper">
+    <div class="d-flex flex-column" id="content-wrapper" >     
+      <div id="content">
+        {% include "wallet/wallet_nav_bar.html" %}
 
-                    <div class="container">
+        <div class="container-fluid mt-3">
+          <div class="text-center mt-3">
+            <h3 class="text-dark mb-4"></h3>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
 
-                        <div class="text-center mt-5">
-                            <h1 class="card-text"></h1><br>
-                            <div class="row">
-                            <div class="col-6 offset-3">
-                            </div>
-                            </div>
+                  <div class="card shadow mt-5">
+                    <div class="card-header py-3">
+                      <div class="d-flex justify-content-between">
+                        <p style="color:#09060f;" class=" m-0 font-weight-bold"></p>
+                      </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-row">
+
+                            <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
+                            <div style="height:600px;overflow:auto;overflow-x: hidden;"> 
+                            <table class="table my-0" id="dataTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 15%" >Issuer name</th>
+                                        <th style="width: 15%" >QEEA</th>
+                                        <th style="width: 15%" >Description</th>
+                                       
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{cred_list|safe}}
+                                </tbody>
+                            </table>
                         </div> 
-                    
-                        <div class="row d-flex justify-content-center ">    
-                            <div class="col-4">
-                                <div class="text-center border-radius: 20%">
-                            </div>
-                            <div class="card shadow o-hidden border-0 mt-5" >
-                                    <div class="card-body p-0">
-                                            <div id="id_text" class="p-5">
-                                                <div class="text-center"><h4 class="mb-4">Select one offer</h4></div>
-                                                <form class="user" action="/wallet/offer/select" method="POST">
-                                                    <input class="form-control" type="text" value="{{pre_authorized_code}}"  name="pre_authorized_code" hidden>
-                                                    <input class="form-control" type="text" value="{{issuer}}"  name="issuer" hidden>
-
-                                                    <div class="col">
-                                                        <div class="form-group"><label><strong></strong></label><select  name= "offer" class="form-control">
-                                                        <option value="">--Please choose an option--</option>
-                                                        {{offer_select_list|safe}}
-                                                        </select></div>
-                                                    </div>
-                                                    <button class="btn btn-block  btn-user"  type="submit">Next</button>
-                                                </form>                                             
-                                            
-                                            </div>        
-                                        </div> 
-                                    <div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col">
-                                    <a class="text-secondary" href={{privacy_url}}><small>Privacy</small></a>
-                                    </div>
-                                    <div class="col">
-                                    <a class="text-secondary" href={{terms_url}}><small>Terms & conditions</small></a>
-                                    </div>
-                                </div>  
-                            </div>
-                            </div>
-                    </div> 
+                    </div>
+                        </div>
+                        
+                    </div>
+                  </div>
                 </div>
-            </div>
+              
+          </div>
         </div>
-    
+      </div>
+    </div>
+  </div>
 
-    
-
-
-    <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
-    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>   
-
-
+      <script src="{{ url_for('static', filename='in_progress_button.js') }}"></script>
+      <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
+      <script src="{{ url_for('static', filename='theme.js') }}"></script>
+      <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+      <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
 </body>
+
 </html>

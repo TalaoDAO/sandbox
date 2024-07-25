@@ -1,3 +1,11 @@
+"""
+
+issuance https://dutchblockchaincoalition.github.io/CompanyPassport/technical/issuance
+
+"""
+
+
+
 import base64
 from flask import Flask, request, jsonify, render_template, redirect, session
 from jwcrypto import jwk, jwt
@@ -6,14 +14,14 @@ import json
 from datetime import date
 import sys
 from urllib.parse import urlencode
-
+import pkce
 import logging
 from datetime import datetime
 from oidc4vc import get_payload_from_token 
 from wallet_db_api import create_wallet_credential, list_wallet_credential, list_wallet_issuer
 logging.basicConfig(level=logging.INFO)
 from wallet_for_backend import get_wallet_configuration
-
+import uuid
 
 # wallet key for testing purpose
 
@@ -41,16 +49,15 @@ pub_key_json = json.dumps(pub_key).replace(" ", "")
 DID = "did:jwk:" + base64.urlsafe_b64encode(pub_key_json.encode()).decode().replace("=", "")
 VM = DID + "#0"
 
-logo = ""
-
 
 def init_app(app, red, mode):
-    app.add_url_rule('/wallet', view_func=wallet, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
-    app.add_url_rule('/wallet/discover', view_func=wallet_discover, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode}) # discover
-    app.add_url_rule('/wallet/verifier', view_func=wallet_verifier, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/wallet', view_func=wallet, methods=['GET', 'POST'])
+    app.add_url_rule('/wallet/issuer', view_func=wallet_issuer, methods=['GET', 'POST']) # discover
+    app.add_url_rule('/wallet/verifier', view_func=wallet_verifier, methods=['GET', 'POST'])
     app.add_url_rule('/wallet/credential/select', view_func=credential_select, methods=['GET', 'POST'])
-    app.add_url_rule('/wallet/offer/select', view_func=offer_select, methods=['GET', 'POST'])
-    app.add_url_rule('/wallet/update', view_func=update, methods=['GET', 'POST'])
+    app.add_url_rule('/wallet/qeea/select', view_func=QEEA_select, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+
+    app.add_url_rule('/wallet/callback', view_func=callback, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
 
     app.add_url_rule('/wallet/login', view_func=wallet_login, methods=['GET', 'POST'])
 
@@ -58,14 +65,10 @@ def init_app(app, red, mode):
     return
 
 
-def update():
-    global logo
-    get_wallet_configuration()
+def update_logo():
     f = open("wallet_configuration.json", 'r')
     config = json.loads(f.read())
-    logo = config["generalOptions"]["companyLogo"]
-    print("logo = ", logo)
-    return redirect("/wallet")
+    return config["generalOptions"]["companyLogo"]
 
 
 def web_wallet_openid_configuration():
@@ -75,32 +78,32 @@ def web_wallet_openid_configuration():
     return jsonify(config)
 
 
-def wallet_discover(red, mode):
-    if request.method == 'GET':
-        f = open("wallet_configuration.json", 'r')
-        config = json.loads(f.read())
-        my_list = config["discoverCardsOptions"]["displayExternalIssuer"] 
-        issuer_list = ""
-        for issuer in my_list:
-            name = issuer["title"]
-            url = issuer['redirect']
-            href = "/wallet/offer/select?url=" + url
-            iss = """<tr>
-                <td>""" + "<a href=" + href + ">" + name + """</td>
-                <td>""" + url + """</td>
-                <td>""" + "contact@test.com" + """...</td>
-                </tr>"""
-            issuer_list += iss
-        return render_template(
-            "wallet/wallet_issuer.html",
-            issuer_list=issuer_list,
-            title="Discover",
-            logo=logo
-            )
-    else:
-        return redirect("/wallet")
+def wallet_issuer():
+    f = open("wallet_configuration.json", 'r')
+    config = json.loads(f.read())
+    my_list = config["discoverCardsOptions"]["displayExternalIssuer"] 
+    issuer_list = ""
+    for issuer in my_list:
+        name = issuer["title"]
+        description = issuer["description"]
+        url = issuer['redirect']
+        href = "/wallet/qeea/select?url=" + url
+        iss = """<tr>
+            <td>""" + "<a href=" + href + ">" + name + """</td>
+            <td>""" + description + """</td>
+            <td>""" + url + """</td>
+            <td>""" + "contact@test.com" + """...</td>
+            </tr>"""
+        issuer_list += iss
+    return render_template(
+        "wallet/wallet_issuer.html",
+        issuer_list=issuer_list,
+        title="Discover",
+        logo=update_logo()
+    )
+
     
-def wallet_verifier(red, mode):
+def wallet_verifier():
     if request.method == 'GET':
         return render_template('wallet/wallet_verifier.html')
 
@@ -117,6 +120,7 @@ def wallet_login():
         )
     else:
         session["wallet_connected"] = True
+        #get_wallet_configuration()
         credential_offer = request.form.get('credential_offer')
         credential_offer_uri = request.form.get('credential_offer_uri')
         if credential_offer:
@@ -128,7 +132,7 @@ def wallet_login():
         return redirect(redirect_uri)
 
 
-def wallet(red, mode):
+def wallet():
     if request.method == 'GET':
         if not session.get("wallet_connected"):
             if not request.args:
@@ -141,6 +145,7 @@ def wallet(red, mode):
                 credential_list = ""
                 for credential in my_list:
                     token = json.loads(credential)['credential']
+                    id = json.loads(credential)['id']
                     payload = get_payload_from_token(token)
                     vc_type = payload["vc"]['type']
                     for vc in vc_type:
@@ -149,7 +154,7 @@ def wallet(red, mode):
                     exp = str(date.fromtimestamp(payload['exp']))
                     iat = str(date.fromtimestamp(payload['iat']))
                     cred = """<tr>
-                    <td>""" + vc + """</td>
+                    <td><a href="/wallet/credential?id=""" + id + """">""" + vc + """</a></td>
                     <td>""" + payload['jti'] + """...</td>
                     <td>""" + exp + """</td>
                     <td>""" + iat + """</td>
@@ -161,9 +166,10 @@ def wallet(red, mode):
                     "wallet/wallet_credential.html",
                     credential_list=credential_list,
                     title="My Wallet",
-                    logo=logo
+                    logo=update_logo()
                 )
             else:
+                # Issuer initiated with pre authorized code
                 if request.args.get('credential_offer_uri'):
                     r = requests.get(request.args.get('credential_offer_uri'))
                     credential_offer = r.json()
@@ -188,72 +194,164 @@ def wallet(red, mode):
 
 
 def credential_select():
+    """
+    Issuer initiated with pre authorized code
+    """
     vc = request.form.get("vc")
     issuer = request.form.get("issuer")
     issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
     issuer_config = requests.get(issuer_config_url).json()
-    metadata = json.dumps(issuer_config['credential_configurations_supported'][vc])
+    credential_metadata = json.dumps(issuer_config['credential_configurations_supported'][vc])
     pre_authorized_code = request.form.get("pre_authorized_code")
-    credential = get_credential(vc, issuer, pre_authorized_code)
+    vc_format = credential_metadata['format']
+    if vc_format == "vc+sd-jwt":
+        vct = credential_metadata['credential_definition']['vct']
+        vc_type = None
+    else:
+        vc_type = credential_metadata['credential_definition']['type']
+        vct = None
+    credential =  pre_authorized_code_flow(issuer, pre_authorized_code, vct, vc_type, vc_format) 
     if credential:
         create_wallet_credential(
             {
                 "credential": credential,
-                "metadata": metadata
+                "metadata": credential_metadata
             }
         )
     return redirect("/wallet")   
 
 
-def offer_select():
-    if request.method == 'GET':
-        issuer = request.args["url"]
+def QEEA_select(red, mode):
+    """
+    Wallet initiated with authorization code flow
+    
+    """
+    f = open("wallet_configuration.json", 'r')
+    config = json.loads(f.read())
+    my_list = config["discoverCardsOptions"]["displayExternalIssuer"]
+    if request.args.get('url'):
+        for issuer in my_list:
+            if issuer['redirect'] == request.args.get('url'):
+                my_list = [issuer]
+                break
+    cred_list = ""
+    for issuer in my_list:
+        name = issuer["title"]
+        description = issuer["description"]
+        issuer = issuer['redirect']
         issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
         issuer_config = requests.get(issuer_config_url).json()
         offer_list = issuer_config['credential_configurations_supported'].keys()
-        offer_select_list = ""
-        for offer in offer_list:
-            offer_select_list += "<option value=" + offer + ">" + offer + "</option>"
-        return render_template(
-            "wallet/offer_select.html",
-            offer_select_list=offer_select_list,
-            title="Select an offer",
-            issuer=issuer,
-        )
-    else:
-        offer = request.form.get("offer")
-        issuer = request.form.get("issuer")
-        issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
-        issuer_config = requests.get(issuer_config_url).json()
-        vc_metadata = issuer_config['credential_configurations_supported'][offer]
-        print(vc_metadata)
-        scope = vc_metadata.get("scope")
-        format = "jwt_vc_json"
-        vct = offer
-        print(issuer, scope, vct, type, format)
-        credential = client_credential_flow(issuer, scope, vct, type, format)
-        return jsonify(credential)
+        for cred in offer_list:
+            description = issuer_config['credential_configurations_supported'][cred]["display"][0].get("description", "No description")
+            scope = issuer_config['credential_configurations_supported'][cred]["scope"]
+            href = build_authorization_request(issuer, scope, red, mode)
+            attestation = """<tr>
+                <td>""" + name + """</td>
+                <td><a href=""" + href +">" + cred + """</a></td>
+                <td>""" + description + """</td>
+                </tr>"""
+            cred_list += attestation
+    return render_template(
+        "wallet/offer_select.html",
+        cred_list=cred_list,
+        title="Select an offer"
+    )
 
 
-
-def get_credential(credential, issuer, pre_authorized_code):
+def build_authorization_request(issuer, scope, red, mode) -> str:
+    """
+    Build and authorization request
+    """
     issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
     issuer_config = requests.get(issuer_config_url).json()
-    #print("issuer config = ", issuer_config)
-    vc = issuer_config['credential_configurations_supported'][credential]
-    print("vc = ", vc)
-    vc_format = vc['format']
+    authorization_endpoint = issuer_config['authorization_endpoint']
+    code_verifier, code_challenge = pkce.generate_pkce_pair()
+    state = str(uuid.uuid1())
+    data = {
+        "redirect_uri": mode.server + 'wallet/callback',
+        "client_id": DID, 
+        "scope": scope,
+        "response_type": "code",
+        "code_challenge": code_challenge,
+        "code_challenge_method": "S256",
+        "state": state
+    }
+    red.setex(state, 1000, json.dumps(
+        {
+            "issuer": issuer,
+            "scope": scope
+        })
+    )
+    redirect_uri = authorization_endpoint + '?' + urlencode(data)
+    
+    return redirect_uri
+
+
+def callback(red, mode):
+    """
+    For authorization code flow call back, wallet intiated flow 
+    
+    """
+    code = request.args['code']
+    state = request.args.get('state')
+    data = json.loads(red.get(state).decode())
+    issuer = data['issuer']
+    scope = data['scope']
+    
+    # access token request
+    logging.info('This is a pre_authorized-code flow')
+    result = token_request(issuer, code)
+    logging.info('token endpoint response = %s', result)
+    if result.get('error'):
+        logging.warning('token endpoint error return code = %s', result)
+        sys.exit()
+
+    # access token received
+    access_token = result["access_token"]
+    c_nonce = result.get("c_nonce", "")
+    logging.info('access token received = %s', access_token)
+    
+    #build proof of key ownership
+    proof = build_proof_of_key(KEY_DICT, DID, VM, issuer , c_nonce)
+    logging.info("proof of key ownership sent = %s", proof)
+
+    # credential request
+    issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
+    issuer_config = requests.get(issuer_config_url).json()
+    vc_list = issuer_config['credential_configurations_supported'].keys()
+    for vc in vc_list:
+        if issuer_config['credential_configurations_supported'][vc]['scope'] == scope:
+            break
+    credential_metadata = issuer_config['credential_configurations_supported'][vc]
+    vc_format = credential_metadata['format']
     if vc_format == "vc+sd-jwt":
-        vct = vc['credential_definition']['vct']
-        vc_type = None
+        vct = credential_metadata['credential_definition']['vct']
+        type = None
     else:
-        vc_type = vc['credential_definition']['type']
+        type = credential_metadata['credential_definition']['type']
         vct = None
-    print('this is a pre authorized code flow')
-    return pre_authorized_code_flow(issuer, pre_authorized_code, vct, vc_type, vc_format) 
+    result = credential_request(issuer, access_token, vct, type, vc_format, proof)
+
+    if result.get('error'):
+        logging.warning('credential endpoint error return code = %s', result)
+        return
+    # credential received
+    logging.info("'credential endpoint response = %s", result)  
+    credential = result["credential"]
+    if credential:
+        create_wallet_credential(
+            {
+                "credential": credential,
+                "metadata": json.dumps(credential_metadata)
+            }
+        )
+    return redirect("/wallet")     
 
 
-def token_request(issuer, code, scope="", grant_type='urn:ietf:params:oauth:grant-type:pre-authorized_code'):
+
+
+def token_request(issuer, code, grant_type='urn:ietf:params:oauth:grant-type:pre-authorized_code'):
     issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
     issuer_config = requests.get(issuer_config_url).json()
     if issuer_config.get("authorization_server"):
@@ -273,8 +371,6 @@ def token_request(issuer, code, scope="", grant_type='urn:ietf:params:oauth:gran
     # depending on the grant type
     if grant_type == 'urn:ietf:params:oauth:grant-type:pre-authorized_code':
         data["pre-authorized_code"] = code
-    elif grant_type == 'client_credentials':
-        data['scope'] = scope
     else:
         logging.error("grant type is unknown")
         return
@@ -337,7 +433,7 @@ def build_proof_of_key(key, iss, kid, aud, nonce):
     return token.serialize()
 
 
-# If pre authorized code, the script starts here.  not the wallet starts the local server
+# pre authorized code
 def  pre_authorized_code_flow(issuer, code, vct, type, format):
     # access token request
     logging.info('This is a pre_authorized-code flow')
@@ -367,10 +463,14 @@ def  pre_authorized_code_flow(issuer, code, vct, type, format):
     return result["credential"]
 
 
-def client_credential_flow(issuer, scope, vct, type, format):
+# authorization code flow
+def  authorization_code_flow(issuer, scope, vct, type, format):
+    # authorization request
+    
+    
     # access token request
-    logging.info('This is a client credential flow')
-    result = token_request(issuer, None, scope=scope, grant_type='client_credentials')
+    logging.info('This is an authorization code flow')
+    result = token_request(issuer, code)
     logging.info('token endpoint response = %s', result)
     if result.get('error'):
         logging.warning('token endpoint error return code = %s', result)
@@ -394,3 +494,4 @@ def client_credential_flow(issuer, scope, vct, type, format):
     # credential received
     logging.info("'credential endpoint response = %s", result)  
     return result["credential"]
+

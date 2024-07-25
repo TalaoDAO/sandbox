@@ -696,6 +696,7 @@ profile = {
         ],
         "credential_configurations_supported": {
             "IBANLegalPerson": {
+                "scope": "IBANLegalPerson_scope",
                 "display": [
                     {
                         "name": "IBAN legal person",
@@ -885,6 +886,7 @@ profile = {
                 "display": [
                     {
                         "name": "Employee Credential",
+                        "description" : "Employee attestation",
                         "locale": "en-US",
                         "logo": {
                             "url": "https://exampleuniversity.com/public/logo.png",
@@ -979,6 +981,7 @@ profile = {
                 "display": [
                     {
                         "name": "Verifiable Id",
+                        "decription": "Personal ID",
                         "locale": "en-US",
                         "background_color": "#12107c",
                         "text_color": "#FFFFFF",
@@ -998,7 +1001,13 @@ profile = {
                     "ES384",
                     "RS256",
                 ],
-                "display": [{"name": "Proof of Email", "locale": "en-GB"}],
+                "display": [
+                    {
+                        "name": "Proof of Email",
+                        "description": "Proof of email",
+                        "locale": "en-GB"
+                    }
+                ],
             },
             "Over18": {
                 "format": "jwt_vc_json",
@@ -1014,7 +1023,11 @@ profile = {
                     "RS256",
                 ],
                 "display": [
-                    {"name": "Over 18yo proof", "locale": "en-GB"}, 
+                    {
+                        "name": "Over 18yo proof",
+                        "locale": "en-GB",
+                        "description": "Proof of majority",
+                    }, 
                     {"name": "Preuve de majorité", "locale": "fr-GB"}
                 ],
             },
@@ -1171,6 +1184,7 @@ profile = {
                     }
                 },
                 "format": "jwt_vc_json",
+                "scope": "IBANLegalPerson_scope",
                 "cryptographic_binding_methods_supported": [
                     "did:jwk"
                 ],
@@ -1282,6 +1296,7 @@ profile = {
                     }
                 },
                 "format": "jwt_vc_json",
+                "scope": "BankAccountBalance_scope",
                 "cryptographic_binding_methods_supported": [
                     "did:jwk"
                 ],

@@ -498,7 +498,7 @@ def issuer_authorize_par(issuer_id, red, mode):
             return Response(**manage_error('invalid_request', 'client_id does not match client assertion sub', red, mode, request=request))
         try:
             DPoP = request.headers.get('Oauth-Client-Attestation-Pop')
-        except:
+        except Exception:
             return Response(**manage_error('invalid_request', 'PoP is missing', red, mode, request=request))
         logging.info('OAuth-Client-Attestation-PoP = %s', DPoP)
         if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(DPoP).get('iss'):
@@ -536,7 +536,7 @@ def issuer_authorize_par(issuer_id, red, mode):
     return Response(response=json.dumps(endpoint_response), headers=headers)
 
 
-# login for authorization code flow
+# IDP login for authorization code flow
 def issuer_authorize_login(issuer_id, red):
     if request.method == 'GET':
         session['login'] = False
@@ -544,7 +544,7 @@ def issuer_authorize_login(issuer_id, red):
         return render_template('issuer_oidc/authorize.html', url= '/issuer/' + issuer_id + '/authorize/login')
     if not red.get( request.form['test']):
         flash('Wrong test name', 'danger')
-        return redirect('/issuer/' + issuer_id + '/authorize/login') 
+        #return redirect('/issuer/' + issuer_id + '/authorize/login') 
     session['login'] = True
     session['test'] = request.form['test']
     return redirect('/issuer/' + issuer_id + '/authorize?test=' + session['test']) 
@@ -645,7 +645,38 @@ def issuer_authorize(issuer_id, red, mode):
     logging.info('user is logged')
     session['login'] = False
     test = request.args.get('test')
-    offer_data = json.loads(red.get(test).decode())
+    try:
+        """
+        issuer initiated authorization code flow with QR code
+        """
+        offer_data = json.loads(red.get(test).decode())
+    except Exception:
+        """ 
+        wallet initiated authorization code flow -> create offer_data from file as it is needed for web wallet tests
+        
+        """
+        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+        issuer_profile = profile[issuer_data['profile']]
+        vc_list = issuer_profile["credential_configurations_supported"].keys()
+        for vc in vc_list:
+            if issuer_profile["credential_configurations_supported"][vc]["scope"] == session['code_data']['scope']:
+                break
+        try:
+            f = open("./verifiable_credentials/" + vc + ".jsonld", 'r')
+        except Exception:
+            # for vc+sd-jwt 
+            try:
+                f = open("./verifiable_credentials/" + vc + ".json", 'r')
+            except Exception:
+                logging.error("file not found")
+                return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'VC not found', None, red, state))
+        credential = json.loads(f.read())
+        offer_data = {
+            "stream_id": None,
+            "vc": {vc: credential},
+            "credential_type": [vc]
+        }
+        
     vc = offer_data['vc']
     try:
         session['code_data']['stream_id'] = offer_data['stream_id']
@@ -695,7 +726,7 @@ def issuer_token(issuer_id, red, mode):
         code = request.form.get('code')
     else:
         return Response(**manage_error('invalid_request', 'Grant type not supported', red, mode, request=request))
-    if not code:
+    if not code and grant_type != 'client_credentials':
         return Response(**manage_error('invalid_request', 'Request format is incorrect, code is missing', red, mode, request=request))
     if grant_type == 'authorization_code' and not request.form.get('redirect_uri'):
         return Response(**manage_error('invalid_request', 'Request format is incorrect, redirect_uri is missing', red, mode, request=request))
@@ -738,7 +769,7 @@ def issuer_token(issuer_id, red, mode):
             logging.info('OAuth-Client-Attestation-PoP = %s', PoP)
             if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(PoP).get('iss'):
                 return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
-        except:
+        except Exception:
             #https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-02.html    
             client_assertion = request.form.get('client_assertion').split("~")[0]
             logging.info('client _assertion = %s', client_assertion)
@@ -754,9 +785,8 @@ def issuer_token(issuer_id, red, mode):
         data = json.loads(red.get(code).decode())
     except Exception:
         return Response(**manage_error('access_denied', 'Grant code expired', red, mode, request=request, status=404))
-
     stream_id = data['stream_id']
-
+        
     # check code verifier
     if grant_type == 'authorization_code' and int(issuer_profile['oidc4vciDraft']) >= 10:
         code_verifier = request.form.get('code_verifier')
@@ -764,7 +794,6 @@ def issuer_token(issuer_id, red, mode):
         if code_challenge_calculated != data['code_challenge']:
             return Response(**manage_error('access_denied', 'Code verifier is incorrect', red, mode, request=request, stream_id=stream_id, status=404))
 
-    # PIN code
     if data.get('user_pin_required') and not user_pin:
         return Response(**manage_error('invalid_request', 'User pin is missing', red, mode, request=request, stream_id=stream_id))
     logging.info('user_pin = %s', data.get('user_pin'))
@@ -811,7 +840,8 @@ def issuer_token(issuer_id, red, mode):
         'authorization_details': authorization_details,
         'stream_id': data.get('stream_id'),
         'issuer_state': data.get('issuer_state'),
-        'client_id': request.form.get('client_id')
+        'client_id': request.form.get('client_id'),
+        'scope': request.form.get('scope')
     }
     logging.info('token endpoint response = %s', json.dumps(endpoint_response, indent=4))
     red.setex(access_token, ACCESS_TOKEN_LIFE, json.dumps(access_token_data))

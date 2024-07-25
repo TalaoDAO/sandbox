@@ -279,7 +279,7 @@ def test_4(mode):
     data = { 
         "issuer_id": issuer_id,
         "vc": build_credential_offered(offer), 
-        "issuer_state": "test7",
+        "issuer_state": "test4",
         "credential_type": offer,
         "pre-authorized_code": True,
         "callback": mode.server + 'sandbox/issuer/callback',
