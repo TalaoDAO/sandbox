@@ -201,7 +201,7 @@ def credential_select():
     issuer = request.form.get("issuer")
     issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
     issuer_config = requests.get(issuer_config_url).json()
-    credential_metadata = json.dumps(issuer_config['credential_configurations_supported'][vc])
+    credential_metadata = issuer_config['credential_configurations_supported'][vc]
     pre_authorized_code = request.form.get("pre_authorized_code")
     vc_format = credential_metadata['format']
     if vc_format == "vc+sd-jwt":
@@ -210,12 +210,12 @@ def credential_select():
     else:
         vc_type = credential_metadata['credential_definition']['type']
         vct = None
-    credential =  pre_authorized_code_flow(issuer, pre_authorized_code, vct, vc_type, vc_format) 
+    credential = pre_authorized_code_flow(issuer, pre_authorized_code, vct, vc_type, vc_format) 
     if credential:
         create_wallet_credential(
             {
                 "credential": credential,
-                "metadata": credential_metadata
+                "metadata": json.dumps(credential_metadata)
             }
         )
     return redirect("/wallet")   

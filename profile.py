@@ -686,7 +686,7 @@ profile = {
         "siopv2_prefix": "openid-vc://",
         "oidc4vp_prefix": "openid-vc://",
         "credentials_types_supported": [
-            "EmployeeCredential",
+            "TestCredential",
             "VerifiableId",
             "EmailPass",
             "PhoneProof",
@@ -870,9 +870,9 @@ profile = {
                 },
                 "scope": "DBCGuest_scope",
             },   
-            "EmployeeCredential": {
+            "TestCredential": {
                 "format": "jwt_vc_json",
-                "scope": "EmployeeCredential_scope",
+                "scope": "TestCredential_scope",
                 "credential_definition": {
                     "type": ["VerifiableCredential", "EmployeeCredential"]
                 },
@@ -885,15 +885,15 @@ profile = {
                 ],
                 "display": [
                     {
-                        "name": "Employee Credential",
-                        "description" : "Employee attestation",
+                        "name": "Test Credential",
+                        "description": "For testing purpose",
                         "locale": "en-US",
-                        "logo": {
-                            "url": "https://exampleuniversity.com/public/logo.png",
-                            "alt_text": "a square logo of a university",
+                        "background_image": {
+                            "url": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIAJQA3gMBIgACEQEDEQH/xAAWAAEBAQAAAAAAAAAAAAAAAAAAAQf/xAAXEAEBAQEAAAAAAAAAAAAAAAAAAREx/8QAFgEBAQEAAAAAAAAAAAAAAAAAAAIB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A2woKamGKAi0AQWkBMIoAlUAAAAAAAqYoCEXAAAAACkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABUWAgAAGgAaABoAAAAAAAAAaaAAAAAAAAAqAAFAMTTQXUAF4gAukiGgpqavQBNUCkC0DDgnQXQAAAAAAAAATQAAAAAAAAAAADQA0AAnQBaRAFEAUSKAAAACAAAAAAAAAAAAAAAAAAAAs4gARQBL1QAAB//Z",
+                            "alt_text": "ABN Amro Card"
                         },
-                        "background_color": "#12107c",
-                        "text_color": "#FFFFFF",
+                        "background_color": "#FFFFFF",
+                        "text_color": "#000000",
                     }
                 ],
             },
