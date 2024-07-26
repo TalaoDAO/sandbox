@@ -179,6 +179,7 @@ def wallet():
                     credential_offer = json.loads(request.args.get('credential_offer'))
                 else:
                     return redirect("/wallet")
+                logging.info("credential offer = %s", credential_offer)
                 credentials = credential_offer['credential_configuration_ids']
                 issuer = credential_offer['credential_issuer']
                 pre_authorized_code = credential_offer['grants'].get('urn:ietf:params:oauth:grant-type:pre-authorized_code', [{}])['pre-authorized_code']
@@ -202,6 +203,7 @@ def credential_select(mode):
     issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
     issuer_config = requests.get(issuer_config_url).json()
     credential_metadata = issuer_config['credential_configurations_supported'][vc]
+    logging.info("credential configuration = %s", issuer_config['credential_configurations_supported'])
     pre_authorized_code = request.form.get("pre_authorized_code")
     vc_format = credential_metadata['format']
     if vc_format == "vc+sd-jwt":
