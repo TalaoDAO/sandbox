@@ -203,7 +203,7 @@ def credential_select(mode):
     issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
     issuer_config = requests.get(issuer_config_url).json()
     credential_metadata = issuer_config['credential_configurations_supported'][vc]
-    logging.info("credential configuration = %s", issuer_config['credential_configurations_supported'])
+    logging.info("credential configuration = %s", json.dumps(issuer_config['credential_configurations_supported'], indent=4))
     pre_authorized_code = request.form.get("pre_authorized_code")
     vc_format = credential_metadata['format']
     if vc_format == "vc+sd-jwt":
@@ -354,9 +354,11 @@ def callback(red, mode):
 def token_request(issuer, code, grant_type, mode):
     issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
     issuer_config = requests.get(issuer_config_url).json()
+    logging.info("issuer configuration = %s", json.dumps(issuer_config, indent=4))
     if issuer_config.get("authorization_server"):
         authorization_server_url = issuer + '/.well-known/openid-configuration'
         authorization_server_config = requests.get(authorization_server_url).json()
+        logging.info("authorization server configuration = %s", json.dumps(authorization_server_config, indent=4))
         token_endpoint = authorization_server_config['token_endpoint']
     else:
         token_endpoint = issuer_config['token_endpoint']
