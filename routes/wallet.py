@@ -22,6 +22,7 @@ from wallet_db_api import create_wallet_credential, list_wallet_credential, list
 logging.basicConfig(level=logging.INFO)
 from wallet_for_backend import get_wallet_configuration
 import uuid
+import time
 
 # wallet key for testing purpose
 
@@ -380,7 +381,15 @@ def token_request(issuer, code, grant_type, mode):
         return
     
     logging.info("token request data = %s", data)
-    resp = requests.post(token_endpoint, headers=headers, data = data)
+    try:
+        resp = requests.post(token_endpoint, headers=headers, data = data)
+    except Exception:
+        time.sleep(2)
+        try:
+            resp = requests.post(token_endpoint, headers=headers, data = data)
+        except Exception as e:
+            logging.error("Request error = %s", str(e))
+            return
     logging.info("status_code token endpoint = %s", resp.status_code)
     if resp.status_code > 399:
         print("error sur le token endpoint = ", resp.content)
