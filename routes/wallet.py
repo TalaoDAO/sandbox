@@ -54,7 +54,7 @@ def init_app(app, red, mode):
     app.add_url_rule('/wallet', view_func=wallet, methods=['GET', 'POST'])
     app.add_url_rule('/wallet/issuer', view_func=wallet_issuer, methods=['GET', 'POST']) # discover
     app.add_url_rule('/wallet/verifier', view_func=wallet_verifier, methods=['GET', 'POST'])
-    app.add_url_rule('/wallet/credential/select', view_func=credential_select, methods=['GET', 'POST'])
+    app.add_url_rule('/wallet/credential/select', view_func=credential_select, methods=['GET', 'POST'],  defaults={'mode': mode})
     app.add_url_rule('/wallet/qeea/select', view_func=QEEA_select, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
 
     app.add_url_rule('/wallet/callback', view_func=callback, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
@@ -193,7 +193,7 @@ def wallet():
                 )
 
 
-def credential_select():
+def credential_select(mode):
     """
     Issuer initiated with pre authorized code
     """
@@ -210,7 +210,7 @@ def credential_select():
     else:
         vc_type = credential_metadata['credential_definition']['type']
         vct = None
-    credential = pre_authorized_code_flow(issuer, pre_authorized_code, vct, vc_type, vc_format) 
+    credential = pre_authorized_code_flow(issuer, pre_authorized_code, vct, vc_type, vc_format, mode) 
     if credential:
         create_wallet_credential(
             {
@@ -300,8 +300,8 @@ def callback(red, mode):
     scope = data['scope']
     
     # access token request
-    logging.info('This is a pre_authorized-code flow')
-    result = token_request(issuer, code)
+    logging.info('This is a authorized code flow')
+    result = token_request(issuer, code, 'authorization_code', mode)
     logging.info('token endpoint response = %s', result)
     if result.get('error'):
         logging.warning('token endpoint error return code = %s', result)
@@ -349,9 +349,7 @@ def callback(red, mode):
     return redirect("/wallet")     
 
 
-
-
-def token_request(issuer, code, grant_type='urn:ietf:params:oauth:grant-type:pre-authorized_code'):
+def token_request(issuer, code, grant_type, mode):
     issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
     issuer_config = requests.get(issuer_config_url).json()
     if issuer_config.get("authorization_server"):
@@ -366,11 +364,13 @@ def token_request(issuer, code, grant_type='urn:ietf:params:oauth:grant-type:pre
     data = {
         "grant_type": grant_type,
         "client_id": DID,
-        "redirect_uri": "WALLET_REDIRECT_URI",
+        "redirect_uri": mode.server + "wallet/callback",
     }
     # depending on the grant type
     if grant_type == 'urn:ietf:params:oauth:grant-type:pre-authorized_code':
         data["pre-authorized_code"] = code
+    elif grant_type == 'authorization_code':
+        data['code'] = code
     else:
         logging.error("grant type is unknown")
         return
@@ -434,10 +434,10 @@ def build_proof_of_key(key, iss, kid, aud, nonce):
 
 
 # pre authorized code
-def  pre_authorized_code_flow(issuer, code, vct, type, format):
+def  pre_authorized_code_flow(issuer, code, vct, type, format, mode):
     # access token request
     logging.info('This is a pre_authorized-code flow')
-    result = token_request(issuer, code)
+    result = token_request(issuer, code, 'urn:ietf:params:oauth:grant-type:pre-authorized_code', mode)
     logging.info('token endpoint response = %s', result)
     if result.get('error'):
         logging.warning('token endpoint error return code = %s', result)
