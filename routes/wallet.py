@@ -392,7 +392,8 @@ def token_request(issuer, code, grant_type, mode):
             return
     logging.info("status_code token endpoint = %s", resp.status_code)
     if resp.status_code > 399:
-        print("error sur le token endpoint = ", resp.content)
+        print("error sur le token endpoint = ", resp.json())
+        return
     logging.info("token endpoint response = %s", resp.json())
     return resp.json()
 
