@@ -380,6 +380,7 @@ def token_request(issuer, code, grant_type, mode):
     logging.info("status_code token endpoint = %s", resp.status_code)
     if resp.status_code > 399:
         print("error sur le token endpoint = ", resp.content)
+    logging.info("token endpoint response = %s", resp.json())
     return resp.json()
 
 
@@ -389,7 +390,7 @@ def credential_request(issuer, access_token, vct, type, format, proof):
     credential_endpoint = issuer_config['credential_endpoint']
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + access_token 
+        'Authorization': 'Bearer ' + access_token
         }
     
     data = { 
@@ -410,6 +411,7 @@ def credential_request(issuer, access_token, vct, type, format, proof):
     logging.info('status code credential endpoint = %s', resp.status_code)
     if resp.status_code > 399:
         logging.error(resp.content)
+    logging.info("credential endpoint response = %s", resp.json())
     return resp.json()
 
 
