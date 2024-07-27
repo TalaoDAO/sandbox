@@ -381,19 +381,15 @@ def token_request(issuer, code, grant_type, mode):
         return
     
     logging.info("token request data = %s", data)
+    logging.info("token endpoint =%s", token_endpoint)
     try:
         resp = requests.post(token_endpoint, headers=headers, data = data)
     except Exception:
-        time.sleep(2)
-        try:
-            resp = requests.post(token_endpoint, headers=headers, data = data)
-        except Exception as e:
             logging.error("Request error = %s", str(e))
             return
     logging.info("status_code token endpoint = %s", resp.status_code)
     if resp.status_code > 399:
-        print("error sur le token endpoint = ", resp.json())
-        return
+        logging.warning("status code = %s", resp.status_code)
     logging.info("token endpoint response = %s", resp.json())
     return resp.json()
 
@@ -465,7 +461,7 @@ def  pre_authorized_code_flow(issuer, code, vct, type, format, mode):
     logging.info('access token received = %s', access_token)
     
     #build proof of key ownership
-    proof = build_proof_of_key(KEY_DICT, DID, VM, issuer , c_nonce)
+    proof = build_proof_of_key(KEY_DICT, DID, VM, issuer, c_nonce)
     logging.info("proof of key ownership sent = %s", proof)
 
     # credential request
@@ -473,16 +469,15 @@ def  pre_authorized_code_flow(issuer, code, vct, type, format, mode):
 
     if result.get('error'):
         logging.warning('credential endpoint error return code = %s', result)
-        return
+        return "Error"
     # credential received
-    logging.info("'credential endpoint response = %s", result)  
+    logging.info("credential endpoint response = %s", result)  
     return result["credential"]
 
 
 # authorization code flow
-def  authorization_code_flow(issuer, scope, vct, type, format):
+def authorization_code_flow(issuer, scope, vct, type, format):
     # authorization request
-    
     
     # access token request
     logging.info('This is an authorization code flow')
@@ -491,23 +486,19 @@ def  authorization_code_flow(issuer, scope, vct, type, format):
     if result.get('error'):
         logging.warning('token endpoint error return code = %s', result)
         sys.exit()
-
-    # access token received
     access_token = result["access_token"]
     c_nonce = result.get("c_nonce", "")
     logging.info('access token received = %s', access_token)
     
     #build proof of key ownership
-    proof = build_proof_of_key(KEY_DICT, DID, VM, issuer , c_nonce)
+    proof = build_proof_of_key(KEY_DICT, DID, VM, issuer, c_nonce)
     logging.info("proof of key ownership sent = %s", proof)
 
     # credential request
     result = credential_request(issuer, access_token, vct, type, format, proof)
-
     if result.get('error'):
         logging.warning('credential endpoint error return code = %s', result)
         return
-    # credential received
     logging.info("'credential endpoint response = %s", result)  
     return result["credential"]
 

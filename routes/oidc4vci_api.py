@@ -710,7 +710,7 @@ def issuer_token(issuer_id, red, mode):
 
     # Grant type
     grant_type = request.form.get('grant_type')
-    if not grant_type:
+    if  not grant_type:
         return Response(**manage_error('invalid_request', 'Request format is incorrect, grant is missing', red, mode, request=request))
 
     if grant_type == 'urn:ietf:params:oauth:grant-type:pre-authorized_code' and not request.form.get('pre-authorized_code'):
