@@ -23,7 +23,7 @@ del wallet_pub_key['d']
 
 # TO BE DEFINED
 wallet_provider = 'https://preprod-wallet-provider.talao.co'
-login = "guest@Test3-1"
+login = "guest@company-3"
 password = "guest"
 
 def get_payload_from_token(token) -> dict:
@@ -127,51 +127,3 @@ def get_wallet_configuration():
     f.write(json.dumps(payload))
     f.close()
     return
-
-
-#get_wallet_attestation()
-#get_wallet_configuration()
-
-"""
-# wallet sign request with assertion and login:password
-headers = {
-    'Content-Type': 'application/x-www-form-urlencoded'
-}
-header = {
-    "typ": "JWT"
-}
-payload = {
-    'iss': "iss_test",
-    'nonce': nonce,
-    'iat': math.floor(datetime.timestamp(datetime.now())),
-}
-data = {
-    "grant_type": 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-    "assertion": wallet_attestation,
-    "digest": "lkjmlkjmlkjmlkjkjl",
-}
-
-resp = requests.post(sign_endpoint, headers=headers, data=data)
-if resp.status_code > 299:
-    sys.exit()
-print("\n digest signed = ", resp.content.decode())
-
-"""
-
-
-
-"""
-# wallet update request with assertion and login:password
-headers = {
-    'Content-Type': 'application/x-www-form-urlencoded'
-}
-data = {
-    "grant_type" : 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-    "assertion": wallet_attestation,
-}
-resp = requests.post(update_endpoint, auth=(login, password), headers=headers, data=data)
-
-print(" ")
-print("wallet update = ", resp.content.decode())
-
-"""

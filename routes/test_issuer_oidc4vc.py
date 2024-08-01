@@ -271,7 +271,7 @@ def test_4(mode):
         issuer_id = "raamxepqex"
         client_secret = "5381c36b-45c2-11ee-ac39-9db132f0e4a1"
 
-    offer = ["EmailPass", "VerifiableId", "Over18", "DBCGuest", "TestCredential"]
+    offer = ["PhoneProof", "EmailPass", "VerifiableId", "Over18", "DBCGuest", "TestCredential"]
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret

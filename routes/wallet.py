@@ -18,11 +18,11 @@ import pkce
 import logging
 from datetime import datetime
 from oidc4vc import get_payload_from_token 
-from wallet_db_api import create_wallet_credential, list_wallet_credential, list_wallet_issuer
+from wallet_db_api import create_wallet_credential, list_wallet_credential
 logging.basicConfig(level=logging.INFO)
 from wallet_for_backend import get_wallet_configuration
 import uuid
-import time
+import copy
 
 # wallet key for testing purpose
 
@@ -36,14 +36,8 @@ KEY_DICT = {
 }
 wallet_key = jwk.JWK(**KEY_DICT)
 KEY_DICT['kid'] = wallet_key.thumbprint()
-
-pub_key = {
-    "crv": "P-256",
-    "kty": "EC",
-    "kid": wallet_key.thumbprint(),
-    "x": "ngy44T1vxAT6Di4nr-UaM9K3Tlnz9pkoksDokKFkmNc",
-    "y": "QCRfOKlSM31GTkb4JHx3nXB4G_jSPMsbdjzlkT_UpPc",
-}
+pub_key = copy.copy(KEY_DICT)
+del pub_key['d']
 
 
 pub_key_json = json.dumps(pub_key).replace(" ", "")
@@ -146,6 +140,7 @@ def wallet():
                 credential_list = ""
                 for credential in my_list:
                     token = json.loads(credential)['credential']
+                    display = json.loads(json.loads(credential)['metadata'])["display"]
                     id = json.loads(credential)['id']
                     payload = get_payload_from_token(token)
                     vc_type = payload["vc"]['type']
@@ -154,9 +149,14 @@ def wallet():
                             break
                     exp = str(date.fromtimestamp(payload['exp']))
                     iat = str(date.fromtimestamp(payload['iat']))
+                    try:
+                        src = display[0]["background_image"]["url"]
+                        image = """<a href=""><img  src=" """ + src + """ " style="width: 150px;border-radius:5px;"></a> """
+                    except Exception:
+                        image = "No image"
                     cred = """<tr>
+                    <td>""" + image + """</td>
                     <td><a href="/wallet/credential?id=""" + id + """">""" + vc + """</a></td>
-                    <td>""" + payload['jti'] + """...</td>
                     <td>""" + exp + """</td>
                     <td>""" + iat + """</td>
                     <td>""" + "Active" + """</td>
