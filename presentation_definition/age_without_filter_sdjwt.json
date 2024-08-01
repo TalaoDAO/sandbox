@@ -1,0 +1,36 @@
+{
+    "id": "60f32879-3aa3-11ef-9ddc-93d35f5329c1",
+    "input_descriptors": [
+        {
+            "id": "age_without_filter",
+            "name": "Input descriptor for credential 1",
+            "purpose": "",
+            "constraints": {
+                "limit_disclosure": "required",
+                "fields": [
+                    {
+                        "path": [
+                            "$.age"
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "name": "Test #3",
+    "purpose": "Altme presentation definition subset of PEX v2.0",
+    "format": {
+        "vc+sd-jwt": {
+            "sd-jwt_alg_values": [
+                "ES256",
+                "ES256K",
+                "EdDSA"
+            ],
+            "kb-jwt_alg_values": [
+                "ES256",
+                "ES256K",
+                "EdDSA"
+            ]
+        }
+    }
+}
