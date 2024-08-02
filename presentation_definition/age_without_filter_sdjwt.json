@@ -6,7 +6,6 @@
             "name": "Input descriptor for credential 1",
             "purpose": "",
             "constraints": {
-                "limit_disclosure": "required",
                 "fields": [
                     {
                         "path": [
