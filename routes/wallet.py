@@ -313,7 +313,7 @@ def QEEA_select(red, mode):
         for cred in offer_list:
             description = issuer_config['credential_configurations_supported'][cred]["display"][0].get("description", "No description")
             scope = issuer_config['credential_configurations_supported'][cred]["scope"]
-            href = build_authorization_request(issuer, scope, red, mode)
+            href = build_authorization_request(issuer, scope, red, mode, issuer_config)
             attestation = """<tr>
                 <td>""" + name + """</td>
                 <td><a href=""" + href +">" + cred + """</a></td>
@@ -332,12 +332,10 @@ def QEEA_select(red, mode):
     )
 
 
-def build_authorization_request(issuer, scope, red, mode) -> str:
+def build_authorization_request(issuer, scope, red, mode, issuer_config) -> str:
     """
     Build and authorization request
     """
-    issuer_config_url = issuer + '/.well-known/openid-credential-issuer'
-    issuer_config = requests.get(issuer_config_url).json()
     authorization_endpoint = issuer_config['authorization_endpoint']
     code_verifier, code_challenge = pkce.generate_pkce_pair()
     state = str(uuid.uuid1())
