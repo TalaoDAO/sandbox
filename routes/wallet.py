@@ -214,12 +214,12 @@ def wallet():
                 iat = str(date.fromtimestamp(payload['iat']))
                 try:
                     src = display[0]["background_image"]["url"]
-                    image = """<a href=""><img  src=" """ + src + """ " style="width: 150px;border-radius:5px;"></a> """
+                    image = """<a href="/wallet/credential?id=""" + id + """"><img  src=" """ + src + """ " style="width: 150px;border-radius:5px;"></a> """
                 except Exception:
                     image = "No image"
                 cred = """<tr>
                     <td>""" + image + """</td>
-                    <td><a href="/wallet/credential?id=""" + id + """">""" + vc + """</a></td>
+                    <td>""" + vc + """</td>
                     <td>""" + exp + """</td>
                     <td>""" + iat + """</td>
                     <td>""" + "Active" + """</td>
