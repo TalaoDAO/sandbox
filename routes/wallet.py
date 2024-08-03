@@ -20,7 +20,7 @@ from datetime import datetime
 from oidc4vc import get_payload_from_token 
 from wallet_db_api import create_wallet_credential, list_wallet_credential
 logging.basicConfig(level=logging.INFO)
-from wallet_for_backend import get_wallet_configuration
+from wallet_for_backend import get_wallet_configuration, get_wallet_attestation
 import uuid
 import copy
 
@@ -52,6 +52,9 @@ def init_app(app, red, mode):
     app.add_url_rule('/wallet/credential/select', view_func=credential_select, methods=['GET', 'POST'],  defaults={'mode': mode})
     app.add_url_rule('/wallet/qeea/select', view_func=QEEA_select, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
 
+    app.add_url_rule('/wallet/get_attestation', view_func=get_attestation, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/wallet/update_configuration', view_func=update_configuration, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+
     app.add_url_rule('/wallet/callback', view_func=callback, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
 
     app.add_url_rule('/wallet/login', view_func=wallet_login, methods=['GET', 'POST'])
@@ -59,6 +62,19 @@ def init_app(app, red, mode):
     app.add_url_rule('/wallet/.well-known/openid-configuration', view_func=web_wallet_openid_configuration, methods=['GET'])
     return
 
+def get_attestation(red, mode):
+    get_wallet_attestation()
+    return redirect('/wallet')
+
+
+def update_configuration(red, mode):
+    get_wallet_configuration()
+    return redirect('/wallet')
+
+
+def get_configuration():
+    f = open("wallet_configuration.json", 'r')
+    return json.loads(f.read())
 
 def update_logo():
     f = open("wallet_configuration.json", 'r')
@@ -135,6 +151,8 @@ def wallet():
             redirect_uri = '/wallet/login?' + urlencode(request.args)
             return redirect(redirect_uri)
         else:
+            title = get_configuration()["generalOptions"]["splashScreenTitle"]
+            color = get_configuration()["generalOptions"][ "primaryColor"]
             if not request.args:
                 my_list = list_wallet_credential()
                 credential_list = ""
@@ -166,7 +184,8 @@ def wallet():
                 return render_template(
                     "wallet/wallet_credential.html",
                     credential_list=credential_list,
-                    title="My Wallet",
+                    title=title,
+                    color=color,
                     logo=update_logo()
                 )
             else:

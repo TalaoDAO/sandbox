@@ -23,8 +23,9 @@ del wallet_pub_key['d']
 
 # TO BE DEFINED
 wallet_provider = 'https://preprod-wallet-provider.talao.co'
-login = "guest@company-3"
+login = "guest@company-2"
 password = "guest"
+
 
 def get_payload_from_token(token) -> dict:
     """

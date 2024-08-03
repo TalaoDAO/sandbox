@@ -636,7 +636,7 @@ def test_14(mode):
         issuer_id = "azjkjzlfku"
         client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
 
-    vc = 'IndividualVerifiableAttestation'
+    vc = 'InsuranceLegalPerson'
     with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
         credential = json.loads(f.read())
     credential['id'] = "urn:uuid:" + str(uuid.uuid4())
