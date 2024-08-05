@@ -1,4 +1,7 @@
+from profiles import insurer
+
 profile = {
+    "INSURER": insurer.INSURER,
     "EBSI-V3": {
         "oidc4vciDraft": "10",
         "siopv2Draft": "12",

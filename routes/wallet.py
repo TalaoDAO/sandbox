@@ -283,7 +283,7 @@ def wallet():
                 cred = """<tr>
                     <td>""" + image + """</td>
                     <td>""" + name + """</td>
-                    <td> QEEA </td>
+                    <td> QEAA </td>
                     <td>""" + iat + """</td>
                     <td>""" + exp + """</td>
                     <td>""" + "Active" + """</td>
@@ -442,7 +442,7 @@ def callback(red, mode):
     logging.info('token endpoint response = %s', result)
     if result.get('error'):
         logging.warning('token endpoint error return code = %s', result)
-        sys.exit()
+        return redirect("/wallet") 
 
     # access token received
     access_token = result["access_token"]
