@@ -23,6 +23,8 @@ logging.basicConfig(level=logging.INFO)
 from wallet_for_backend import get_wallet_configuration, get_wallet_attestation
 import uuid
 import copy
+from datetime import datetime, timedelta
+
 
 # wallet key for testing purpose
 
@@ -53,13 +55,14 @@ def init_app(app, red, mode):
     app.add_url_rule('/wallet/qeea/select', view_func=QEEA_select, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/wallet/about', view_func=about, methods=['GET'])
     app.add_url_rule('/wallet/credential', view_func=credential, methods=['GET', 'POST'])
+    app.add_url_rule('/wallet/personal', view_func=personal, methods=['GET', 'POST'], defaults={'mode': mode})
 
     app.add_url_rule('/wallet/get_attestation', view_func=get_attestation, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/wallet/update_configuration', view_func=update_configuration, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
 
     app.add_url_rule('/wallet/callback', view_func=callback, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
 
-    app.add_url_rule('/wallet/login', view_func=wallet_login, methods=['GET', 'POST'])
+    app.add_url_rule('/wallet/login', view_func=wallet_login, methods=['GET', 'POST'], defaults={'mode': mode})
 
     app.add_url_rule('/wallet/.well-known/openid-configuration', view_func=web_wallet_openid_configuration, methods=['GET'])
     return
@@ -81,8 +84,9 @@ def get_configuration():
 
 def credential():
     if request.method == 'POST':
-        id = request.args['id']
-        delete_wallet_credential(id)
+        if request.form["button"] == "delete":
+            id = request.args['id']
+            delete_wallet_credential(id)
         return redirect('/wallet')
     id = request.args['id']
     my_list = list_wallet_credential()
@@ -120,6 +124,57 @@ def about():
         logo=logo
         
     )
+
+
+def personal(mode):
+    f = open("wallet_configuration.json", 'r')
+    config = json.loads(f.read())['generalOptions']
+    logo = config["companyLogo"]
+    title = config["splashScreenTitle"]
+    color = config[ "primaryColor"]
+    if not request.args.get('certificate'):
+        return render_template(
+            'wallet/personal_issuer.html',
+            logo=logo,
+            title=title,
+            color=color
+            )
+    else:
+        certificate = request.args['certificate']
+        api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
+        if mode.myenv == 'aws':
+            issuer_id = "tdiwmpyhzc"
+            client_secret = "5972a3b8-45c3-11ee-93f5-0a1628958560"
+        else: 
+            issuer_id = "raamxepqex"
+            client_secret = "5381c36b-45c2-11ee-ac39-9db132f0e4a1"
+        offer = [certificate]
+        headers = {
+            'Content-Type': 'application/json',
+            'X-API-KEY': client_secret
+        }
+        data = { 
+            "issuer_id": issuer_id,
+            "vc": build_credential_offered(offer), 
+            "issuer_state": "test4",
+            "credential_type": offer,
+            "pre-authorized_code": True,
+            "callback": mode.server + 'sandbox/issuer/callback',
+            }
+        resp = requests.post(api_endpoint, headers=headers, json=data)
+        try:
+            qrcode_value_uri = resp.json()['qrcode_value']
+        except Exception:
+            return jsonify("No qr code")
+        resp = requests.get(qrcode_value_uri)
+        url = resp.json()['qrcode_value']
+        return render_template(
+            'wallet/personal.html',
+            url=url,
+            color=color,
+            title=title,
+            logo=logo
+        )
 
 
 
@@ -164,7 +219,7 @@ def wallet_verifier():
         return render_template('wallet/wallet_verifier.html')
 
 
-def wallet_login():
+def wallet_login(mode):
     if request.method == 'GET':
         credential_offer = request.args.get('credential_offer',"")
         credential_offer_uri = request.args.get('credential_offer_uri', "")
@@ -175,6 +230,13 @@ def wallet_login():
             title="My Wallet"
         )
     else:
+        if request.form['button'] == "eudi":
+            if mode.myenv == 'aws':
+                client_id = "mnpqhqqrlw"
+            else:
+                client_id = "nyudzjxuhj"
+            url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
+            return redirect(url)
         session["wallet_connected"] = True
         #get_wallet_configuration()
         credential_offer = request.form.get('credential_offer')
@@ -214,16 +276,17 @@ def wallet():
                 iat = str(date.fromtimestamp(payload['iat']))
                 try:
                     src = display[0]["background_image"]["url"]
+                    name = display[0]["name"]
                     image = """<a href="/wallet/credential?id=""" + id + """"><img  src=" """ + src + """ " style="width: 150px;border-radius:5px;"></a> """
                 except Exception:
                     image = "No image"
                 cred = """<tr>
                     <td>""" + image + """</td>
-                    <td>""" + vc + """</td>
-                    <td>""" + exp + """</td>
+                    <td>""" + name + """</td>
+                    <td> QEEA </td>
                     <td>""" + iat + """</td>
+                    <td>""" + exp + """</td>
                     <td>""" + "Active" + """</td>
-                    <td>""" + payload["iss"] + """...</td>
                     </tr>"""
                 credential_list += cred
             return render_template(
@@ -314,9 +377,9 @@ def QEEA_select(red, mode):
             description = issuer_config['credential_configurations_supported'][cred]["display"][0].get("description", "No description")
             scope = issuer_config['credential_configurations_supported'][cred]["scope"]
             href = build_authorization_request(issuer, scope, red, mode, issuer_config)
+            cred_name = issuer_config['credential_configurations_supported'][cred]["display"][0]["name"]
             attestation = """<tr>
-                <td>""" + name + """</td>
-                <td><a href=""" + href +">" + cred + """</a></td>
+                <td><a href=""" + href +">" + cred_name + """</a></td>
                 <td>""" + description + """</td>
                 </tr>"""
             cred_list += attestation
@@ -328,7 +391,8 @@ def QEEA_select(red, mode):
         cred_list=cred_list,
         title=title,
         logo=logo,
-        color=color
+        color=color,
+        name=name
     )
 
 
@@ -573,3 +637,21 @@ def authorization_code_flow(issuer, scope, vct, type, format):
     logging.info("'credential endpoint response = %s", result)  
     return result["credential"]
 
+
+def build_credential_offered(offer):
+    credential_offered = dict()
+    if isinstance(offer, str):
+        offer = [offer]
+    for vc in offer:
+        try:
+            with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
+                credential = json.loads(f.read())
+        except Exception:
+            return
+        credential['id'] = "urn:uuid:" + str(uuid.uuid4())
+        credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+        credential['issued'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+        credential['validFrom'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
+        credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
+        credential_offered[vc] = credential
+    return credential_offered

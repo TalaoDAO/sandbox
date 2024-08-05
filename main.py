@@ -365,7 +365,6 @@ class Issuer(Resource):
             logging.info("Deferred VC has been issued with issuer_state =  %s", issuer_state)
         else:
             # for authorization code flow
-            print('issuer state =', issuer_state)
             red.setex(issuer_state, API_LIFE, json.dumps(session_data))
 
         # for pre authorized code
@@ -375,7 +374,8 @@ class Issuer(Resource):
         # for front page management
         red.setex(stream_id, API_LIFE, json.dumps(session_data))
         response = {
-            "redirect_uri": mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/" + stream_id
+            "redirect_uri": mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/" + stream_id,
+            "qrcode_value": mode.server + "sandbox/ebsi/issuer/qrcode/" + issuer_id + "/" + stream_id
         }
         logging.info(
             "initiate qrcode = %s",
@@ -386,6 +386,7 @@ class Issuer(Resource):
 
 @app.route('/app/download' , methods=['GET']) 
 def app_download():
+    print('issuer state =', issuer_state)
     return render_template('app_download/talao_app_download.html')
 
 

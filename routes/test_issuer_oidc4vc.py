@@ -287,10 +287,13 @@ def test_4(mode):
     
     resp = requests.post(api_endpoint, headers=headers, json=data)
     try:
-        qrcode = resp.json()['redirect_uri']
+        qrcode_uri = resp.json()['redirect_uri']
+        qrcode_value_uri = resp.json()['qrcode_value']
     except Exception:
         return jsonify("No qr code")
-    return redirect(qrcode)
+    resp = requests.get(qrcode_value_uri)
+    print("qrcode value = ", resp.json())
+    return redirect(qrcode_uri)
 
 
 def test_5(mode):

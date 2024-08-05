@@ -34,6 +34,10 @@ STATUSLIST_ISSUER_KEY = json.dumps(json.load(open('keys.json', 'r'))['talao_Ed25
 def init_app(app, red, mode):
     # endpoint for application if redirect to local page (test)
     app.add_url_rule('/sandbox/ebsi/issuer/<issuer_id>/<stream_id>', view_func=oidc_issuer_landing_page, methods=['GET', 'POST'],defaults={'red': red, 'mode': mode})
+    
+    # endpoint for application to get the qrcode value
+    app.add_url_rule('/sandbox/ebsi/issuer/qrcode/<issuer_id>/<stream_id>', view_func=oidc_issuer_qrcode_value, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+
     app.add_url_rule('/sandbox/ebsi/issuer_stream', view_func=oidc_issuer_stream, methods=['GET', 'POST'], defaults={'red': red})
     app.add_url_rule('/sandbox/ebsi/issuer_followup/<stream_id>', view_func=oidc_issuer_followup, methods=['GET'], defaults={'red': red})
     
@@ -432,6 +436,40 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
         landing_page_url=issuer_data['landing_page_url'],
         issuer_state=request.args.get('issuer_state'),
     )
+
+
+# Same as previous but Return QRcode value
+def oidc_issuer_qrcode_value(issuer_id, stream_id, red, mode):
+    try:
+        session_data = json.loads(red.get(stream_id).decode())
+    except Exception:
+        logging.warning('session expired')
+        return jsonify('Session expired'), 404
+    credential_type = session_data['credential_type']
+    pre_authorized_code = session_data['pre-authorized_code']
+    user_pin_required = session_data['user_pin_required']
+    issuer_state = session_data['issuer_state']
+    offer = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state,  user_pin_required, mode)
+
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    data_profile = profile[issuer_data['profile']]
+    # credential offer is passed by value
+    url_to_display = data_profile['oidc4vci_prefix'] + '?' + urlencode({'credential_offer': json.dumps(offer)})
+
+    # credential offer is passed by reference: credential offer uri
+    if issuer_data.get('credential_offer_uri'):
+        id = str(uuid.uuid1())
+        credential_offer_uri = (
+            f'{mode.server}issuer/credential_offer_uri/{id}'
+        )
+        red.setex(id, GRANT_LIFE, json.dumps(offer))
+        logging.info('credential offer uri = %s', credential_offer_uri)
+        url_to_display = (
+            data_profile['oidc4vci_prefix']
+            + '?credential_offer_uri='
+            + credential_offer_uri
+        )        
+    return jsonify({"qrcode_value": url_to_display})
 
 
 def issuer_web_wallet_redirect(issuer_id, red, mode):
@@ -907,7 +945,7 @@ async def issuer_credential(issuer_id, red, mode):
             try:
                 oidc4vc.verif_token(proof, access_token_data['c_nonce'])
                 logging.info('proof is validated')
-            except Exception as e:
+            except Exception:
                 logging.error('proof is not validated validated')
                 #return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id, status=403))
             wallet_jwk = proof_header.get('jwk')  
