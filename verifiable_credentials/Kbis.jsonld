@@ -1,0 +1,15 @@
+{
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1"
+    ],
+    "type": [
+        "VerifiableCredential",
+        "Kbis"
+    ],
+    "credentialSubject": {
+        "companyName": "My company",
+        "identifier": "02099876FR75",
+        "creationDate": "27/10/2023",
+        "id": ""
+    }
+}

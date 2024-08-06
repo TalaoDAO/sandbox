@@ -1,8 +1,9 @@
-from profiles import insurer, bank
+from profiles import insurer, bank, gouv
 
 profile = {
     "INSURER": insurer.INSURER,
     "BANK": bank.BANK,
+    "GOUV": gouv.GOUV,
     "EBSI-V3": {
         "oidc4vciDraft": "10",
         "siopv2Draft": "12",

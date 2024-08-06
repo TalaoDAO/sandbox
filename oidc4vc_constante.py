@@ -60,7 +60,9 @@ oidc4vc_profile_list = {
     'VERIFIER-ALL': 'VERIFIER ALL',
     'ISSUER-ALL': 'Mix of VC format with OIDC4VCI Draft 13',
     'BANK': "Bank for company - Legal Person - DIIP V 2.1",
-    'INSURER': "Insurer for company - Legal Person - DIIP V 2.1"
+    'INSURER': "Insurer for company - Legal Person - DIIP V 2.1",
+    'GOUV': "Gouvernment body for company - Legal Person - DIIP V 2.1"
+
 
 }
 
