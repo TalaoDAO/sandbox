@@ -1,7 +1,8 @@
-from profiles import insurer
+from profiles import insurer, bank
 
 profile = {
     "INSURER": insurer.INSURER,
+    "BANK": bank.BANK,
     "EBSI-V3": {
         "oidc4vciDraft": "10",
         "siopv2Draft": "12",
@@ -214,7 +215,9 @@ profile = {
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "Over18"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "Ed25519Signature2018"
+                ],
                 "display": [
                     {
                         "name": "Over 18",
@@ -228,7 +231,9 @@ profile = {
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "Over15"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "Ed25519Signature2018"
+                ],
                 "display": [
                     {
                         "name": "Over 15",
@@ -242,7 +247,9 @@ profile = {
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "Over13"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "Ed25519Signature2018"
+                ],
                 "display": [
                     {
                         "name": "Over 13",
@@ -256,7 +263,9 @@ profile = {
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "Over21"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "Ed25519Signature2018"
+                ],
                 "display": [
                     {
                         "name": "Over 21",
@@ -270,7 +279,9 @@ profile = {
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "Over50"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "Ed25519Signature2018"
+                ],
                 "display": [
                     {
                         "name": "Over 50",
@@ -284,7 +295,9 @@ profile = {
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "Over65"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "Ed25519Signature2018"
+                ],
                 "display": [
                     {
                         "name": "Over 65",
@@ -298,7 +311,9 @@ profile = {
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "Liveness"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "Ed25519Signature2018"
+                ],
                 "display": [
                     {
                         "name": "Proof of humanity",
@@ -312,7 +327,9 @@ profile = {
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "VerifiableId"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "Ed25519Signature2018"
+                ],
                 "display": [
                     {
                         "name": "Verifiable Id",
@@ -348,7 +365,9 @@ profile = {
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "EmailPass"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "Ed25519Signature2018"
+                ],
                 "display": [
                     {
                         "name": "EmailPass",
@@ -362,7 +381,9 @@ profile = {
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "PhoneProof"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "Ed25519Signature2018"
+                ],
                 "display": [
                     {
                         "name": "Proof of phone number",
@@ -405,10 +426,7 @@ profile = {
                 },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [
-                    "ES256K",
-                    "ES256",
-                    "ES384",
-                    "RS256",
+                    "Ed25519Signature2018"
                 ],
                 "display": [{"name": "Proof of Email", "locale": "en-US"}],
                 "credentialSubject": {
@@ -428,10 +446,7 @@ profile = {
                 },
                 "cryptographic_binding_methods_supported": ["DID"],
                 "credential_signing_alg_values_supported": [
-                    "ES256K",
-                    "ES256",
-                    "ES384",
-                    "RS256",
+                    "Ed25519Signature2018"
                 ],
                 "display": [
                     {
@@ -471,10 +486,7 @@ profile = {
                 },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [
-                    "ES256K",
-                    "ES256",
-                    "ES384",
-                    "RS256",
+                    "Ed25519Signature2018"
                 ],
                 "display": [
                     {"name": "Over 18yo proof", "locale": "en-US"}, 
@@ -518,7 +530,9 @@ profile = {
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "VerifiableId"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "ES256"
+                ],
                 "display": [
                     {
                         "name": "Verifiable Id",
@@ -550,7 +564,9 @@ profile = {
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "Over13"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "ES256"
+                ],
                 "display": [
                     {
                         "name": "Over 13",
@@ -564,7 +580,9 @@ profile = {
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "Over15"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "ES256"
+                ],
                 "display": [
                     {
                         "name": "Over 15",
@@ -578,7 +596,9 @@ profile = {
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "Over18"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "ES256"
+                ],
                 "display": [
                     {
                         "name": "Over 18",
@@ -592,7 +612,9 @@ profile = {
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "Over21"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "ES256"
+                ],
                 "display": [
                     {
                         "name": "Over 21",
@@ -606,7 +628,9 @@ profile = {
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "Over50"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "ES256"
+                ],
                 "display": [
                     {
                         "name": "Over 50",
@@ -620,7 +644,9 @@ profile = {
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "Over65"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "ES256"
+                ],
                 "display": [
                     {
                         "name": "Over 65",
@@ -634,7 +660,9 @@ profile = {
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "Liveness"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "ES256"
+                ],
                 "display": [
                     {
                         "name": "Proof of HUmanity",
@@ -648,7 +676,9 @@ profile = {
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "EmailPass"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "ES256"
+                ],
                 "display": [
                     {
                         "name": "EmailPass",
@@ -662,7 +692,9 @@ profile = {
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "PhoneProof"],
                 "cryptographic_binding_methods_supported": ["DID"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "credential_signing_alg_values_supported": [
+                    "ES256"
+                ],
                 "display": [
                     {
                         "name": "Proof of phone number",
@@ -789,9 +821,9 @@ profile = {
                 "cryptographic_binding_methods_supported": [
                     "did:jwk"
                 ],
-                "cryptographic_suites_supported": [
+                "credential_signing_alg_values_supported": [
                     "ES256"
-                ]
+                ],
             },
             "InsuranceLegalPerson": {
                 "scope": "InsuranceLegalPerson_scope",
@@ -847,9 +879,9 @@ profile = {
                 "cryptographic_binding_methods_supported": [
                     "did:jwk"
                 ],
-                "cryptographic_suites_supported": [
+                "credential_signing_alg_values_supported": [
                     "ES256"
-                ]
+                ],
             },
             "DBCGuest": {
                 "display": [
@@ -899,6 +931,9 @@ profile = {
                     },
                 ],
                 "format": "jwt_vc_json",
+                "credential_signing_alg_values_supported": [
+                    "ES256"
+                ],
                 "credential_definition": {
                     "type": ["VerifiableCredential", "DBCGuest"]
                 },
@@ -1079,236 +1114,6 @@ profile = {
                     "RS256",
                 ],
                 "display": [{"name": "Proof of phone number", "locale": "en-GB"}],
-            },
-        },
-        "grant_types_supported": [
-            "authorization_code",
-            "urn:ietf:params:oauth:grant-type:pre-authorized_code",
-        ],
-        "schema_for_type": False,
-        "credential_manifest_support": False,
-    },
-    "LEGAL": {   # DIIP v2.1 for legal person
-        "oidc4vciDraft": "13",
-        "siopv2Draft": "12",
-        "oidc4vpDraft": "18",
-        "vc_format": "jwt_vc_json",
-        "verifier_vp_type": "jwt_vp_json",
-        "oidc4vci_prefix": "openid-credential-offer://",
-        "authorization_server_support": False,
-        "credentials_as_json_object_array": False,
-        "siopv2_prefix": "openid-vc://",
-        "oidc4vp_prefix": "openid-vc://",
-        "credentials_types_supported": [
-            "IBANLegalPerson",
-            "BankAccountBalance"
-        ],
-        "credential_configurations_supported": {
-            "IBANLegalPerson": {
-                "display": [
-                    {
-                        "name": "Company IBAN",
-                        "description": "IBAN",
-                        "text_color": "#FBFBFB",
-                        "logo": {
-                            "url": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
-                            "alt_text": "ABN Amro logo"
-                        },
-                        "background_image": {
-                            "url": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
-                            "alt_text": "ABN Amro Card"
-                        }
-                    }
-                ],
-                "id": "IBANLegalPerson",
-                "credential_definition": {
-                    "type": [
-                        "VerifiableCredential",
-                        "IBANLegalPerson"
-                    ],
-                    "credentialSubject": {
-                        "bankName": {
-                            "display": [
-                                {
-                                    "name": "Bank name",
-                                    "locale": "en-US"
-                                },
-                                {
-                                    "name": "Bank naam",
-                                    "locale": "nl-NL"
-                                }
-                            ]
-                        },
-                        "leiCodeBank": {
-                            "display": [
-                                {
-                                    "name": "LEI code",
-                                    "locale": "en-US"
-                                },
-                                {
-                                    "name": "LEI code",
-                                    "locale": "nl-NL"
-                                }
-                            ]
-                        },
-                        "swiftNumber": {
-                            "display": [
-                                {
-                                    "name": "SWIFT code",
-                                    "locale": "en-US"
-                                },
-                                {
-                                    "name": "SWIFT code",
-                                    "locale": "nl-NL"
-                                }
-                            ]
-                        },
-                        "iban": {
-                            "display": [
-                                {
-                                    "name": "IBAN",
-                                    "locale": "en-US"
-                                },
-                                {
-                                    "name": "IBAN",
-                                    "locale": "nl-NL"
-                                }
-                            ]
-                        },
-                        "accountHolder": {
-                            "display": [
-                                {
-                                    "name": "Account Holder",
-                                    "locale": "en-US"
-                                },
-                                {
-                                    "name": "Rekeninghouder",
-                                    "locale": "nl-NL"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "format": "jwt_vc_json",
-                "scope": "IBANLegalPerson_scope",
-                "cryptographic_binding_methods_supported": [
-                    "did:jwk"
-                ],
-                "cryptographic_suites_supported": [
-                    "ES256"
-                ]
-            },
-            "BankAccountBalance": {
-                "display": [
-                    {
-                        "name": "Bank Account Balance",
-                        "description": "Bank Account Balance",
-                        "text_color": "#FBFBFB",
-                        "logo": {
-                            "url": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
-                            "alt_text": "ABN Amro logo"
-                        },
-                        "background_image": {
-                            "url": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
-                            "alt_text": "ABN Account Balance"
-                        }
-                    },
-                    {
-                        "locale": "en-US",
-                        "name": "Bank ACcount Balance",
-                        "description": "Bank Account Balance",
-                        "text_color": "#FBFBFB",
-                        "logo": {
-                            "url": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
-                            "alt_text": "ABN Amro logo"
-                        },
-                        "background_image": {
-                            "url": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
-                            "alt_text": "ABN Account Balance"
-                        }
-                    }
-                ],
-                "id": "BankAcountBalance",
-                "credential_definition": {
-                    "type": [
-                        "VerifiableCredential",
-                        "BankAccountBalance"
-                    ],
-                    "credentialSubject": {
-                        "bankName": {
-                            "display": [
-                                {
-                                    "name": "Bank name",
-                                    "locale": "en-US"
-                                },
-                                {
-                                    "name": "Bank naam",
-                                    "locale": "nl-NL"
-                                }
-                            ]
-                        },
-                        "leiCodeBank": {
-                            "display": [
-                                {
-                                    "name": "LEI code",
-                                    "locale": "en-US"
-                                },
-                                {
-                                    "name": "LEI code",
-                                    "locale": "nl-NL"
-                                }
-                            ]
-                        },
-                        "swiftNumber": {
-                            "display": [
-                                {
-                                    "name": "SWIFT code",
-                                    "locale": "en-US"
-                                },
-                                {
-                                    "name": "SWIFT code",
-                                    "locale": "nl-NL"
-                                }
-                            ]
-                        },
-                        "iban": {
-                            "display": [
-                                {
-                                    "name": "IBAN",
-                                    "locale": "en-US"
-                                },
-                                {
-                                    "name": "IBAN",
-                                    "locale": "nl-NL"
-                                }
-                            ]
-                        },
-                        "accountBalance": {
-                            "display": [
-                                {
-                                    "name": "Account Balance",
-                                    "locale": "en-US"
-                                }
-                            ]
-                        },
-                        "currency": {
-                            "display": [
-                                {
-                                    "name": "Currency",
-                                    "locale": "en-US"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "format": "jwt_vc_json",
-                "scope": "BankAccountBalance_scope",
-                "cryptographic_binding_methods_supported": [
-                    "did:jwk"
-                ],
-                "cryptographic_suites_supported": [
-                    "ES256"
-                ]
             },
         },
         "grant_types_supported": [
@@ -2646,7 +2451,7 @@ profile = {
                             "display": [{"name": "Issuing country", "locale": "en-US"},
                                         {"name": "Pays d'emission", "locale": "fr-FR"}],
                         },
-                         "issuing_authority": {
+                        "issuing_authority": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Issuing autority", "locale": "en-US"},

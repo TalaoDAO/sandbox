@@ -283,7 +283,7 @@ def wallet():
                 cred = """<tr>
                     <td>""" + image + """</td>
                     <td>""" + name + """</td>
-                    <td> QEAA </td>
+                    <td>QEAA</td>
                     <td>""" + iat + """</td>
                     <td>""" + exp + """</td>
                     <td>""" + "Active" + """</td>
@@ -464,22 +464,22 @@ def callback(red, mode):
     vc_format = credential_metadata['format']
     if vc_format == "vc+sd-jwt":
         vct = credential_metadata['credential_definition']['vct']
-        type = None
+        vc_type = None
     else:
-        type = credential_metadata['credential_definition']['type']
+        vc_type = credential_metadata['credential_definition']['type']
         vct = None
-    result = credential_request(issuer, access_token, vct, type, vc_format, proof)
+    result = credential_request(issuer, access_token, vct, vc_type, vc_format, proof)
 
     if result.get('error'):
         logging.warning('credential endpoint error return code = %s', result)
-        return
+        return redirect("/wallet")
     # credential received
     logging.info("'credential endpoint response = %s", result)  
-    credential = result["credential"]
-    if credential:
+    credential_received = result["credential"]
+    if credential_received:
         create_wallet_credential(
             {
-                "credential": credential,
+                "credential": credential_received,
                 "metadata": json.dumps(credential_metadata)
             }
         )

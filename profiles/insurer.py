@@ -17,7 +17,7 @@ INSURER = {
             "scope": "InsuranceLegalPerson_scope",
             "display": [
                 {
-                    "name": "Insurance contract",
+                    "name": "Insurance attestation",
                     "description": "Insurance for liability risks",
                     "text_color": "#FBFBFB",
                     "logo": {
@@ -47,7 +47,9 @@ INSURER = {
             },
             "format": "jwt_vc_json",
             "cryptographic_binding_methods_supported": ["did:jwk"],
-            "cryptographic_suites_supported": ["ES256"],
+            "credential_signing_alg_values_supported": [
+                "ES256"
+            ]
         }
     },
     "grant_types_supported": [
