@@ -1,9 +1,10 @@
-from profiles import insurer, bank, gouv
+from profiles import insurer, bank, gouv, test
 
 profile = {
     "INSURER": insurer.INSURER,
     "BANK": bank.BANK,
     "GOUV": gouv.GOUV,
+    "TEST": test.TEST,
     "EBSI-V3": {
         "oidc4vciDraft": "10",
         "siopv2Draft": "12",

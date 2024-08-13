@@ -286,7 +286,6 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
     profile_data = profile[issuer_profile]
 
     # OIDC4VCI standard with credentials as an array ofjson objects (EBSI-V3)
-    print(profile_data)
     if int(profile_data['oidc4vciDraft']) <= 11 and profile_data['credentials_as_json_object_array']:
         offer = {
             'credential_issuer': f'{mode.server}issuer/{issuer_id}',
