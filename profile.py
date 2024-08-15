@@ -1344,13 +1344,13 @@ profile = {
                 "vct": "urn:eu.europa.ec.eudi:pid:1",
                 "display": [
                     {
-                        "name": "Person ID",
+                        "name": "Personal ID",
                         "locale": "en-US",
                         "background_color": "#14107c",
                         "text_color": "#FFFFFF",
                     },
                     {
-                        "name": "Person ID",
+                        "name": "Personal ID",
                         "locale": "fr-FR",
                         "background_color": "#14107c",
                         "text_color": "#FFFFFF",

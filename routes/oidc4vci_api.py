@@ -431,8 +431,6 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
         issuer_id=issuer_id,
         page_title=issuer_data['page_title'],
         page_subtitle=issuer_data['page_subtitle'],
-        page_description=issuer_data['page_description'],
-        title=issuer_data['title'],
         landing_page_url=issuer_data['landing_page_url'],
         issuer_state=request.args.get('issuer_state'),
     )

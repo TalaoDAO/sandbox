@@ -149,7 +149,6 @@ client_data_pattern_oidc4vc = {
     "oidc4vpDraft": "18",
     "vc_format": "ldp_vc",
     "jarm": None,
-    "credential_manifest_support": 'on',
     "pkce": None,
     "id_token": "on",
     "client_id_scheme": "did",  # for OIDC4VP draft 13
@@ -187,8 +186,6 @@ client_data_pattern_oidc4vc = {
     "did": "did:web:app.altme.io:issuer",
     "verification_method": "did:web:app.altme.io:issuer#key-1",
     "issuer_landing_page": "./issuer_oidc/issuer_qrcode_test.html",     
-    "note": "",
-    "company_name": "New company",
     "application_name": "Application name",
     "reason": "This purpose 1",
     "reason_1": "This is purpose 1 ",
@@ -207,12 +204,6 @@ client_data_pattern_oidc4vc = {
     "verifier_landing_page_style": "./verifier_oidc/verifier_qrcode_test.html",
     "page_title": "Page title",
     "page_subtitle": "Page subtitle",
-    "page_description": "Add here a credential description as you would like to see it displayed on the landing page of your app.",
     "credential_duration": "365",
-    "qrcode_message": "Scan with your wallet",
-    "mobile_message": "Open your wallet",
-    "contact_email": "support@altme.io",
-    "contact_name": "",
     "landing_page_url": "https://talao.io",
-    "title": "Get it !" # QR code title
 }

@@ -46,7 +46,6 @@ def oidc4vc_issuer_select():
             vm = data_dict['verification_method']
             issuer = """<tr>
                 <td>""" + data_dict.get('application_name', "unknown") + """</td>
-                <td>""" + data_dict.get('user', "unknown")[:20] + """...</td>
                 <td>""" +  data_dict['profile'] + """</td>
                 <td><a href=/issuer/console?client_id=""" + client_id + """>""" + client_id + """</a></td>
                 <td>""" + data_dict['did'] + """</td> 
@@ -62,17 +61,6 @@ def oidc4vc_nav_create(mode):
         return redirect('/sandbox/saas4ssi')
     return redirect('/issuer/console?client_id=' + db_api.create_oidc4vc_issuer(mode,  user=session['login_name']))
 
-"""   
-def oidc4vc_issuer_preview_presentation_endpoint(stream_id, red):
-    try:
-        my_pattern = json.loads(red.get(stream_id).decode())['pattern']
-    except Exception:
-        logging.error('red decode failed')
-        red.set(stream_id + '_access',  'server_error')
-        red.publish('login', json.dumps({"stream_id": stream_id}))
-        return jsonify("server error"), 500
-    return jsonify(my_pattern)
-"""
 
 
 def oidc4vc_issuer_console(mode):
@@ -107,19 +95,10 @@ def oidc4vc_issuer_console(mode):
             issuer_id_as_url="" if not session['client_data'].get('issuer_id_as_url')  else "checked" ,
             application_name=session['client_data'].get('application_name', 'Unknown'),
             client_secret=session['client_data']['client_secret'],
-            user=session['client_data']['user'], 
             issuer_api_endpoint=issuer_api_endpoint,
-            title=session['client_data'].get('title'),
-            contact_name=session['client_data'].get('contact_name'),
-            contact_email=session['client_data'].get('contact_email'),
             client_id=session['client_data']['client_id'],
-            company_name=session['client_data']['company_name'],
             page_title=session['client_data']['page_title'],
-            note=session['client_data']['note'],
             page_subtitle=session['client_data']['page_subtitle'],
-            page_description=session['client_data']['page_description'],
-            qrcode_message=session['client_data'].get('qrcode_message', ""),
-            mobile_message=session['client_data'].get('mobile_message', ""),
             issuer_landing_page_select=issuer_landing_page_select,
         )
     if request.method == 'POST':
@@ -127,23 +106,14 @@ def oidc4vc_issuer_console(mode):
             db_api.delete_oidc4vc_issuer( request.form['client_id'])
             return redirect('/issuer/console')
         else:
-            session['client_data']['contact_name'] = request.form['contact_name']
-            session['client_data']['user'] = request.form['user']
             session['client_data']['credential_offer_uri'] = request.form.get('credential_offer_uri') 
             session['client_data']['deferred_flow'] = request.form.get('deferred_flow') 
             session['client_data']['issuer_id_as_url'] = request.form.get('issuer_id_as_url') 
             session['client_data']['page_title'] = request.form['page_title']
             session['client_data']['page_subtitle'] = request.form['page_subtitle']
-            session['client_data']['page_description'] = request.form['page_description']
-            session['client_data']['note'] = request.form['note']          
-            session['client_data']['title'] = request.form['title']
-            session['client_data']['contact_email'] = request.form['contact_email']
             session['client_data']['issuer_landing_page'] = request.form['issuer_landing_page']
             session['client_data']['client_id'] =  request.form['client_id']
-            session['client_data']['company_name'] = request.form['company_name']
             session['client_data']['application_name'] = request.form['application_name']
-            session['client_data']['qrcode_message'] = request.form['qrcode_message']
-            session['client_data']['mobile_message'] = request.form['mobile_message'] 
             
             if request.form['button'] == "preview":
                 return redirect('/issuer/console/preview')

@@ -38,7 +38,7 @@
                   <div class="card shadow my-5">
                     <div class="card-header py-3">
                       <div class="d-flex justify-content-between">
-                        <p style="color:#09060f;" class=" m-0 font-weight-bold">Generate a verifier for an OIDC4VC application</p>
+                        <p style="color:#09060f;" class=" m-0 font-weight-bold">Generate a verifier for an OIDC4VP/SIOPV2 application</p>
                       
                       </div>
                     </div>
@@ -52,64 +52,14 @@
                             </div>
                           </div>
                           <div class="card-body">
-
-
-                          {% if session['login_name'] != session['client_data']['user'] and  session['login_name'] != "admin" %}
-                        <div class="form-row">
-                            <div class="col">
-                            
-                              <div class="form-group"><label><strong>User Name (wallet DID)</strong><br></label><input class="form-control" readonly type="text" value="{{user_name}}""  name="user_name" ></div>
-                             
-                            </div>
-                            <div class="col">
-                              <div class="form-group"><label><strong>Company Name</strong><br></label><input class="form-control" readonly type="text" value="{{company_name}}""  name="company_name" ></div>
-                            </div>
-                        </div>
-                        <div class="form-row">  
-                            <div class="col">
-                              <div class="form-group"><label><strong>Contact Name</strong><br></label><input class="form-control" readonly type ="text" value="{{contact_name}}" name="contact_name" ></div>
-                            </div>
-                            <div class="col">
-                              <div class="form-group"><label><strong>Contact Email</strong><br></label><input class="form-control" readonly type="email" value="{{contact_email}}" name="contact_email" ></div>
-                            </div>
-                        </div>
-                        <div class="form-row">           
-                          <div class="col">
-                            <div class="form-group"><label><strong>Note</strong><br></label><textarea readonly class="form-control" name="note" >{{note}}</textarea></div>
-                          </div>
-                        </div>
-                        {% else %}
-                        <div class="form-row">
-                          <div class="col">
-                          
-                            <div class="form-group"><label><strong>User Name (Wallet DID)</strong><br></label><input class="form-control" required type="text" value="{{user_name}}""  name="user_name" ></div>
-                           
-                          </div>
-                          <div class="col">
-                            <div class="form-group"><label><strong>Company Name</strong><br></label><input class="form-control" type="text" value="{{company_name}}""  name="company_name" ></div>
-                          </div>
-                      </div>
+                      
                       <div class="form-row">  
-                          <div class="col">
-                            <div class="form-group"><label><strong>Contact Name</strong><br></label><input class="form-control" type ="text" value="{{contact_name}}" name="contact_name" ></div>
-                          </div>
-                          <div class="col">
-                            <div class="form-group"><label><strong>Contact Email</strong><br></label><input class="form-control" type="email" value="{{contact_email}}" name="contact_email" ></div>
-                          </div>
+                        
+                          
                           <div class="col">
                             <div class="form-group"><label><strong>Application Name (required)</strong></label><input required class="form-control" type="text" name="application_name"  value="{{application_name}}"></div>
                           </div>
                       </div>
-                      <div class="form-row">           
-                        <div class="col">
-                          <div class="form-group"><label><strong>Note</strong><br></label><textarea class="form-control" name="note" >{{note}}</textarea></div>
-                        </div>
-                      </div>
-
-                     
-                      {% endif %}
-
-                    
 
                         </div>
                         </div>
@@ -645,40 +595,9 @@
                                 </div>
                               </div>
 
-                              <div class="form-row">
-                                <div class="col">
-                                  <div class="form-group"><label><strong>Landing page description</strong><br></label><textarea class="form-control" rows="5" name="page_description" >{{page_description}}</textarea></div>
-                                </div>
-                              </div>
-
-                         <div class="form-row">
-                  
-                            <div class="col">
-                              <div class="form-group"><label><strong>Title QR code page for desktop </strong><br></label><textarea required class="form-control" name="title" >{{title}}</textarea></div>
-                            </div>
-
-                            <div class="col">
-                              <div class="form-group"><label><strong>Subtitle QR code page for desktop</strong><br></label><textarea class="form-control" name="qrcode_message" >{{qrcode_message}}</textarea></div>
-                            </div>
-                         </div>
-
-
-
-                         <div class="form-row">
-                          
-                     
-                        <div class="col">
-                          <div class="form-group"><label><strong>Message for mobile</strong><br></label><textarea class="form-control" name="mobile_message" >{{mobile_message}}</textarea></div>
-                        </div>
-                   
-                         </div>
-                        <div class="form-row">
-                          
+                             
 
                         
-                         </div>
-
-
 
                         </div>
                         </div>

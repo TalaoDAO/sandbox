@@ -18,7 +18,7 @@
   "place_of_birth": { 
     "locality": "Leipzig",
     "region": "Saxony",
-    "country": "DD",
+    "country": "DE",
     "disclosure": ["country"]
     },
 

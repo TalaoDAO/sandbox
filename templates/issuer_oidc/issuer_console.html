@@ -24,65 +24,22 @@
                   <div class="card shadow my-5">
                     <div class="card-header py-3">
                       <div class="d-flex justify-content-between">
-                        <p style="color:#09060f;" class=" m-0 font-weight-bold">Generate an OIDC4VCI  Issuer for your application 
-                    </p>
+                        <p style="color:#09060f;" class=" m-0 font-weight-bold">Generate an OIDC4VCI Issuer</p>
                       
                       </div>
                     </div>
-                    <div class="card-body">
                         
-                      <div class="card shadow my-3">
-                          <div class="card-header py-3">
-                            <div class="d-flex justify-content-between">
-                              <p style="color: #09060f;" class="m-0 font-weight-bold">Company, application and issuer information</p>
-                            </div>
-                          </div>
-                          <div class="card-body">
+                    <div class="card-body">
+
 
                         <div class="form-row">
-                            <div class="col">
-                              <div class="form-group"><label><strong>Company name</strong><br></label><input class="form-control" required type="text" value="{{company_name}}"  name="company_name" ></div>
-                            </div>
                             <div class="col">
                               <div class="form-group"><label><strong>Application name</strong><br></label><input class="form-control" type="text" value="{{application_name}}"  name="application_name" ></div>
-                            </div>
-                            
-                            
-                        
+                            </div>  
                         </div> 
-                        <div class="form-row">
-                            <div class="col-3">
-                              <div class="form-group"><label><strong>Contact name</strong><br></label><input class="form-control" type ="text" value="{{contact_name}}" name="contact_name" ></div>
-                            </div>
-                            <div class="col-3">
-                              <div class="form-group"><label><strong>Contact email</strong><br></label><input class="form-control" type="email" value="{{contact_email}}" name="contact_email" ></div>
-                            </div>
-                            <div class="col">
-                              {% if session['login_name'] != "admin" %}
-                              <div class="form-group"><label><strong>User (Wallet DID)</strong><br></label><input readonly class="form-control" type ="text" value="{{user}}" name="user" ></div>
-                              {% else %}
-                              <div class="form-group"><label><strong>User (Wallet DID)</strong><br></label><input class="form-control" type ="text" value="{{user}}" name="user" ></div>
-                              {% endif %}
-                            </div>
-                          </div>
-                            <div class="form-row"> 
-                          <div class="col">
-                            <div class="form-group"><label><strong>Note</strong><br></label><textarea class="form-control" name="note" >{{note}}</textarea></div>
-                          </div>
-                        </div>
-                        <input hidden class="form-control" type="text" name="client_id" value="{{client_id}}"></div>
-                        </div>
-                        
-
-                        <div class="card shadow my-3">
-                          <div class="card-header py-3">
-                            <div class="d-flex justify-content-between">
-                              <p style="color: #09060f;" class="m-0 font-weight-bold">API credentials <a href="https:/talao.co/api/swagger"> (Swagger UI)</a></p>
-                            </div>
-                          </div>
-
-                          <div class="card-body">
-
+                  
+                          
+                        <input hidden class="form-control" type="text" name="client_id" value="{{client_id}}">
 
                         <div class="form-row">
                           <div class="col">
@@ -92,30 +49,12 @@
                           <div class="col">
                             <div class="form-group"><label><strong>issuer_secret</strong></label><input readonly class="form-control" type="text" value={{client_secret}}></div>
                           </div>
-                         
-                       
                           <div class="col">
                             <div class="form-group"><label><strong>issuer_id</strong><br></label><input class="form-control" readonly type="text" value="{{client_id}}" ></div>
                           </div>
-
-                         
         
                         </div>
-                        </div>
-                      </div>
-                     
-        
-
-
-                          <div class="card shadow my-3">
-                            <div class="card-header py-3">
-                              <div class="d-flex justify-content-between">
-                                <p style="color: #09060f;" class="m-0 font-weight-bold">Issuer page customization</p>
-                              </div>
-                            </div>
-                            <div class="card-body">
-
-                              <div class="form-row">
+                        <div class="form-row">
                               <div class="col-3">
                                 <div class="form-check">
                                   <input class="form-check-input" type="checkbox" {{credential_offer_uri}} name="credential_offer_uri" id="flexCheckDefault_1">
@@ -131,22 +70,19 @@
                               <div class="col-3">
                                 <div class="form-check">
                                   <input class="form-check-input" type="checkbox" {{issuer_id_as_url}} name="issuer_id_as_url" id="flexCheckDefault_1">
-                                  <label class="form-check-label" for="flexCheckDefault_1">Issuer as URL</label>
+                                  <label class="form-check-label" for="flexCheckDefault_1">Sign VC with iss as URL (default iss = DID)</label>
                                 </div>
                               </div>
 
-                              </div>
+                        </div>
 
-                              <div class="form-row mt-3">
+                        <div class="form-row mt-3">
                                 <div class="col">
                                   <div class="form-group"><label><strong>Landing page style</strong></label><select  name="issuer_landing_page" class="form-control">
                                     <option value="">--Please choose an option--</option>
-                                   {{issuer_landing_page_select|safe}}
+                                  {{issuer_landing_page_select|safe}}
                                     </select></div>
                               </div>
-
-                               
-
                                 <div class="col">
                                   <div class="form-group"><label><strong>Landing page title</strong><br></label><input class="form-control" type="text" name="page_title" value="{{page_title}}"></div>
                                 </div>
@@ -154,38 +90,7 @@
                                 <div class="col">
                                   <div class="form-group"><label><strong>Landing page subtitle</strong><br></label><input class="form-control" type="text" name="page_subtitle" value="{{page_subtitle}}"></div>
                                 </div>
-                              </div>
-
-                              <div class="form-row">
-                                <div class="col">
-                                  <div class="form-group"><label><strong>Landing page description</strong><br></label><textarea class="form-control" rows="5" name="page_description" >{{page_description}}</textarea></div>
-                                </div>
-                              </div>
-
-                            
-
-                         <div class="form-row">
-                  
-                            <div class="col">
-                              <div class="form-group"><label><strong>QR code title</strong><br></label><input type="text" required class="form-control" name="title" value="{{title}}"></div>
-                            </div>
-
-                            <div class="col">
-                              <div class="form-group"><label><strong>QR code subtitle</strong><br></label><input type="text" class="form-control" name="qrcode_message" value="{{qrcode_message}}"></div>
-                            </div>
-                         </div>
-
-                         <div class="form-row">
-                          
-                     
-                        <div class="col">
-                          <div class="form-group"><label><strong>Message for mobile deeplink</strong><br></label><input type="text" class="form-control" name="mobile_message" value="{{mobile_message}}"></div>
-                        </div>
-                   
-                        </div>
-                      
-                  
-
+                        </div>                        
                         </div>
                         </div>
 

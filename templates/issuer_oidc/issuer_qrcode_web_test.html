@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- qr code page 1  -->
+<!-- issuer_qrcode_web_test.html  -->
 
 <html style="background-color: {{ page_background_color }} ">
   <head>
@@ -7,7 +7,7 @@
     <meta charset="utf-8">
    <meta name="viewport" content="width=300px, initial-scale=1, maximum-scale=1">  
     <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='./img/3D.ico') }}"/>
-    <title>{{company_name}}</title>
+    <title>Talao</title>
     <link rel = "stylesheet" type= "text/css" href= "{{ url_for('static', filename='bootstrap.min.css') }}">
   </head>
   <body >
@@ -23,7 +23,6 @@
             <h3>{{page_subtitle}}</h3><br>
             <div class="row">
               <div class="col-6 offset-3">
-                <h5>{{page_description}}</h5>
                
               </div>
             </div>
@@ -34,7 +33,6 @@
             <div class="col-3">
 
               <div class="text-center border-radius: 20%">
-                <h2 hidden class="mt-2 p-2">{{title}}</h2>
                 
                 <div class="card shadow border-dark mt-2 " style="border-radius: 4%; background-color: {{qrcode_background_color}} ">
                 <img class="card-img-top p-3 " src="{{ qrcode(url) }}">

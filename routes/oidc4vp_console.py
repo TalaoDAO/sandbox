@@ -66,7 +66,6 @@ def oidc4vc_verifier_console_select(mode):
                 if data_dict['user'] == "all" or session['login_name'] in [data_dict['user'], "admin"]:
                     verifier = """<tr>
                         <td>""" + data_dict.get('application_name', "") + """</td>
-                        <td>""" + data_dict['user'][:20] + """...</td>
                         <td>""" + client_id_scheme + """</td>
                         <td>""" + data_dict.get('profile', 'Unknwon') + """</td>
                         <td>""" + id_token + """</td>
@@ -347,7 +346,6 @@ def oidc4vc_verifier_console(mode):
             'verifier_oidc/verifier_console.html',
             authorization_request=authorization_request,
             implicit_request=implicit_request,
-            title=session['client_data'].get('title'),
             pkce="checked" if session['client_data'].get('pkce') else "",
             presentation_definition=json.dumps(presentation_definition, indent=4),
             id_token="checked" if session['client_data'].get('id_token')  else "",
@@ -362,27 +360,19 @@ def oidc4vc_verifier_console(mode):
             request_parameter_supported="" if not session['client_data'].get('request_parameter_supported') else "checked" ,
             standalone="" if not session['client_data'].get('standalone')  else "checked" ,
             application_name=session['client_data'].get('application_name', ""),
-            contact_name=session['client_data'].get('contact_name'),
-            contact_email=session['client_data'].get('contact_email'),
             issuer=mode.server + "sandbox/verifier/app",
             client_id=session['client_data']['client_id'],
             client_secret=session['client_data']['client_secret'],
             token=mode.server + 'sandbox/verifier/app/token',
             page_title=session['client_data']['page_title'],
-            note=session['client_data']['note'],
             page_subtitle=session['client_data']['page_subtitle'],
-            page_description=session['client_data']['page_description'],
             authorization=mode.server + 'sandbox/verifier/app/authorize',
             logout=mode.server + 'sandbox/verifier/app/logout',
             userinfo=mode.server + 'sandbox/verifier/app/userinfo',
-            company_name=session['client_data']['company_name'],
             reason_1=session['client_data'].get('reason_1', ""),
             reason_2=session['client_data'].get('reason_2'),
             reason_3=session['client_data'].get('reason_3', ""),
             reason_4=session['client_data'].get('reason_4', ""),
-            qrcode_message=session['client_data'].get('qrcode_message', ""),
-            mobile_message=session['client_data'].get('mobile_message', ""),
-            user_name=session['client_data'].get('user'),
             verifier_landing_page_style_select=verifier_landing_page_style_select,
             vc_select_1=vc_select_1,
             vc_select_2=vc_select_2,
@@ -422,7 +412,6 @@ def oidc4vc_verifier_console(mode):
                 flash("MUST check vp_token box !", "warning")
                 return redirect('/sandbox/verifier/console?client_id=' + request.form['client_id'])
             
-            session['client_data']['note'] = request.form['note']
             session['client_data']['standalone'] = request.form.get('standalone') 
             session['client_data']['pkce'] = request.form.get('pkce') 
             session['client_data']['id_token'] = request.form.get('id_token') 
@@ -438,14 +427,9 @@ def oidc4vc_verifier_console(mode):
             session['client_data']['application_name'] = request.form['application_name']
             session['client_data']['page_title'] = request.form['page_title']
             session['client_data']['page_subtitle'] = request.form['page_subtitle']
-            session['client_data']['page_description'] = request.form['page_description']
-            session['client_data']['contact_name'] = request.form['contact_name']
-            session['client_data']['title'] = request.form['title'] 
             session['client_data']['verifier_landing_page_style'] = request.form['verifier_landing_page_style']
-            session['client_data']['contact_email'] = request.form['contact_email']
             session['client_data']['client_id'] =  request.form['client_id']
             session['client_data']['client_secret'] = request.form['client_secret']
-            session['client_data']['company_name'] = request.form['company_name']
             
             session['client_data']['reason_1'] = request.form['reason_1']
             session['client_data']['reason_2'] = request.form['reason_2']
@@ -467,11 +451,6 @@ def oidc4vc_verifier_console(mode):
 
             session['client_data']['predefined_presentation_definition'] = request.form['predefined_presentation_definition']
             session['client_data']['client_id_scheme'] = request.form['client_id_scheme']
-
-            session['client_data']['user'] = request.form['user_name']
-            session['client_data']['qrcode_message'] = request.form['qrcode_message']
-            session['client_data']['mobile_message'] = request.form['mobile_message']  
-
             if not request.form.get('vp_token') and session['client_data']['group']:
                 flash("MUST select vp_token to use group !", "warning")
                 session['client_data']['group'] = None        
