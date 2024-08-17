@@ -729,7 +729,6 @@ def issuer_authorize(issuer_id, red, mode):
     if session['code_data']['state']: resp['state'] = session['code_data']['state']
     redirect_uri = session['code_data']['redirect_uri']
     session.clear()
-    print('redirect = ', redirect_uri)
     return redirect(redirect_uri + '?' + urlencode(resp))
 
 

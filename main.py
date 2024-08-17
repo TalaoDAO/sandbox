@@ -386,7 +386,6 @@ class Issuer(Resource):
 
 @app.route('/app/download' , methods=['GET']) 
 def app_download():
-    print('issuer state =', issuer_state)
     return render_template('app_download/talao_app_download.html')
 
 
