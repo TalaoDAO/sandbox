@@ -1,0 +1,9 @@
+{
+    "vct": "urn:eu.europa.ec.eudi:employee_badge:1",
+    "given_name": "Patrick",
+    "family_name": "Doe",
+    "organization": "Talao",
+    "role": "legal_representative",
+    "disclosure": ["vct", "status", "given_name", "family_name", "organization", "role"]
+}
+

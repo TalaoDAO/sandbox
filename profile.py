@@ -1136,8 +1136,66 @@ profile = {
         "credentials_as_json_object_array": False,
         "siopv2_prefix": "openid-vc://",
         "oidc4vp_prefix": "openid-vc://",
-        "credentials_types_supported": ["IdentityCredential", "EudiPid", "Pid"],
+        "credentials_types_supported": ["IdentityCredential", "EudiPid", "Pid", "EmployeeBadge"],
         "credential_configurations_supported": {
+            "EmployeeBadge": {
+                "format": "vc+sd-jwt",
+                "scope": "EmployeeBadge_scope",
+                "order": [
+                    "given_name",
+                    "family_name",
+                    "role",
+                    "organization",
+                ],
+                "claims": {
+                        "given_name": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "First Name", "locale": "en-US"},
+                                        {"name": "Prénom", "locale": "fr-FR"}],
+                        },
+                        "family_name": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Family Name", "locale": "en-US"},
+                                        {"name": "Nom", "locale": "fr-FR"}],
+                        },
+                        "role": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Role", "locale": "en-US"},
+                                        {"name": "Rôle", "locale": "fr-FR"}],
+                        },
+                        "organization": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Organization", "locale": "en-US"},
+                                        {"name": "Organisation", "locale": "fr-FR"}]
+                        }
+                    },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "vct": "urn:eu.europa.ec.eudi:employee_badge:1",
+                "display": [
+                    {
+                        "name": "Employee Badge",
+                        "locale": "en-US",
+                        "background_color": "#ed7b76",
+                        "text_color": "#FFFFFF",
+                    },
+                    {
+                        "name": "Badge Entreprise",
+                        "locale": "fr-FR",
+                        "background_color": "#ed7b76",
+                        "text_color": "#FFFFFF",
+                    }
+                ],
+            },
             "Pid": {
                 "format": "vc+sd-jwt",
                 "scope": "Pid_scope",

@@ -193,7 +193,7 @@ def wallet_issuer():
     for issuer in my_list:
         name = issuer["title"]
         description = issuer["description"]
-        url = issuer['redirect']
+        url = issuer.get('redirect', "Unknown")
         href = "/wallet/qeea/select?url=" + url
         iss = """<tr>
             <td>""" + "<a href=" + href + ">" + name + """</td>
