@@ -219,6 +219,7 @@ response = api.model(
     'Response',
     {
         'redirect_uri': fields.String(description='API response', required=True),
+        'qrcode': fields.String(description='API response', required=True)
     }
 )
 

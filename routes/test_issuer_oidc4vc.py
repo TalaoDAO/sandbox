@@ -434,13 +434,19 @@ def test_8(mode):
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
     }
-    with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
-        credential_1 = json.loads(f.read())
+    credential = {
+        "vct": "urn:eu.europa.ec.eudi:employee_badge:1",
+        "given_name": "Patrick",
+        "family_name": "Doe",
+        "organization": "Talao",
+        "role": "legal_representative",
+        "disclosure": ["vct", "status", "given_name", "family_name", "organization", "role"]
+    }
         
     data = { 
         "issuer_id": issuer_id,
         "vc": {
-            "EmployeeBadge": credential_1, 
+            "EmployeeBadge": credential, 
         },
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
@@ -449,10 +455,12 @@ def test_8(mode):
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try:
-        qrcode = resp.json()['redirect_uri']
+        # 2 solutions possibles 
+        qrcode = resp.json()['qrcode'] # valeur du QR code a afficher
+        redirect_uri = resp.json()['redirect_uri'] # redirect vers la page d un QR code sur sandbox
     except Exception:
         return jsonify("No qr code")
-    return redirect(qrcode) 
+    return redirect(redirect_uri) 
 
 
 def test_9(mode): # 

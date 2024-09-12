@@ -271,6 +271,9 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
                     payload[claim].append({"..." : hash(nested_disclosure)})
         else:
             logging.warning("type not supported")
+    if not payload['_sd']:
+        del payload['_sd']
+        del payload["_sd_alg"]
     logging.info("sd-jwt payload = %s", payload)
     signer_key = jwk.JWK(**issuer_key)
     kid = issuer_key.get('kid') if issuer_key.get('kid') else signer_key.thumbprint()
