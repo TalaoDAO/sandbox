@@ -306,14 +306,19 @@ def verifier_callback3():
     vcsd_jwt_payload = oidc4vc.get_payload_from_token(vcsd[0])
     vcsd_jwt_header = oidc4vc.get_header_from_token(vcsd[0])
     disclosure = ""
-    for i in range(1, len(vcsd)-1):
+    if not vcsd[-1]:
+        len_vcsd = len(vcsd)
+        kbjwt_header = kbjwt_payload = "No KB"
+    else:
+        len_vcsd = len(vcsd)-1
+        kbjwt_header = oidc4vc.get_header_from_token(vcsd[-1])
+        kbjwt_payload = oidc4vc.get_payload_from_token(vcsd[-1])
+    for i in range(1, len_vcsd):
         _disclosure = vcsd[i]
         _disclosure += "=" * ((4 - len(vcsd[i]) % 4) % 4)    
         print(_disclosure)
         disclosure += "\r\n" + base64.urlsafe_b64decode(_disclosure.encode()).decode()
-    kbjwt_header = oidc4vc.get_header_from_token(vcsd[-1])
-    kbjwt_payload = oidc4vc.get_payload_from_token(vcsd[-1])
-
+       
     return render_template(
         'verifier_oidc/vcsd_jwt_test.html',
         raw=token,

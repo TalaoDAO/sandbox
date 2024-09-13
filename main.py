@@ -192,7 +192,7 @@ api = Api(
     titles="Altme issuer API"
 )
 
-ns = api.namespace('sandbox', description='To get the uri to redirect user browser to the QR code page created by the platform')
+ns = api.namespace('sandbox', description='To get the QR code value or the uri to redirect user browser to the QR code page created by the platform')
 
 callback = mode.server + 'sandbox/issuer/callback'
 offer = ["VerifiableId"]
@@ -236,7 +236,7 @@ class Issuer(Resource):
     def post(self):
         
         """
-        This API returns the QRcode page URL to redirect the user browser to the QR code to get her verifiable credential.
+        This API returns the QRcode value and the page URL to redirect the user browser to a QR code to get her verifiable credential.
 
         headers = {
             'Content-Type': 'application/json',
