@@ -43,6 +43,7 @@ predefined_presentation_uri_list = {
     'presentation_definition/age_without_filter_sdjwt': 'Age without filter sd-jwt',
     'presentation_definition/email_without_filter_ldp': 'Email without filter ldp',
     'presentation_definition/pid': 'PID through vct',
+     'presentation_definition/pid_without_vct': 'PID without vct',
     'presentation_definition/pid_with_required': 'PID with limited disclosure',
     'presentation_definition/pension_credential': 'Pension credential'
 
