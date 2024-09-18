@@ -456,8 +456,9 @@ def test_8(mode):
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try:
         # 2 solutions possibles 
-        #qrcode = resp.json()['qrcode_value'] # valeur du QR code a afficher
+        qrcode = resp.json()['qrcode_value'] # valeur du QR code a afficher
         redirect_uri = resp.json()['redirect_uri'] # redirect vers la page d un QR code sur sandbox
+        print("qrcode = ", qrcode)
     except Exception:
         return jsonify("No qr code")
     return redirect(redirect_uri) 

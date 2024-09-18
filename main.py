@@ -16,6 +16,7 @@ import uuid
 import oidc4vc
 from profile import profile
 import db_api
+import requests
 from device_detector import SoftwareDetector
 
 
@@ -219,7 +220,7 @@ response = api.model(
     'Response',
     {
         'redirect_uri': fields.String(description='API response', required=True),
-        'qrcode': fields.String(description='API response', required=True)
+        'qrcode_value': fields.String(description='API response', required=True)
     }
 )
 
@@ -374,9 +375,11 @@ class Issuer(Resource):
 
         # for front page management
         red.setex(stream_id, API_LIFE, json.dumps(session_data))
+        r = requests.get(mode.server + "sandbox/ebsi/issuer/qrcode/" + issuer_id + "/" + stream_id)
+        qrcode_value = r.json()["qrcode_value"]
         response = {
             "redirect_uri": mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/" + stream_id,
-            "qrcode_value": mode.server + "sandbox/ebsi/issuer/qrcode/" + issuer_id + "/" + stream_id
+            "qrcode_value": qrcode_value
         }
         logging.info(
             "initiate qrcode = %s",
