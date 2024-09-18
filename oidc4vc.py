@@ -203,6 +203,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
     GAIN POC https://gist.github.com/javereec/48007399d9876d71f523145da307a7a3
     HAIP : https://openid.net/specs/openid4vc-high-assurance-interoperability-profile-sd-jwt-vc-1_0-00.html
     """
+    disclosed_claims = ['status', 'vct', 'iat', 'iss', 'exp', '_sd_alg', 'cnf']
     issuer_key = json.loads(issuer_key) if isinstance(issuer_key, str) else issuer_key
     subject_key = json.loads(subject_key) if isinstance(subject_key, str) else subject_key
     payload = {
@@ -223,7 +224,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
         if claim == "disclosure":
             pass
         # for attribute to disclose
-        elif claim in disclosure_list:
+        elif claim in disclosure_list or claim in disclosed_claims:
             payload[claim] = unsecured[claim]
         # for undisclosed attribute
         elif isinstance(unsecured[claim], str) or  isinstance(unsecured[claim], bool) :

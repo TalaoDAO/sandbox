@@ -375,8 +375,16 @@ class Issuer(Resource):
 
         # for front page management
         red.setex(stream_id, API_LIFE, json.dumps(session_data))
-        r = requests.get(mode.server + "sandbox/ebsi/issuer/qrcode/" + issuer_id + "/" + stream_id)
-        qrcode_value = r.json()["qrcode_value"]
+        
+        # Get the QR code value from oidc4vci_api.py
+        try:
+            r = requests.get(mode.server + "sandbox/ebsi/issuer/qrcode/" + issuer_id + "/" + stream_id)
+            qrcode_value = r.json()["qrcode_value"]
+        except Exception:
+            logging.error("QR code value error ")
+            qrcode_value = ""
+        
+        # response to issuer
         response = {
             "redirect_uri": mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/" + stream_id,
             "qrcode_value": qrcode_value
