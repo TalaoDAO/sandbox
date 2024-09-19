@@ -346,6 +346,7 @@ class Issuer(Resource):
             "stream_id": stream_id,
             "issuer_id": issuer_id,
             "issuer_state": request.json.get("issuer_state"),
+            "webhook": request.json.get("webhook"),
             "credential_type": credential_type,
             "pre-authorized_code": pre_authorized_code,
             "user_pin_required": request.json.get("user_pin_required"),

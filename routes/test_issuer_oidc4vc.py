@@ -34,6 +34,7 @@ def init_app(app,red, mode):
 
     app.add_url_rule('/sandbox/image',  view_func=get_image, methods=['GET'])
 
+    app.add_url_rule('/sandbox/issuer/webhook',  view_func=webhook, methods=['POST'])
     return
 
 
@@ -449,6 +450,7 @@ def test_8(mode):
         },
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
+        "webhook": mode.server + "sandbox/issuer/webhook",
         "credential_type": ['EmployeeBadge'],
         "callback": mode.server + 'sandbox/issuer/callback',
         }
@@ -814,3 +816,8 @@ def build_credential(vc):
     credential['validFrom'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
     credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
     return credential
+
+
+def webhook():
+    print("webhook reçu = ", request.json)
+    return jsonify('ok')

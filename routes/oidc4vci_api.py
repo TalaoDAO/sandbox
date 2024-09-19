@@ -872,6 +872,7 @@ def issuer_token(issuer_id, red, mode):
         'c_nonce': endpoint_response.get('c_nonce'),
         'credential_type': data.get('credential_type'),
         'vc': data.get('vc'),
+        'webhook': data.get('webhook'),
         'authorization_details': authorization_details,
         'stream_id': data.get('stream_id'),
         'issuer_state': data.get('issuer_state'),
@@ -1116,6 +1117,14 @@ async def issuer_credential(issuer_id, red, mode):
     access_token_data["c_nonce"] = c_nonce
     red.setex(access_token, ACCESS_TOKEN_LIFE, json.dumps(access_token_data))
 
+    # send event to webhook
+    if webhook := access_token_data['webhook']:
+        print("webhook url = ", webhook)
+        data = {
+                "event": "CREDENTIAL_SENT",
+        }
+        requests.post(webhook, json=data)
+    
     # update counter for issuance of verifiable id
     if issuer_id in ["vqzljjitre", "lbeuegiasm"]:
         data = {
