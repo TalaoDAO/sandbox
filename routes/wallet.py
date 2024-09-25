@@ -81,7 +81,7 @@ def get_configuration():
     f = open("wallet_configuration.json", 'r')
     return json.loads(f.read())
 
-
+# pour afficher le detail d'un credential
 def credential():
     if request.method == 'POST':
         if request.form["button"] == "delete":
@@ -110,6 +110,7 @@ def credential():
         
     )
 
+# pour acceder aux info du wallet 
 def about():
     f = open("wallet_configuration.json", 'r')
     config = json.loads(f.read())['generalOptions']
@@ -126,6 +127,7 @@ def about():
     )
 
 
+# pour acceder a la liste des issuer pour l eudi wallet perso (badge, etc)
 def personal(mode):
     f = open("wallet_configuration.json", 'r')
     config = json.loads(f.read())['generalOptions']
@@ -177,7 +179,8 @@ def personal(mode):
         )
 
 
-
+# permet d exposer le credentuial offer endpoint a l issuer
+# https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-sending-credential-offer-by
 def web_wallet_openid_configuration():
     config = {
         "credential_offer_endpoint": "/wallet"        
@@ -185,6 +188,7 @@ def web_wallet_openid_configuration():
     return jsonify(config)
 
 
+# affiche les external issuer de la config
 def wallet_issuer():
     f = open("wallet_configuration.json", 'r')
     config = json.loads(f.read())
@@ -213,7 +217,8 @@ def wallet_issuer():
         color=color
     )
 
-    
+
+# unused    
 def wallet_verifier():
     if request.method == 'GET':
         return render_template('wallet/wallet_verifier.html')
@@ -354,6 +359,7 @@ def credential_select(mode):
     return redirect("/wallet")   
 
 
+# optional
 def QEEA_select(red, mode):
     """
     Wallet initiated with authorization code flow
@@ -424,6 +430,7 @@ def build_authorization_request(issuer, scope, red, mode, issuer_config) -> str:
     return redirect_uri
 
 
+# callback du wallet
 def callback(red, mode):
     """
     For authorization code flow call back, wallet intiated flow 
@@ -484,6 +491,7 @@ def callback(red, mode):
             }
         )
     return redirect("/wallet")     
+
 
 
 def token_request(issuer, code, grant_type, mode, code_verifier):
@@ -580,7 +588,7 @@ def build_proof_of_key(key, iss, kid, aud, nonce):
     return token.serialize()
 
 
-# pre authorized code
+# process du pre authorized code flow
 def  pre_authorized_code_flow(issuer, code, vct, type, format, mode):
     # access token request
     logging.info('This is a pre_authorized-code flow')
@@ -610,7 +618,7 @@ def  pre_authorized_code_flow(issuer, code, vct, type, format, mode):
     return result["credential"]
 
 
-# authorization code flow
+# process de l'authorization code flow
 def authorization_code_flow(issuer, scope, vct, type, format):
     # authorization request
     

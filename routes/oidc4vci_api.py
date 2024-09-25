@@ -1117,9 +1117,8 @@ async def issuer_credential(issuer_id, red, mode):
     access_token_data["c_nonce"] = c_nonce
     red.setex(access_token, ACCESS_TOKEN_LIFE, json.dumps(access_token_data))
 
-    # send event to webhook
+    # send event to webhook if it exists    
     if webhook := access_token_data['webhook']:
-        print("webhook url = ", webhook)
         data = {
                 "event": "CREDENTIAL_SENT",
         }

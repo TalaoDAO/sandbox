@@ -1146,6 +1146,7 @@ profile = {
                     "family_name",
                     "role",
                     "organization",
+                    "website"
                 ],
                 "claims": {
                         "given_name": {
@@ -1171,6 +1172,12 @@ profile = {
                             "value_type": "string",
                             "display": [{"name": "Organization", "locale": "en-US"},
                                         {"name": "Organisation", "locale": "fr-FR"}]
+                        },
+                         "website": {
+                            "mandatory": True,
+                            "value_type": "uri",
+                            "display": [{"name": "Website", "locale": "en-US"},
+                                        {"name": "Website", "locale": "fr-FR"}]
                         }
                     },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],

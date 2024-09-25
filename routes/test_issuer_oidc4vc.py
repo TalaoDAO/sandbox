@@ -440,7 +440,8 @@ def test_8(mode):
         "family_name": "Doe",
         "organization": "Talao",
         "role": "legal_representative",
-        "disclosure": ["given_name", "family_name", "organization", "role"]
+        "website": "https://talao.io",
+        "disclosure": ["given_name", "family_name", "organization", "role", "website"]
     }
         
     data = { 
