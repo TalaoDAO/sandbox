@@ -30,7 +30,7 @@
     "issuanceDate": "",
     "credentialSubject" : {
         "type" : "EmailPass",
-        "email" : "",
+        "email" : "john.doe@gmail.com",
         "issuedBy" : {
             "name" : "Altme"
         }

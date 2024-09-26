@@ -377,6 +377,13 @@ profile = {
                         "locale": "en-GB"
                     }
                 ],
+                 "credentialSubject": {
+                    "email": {
+                        "mandatory": True,
+                        "value_type": "uri",
+                        "display": [{"name": "email", "locale": "en-US"}],
+                    }
+                 }
             },
             {
                 "id": "PhoneProof",
