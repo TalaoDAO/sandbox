@@ -397,9 +397,43 @@ class Issuer(Resource):
         return jsonify(response)
 
 
+"""
 @app.route('/app/download' , methods=['GET']) 
 def app_download():
     return render_template('app_download/talao_app_download.html')
+"""
+
+# download link with configuration
+@app.route('/app/download' , methods=['GET']) 
+def app_download() :
+    configuration = {
+        "login": request.args.get('login'),
+        "passsword": request.args.get('password'),
+        "wallet-provider": request.args.get('wallet-provider')
+    }
+    if configuration['wallet-provider'][0:4] != 'http':
+        configuration['wallet-provider'] = 'https://' + configuration['wallet-provider']
+    host = request.headers['X-Real-Ip'] + ' ' +  request.headers['User-Agent']
+    host_hash = hash(host)
+    logging.info('configuration : %s stored for wallet : %s',configuration, host)
+    red.setex(host_hash, 300, json.dumps(configuration))
+    return render_template('app_download/talao_app_download.html')
+
+
+# configuration for linkk to downloads with configuration
+@app.route('/configuration' , methods=['GET']) 
+def app_download_configuration():                           
+    host = request.headers['X-Real-Ip'] + ' ' + request.headers['User-Agent']
+    host_hash = hash(host)
+    logging.info('wallet call to get configuration = %s', host)
+    try:
+        configuration = json.loads(red.get(host_hash).decode())
+        red.delete(host_hash)
+        logging.info("Configuration sent to this wallet")
+    except:
+        logging.warning("No configuration available for this wallet")
+        configuration = None
+    return jsonify(configuration)
 
 
 # Google universal link for Talao wallet
