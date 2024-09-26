@@ -18,6 +18,8 @@ from profile import profile
 import db_api
 import requests
 from device_detector import SoftwareDetector
+import hashlib
+import base64
 
 
 # Basic protocole
@@ -403,6 +405,13 @@ def app_download():
     return render_template('app_download/talao_app_download.html')
 """
 
+
+def hash(text):
+    m = hashlib.sha256()
+    m.update(text.encode())
+    return base64.urlsafe_b64encode(m.digest()).decode().replace("=", "")
+
+
 # download link with configuration
 @app.route('/app/download' , methods=['GET']) 
 def app_download() :
@@ -411,8 +420,6 @@ def app_download() :
         "passsword": request.args.get('password'),
         "wallet-provider": request.args.get('wallet-provider')
     }
-    if configuration['wallet-provider'][0:4] != 'http':
-        configuration['wallet-provider'] = 'https://' + configuration['wallet-provider']
     host = request.headers['X-Real-Ip'] + ' ' +  request.headers['User-Agent']
     host_hash = hash(host)
     logging.info('configuration : %s stored for wallet : %s',configuration, host)
