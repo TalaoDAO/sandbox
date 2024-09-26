@@ -937,7 +937,31 @@ profile = {
                     "ES256"
                 ],
                 "credential_definition": {
-                    "type": ["VerifiableCredential", "DBCGuest"]
+                    "type": ["VerifiableCredential", "DBCGuest"],
+                    "credentialSubject": {
+                        "firstName": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "First name", "locale": "en-US"},
+                                {"name": "Prénom(s)", "locale": "fr-FR"}         
+                            ],
+                        },
+                         "lastName": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Last name", "locale": "en-US"},
+                                {"name": "Nom", "locale": "fr-FR"}         
+                            ],
+                        },
+                         "email": {
+                            "mandatory": True,
+                            "value_type": "uri",
+                            "display": [
+                                {"name": "email", "locale": "en-US"},
+                                {"name": "email", "locale": "fr-FR"}         
+                            ],
+                        }
+                    }
                 },
                 "scope": "DBCGuest_scope",
             },   
