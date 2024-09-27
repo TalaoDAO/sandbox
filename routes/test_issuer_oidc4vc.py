@@ -434,25 +434,27 @@ def test_8(mode):
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
     }
-    credential = {
-        "vct": "urn:eu.europa.ec.eudi:employee_badge:1",
-        "given_name": "Patrick",
-        "family_name": "Doe",
-        "organization": "Talao",
-        "role": "legal_representative",
-        "website": "https://talao.io",
-        "disclosure": ["given_name", "family_name", "organization", "role", "website"]
-    }
+    with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
+        employee_badge = json.loads(f.read())
+    with open('./verifiable_credentials/AdminBadge.json', 'r') as f:
+        admin_badge = json.loads(f.read())
+    with open('./verifiable_credentials/ManagerBadge.json', 'r') as f:
+        manager_badge = json.loads(f.read())
+    with open('./verifiable_credentials/LegalRepresentativeBadge.json', 'r') as f:
+        legal_representtaive_badge = json.loads(f.read())
         
     data = { 
         "issuer_id": issuer_id,
         "vc": {
-            "EmployeeBadge": credential, 
+            "EmployeeBadge": employee_badge, 
+            "LegalRepresentativeBadge": legal_representtaive_badge,
+            "ManagerBadge": manager_badge,
+            "AdminBadge": admin_badge
         },
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
         "webhook": mode.server + "sandbox/issuer/webhook",
-        "credential_type": ['EmployeeBadge'],
+        "credential_type": ['EmployeeBadge', "AdminBadge", "ManagerBadge", "LegalRepresentativeBadge"],
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)

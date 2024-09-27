@@ -1181,8 +1181,203 @@ profile = {
         "credentials_as_json_object_array": False,
         "siopv2_prefix": "openid-vc://",
         "oidc4vp_prefix": "openid-vc://",
-        "credentials_types_supported": ["IdentityCredential", "EudiPid", "Pid", "EmployeeBadge"],
+        "credentials_types_supported": ["IdentityCredential", "EudiPid", "Pid", "EmployeeBadge", "AdminBadge", "LegalRepresentativeBadge", "ManagerBadge"],
         "credential_configurations_supported": {
+            "LegalRepresentativeBadge": {
+                "format": "vc+sd-jwt",
+                "scope": "LegalRepresentativeBadge_scope",
+                "order": [
+                    "given_name",
+                    "family_name",
+                    "role",
+                    "organization",
+                    "website"
+                ],
+                "claims": {
+                        "given_name": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "First Name", "locale": "en-US"},
+                                        {"name": "Prénom", "locale": "fr-FR"}],
+                        },
+                        "family_name": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Family Name", "locale": "en-US"},
+                                        {"name": "Nom", "locale": "fr-FR"}],
+                        },
+                        "role": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Role", "locale": "en-US"},
+                                        {"name": "Rôle", "locale": "fr-FR"}],
+                        },
+                        "organization": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Organization", "locale": "en-US"},
+                                        {"name": "Organisation", "locale": "fr-FR"}]
+                        },
+                         "website": {
+                            "mandatory": True,
+                            "value_type": "uri",
+                            "display": [{"name": "Website", "locale": "en-US"},
+                                        {"name": "Website", "locale": "fr-FR"}]
+                        }
+                    },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "vct": "urn:eu.europa.ec.eudi:legal_representative_badge:1",
+                "display": [
+                    {
+                        "name": "Legal Representative Badge",
+                        "locale": "en-US",
+                        "background_color": "#7b76ed",
+                        "text_color": "#FFFFFF",
+                    },
+                    {
+                        "name": "Badge Représentant légal",
+                        "locale": "fr-FR",
+                        "background_color": "#7b76ed",
+                        "text_color": "#FFFFFF",
+                    }
+                ],
+            },
+            "AdminBadge": {
+                "format": "vc+sd-jwt",
+                "scope": "Admin_scope",
+                "order": [
+                    "given_name",
+                    "family_name",
+                    "role",
+                    "organization",
+                    "website"
+                ],
+                "claims": {
+                        "given_name": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "First Name", "locale": "en-US"},
+                                        {"name": "Prénom", "locale": "fr-FR"}],
+                        },
+                        "family_name": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Family Name", "locale": "en-US"},
+                                        {"name": "Nom", "locale": "fr-FR"}],
+                        },
+                        "role": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Role", "locale": "en-US"},
+                                        {"name": "Rôle", "locale": "fr-FR"}],
+                        },
+                        "organization": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Organization", "locale": "en-US"},
+                                        {"name": "Organisation", "locale": "fr-FR"}]
+                        },
+                         "website": {
+                            "mandatory": True,
+                            "value_type": "uri",
+                            "display": [{"name": "Website", "locale": "en-US"},
+                                        {"name": "Website", "locale": "fr-FR"}]
+                        }
+                    },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "vct": "urn:eu.europa.ec.eudi:admin_badge:1",
+                "display": [
+                    {
+                        "name": "Admin Badge",
+                        "locale": "en-US",
+                        "background_color": "#edb676",
+                        "text_color": "#FFFFFF",
+                    },
+                    {
+                        "name": "Badge Admin",
+                        "locale": "fr-FR",
+                        "background_color": "#edb676",
+                        "text_color": "#FFFFFF",
+                    }
+                ],
+            },
+            "ManagerBadge": {
+                "format": "vc+sd-jwt",
+                "scope": "ManagerBadge_scope",
+                "order": [
+                    "given_name",
+                    "family_name",
+                    "role",
+                    "organization",
+                    "website"
+                ],
+                "claims": {
+                        "given_name": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "First Name", "locale": "en-US"},
+                                        {"name": "Prénom", "locale": "fr-FR"}],
+                        },
+                        "family_name": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Family Name", "locale": "en-US"},
+                                        {"name": "Nom", "locale": "fr-FR"}],
+                        },
+                        "role": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Role", "locale": "en-US"},
+                                        {"name": "Rôle", "locale": "fr-FR"}],
+                        },
+                        "organization": {
+                            "mandatory": True,
+                            "value_type": "string",
+                            "display": [{"name": "Organization", "locale": "en-US"},
+                                        {"name": "Organisation", "locale": "fr-FR"}]
+                        },
+                         "website": {
+                            "mandatory": True,
+                            "value_type": "uri",
+                            "display": [{"name": "Website", "locale": "en-US"},
+                                        {"name": "Website", "locale": "fr-FR"}]
+                        }
+                    },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "vct": "urn:eu.europa.ec.eudi:manager_badge:1",
+                "display": [
+                    {
+                        "name": "Manager Badge",
+                        "locale": "en-US",
+                        "background_color": "#76edb6",
+                        "text_color": "#FFFFFF",
+                    },
+                    {
+                        "name": "Badge Manager",
+                        "locale": "fr-FR",
+                        "background_color": "#76edb6",
+                        "text_color": "#FFFFFF",
+                    }
+                ],
+            },
             "EmployeeBadge": {
                 "format": "vc+sd-jwt",
                 "scope": "EmployeeBadge_scope",
@@ -1241,7 +1436,7 @@ profile = {
                         "text_color": "#FFFFFF",
                     },
                     {
-                        "name": "Badge Entreprise",
+                        "name": "Badge Enmployé",
                         "locale": "fr-FR",
                         "background_color": "#ed7b76",
                         "text_color": "#FFFFFF",
