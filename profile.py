@@ -1094,9 +1094,6 @@ profile = {
             "EmailPass": {
                 "format": "jwt_vc_json",
                 "scope": "EmailPass_scope",
-                "credential_definition": {
-                    "type": ["VerifiableCredential", "EmailPass"]
-                },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
@@ -1112,16 +1109,9 @@ profile = {
                     }
                 ],
                  "credential_definition": {
-                    "type": ["VerifiableCredential", "VerifiableId"],
+                    "type": ["VerifiableCredential", "EmailPass"],
                     "order": [
-                        "firstName",
-                        "familyName",
-                        "dateOfBirth",
-                        "gender",
-                        "dateIssued",
-                        "issuing_country",
                         "email",
-                        "phone_number"
                     ],
                     "credentialSubject": {
                         "email": {
