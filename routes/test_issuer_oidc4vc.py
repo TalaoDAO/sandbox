@@ -138,6 +138,7 @@ def issuer_oidc_test(mode):
     subtitle_test_20 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_20))["page_subtitle"]
     title_test_21 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_21))["page_title"]
     subtitle_test_21 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_21))["page_subtitle"]
+    
     return render_template(
         'issuer_oidc/wallet_issuer_test.html',
         title_test_1=title_test_1,
@@ -915,7 +916,7 @@ def test_20(mode):
 def test_21(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     if mode.myenv == 'aws':
-        issuer_id = "aminiifbnh"
+        issuer_id = "aminiifbnh" 
         client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
     else:       
         issuer_id = "sztgmnihqs"
