@@ -71,7 +71,7 @@ def issuer_oidc_test(mode):
         issuer_id_test_18 = "hmvwdgszax"
         issuer_id_test_19 = "saxupyiiqd"
         issuer_id_test_20 = "palmwvyrpz"
-        issuer_id_test_21 = "miniifbnh"
+        issuer_id_test_21 = "aminiifbnh"
 
     else:
         issuer_id_test_1 = "zxhaokccsi"
