@@ -27,6 +27,12 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/issuer/test_16',  view_func=test_16, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_17',  view_func=test_17, methods=['GET'], defaults={'mode': mode})
 
+    # badges
+    app.add_url_rule('/sandbox/issuer/test_18',  view_func=test_18, methods=['GET'], defaults={'mode': mode})
+    app.add_url_rule('/sandbox/issuer/test_19',  view_func=test_19, methods=['GET'], defaults={'mode': mode})
+    app.add_url_rule('/sandbox/issuer/test_20',  view_func=test_20, methods=['GET'], defaults={'mode': mode})
+    app.add_url_rule('/sandbox/issuer/test_21',  view_func=test_21, methods=['GET'], defaults={'mode': mode})
+
     app.add_url_rule('/sandbox/issuer/callback',  view_func=issuer_callback, methods=['GET'])
     # test
     app.add_url_rule('/issuer/oidc/test',  view_func=issuer_oidc_test, methods=['GET', 'POST'], defaults={"mode": mode})
@@ -62,6 +68,11 @@ def issuer_oidc_test(mode):
         issuer_id_test_15 = "jfzmmdaedq"
         issuer_id_test_16 = "gssmaqetje"
         issuer_id_test_17 = "uwbcbtilws"
+        issuer_id_test_18 = "hmvwdgszax"
+        issuer_id_test_19 = "saxupyiiqd"
+        issuer_id_test_20 = "palmwvyrpz"
+        issuer_id_test_21 = "miniifbnh"
+
     else:
         issuer_id_test_1 = "zxhaokccsi"
         issuer_id_test_2 = "mjdgqkkmcf"
@@ -80,6 +91,10 @@ def issuer_oidc_test(mode):
         issuer_id_test_15 = "znyvjvylrh"
         issuer_id_test_16 = "ukzdzhwpwt"
         issuer_id_test_17 = "xjktmrjcae"
+        issuer_id_test_18 = "vokyfraqyj"
+        issuer_id_test_19 = "jamrcaqppf"
+        issuer_id_test_20 = "swzqynzppm"
+        issuer_id_test_21 = "sztgmnihqs"
 
     title_test_1 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_1))["page_title"]
     subtitle_test_1 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_1))["page_subtitle"]
@@ -115,6 +130,14 @@ def issuer_oidc_test(mode):
     subtitle_test_16 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_16))["page_subtitle"]
     title_test_17 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_17))["page_title"]
     subtitle_test_17 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_17))["page_subtitle"]
+    title_test_18 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_18))["page_title"]
+    subtitle_test_18 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_18))["page_subtitle"]
+    title_test_19 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_19))["page_title"]
+    subtitle_test_19 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_19))["page_subtitle"]
+    title_test_20 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_20))["page_title"]
+    subtitle_test_20 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_20))["page_subtitle"]
+    title_test_21 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_21))["page_title"]
+    subtitle_test_21 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_21))["page_subtitle"]
     return render_template(
         'issuer_oidc/wallet_issuer_test.html',
         title_test_1=title_test_1,
@@ -150,7 +173,15 @@ def issuer_oidc_test(mode):
         title_test_16=title_test_16,
         subtitle_test_16=subtitle_test_16,
         title_test_17=title_test_17,
-        subtitle_test_17=subtitle_test_17
+        subtitle_test_17=subtitle_test_17,
+        title_test_18=title_test_18,
+        subtitle_test_18=subtitle_test_18,
+        title_test_19=title_test_19,
+        subtitle_test_19=subtitle_test_19,
+        title_test_20=title_test_20,
+        subtitle_test_20=subtitle_test_20,
+        title_test_21=title_test_21,
+        subtitle_test_21=subtitle_test_21
     )
 
 
@@ -436,25 +467,16 @@ def test_8(mode):
     }
     with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
         employee_badge = json.loads(f.read())
-    with open('./verifiable_credentials/AdminBadge.json', 'r') as f:
-        admin_badge = json.loads(f.read())
-    with open('./verifiable_credentials/ManagerBadge.json', 'r') as f:
-        manager_badge = json.loads(f.read())
-    with open('./verifiable_credentials/LegalRepresentativeBadge.json', 'r') as f:
-        legal_representtaive_badge = json.loads(f.read())
         
     data = { 
         "issuer_id": issuer_id,
         "vc": {
             "EmployeeBadge": employee_badge, 
-            "LegalRepresentativeBadge": legal_representtaive_badge,
-            "ManagerBadge": manager_badge,
-            "AdminBadge": admin_badge
         },
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
         "webhook": mode.server + "sandbox/issuer/webhook",
-        "credential_type": ['EmployeeBadge', "AdminBadge", "ManagerBadge", "LegalRepresentativeBadge"],
+        "credential_type": ['EmployeeBadge'],
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
@@ -768,6 +790,188 @@ def test_17(mode):
             "Pid": credential_1,
         },
         "issuer_state": "test17",
+        "credential_type": offer,
+        "pre-authorized_code": True,
+        "callback": mode.server + 'sandbox/issuer/callback',
+        }
+    resp = requests.post(api_endpoint, headers=headers, json=data)
+    try:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+
+# Badge employee
+def test_18(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
+    if mode.myenv == 'aws':
+        issuer_id = "hmvwdgszax"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    else:       
+        issuer_id = "vokyfraqyj"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    offer = ["EmployeeBadge"]
+    with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
+        credential = json.loads(f.read())
+    credential['role'] = "employee"
+    credential['given_name'] = "Fitz"
+    credential['family_name'] = "Arwick"
+    headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': client_secret
+    }
+    data = { 
+        "issuer_id": issuer_id,
+        "vc": {
+            "EmployeeBadge": credential,
+        },
+        "issuer_state": "test18",
+        "credential_type": offer,
+        "pre-authorized_code": True,
+        "callback": mode.server + 'sandbox/issuer/callback',
+        }
+    resp = requests.post(api_endpoint, headers=headers, json=data)
+    try:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+
+
+# Badge admin
+def test_19(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
+    if mode.myenv == 'aws':
+        issuer_id = "saxupyiiqd"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    else:       
+        issuer_id = "jamrcaqppf"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    offer = ["EmployeeBadge"]
+    with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
+        credential = json.loads(f.read())
+    credential['role'] = "admin"
+    credential['given_name'] = "Doug"
+    credential['family_name'] = "Bower"
+    headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': client_secret
+    }
+    data = { 
+        "issuer_id": issuer_id,
+        "vc": {
+            "EmployeeBadge": credential,
+        },
+        "issuer_state": "test19",
+        "credential_type": offer,
+        "pre-authorized_code": True,
+        "callback": mode.server + 'sandbox/issuer/callback',
+        }
+    resp = requests.post(api_endpoint, headers=headers, json=data)
+    try:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+
+
+# Badge legal_representative
+def test_20(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
+    if mode.myenv == 'aws':
+        issuer_id = "palmwvyrpz"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    else:       
+        issuer_id = "swzqynzppm"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    offer = ["EmployeeBadge"]
+    with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
+        credential = json.loads(f.read())
+    credential['role'] = "legal_representative"
+    credential['given_name'] = "Pitt"
+    credential['family_name'] = "Warfall"
+    headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': client_secret
+    }
+    data = { 
+        "issuer_id": issuer_id,
+        "vc": {
+            "EmployeeBadge": credential,
+        },
+        "issuer_state": "test20",
+        "credential_type": offer,
+        "pre-authorized_code": True,
+        "callback": mode.server + 'sandbox/issuer/callback',
+        }
+    resp = requests.post(api_endpoint, headers=headers, json=data)
+    try:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+
+# Badge Manager
+def test_21(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
+    if mode.myenv == 'aws':
+        issuer_id = "aminiifbnh"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    else:       
+        issuer_id = "sztgmnihqs"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    offer = ["EmployeeBadge"]
+    with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
+        credential = json.loads(f.read())
+    credential['role'] = "manager"
+    credential['given_name'] = "John"
+    credential['family_name'] = "Wick"
+
+    headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': client_secret
+    }
+    data = { 
+        "issuer_id": issuer_id,
+        "vc": {
+            "EmployeeBadge": credential,
+        },
+        "issuer_state": "test21",
+        "credential_type": offer,
+        "pre-authorized_code": True,
+        "callback": mode.server + 'sandbox/issuer/callback',
+        }
+    resp = requests.post(api_endpoint, headers=headers, json=data)
+    try:
+        qrcode = resp.json()['redirect_uri']
+    except Exception:
+        return jsonify("No qr code")
+    return redirect(qrcode) 
+
+
+# Badge manager
+def test_21(mode):
+    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
+    if mode.myenv == 'aws':
+        issuer_id = ""
+        client_secret = ""
+    else:       
+        issuer_id = "sztgmnihqs"
+        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    offer = ["EmployeeBadge"]
+    with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
+        credential = json.loads(f.read())
+    credential['role'] = "legal_representative"
+    headers = {
+        'Content-Type': 'application/json',
+        'X-API-KEY': client_secret
+    }
+    data = { 
+        "issuer_id": issuer_id,
+        "vc": {
+            "EmployeeBadge": credential,
+        },
+        "issuer_state": "test21",
         "credential_type": offer,
         "pre-authorized_code": True,
         "callback": mode.server + 'sandbox/issuer/callback',
