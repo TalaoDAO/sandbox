@@ -380,7 +380,7 @@ profile = {
                  "credentialSubject": {
                     "email": {
                         "mandatory": True,
-                        "value_type": "uri",
+                        "value_type": "email",
                         "display": [{"name": "email", "locale": "en-US"}],
                     }
                  }
@@ -440,6 +440,7 @@ profile = {
                 "display": [{"name": "Proof of Email", "locale": "en-US"}],
                 "credentialSubject": {
                         "email": {
+                            "value_type": "email",
                             "mandatory": True,
                             "display": [
                                 {"name": "Email", "locale": "en-US"},
@@ -962,7 +963,7 @@ profile = {
                         },
                          "email": {
                             "mandatory": True,
-                            "value_type": "uri",
+                            "value_type": "email",
                             "display": [
                                 {"name": "email", "locale": "en-US"},
                                 {"name": "email", "locale": "fr-FR"}         
@@ -1596,6 +1597,7 @@ profile = {
                     },
                     "email": {
                         "mandatory": True,
+                        "value_type": "email",
                         "display": [
                             {"name": "Email", "locale": "en-US"},
                             {"name": "Email", "locale": "fr-FR"},
