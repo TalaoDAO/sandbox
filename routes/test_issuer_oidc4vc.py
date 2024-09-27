@@ -138,7 +138,7 @@ def issuer_oidc_test(mode):
     subtitle_test_20 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_20))["page_subtitle"]
     title_test_21 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_21))["page_title"]
     subtitle_test_21 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_21))["page_subtitle"]
-    
+
     return render_template(
         'issuer_oidc/wallet_issuer_test.html',
         title_test_1=title_test_1,
@@ -928,41 +928,6 @@ def test_21(mode):
     credential['given_name'] = "John"
     credential['family_name'] = "Wick"
 
-    headers = {
-        'Content-Type': 'application/json',
-        'X-API-KEY': client_secret
-    }
-    data = { 
-        "issuer_id": issuer_id,
-        "vc": {
-            "EmployeeBadge": credential,
-        },
-        "issuer_state": "test21",
-        "credential_type": offer,
-        "pre-authorized_code": True,
-        "callback": mode.server + 'sandbox/issuer/callback',
-        }
-    resp = requests.post(api_endpoint, headers=headers, json=data)
-    try:
-        qrcode = resp.json()['redirect_uri']
-    except Exception:
-        return jsonify("No qr code")
-    return redirect(qrcode) 
-
-
-# Badge manager
-def test_21(mode):
-    api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = ""
-        client_secret = ""
-    else:       
-        issuer_id = "sztgmnihqs"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-    offer = ["EmployeeBadge"]
-    with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
-        credential = json.loads(f.read())
-    credential['role'] = "legal_representative"
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
