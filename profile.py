@@ -1111,6 +1111,29 @@ profile = {
                         "locale": "en-GB"
                     }
                 ],
+                 "credential_definition": {
+                    "type": ["VerifiableCredential", "VerifiableId"],
+                    "order": [
+                        "firstName",
+                        "familyName",
+                        "dateOfBirth",
+                        "gender",
+                        "dateIssued",
+                        "issuing_country",
+                        "email",
+                        "phone_number"
+                    ],
+                    "credentialSubject": {
+                        "email": {
+                            "mandatory": True,
+                            "value_type": "email",
+                            "display": [
+                                {"name": "Email", "locale": "en-US"},
+                                {"name": "Email", "locale": "fr-FR"}         
+                            ]
+                        }
+                    }
+                 }
             },
             "Over18": {
                 "format": "jwt_vc_json",
