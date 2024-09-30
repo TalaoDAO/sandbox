@@ -14,8 +14,9 @@ GOUV = {
     ],
     "credential_configurations_supported": {
         "Lpid": {
-            "format": "vc+sd-jwt",
             "vct": "EWC_LPID_Attestation",
+            "format": "vc+sd-jwt",
+            "scope": "Lpid_scope",
             "claims": {
                 "legal_person_id": {
                     "display": [
@@ -106,7 +107,14 @@ GOUV = {
                         ]
                 }
             },
-        "display": [
+            "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+            "display": [
             {
                 "name": "LPID attestation",
                 "locale": "en-GB",

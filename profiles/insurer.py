@@ -2,8 +2,8 @@ INSURER = {
     "oidc4vciDraft": "13",
     "siopv2Draft": "12",
     "oidc4vpDraft": "18",
-    "vc_format": "jwt_vc_json",
-    "verifier_vp_type": "jwt_vp_json",
+    "vc_format": "vc+sd-jwt",
+    "verifier_vp_type": "vc+sd-jwt",
     "oidc4vci_prefix": "openid-credential-offer://",
     "authorization_server_support": False,
     "credentials_as_json_object_array": False,
@@ -45,7 +45,7 @@ INSURER = {
                     },
                 },
             },
-            "format": "jwt_vc_json",
+            "format": "vc+sd-jwt",
             "cryptographic_binding_methods_supported": ["did:jwk"],
             "credential_signing_alg_values_supported": [
                 "ES256"

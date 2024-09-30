@@ -9,8 +9,6 @@
     "expire_date": "2025-12-01",
     "authentic_source_id": "FR-CCR-DREUX",              
     "authentic_source_name": "CCI-DREUX",                    
-    "credential_status": "",             
-    "credential_schema": "",  
-    "disclosure": ["legal_person_id", "legal_person_name"]
+    "disclosure": ["legal_person_id", "legal_person_name", "issuer_name", "issuer_id", "issuer_country", "issuance_date", "expire_date", "authentic_source_id", "authentic_source_name"]
 }
 
