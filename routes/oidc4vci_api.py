@@ -1032,7 +1032,7 @@ async def issuer_credential(issuer_id, red, mode):
         if not credential_type:
             return Response(**manage_error('unsupported_credential_type', 'VC type not found', red, mode, request=request, stream_id=stream_id))
     elif int(issuer_profile['oidc4vciDraft']) < 11:
-        for one_type in result['types']:
+        for one_type in result.get('types'):
             if one_type not in ['VerifiableCredential', 'VerifiableAttestation']:
                 credential_type = one_type
                 break
