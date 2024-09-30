@@ -368,7 +368,7 @@ def QEEA_select(red, mode):
     my_list = get_configuration()["discoverCardsOptions"]["displayExternalIssuer"]
     if request.args.get('url'):
         for issuer in my_list:
-            if issuer['redirect'] == request.args.get('url'):
+            if issuer.get('redirect') == request.args.get('url'):
                 my_list = [issuer]
                 break
     cred_list = ""

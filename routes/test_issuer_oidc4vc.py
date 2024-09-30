@@ -26,7 +26,7 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/issuer/test_15',  view_func=test_15, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_16',  view_func=test_16, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_17',  view_func=test_17, methods=['GET'], defaults={'mode': mode})
-
+    
     # badges
     app.add_url_rule('/sandbox/issuer/test_18',  view_func=test_18, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_19',  view_func=test_19, methods=['GET'], defaults={'mode': mode})
@@ -43,147 +43,78 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/issuer/webhook',  view_func=webhook, methods=['POST'])
     return
 
+    
+
+def issuer_test(test, mode, secret=False):
+    if mode.myenv == 'aws':
+        issuer = [
+            ["zxhaokccsi", "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"],
+            ["sobosgdtgd", "9904f8ee-61f2-11ee-8e05-0a1628958560"],
+            ["cejjvswuep", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"],
+            ["tdiwmpyhzc", "5972a3b8-45c3-11ee-93f5-0a1628958560"],
+            ["zarbjrqrzj", "c755ade2-3b5a-11ee-b7f1-0a1628958560"],# 5
+            ["wzxtwpltvn", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"],
+            ["mfyttabosy", "c0ab5d96-3113-11ee-a3e3-0a1628958560"],
+            ["npwsshblrm", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"],
+            ["pexkhrzlmj", "7f888504-6ab4-11ee-938e-0a1628958560"],
+            ["grlvzckofy", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"], #10
+            ["pcbrwbvrsi", "0f4103ef-42c3-11ee-9015-0a1628958560"],
+            ["hrngdrpura", "1c290181-de11-11ee-9fb4-0a1628958560"],
+            ["eyulcaatwc", "ab4dfa8b-dedc-11ee-a098-0a1628958560"],
+            ["kucdqzidbs", "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"], 
+            ["jfzmmdaedq", "7f888504-6ab4-11ee-938e-0a1628958560"], #15
+            ["gssmaqetje", "7f888504-6ab4-11ee-938e-0a1628958560"],
+            ["uwbcbtilws", "7f888504-6ab4-11ee-938e-0a1628958560"],
+            ["hmvwdgszax", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"],
+            ["saxupyiiqd", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"],
+            ["palmwvyrpz", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"],#20
+            ["aminiifbnh", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"]
+        ]
+    else:
+        issuer = [
+            ["zxhaokccsi", "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"],
+            ["mjdgqkkmcf", "36f779d3-61f2-11ee-864a-532486291c32"],
+            ["ooroomolyd", "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"],
+            ["raamxepqex", "5381c36b-45c2-11ee-ac39-9db132f0e4a1"],
+            ["nfwvbyacnw", "4f64b6f5-3adf-11ee-a601-b33f6ebca22b"], #5
+            ["omjqeppxps", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"],
+            ["cqmygbreop", "a71f33f9-3100-11ee-825b-9db9eb02bfb8"],
+            ["npwsshblrm", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"],
+            ["beguvsaeox", "72155eb7-3b5b-11ee-a601-b33f6ebca22b"],
+            ["kivrsduinn", "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"], #10
+            ["kwcdgsspng", "6f1dd8a5-42c3-11ee-b096-b5bae73ba948"],
+            ["wixtxxvbxw", "4fc17d17-934b-11ee-b456-699f8f5cf9a0"],
+            ["ywmtotgmsi", "970220c3-dedc-11ee-9a92-15b06d6def59"],
+            ["azjkjzlfku", "72155eb7-3b5b-11ee-a601-b33f6ebca22b"],
+            ["znyvjvylrh", "72155eb7-3b5b-11ee-a601-b33f6ebca22b"],#15
+            ["lxvmyjevie", "72155eb7-3b5b-11ee-a601-b33f6ebca22b"],
+            ["xjktmrjcae", "72155eb7-3b5b-11ee-a601-b33f6ebca22b"],
+            ["vokyfraqyj", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"],
+            ["jamrcaqppf", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"],
+            ["swzqynzppm", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"], #20
+            ["sztgmnihqs", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"]
+        ]
+    if isinstance(test, str): test == int(test)
+    return issuer[test - 1][int(secret)]
+  
 
 def get_image():
     filename = 'picture.jpg'
     return send_file(filename, mimetype='image/jpeg')
 
 
+# display the test page for OIDC4VCI
 def issuer_oidc_test(mode):
-    if mode.myenv == 'aws':
-        issuer_id_test_1 = "zxhaokccsi"
-        issuer_id_test_2 = "sobosgdtgd"
-        issuer_id_test_3 = "cejjvswuep"
-        issuer_id_test_4 = "tdiwmpyhzc"
-        issuer_id_test_5 = "zarbjrqrzj"
-        issuer_id_test_6 = "wzxtwpltvn"
-        issuer_id_test_7 = "mfyttabosy"
-        issuer_id_test_8 = "npwsshblrm"
-        issuer_id_test_9 = "pexkhrzlmj"
-        issuer_id_test_10 = "grlvzckofy"
-        issuer_id_test_11 = "pcbrwbvrsi"
-        issuer_id_test_12 = "hrngdrpura"
-        issuer_id_test_13 = "eyulcaatwc"
-        issuer_id_test_14 = "kucdqzidbs"
-        issuer_id_test_15 = "jfzmmdaedq"
-        issuer_id_test_16 = "gssmaqetje"
-        issuer_id_test_17 = "uwbcbtilws"
-        issuer_id_test_18 = "hmvwdgszax"
-        issuer_id_test_19 = "saxupyiiqd"
-        issuer_id_test_20 = "palmwvyrpz"
-        issuer_id_test_21 = "aminiifbnh"
-
-    else:
-        issuer_id_test_1 = "zxhaokccsi"
-        issuer_id_test_2 = "mjdgqkkmcf"
-        issuer_id_test_3 = "ooroomolyd"
-        issuer_id_test_4 = "raamxepqex"
-        issuer_id_test_5 = "nfwvbyacnw"
-        issuer_id_test_6 = "omjqeppxps"
-        issuer_id_test_7 = "cqmygbreop"
-        issuer_id_test_8 = "npwsshblrm"
-        issuer_id_test_9 = "beguvsaeox"
-        issuer_id_test_10 = "kivrsduinn"
-        issuer_id_test_11 = "kwcdgsspng"
-        issuer_id_test_12 = "wixtxxvbxw"
-        issuer_id_test_13 = "ywmtotgmsi"
-        issuer_id_test_14 = "azjkjzlfku"
-        issuer_id_test_15 = "znyvjvylrh"
-        issuer_id_test_16 = "ukzdzhwpwt"
-        issuer_id_test_17 = "xjktmrjcae"
-        issuer_id_test_18 = "vokyfraqyj"
-        issuer_id_test_19 = "jamrcaqppf"
-        issuer_id_test_20 = "swzqynzppm"
-        issuer_id_test_21 = "sztgmnihqs"
-
-    title_test_1 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_1))["page_title"]
-    subtitle_test_1 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_1))["page_subtitle"]
-    title_test_2 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_2))["page_title"]
-    subtitle_test_2 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_2))["page_subtitle"]
-    title_test_3 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_3))["page_title"]
-    subtitle_test_3 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_3))["page_subtitle"]
-    title_test_4 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_4))["page_title"]
-    subtitle_test_4 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_4))["page_subtitle"]
-    title_test_5 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_5))["page_title"]
-    subtitle_test_5 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_5))["page_subtitle"]
-    title_test_6 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_6))["page_title"]
-    subtitle_test_6 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_6))["page_subtitle"]
-    title_test_7 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_7))["page_title"]
-    subtitle_test_7 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_7))["page_subtitle"]
-    title_test_8 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_8))["page_title"]
-    subtitle_test_8 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_8))["page_subtitle"]
-    title_test_9 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_9))["page_title"]
-    subtitle_test_9 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_9))["page_subtitle"]
-    title_test_10 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_10))["page_title"]
-    subtitle_test_10 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_10))["page_subtitle"]
-    title_test_11 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_11))["page_title"]
-    subtitle_test_11 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_11))["page_subtitle"]
-    title_test_12 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_12))["page_title"]
-    subtitle_test_12 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_12))["page_subtitle"]
-    title_test_13 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_13))["page_title"]
-    subtitle_test_13 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_13))["page_subtitle"]
-    title_test_14 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_14))["page_title"]
-    subtitle_test_14 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_14))["page_subtitle"]
-    title_test_15 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_15))["page_title"]
-    subtitle_test_15 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_15))["page_subtitle"]
-    title_test_16 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_16))["page_title"]
-    subtitle_test_16 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_16))["page_subtitle"]
-    title_test_17 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_17))["page_title"]
-    subtitle_test_17 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_17))["page_subtitle"]
-    title_test_18 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_18))["page_title"]
-    subtitle_test_18 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_18))["page_subtitle"]
-    title_test_19 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_19))["page_title"]
-    subtitle_test_19 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_19))["page_subtitle"]
-    title_test_20 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_20))["page_title"]
-    subtitle_test_20 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_20))["page_subtitle"]
-    title_test_21 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_21))["page_title"]
-    subtitle_test_21 = json.loads(db_api.read_oidc4vc_issuer(issuer_id_test_21))["page_subtitle"]
-
-    return render_template(
-        'issuer_oidc/wallet_issuer_test.html',
-        title_test_1=title_test_1,
-        subtitle_test_1=subtitle_test_1,
-        title_test_2=title_test_2,
-        subtitle_test_2=subtitle_test_2,
-        title_test_3=title_test_3,
-        subtitle_test_3=subtitle_test_3,
-        title_test_4=title_test_4,
-        subtitle_test_4=subtitle_test_4,
-        title_test_5=title_test_5,
-        subtitle_test_5=subtitle_test_5,
-        title_test_6=title_test_6,
-        subtitle_test_6=subtitle_test_6,
-        title_test_7=title_test_7,
-        subtitle_test_7=subtitle_test_7,
-        title_test_8=title_test_8,
-        subtitle_test_8=subtitle_test_8,
-        title_test_9=title_test_9,
-        subtitle_test_9=subtitle_test_9,
-        title_test_10=title_test_10,
-        subtitle_test_10=subtitle_test_10,
-        title_test_11=title_test_11,
-        subtitle_test_11=subtitle_test_11,
-        title_test_12=title_test_12,
-        subtitle_test_12=subtitle_test_12,
-        title_test_13=title_test_13,
-        subtitle_test_13=subtitle_test_13,
-        title_test_14=title_test_14,
-        subtitle_test_14=subtitle_test_14,
-        title_test_15=title_test_15,
-        subtitle_test_15=subtitle_test_15,
-        title_test_16=title_test_16,
-        subtitle_test_16=subtitle_test_16,
-        title_test_17=title_test_17,
-        subtitle_test_17=subtitle_test_17,
-        title_test_18=title_test_18,
-        subtitle_test_18=subtitle_test_18,
-        title_test_19=title_test_19,
-        subtitle_test_19=subtitle_test_19,
-        title_test_20=title_test_20,
-        subtitle_test_20=subtitle_test_20,
-        title_test_21=title_test_21,
-        subtitle_test_21=subtitle_test_21
-    )
+    my_test = dict()
+    for test in range(1, 22):
+        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_test(test, mode)))
+        my_test.update(
+            {
+                "title_test_" + str(test) : issuer_data['page_title'],
+                "subtitle_test_" + str(test): issuer_data['page_subtitle']
+            }
+        )
+    return render_template('issuer_oidc/wallet_issuer_test.html', **my_test)
 
 
 def issuer_callback():
@@ -192,12 +123,8 @@ def issuer_callback():
 
 def test_1(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "zxhaokccsi"
-        client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
-    else: 
-        issuer_id = "zxhaokccsi"
-        client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
+    issuer_id = issuer_test(1, mode)
+    client_secret = issuer_test(1, mode, secret=True)
 
     vc = 'VerifiableDiploma2'
     with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
@@ -230,12 +157,9 @@ def test_1(mode):
 
 def test_2(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "sobosgdtgd"
-        client_secret = "9904f8ee-61f2-11ee-8e05-0a1628958560"
-    else:
-        issuer_id = "mjdgqkkmcf"
-        client_secret = "36f779d3-61f2-11ee-864a-532486291c32"
+    issuer_id = issuer_test(2, mode)
+    client_secret = issuer_test(2, mode, secret = True)
+
     vc = 'EmailPass'
     with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
         credential = json.loads(f.read())
@@ -267,15 +191,10 @@ def test_2(mode):
 
 def test_3(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "cejjvswuep"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-    else:       
-        issuer_id = "ooroomolyd"
-        client_secret = "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"
+    issuer_id = issuer_test(3, mode)
+    client_secret = issuer_test(3, mode, secret = True)
 
     offer = ["VerifiableId", "EmailPass", "Over18"]
-
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
@@ -288,7 +207,7 @@ def test_3(mode):
         "pre-authorized_code": True,
         "callback": mode.server + 'sandbox/issuer/callback',
         }
-    resp = requests.post(api_endpoint, headers=headers, json = data)
+    resp = requests.post(api_endpoint, headers=headers, json=data)
     try:
         qrcode = resp.json()['redirect_uri']
     except Exception:
@@ -298,12 +217,8 @@ def test_3(mode):
 
 def test_4(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "tdiwmpyhzc"
-        client_secret = "5972a3b8-45c3-11ee-93f5-0a1628958560"
-    else: 
-        issuer_id = "raamxepqex"
-        client_secret = "5381c36b-45c2-11ee-ac39-9db132f0e4a1"
+    issuer_id = issuer_test(4, mode)
+    client_secret = issuer_test(4, mode, secret = True)
 
     offer = ["PhoneProof", "EmailPass", "VerifiableId", "Over18", "DBCGuest", "TestCredential"]
     headers = {
@@ -331,12 +246,8 @@ def test_4(mode):
 
 def test_5(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "zarbjrqrzj"
-        client_secret = "c755ade2-3b5a-11ee-b7f1-0a1628958560"
-    else: 
-        issuer_id = "nfwvbyacnw"
-        client_secret = "4f64b6f5-3adf-11ee-a601-b33f6ebca22b"
+    issuer_id = issuer_test(5, mode)
+    client_secret = issuer_test(5, mode, secret = True)
     
     headers = {
         'Content-Type': 'application/json',
@@ -366,13 +277,9 @@ def test_5(mode):
 
 def test_6_2(red, mode): # VC is sent after delay
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "wzxtwpltvn"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-    else:
-        issuer_id = "omjqeppxps"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-
+    issuer_id = issuer_test(6, mode)
+    client_secret = issuer_test(6, mode, secret = True)
+   
     offer = ["EmailPass"]
 
     headers = {
@@ -393,12 +300,8 @@ def test_6_2(red, mode): # VC is sent after delay
 
 def test_6_1(red, mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "wzxtwpltvn"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-    else:       
-        issuer_id = "omjqeppxps"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    issuer_id = issuer_test(6, mode)
+    client_secret = issuer_test(6, mode, secret = True)
 
     offer = ["EmailPass"]
 
@@ -425,12 +328,8 @@ def test_6_1(red, mode):
 
 def test_7(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "mfyttabosy"
-        client_secret = "c0ab5d96-3113-11ee-a3e3-0a1628958560"
-    else:
-        issuer_id = "cqmygbreop"
-        client_secret = "a71f33f9-3100-11ee-825b-9db9eb02bfb8"
+    issuer_id = issuer_test(7, mode)
+    client_secret = issuer_test(7, mode, secret = True)
 
     offer = ["EmailPass", "VerifiableId", "Over18", "DBCGuest"]
     headers = {
@@ -455,12 +354,8 @@ def test_7(mode):
 
 def test_8(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "npwsshblrm"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-    else:       
-        issuer_id = "npwsshblrm"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    issuer_id = issuer_test(8, mode)
+    client_secret = issuer_test(8, mode, secret = True)
 
     headers = {
         'Content-Type': 'application/json',
@@ -492,12 +387,9 @@ def test_8(mode):
 
 def test_9(mode): # 
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "pexkhrzlmj"
-        client_secret = "7f888504-6ab4-11ee-938e-0a1628958560"
-    else:       
-        issuer_id = "beguvsaeox"
-        client_secret = "72155eb7-3b5b-11ee-a601-b33f6ebca22b"
+    issuer_id = issuer_test(8, mode)
+    client_secret = issuer_test(8, mode, secret = True)
+  
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
@@ -522,12 +414,8 @@ def test_9(mode): #
 
 def test_10(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "grlvzckofy"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-    else:       
-        issuer_id = "kivrsduinn"
-        client_secret = "f5fa78af-3aa9-11ee-a601-b33f6ebca22b"
+    issuer_id = issuer_test(10, mode)
+    client_secret = issuer_test(10, mode, secret = True)
     
     with open('./verifiable_credentials/Pid.json', 'r') as f:
         credential = json.loads(f.read())
@@ -554,12 +442,8 @@ def test_10(mode):
 
 def test_11(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "pcbrwbvrsi"
-        client_secret = "0f4103ef-42c3-11ee-9015-0a1628958560"
-    else: 
-        issuer_id = "kwcdgsspng"
-        client_secret = "6f1dd8a5-42c3-11ee-b096-b5bae73ba948"
+    issuer_id = issuer_test(11, mode)
+    client_secret = issuer_test(11, mode, secret = True)
     
     with open('./verifiable_credentials/Pid.json', 'r') as f:
         credential = json.loads(f.read())
@@ -589,12 +473,8 @@ def test_11(mode):
 
 def test_12(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "hrngdrpura"
-        client_secret = "1c290181-de11-11ee-9fb4-0a1628958560"
-    else:
-        issuer_id = "wixtxxvbxw"
-        client_secret = "4fc17d17-934b-11ee-b456-699f8f5cf9a0"
+    issuer_id = issuer_test(12, mode)
+    client_secret = issuer_test(12, mode, secret = True)
 
     headers = {
         'Content-Type': 'application/json',
@@ -626,12 +506,8 @@ def test_12(mode):
 
 def test_13(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "eyulcaatwc"
-        client_secret = "ab4dfa8b-dedc-11ee-a098-0a1628958560"
-    else:
-        issuer_id = "ywmtotgmsi"
-        client_secret = "970220c3-dedc-11ee-9a92-15b06d6def59"
+    issuer_id = issuer_test(13, mode)
+    client_secret = issuer_test(13, mode, secret = True)
 
     headers = {
         'Content-Type': 'application/json',
@@ -663,13 +539,9 @@ def test_13(mode):
 
 def test_14(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "kucdqzidbs"
-        client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
-    else: 
-        issuer_id = "azjkjzlfku"
-        client_secret = "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"
-
+    issuer_id = issuer_test(14, mode)
+    client_secret = issuer_test(14, mode, secret = True)
+   
     vc = 'InsuranceLegalPerson'
     with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
         credential = json.loads(f.read())
@@ -701,12 +573,9 @@ def test_14(mode):
 
 def test_15(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "jfzmmdaedq"
-        client_secret = "7f888504-6ab4-11ee-938e-0a1628958560"
-    else:       
-        issuer_id = "znyvjvylrh"
-        client_secret = "72155eb7-3b5b-11ee-a601-b33f6ebca22b"
+    issuer_id = issuer_test(15, mode)
+    client_secret = issuer_test(15, mode, secret = True)
+   
     offer = ["DBCGuest", "Pid", "EmailPass"]
     with open('./verifiable_credentials/Pid.json', 'r') as f:
         credential = json.loads(f.read())
@@ -736,12 +605,9 @@ def test_15(mode):
 
 def test_16(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "gssmaqetje"
-        client_secret = "7f888504-6ab4-11ee-938e-0a1628958560"
-    else:       
-        issuer_id = "lxvmyjevie"
-        client_secret = "72155eb7-3b5b-11ee-a601-b33f6ebca22b"
+    issuer_id = issuer_test(16, mode)
+    client_secret = issuer_test(16, mode, secret = True)
+   
     offer = ["IBANLegalPerson", "BankAccountBalance"]
     with open('./verifiable_credentials/IBANLegalPerson.jsonld', 'r') as f:
         credential_1 = json.loads(f.read())
@@ -772,12 +638,9 @@ def test_16(mode):
 
 def test_17(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "uwbcbtilws"
-        client_secret = "7f888504-6ab4-11ee-938e-0a1628958560"
-    else:       
-        issuer_id = "xjktmrjcae"
-        client_secret = "72155eb7-3b5b-11ee-a601-b33f6ebca22b"
+    issuer_id = issuer_test(17, mode)
+    client_secret = issuer_test(17, mode, secret = True)
+  
     offer = ["Pid"]
     with open('./verifiable_credentials/Pid.json', 'r') as f:
         credential_1 = json.loads(f.read())
@@ -805,12 +668,9 @@ def test_17(mode):
 # Badge employee
 def test_18(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "hmvwdgszax"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-    else:       
-        issuer_id = "vokyfraqyj"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    issuer_id = issuer_test(18, mode)
+    client_secret = issuer_test(18, mode, secret = True)
+  
     offer = ["EmployeeBadge"]
     with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
         credential = json.loads(f.read())
@@ -842,12 +702,9 @@ def test_18(mode):
 # Badge admin
 def test_19(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "saxupyiiqd"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-    else:       
-        issuer_id = "jamrcaqppf"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    issuer_id = issuer_test(19, mode)
+    client_secret = issuer_test(19, mode, secret = True)
+   
     offer = ["EmployeeBadge"]
     with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
         credential = json.loads(f.read())
@@ -879,12 +736,9 @@ def test_19(mode):
 # Badge legal_representative
 def test_20(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "palmwvyrpz"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-    else:       
-        issuer_id = "swzqynzppm"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    issuer_id = issuer_test(20, mode)
+    client_secret = issuer_test(20, mode, secret = True)
+  
     offer = ["EmployeeBadge"]
     with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
         credential = json.loads(f.read())
@@ -915,12 +769,9 @@ def test_20(mode):
 # Badge Manager
 def test_21(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    if mode.myenv == 'aws':
-        issuer_id = "aminiifbnh" 
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
-    else:       
-        issuer_id = "sztgmnihqs"
-        client_secret = "731dc86d-2abb-11ee-825b-9db9eb02bfb8"
+    issuer_id = issuer_test(21, mode)
+    client_secret = issuer_test(21, mode, secret = True)
+   
     offer = ["EmployeeBadge"]
     with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
         credential = json.loads(f.read())

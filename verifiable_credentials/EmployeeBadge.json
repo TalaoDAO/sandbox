@@ -2,9 +2,10 @@
     "vct": "urn:eu.europa.ec.eudi:employee_badge:1",
     "given_name": "Patrick",
     "family_name": "Doe",
+    "email": "contact@talao.io",
     "organization": "Talao",
     "role": "employee",
     "website": "https://talao.io",
-    "disclosure": ["vct", "status", "given_name", "family_name", "organization", "role", "website"]
+    "disclosure": ["given_name", "family_name", "organization", "role", "website", "email"]
 }
 
