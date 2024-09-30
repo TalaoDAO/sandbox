@@ -85,7 +85,7 @@ def issuer_test(test, mode, secret=False):
             ["kwcdgsspng", "6f1dd8a5-42c3-11ee-b096-b5bae73ba948"],
             ["wixtxxvbxw", "4fc17d17-934b-11ee-b456-699f8f5cf9a0"],
             ["ywmtotgmsi", "970220c3-dedc-11ee-9a92-15b06d6def59"],
-            ["azjkjzlfku", "72155eb7-3b5b-11ee-a601-b33f6ebca22b"],
+            ["azjkjzlfku", "0e2e27b3-28a9-11ee-825b-9db9eb02bfb8"],
             ["znyvjvylrh", "72155eb7-3b5b-11ee-a601-b33f6ebca22b"],#15
             ["lxvmyjevie", "72155eb7-3b5b-11ee-a601-b33f6ebca22b"],
             ["xjktmrjcae", "72155eb7-3b5b-11ee-a601-b33f6ebca22b"],
@@ -641,9 +641,9 @@ def test_17(mode):
     issuer_id = issuer_test(17, mode)
     client_secret = issuer_test(17, mode, secret = True)
   
-    offer = ["Pid"]
-    with open('./verifiable_credentials/Pid.json', 'r') as f:
-        credential_1 = json.loads(f.read())
+    offer = ["Lpid"]
+    with open('./verifiable_credentials/Lpid.json', 'r') as f:
+        credential = json.loads(f.read())
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
@@ -651,7 +651,7 @@ def test_17(mode):
     data = { 
         "issuer_id": issuer_id,
         "vc": {
-            "Pid": credential_1,
+            "Lpid": credential,
         },
         "issuer_state": "test17",
         "credential_type": offer,
