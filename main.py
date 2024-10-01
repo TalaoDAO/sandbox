@@ -417,7 +417,7 @@ def hash(text):
 def app_download() :
     configuration = {
         "login": request.args.get('login'),
-        "passsword": request.args.get('password'),
+        "password": request.args.get('password'),
         "wallet-provider": request.args.get('wallet-provider')
     }
     host = request.headers['X-Real-Ip'] #+ ' ' +  request.headers['User-Agent']
