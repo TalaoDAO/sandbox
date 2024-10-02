@@ -65,7 +65,8 @@ oidc4vc_profile_list = {
     'INSURER': "Insurer for company - Legal Person - DIIP V 2.1",
     'GOUV': "Gouvernment body for company - Legal Person - DIIP V 2.1",
     'TEST': "Test for PID, DIIP V3.0",
-    "TALAO_ISSUER_JWT_VC_JSON": "Talao Issuer for email proof and phone proof in jwt_vc_json"
+    "TALAO_ISSUER_JWT_VC_JSON": "Talao Issuer for email proof and phone proof in jwt_vc_json",
+    "TALAO_ISSUER_SD_JWT_VC": "Talao Issuer for email proof and phone proof in sd-jwt"
 }
 
 #OIDC4VC Verifier for admin
