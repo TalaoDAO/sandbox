@@ -163,7 +163,7 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         "display": [
             {
                 "name": "Talao",
-                "description": "Issuer for Talao wallets"
+                "description": "Issuer for Talao wallets",
                 "logo": {
                     "uri": "https://talao.io/"
                 }
