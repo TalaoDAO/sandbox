@@ -160,6 +160,15 @@ def credential_issuer_openid_configuration(issuer_id, mode):
     # general section
     credential_issuer_openid_configuration = {
         'credential_issuer': mode.server + 'issuer/' + issuer_id,
+        "display": [
+            {
+                "name": "Talao",
+                "description": "Issuer for Talao wallets"
+                "logo": {
+                    "uri": "https://talao.io/"
+                }
+            }
+        ],
         'credential_endpoint': mode.server + 'issuer/' + issuer_id + '/credential',
         'deferred_credential_endpoint': mode.server + 'issuer/' + issuer_id + '/deferred',
     }
