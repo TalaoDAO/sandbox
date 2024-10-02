@@ -1,10 +1,11 @@
-from profiles import insurer, bank, gouv, test
+from profiles import insurer, bank, gouv, test, talao_issuer_jwt_vc_json
 
 profile = {
     "INSURER": insurer.INSURER,
     "BANK": bank.BANK,
     "GOUV": gouv.GOUV,
     "TEST": test.TEST,
+    "TALAO_ISSUER_JWT_VC_JSON": talao_issuer_jwt_vc_json.TALAO_ISSUER,
     "EBSI-V3": {
         "oidc4vciDraft": "10",
         "siopv2Draft": "12",

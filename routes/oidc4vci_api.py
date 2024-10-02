@@ -196,7 +196,7 @@ def credential_issuer_openid_configuration(issuer_id, mode):
             {'credentials_supported': issuer_profile.get('credentials_supported')}
         )
 
-    # setup credential manifest as optional
+    # setup credential manifest as optional 
     if issuer_profile.get('credential_manifest_support'):
         cm = []
         for _vc in issuer_profile.get('credentials_types_supported'):
