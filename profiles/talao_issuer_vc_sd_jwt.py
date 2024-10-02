@@ -16,6 +16,7 @@ TALAO_ISSUER = {   # DIIP v2.1
         "credential_configurations_supported": {
             "EmailPass": {
                 "format": "vc+sd-jwt",
+                "vct": "talao:issuer:emailpass:1",
                 "scope": "EmailPass_scope",
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [
@@ -50,6 +51,7 @@ TALAO_ISSUER = {   # DIIP v2.1
             "PhoneProof": {
                 "format": "vc+sd-jwt",
                 "scope": "PhoneProof_scope",
+                "vct": "talao:issuer:phoneproof:1",
                  "claims": {
                     "phone": {
                         "mandatory": True,
