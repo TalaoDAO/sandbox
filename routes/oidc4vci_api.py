@@ -162,10 +162,19 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         'credential_issuer': mode.server + 'issuer/' + issuer_id,
         "display": [
             {
-                "name": "Talao",
-                "description": "Issuer for Talao wallets",
+                "name": "Talao issuer",
+                "locale": "en-US",
                 "logo": {
-                    "uri": "https://talao.io/"
+                    "uri": "https://talao.co/static/img/talao.png",
+                    "alt_text": "Talao logo"
+                }
+            },
+             {
+                "name": "Talao issuer",
+                "locale": "fr-FR",
+                "logo": {
+                    "uri": "https://talao.co/static/img/talao.png",
+                    "alt_text": "Talao logo"
                 }
             }
         ],
