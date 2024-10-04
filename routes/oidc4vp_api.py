@@ -711,16 +711,8 @@ def oidc4vc_login_qrcode(red, mode):
         
         # client_id_scheme depending of OIDC4VP draft
         if int(verifier_profile['oidc4vpDraft']) > 13:
-            if verifier_data['profile'] in ["POTENTIAL"] or verifier_data.get('client_id_scheme') == "x509_san_dns" :
-                authorization_request['client_id_scheme'] = 'x509_san_dns'
-            elif verifier_data['profile'] in ["HAIP"] or verifier_data.get('client_id_scheme') == "verifier_attestation":
-                authorization_request['client_id_scheme'] = 'verifier_attestation'
-            elif verifier_data.get('client_id_scheme') == "did":
-                authorization_request['client_id_scheme'] = 'did'
-            elif verifier_data.get('client_id_scheme') == "none":
-                pass # client_id_scheme is optional
-            else:
-                authorization_request['client_id_scheme'] = 'redirect_uri'
+            authorization_request['client_id_scheme'] = verifier_data.get('client_id_scheme')
+         
 
         # presentation_definition_uri
         if verifier_data.get('presentation_definition_uri'):

@@ -160,11 +160,12 @@ def credential_issuer_openid_configuration(issuer_id, mode):
     # general section
     credential_issuer_openid_configuration = {
         'credential_issuer': mode.server + 'issuer/' + issuer_id,
+        'pre-authorized_grant_anonymous_access_supported' : True,
         "display": [
             {
                 "name": "Talao issuer",
                 "logo": {
-                    "uri": "https://talao.co/static/img/Talao logo - Self Sovereign Identity Wallet.png",
+                    "uri": "https://talao.co/static/img/talao.png",
                     "alt_text": "Talao logo"
                 }
             },
@@ -172,15 +173,15 @@ def credential_issuer_openid_configuration(issuer_id, mode):
                 "name": "Talao issuer",
                 "locale": "en-US",
                 "logo": {
-                    "uri": "https://talao.co/static/img/Talao logo - Self Sovereign Identity Wallet.png",
+                    "uri": "https://talao.co/static/img/talao.png",
                     "alt_text": "Talao logo"
                 }
             },
-             {
+            {
                 "name": "Talao issuer",
                 "locale": "fr-FR",
                 "logo": {
-                    "uri": "https://talao.co/static/img/Talao logo - Self Sovereign Identity Wallet.png",
+                    "uri": "https://talao.co/static/img/talao.png",
                     "alt_text": "Talao logo"
                 }
             }
@@ -277,11 +278,12 @@ def as_openid_configuration(issuer_id, mode):
         'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token',
         'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
         'pushed_authorization_request_endpoint': mode.server +'issuer/' + issuer_id + '/authorize/par' ,
+        'pre-authorized_grant_anonymous_access_supported' : True,
         "display": [
             {
                 "name": "Talao issuer",
                 "logo": {
-                    "uri": "https://talao.co/static/img/Talao logo - Self Sovereign Identity Wallet.png",
+                    "uri": "https://talao.co/static/img/talao.png",
                     "alt_text": "Talao logo"
                 }
             },
@@ -289,7 +291,7 @@ def as_openid_configuration(issuer_id, mode):
                 "name": "Talao issuer",
                 "locale": "en-US",
                 "logo": {
-                    "uri": "https://talao.co/static/img/Talao logo - Self Sovereign Identity Wallet.png",
+                    "uri": "https://talao.co/static/img/talao.png",
                     "alt_text": "Talao logo"
                 }
             },
@@ -297,7 +299,7 @@ def as_openid_configuration(issuer_id, mode):
                 "name": "Talao issuer",
                 "locale": "fr-FR",
                 "logo": {
-                    "uri": "https://talao.co/static/img/Talao logo - Self Sovereign Identity Wallet.png",
+                    "uri": "https://talao.co/static/img/talao.png",
                     "alt_text": "Talao logo"
                 }
             }
