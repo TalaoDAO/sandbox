@@ -427,7 +427,7 @@ def app_download() :
     return render_template('app_download/talao_app_download.html')
 
 
-@app.route('/link', methods=['GET'])
+@app.route('/install', methods=['GET'])
 def link():
     configuration = {
         "login": request.args.get('login'),
@@ -438,16 +438,18 @@ def link():
     host_hash = hash(host)
     logging.info('configuration : %s stored for wallet : %s',configuration, host)
     red.setex(host_hash, 300, json.dumps(configuration))
-    if request.MOBILE:
-        ua = request.headers.get('User-Agent')
-        device = SoftwareDetector(ua).parse()
-        logging.info(device.os_name())
-        if device.os_name() == "Android":
-            return redirect('https://play.google.com/store/apps/details?id=co.talao.wallet')
-        else:
-            return redirect('https://apps.apple.com/fr/app/talao-wallet/id1582183266?platform=iphone')
-    else:
-        return jsonify('ok')
+    try:
+        if request.MOBILE:
+            ua = request.headers.get('User-Agent')
+            device = SoftwareDetector(ua).parse()
+            logging.info(device.os_name())
+            if device.os_name() == "Android":
+                return redirect('https://play.google.com/store/apps/details?id=co.talao.wallet')
+            else:
+                return redirect('https://apps.apple.com/fr/app/talao-wallet/id1582183266?platform=iphone')
+        return jsonify('Install link error, no mobile')
+    except Exception:
+        return jsonify('Install link error')
 
 
 # configuration for linkk to downloads with configuration
