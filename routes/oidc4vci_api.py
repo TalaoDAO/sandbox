@@ -1162,6 +1162,7 @@ async def issuer_credential(issuer_id, red, mode):
         "c_nonce": c_nonce,
         "c_nonce_expires_in": C_NONCE_LIFE,
     }
+    
     if int(issuer_profile['oidc4vciDraft']) < 13:
         payload.update({"format": vc_format})
 
@@ -1252,6 +1253,7 @@ async def issuer_deferred(issuer_id, red, mode):
         "c_nonce": str(uuid.uuid1()),
         "c_nonce_expires_in": C_NONCE_LIFE,
     }
+    
 
     headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
     return Response(response=json.dumps(payload), headers=headers)

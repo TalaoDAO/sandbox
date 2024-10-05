@@ -147,6 +147,7 @@ def sign_jwt_vc(vc, kid, issuer_key, nonce, iss, jti, sub):
     a = jwt.JWT.from_jose_token(token.serialize())
     verif_key = jwk.JWK(**issuer_key)
     a.validate(verif_key)
+    print("payload VC = ", json.dumps(payload, indent= 4))
     return token.serialize()
 
 
