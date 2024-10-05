@@ -446,6 +446,8 @@ def link():
             return redirect('https://play.google.com/store/apps/details?id=co.talao.wallet')
         else:
             return redirect('https://apps.apple.com/fr/app/talao-wallet/id1582183266?platform=iphone')
+    else:
+        return jsonify('ok')
 
 
 # configuration for linkk to downloads with configuration
