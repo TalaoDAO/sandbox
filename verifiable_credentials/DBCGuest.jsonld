@@ -10,6 +10,7 @@
       "firstName": "Thierry",
       "lastName": "Thevenet",
       "email": "thierry.thevenet@talao.io",
+      "amount": 1000,
       "event": {
         "name": "DBC Conference 2023",
         "date": "2023-06-26"

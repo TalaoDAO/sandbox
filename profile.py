@@ -956,19 +956,27 @@ profile = {
                                 {"name": "Prénom(s)", "locale": "fr-FR"}         
                             ],
                         },
-                         "lastName": {
+                        "lastName": {
                             "mandatory": True,
                             "display": [
                                 {"name": "Last name", "locale": "en-US"},
                                 {"name": "Nom", "locale": "fr-FR"}         
                             ],
                         },
-                         "email": {
+                        "email": {
                             "mandatory": True,
                             "value_type": "email",
                             "display": [
                                 {"name": "email", "locale": "en-US"},
                                 {"name": "email", "locale": "fr-FR"}         
+                            ],
+                        },
+                        "amount": {
+                            "mandatory": True,
+                            "value_type": "integer",
+                            "display": [
+                                {"name": "Amount", "locale": "en-US"},
+                                {"name": "Nombre", "locale": "fr-FR"}         
                             ],
                         }
                     }
