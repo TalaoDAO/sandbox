@@ -119,7 +119,7 @@ GOUV = {
                 "name": "LPID attestation",
                 "locale": "en-GB",
                 "logo": {
-                    "url": "https://identity-provider.gov/cover.jpeg",
+                    "uri": "https://identity-provider.gov/cover.jpeg",
                     "alt_text": "Government Identity Provider"
                 },
                 "background_color": "#12107c",

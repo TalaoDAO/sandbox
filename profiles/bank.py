@@ -21,11 +21,11 @@ BANK = {
                         "description": "IBAN",
                         "text_color": "#FBFBFB",
                         "logo": {
-                            "url": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
+                            "uri": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
                             "alt_text": "ABN Amro logo"
                         },
                         "background_image": {
-                            "url": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
+                            "uri": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
                             "alt_text": "ABN Amro Card"
                         }
                     }
@@ -115,11 +115,11 @@ BANK = {
                         "description": "Bank Account Balance",
                         "text_color": "#FBFBFB",
                         "logo": {
-                            "url": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
+                            "uri": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
                             "alt_text": "ABN Amro logo"
                         },
                         "background_image": {
-                            "url": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
+                            "uri": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
                             "alt_text": "ABN Account Balance"
                         }
                     },
@@ -129,11 +129,11 @@ BANK = {
                         "description": "Bank Account Balance",
                         "text_color": "#FBFBFB",
                         "logo": {
-                            "url": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
+                            "uri": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
                             "alt_text": "ABN Amro logo"
                         },
                         "background_image": {
-                            "url": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
+                            "uri": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
                             "alt_text": "ABN Account Balance"
                         }
                     }
