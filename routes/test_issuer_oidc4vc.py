@@ -526,7 +526,8 @@ def test_13(mode):
         "pre-authorized_code": True,
         "credential_type": ['IdentityCredential', 'Pid'],
         "user_pin_required": True,
-        "user_pin": "4444",
+        "user_pin": "ABCD",
+        "input_mode": "text",
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json=data)

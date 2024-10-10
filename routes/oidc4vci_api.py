@@ -295,7 +295,7 @@ def as_openid_configuration(issuer_id, mode):
                     "alt_text": "Talao logo"
                 }
             },
-             {
+            {
                 "name": "Talao issuer",
                 "locale": "fr-FR",
                 "logo": {
@@ -332,7 +332,7 @@ def issuer_jwks(issuer_id):
     return jsonify(jwks)
 
 
-def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state, user_pin_required, mode):
+def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state, user_pin_required, input_mode, mode):
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = issuer_data['profile']
     profile_data = profile[issuer_profile]
@@ -406,7 +406,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                 ].update({
                     'tx_code': {
                         'length': 4,
-                        'input_mode': 'numeric',
+                        'input_mode': input_mode,
                         'description': 'Please provide the one-time code which was sent via e-mail'
                     }
                 })
@@ -441,8 +441,9 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     credential_type = session_data['credential_type']
     pre_authorized_code = session_data['pre-authorized_code']
     user_pin_required = session_data['user_pin_required']
+    input_mode = session_data.get('input_mode', 'numeric')
     issuer_state = session_data['issuer_state']
-    offer = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state,  user_pin_required, mode)
+    offer = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state,  user_pin_required, input_mode, mode)
 
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     data_profile = profile[issuer_data['profile']]
@@ -498,8 +499,9 @@ def oidc_issuer_qrcode_value(issuer_id, stream_id, red, mode):
     credential_type = session_data['credential_type']
     pre_authorized_code = session_data['pre-authorized_code']
     user_pin_required = session_data['user_pin_required']
+    input_mode = session_data.get('input_mode', 'numeric')
     issuer_state = session_data['issuer_state']
-    offer = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state,  user_pin_required, mode)
+    offer = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state,  user_pin_required, input_mode, mode)
 
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     data_profile = profile[issuer_data['profile']]
