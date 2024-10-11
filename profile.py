@@ -379,13 +379,13 @@ profile = {
                         "locale": "en-GB"
                     }
                 ],
-                 "credentialSubject": {
+                "credentialSubject": {
                     "email": {
                         "mandatory": True,
                         "value_type": "email",
                         "display": [{"name": "email", "locale": "en-US"}],
                     }
-                 }
+                }
             },
             {
                 "id": "PhoneProof",
@@ -433,7 +433,33 @@ profile = {
                 "format": "ldp_vc",
                 "scope": "EmailPass_scope",
                 "credential_definition": {
-                    "type": ["VerifiableCredential", "EmailPass"]
+                    "type": ["VerifiableCredential", "EmailPass"],
+                    "@context": [
+                        "https://www.w3.org/2018/credentials/v1",
+                        {
+                            "EmailPass": {
+                                "@id": "https://github.com/TalaoDAO/context#emailpass",
+                                "@context": {
+                                    "@version": 1.1,
+                                    "@protected": True,
+                                    "schema": "https://schema.org/",
+                                    "id": "@id",
+                                    "type": "@type",
+                                    "email": "schema:email",
+                                    "issuedBy": {
+                                        "@id": "schema:issuedBy",
+                                        "@context": {
+                                            "@version": 1.1,
+                                            "@protected": True,
+                                            "logo": {"@id": "schema:image", "@type": "@id"},
+                                            "name": "schema:name"
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+                    ],
                 },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [
@@ -451,10 +477,32 @@ profile = {
                         }
                 },
             },
-            "VerifiableId" : {
+            "VerifiableId": {
                 "format": "ldp_vc",
                 "credential_definition": {
-                    "type": ["VerifiableCredential", "VerifiableId"]
+                    "type": ["VerifiableCredential", "VerifiableId"],
+                    "@context": [
+                        "https://www.w3.org/2018/credentials/v1",
+                        {
+                            "VerifiableId": {
+                                "@id": "urn:employeecredential",
+                                "@context": {
+                                    "@version": 1.1,
+                                    "@protected": True,
+                                    "id": "@id",
+                                    "type": "@type",
+                                    "schema": "https://schema.org/",
+                                    "familyName": "schema:lastName",
+                                    "firstName": "schema:firstName",
+                                    "dateOfBirth": "schema:birthDate",
+                                    "gender": "schema:gender",
+                                    "idRecto": "schema:image",
+                                    "dateIssued": "schema:dateIssued",
+                                    "idVerso": "schema:image"
+                                }
+                            }
+                        }
+                    ],
                 },
                 "cryptographic_binding_methods_supported": ["DID"],
                 "credential_signing_alg_values_supported": [
@@ -494,7 +542,35 @@ profile = {
                 "format": "ldp_vc",
                 "scope": "Over18_scope",
                 "credential_definition": {
-                    "type": ["VerifiableCredential", "Over18"]
+                    "type": ["VerifiableCredential", "Over18"],
+                    "@context": [
+                        "https://www.w3.org/2018/credentials/v1",
+                        {
+                            "Over18": {
+                                "@id": "https://github.com/TalaoDAO/context#over18",
+                                "@context": {
+                                    "@version": 1.1,
+                                    "@protected": True,
+                                    "schema": "https://schema.org/",
+                                    "id": "@id",
+                                    "type": "@type",
+                                    "kycProvider": "schema:legalName",
+                                    "kycMethod": "schema:identifier",
+                                    "ageOver": "schema:suggestedMinAge",
+                                    "kycId": "schema:identifier",
+                                    "issuedBy": {
+                                        "@id": "schema:issuedBy",
+                                        "@context": {
+                                            "@protected": True,
+                                            "logo": {"@id": "schema:image", "@type": "@id"},
+                                            "name": "schema:legalName"
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+                    ],
                 },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [
