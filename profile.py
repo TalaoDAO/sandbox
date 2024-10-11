@@ -1063,7 +1063,7 @@ profile = {
                 "format": "jwt_vc_json",
                 "scope": "TestCredential_scope",
                 "credential_definition": {
-                    "type": ["VerifiableCredential", "EmployeeCredential"]
+                    "type": ["VerifiableCredential", "TestCredential"]
                 },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [

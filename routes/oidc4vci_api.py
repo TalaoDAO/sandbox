@@ -976,6 +976,21 @@ async def issuer_credential(issuer_id, red, mode):
     if int(issuer_profile['oidc4vciDraft']) >= 13:
         if result.get('format') == 'vc+sd-jwt' and not result.get('vct'):
             return Response(**manage_error('invalid_request', 'Invalid request format, vct is missing for vc+sd-jwt format', red, mode, request=request, stream_id=stream_id))
+        elif result.get('format') in ['ldp_vc', 'jwt_vc_json-ld']:
+            try:
+                credential_definition = result['credential_definition']
+                type = credential_definition['type']
+                context = credential_definition['@context']
+            except Exception:
+                return Response(**manage_error('invalid_request', 'Invalid request format, type or @context is missing for ldp_vc or jwt_vc_json-ld', red, mode, request=request, stream_id=stream_id))
+        elif result.get('format') == 'jwt_vc_json':
+            try:
+                credential_definition = result['credential_definition']
+                type = credential_definition['type']
+            except Exception:
+                return Response(**manage_error('invalid_request', 'Invalid request format, type  is missing for jwt_vc_json', red, mode, request=request, stream_id=stream_id))
+
+            
 
     # check types
     if int(issuer_profile['oidc4vciDraft']) < 13:
