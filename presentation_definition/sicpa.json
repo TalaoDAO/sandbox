@@ -1,0 +1,32 @@
+{
+    "id": "af1f2c5f-cc8f-4e66-8423-1fd9eb6ab1d4",
+    "input_descriptors": [
+    {
+        "id": "b2dd19f5-a8e1-4666-85de-775323242b23",
+        "constraints": {
+            "fields": [
+                {
+                    "path": [
+                        "$.vc.credentialSubject.boardingPass.paxName"
+                    ],
+                    "filter": {
+                        "type": "string"
+                    }
+                }
+            ]
+        }
+    }
+    ],
+    "format": {
+        "jwt_vc_json": {
+            "alg": [
+                "EdDSA"
+            ]
+        },
+        "jwt_vp_json": {
+            "alg": [
+                "EdDSA"
+            ]
+        }
+    }
+}

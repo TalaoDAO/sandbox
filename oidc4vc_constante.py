@@ -45,7 +45,8 @@ predefined_presentation_uri_list = {
     'presentation_definition/pid': 'PID through vct',
      'presentation_definition/pid_without_vct': 'PID without vct',
     'presentation_definition/pid_with_required': 'PID with limited disclosure',
-    'presentation_definition/pension_credential': 'Pension credential'
+    'presentation_definition/pension_credential': 'Pension credential',
+    'presentation_definition/sicpa': 'Sicpa'
 
 }
 
