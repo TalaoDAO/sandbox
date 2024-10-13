@@ -198,7 +198,7 @@ def hash(text):
     return base64.urlsafe_b64encode(m.digest()).decode().replace("=", "")
 
 
-def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*60, x5c=False):
+def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_identifier, duration=365*24*60*60, x5c=False):
     """
     https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-01.html
     GAIN POC https://gist.github.com/javereec/48007399d9876d71f523145da307a7a3
@@ -212,10 +212,11 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, duration=365*24*60*6
         'iat': math.ceil(datetime.timestamp(datetime.now())),
         'exp': math.ceil(datetime.timestamp(datetime.now())) + duration,
         "_sd_alg": "sha-256",
-        "cnf": {
-            "jwk": subject_key
-        },
     }
+    if wallet_identifier == "jwk_thumbprint":
+        payload['cnf'] = {"jwk": subject_key}
+    else:
+        payload['cnf'] = {"kid": wallet_did}
     payload['_sd'] = []
     _disclosure = ""
     disclosure_list = unsecured.get("disclosure", [])

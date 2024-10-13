@@ -436,7 +436,12 @@ def link():
         "password": request.args.get('password'),
         "wallet-provider": request.args.get('wallet-provider')
     }
-    host = request.headers['X-Real-Ip'] #+ ' ' +  request.headers['User-Agent']
+    try:
+        host = request.headers['X-Real-Ip'] #+ ' ' +  request.headers['User-Agent']
+    except Exception:
+        message = "Not an https call"
+        return render_template('app_download/install_link_error.html', message=message)
+        
     host_hash = hash(host)
     logging.info('configuration : %s stored for wallet : %s',configuration, host)
     red.setex(host_hash, 300, json.dumps(configuration))
@@ -449,9 +454,11 @@ def link():
                 return redirect('https://play.google.com/store/apps/details?id=co.talao.wallet')
             else:
                 return redirect('https://apps.apple.com/fr/app/talao-wallet/id1582183266?platform=iphone')
-        return jsonify('Install link error, no mobile')
+        message = "This installation link must be used through your smartphone"
+        return render_template('app_download/install_link_error.html', message=message)
     except Exception:
-        return jsonify('Install link error')
+        message = "Install link error"
+        return render_template('app_download/install_link_error.html', message=message)
 
 
 # configuration for linkk to downloads with configuration
