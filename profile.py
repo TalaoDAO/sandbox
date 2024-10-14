@@ -1382,12 +1382,6 @@ profile = {
                         },
                         "gender": {},
                         "address": {
-                            "mandatory": True,
-                            "value_type": "string",
-                            "display": [
-                                {"name": "Address", "locale": "en-US"},
-                                {"name": "Adresse", "locale": "fr-FR"}
-                            ],
                             "formatted": {
                                 "mandatory": True,
                                 "value_type": "string",
