@@ -322,7 +322,7 @@ def issuer_jwks(issuer_id):
     pub_key = copy.copy(json.loads(issuer_data['jwk']))
     del pub_key['d']
     pub_key['kid'] = pub_key.get('kid') if pub_key.get('kid') else thumbprint(pub_key)
-    jwks ={'keys': [pub_key]}
+    jwks = {'keys': [pub_key]}
     # add statuslist issuer key
     statuslist_key = copy.copy(json.loads(STATUSLIST_ISSUER_KEY))
     del statuslist_key['d']
@@ -575,7 +575,7 @@ def issuer_authorize_par(issuer_id, red, mode):
             return Response(**manage_error('invalid_request', 'client_id does not match client assertion sub', red, mode, request=request))
         try:
             DPoP = request.form.get('client_assertion').split("~")[1]
-        except:
+        except Exception:
             return Response(**manage_error('invalid_request', 'PoP is missing', red, mode, request=request))
         logging.info('proof of possession = %s', DPoP)
         if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(DPoP).get('iss'):
@@ -638,7 +638,7 @@ def issuer_authorize_login(issuer_id, red):
     session['login'] = True
     session['test'] = request.form['test']
     return redirect('/issuer/' + issuer_id + '/authorize?test=' + session['test']) 
-    
+
 
 # authorization code endpoint
 def issuer_authorize(issuer_id, red, mode):
@@ -676,18 +676,13 @@ def issuer_authorize(issuer_id, red, mode):
         
         # Standard Authorization code flow
         else:
-            #if issuer_data['profile'] in  ['HAIP', 'POTENTIAL']:
-            #    return jsonify({
-            #        'error': 'access_denied',
-            #        'error_description': 'HAIP profile request PAR'
-            #    }), 403
             try:
                 redirect_uri = request.args['redirect_uri']
             except Exception:
                 return jsonify({
                     'error': 'access_denied',
                     'error_description': 'redirect_uri is missing'
-                }), 403            
+                }), 403
             try:
                 response_type = request.args['response_type']
             except Exception:
