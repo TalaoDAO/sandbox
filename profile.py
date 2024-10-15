@@ -1,4 +1,4 @@
-from profiles import insurer, bank, gouv, test, talao_issuer_jwt_vc_json, talao_issuer_vc_sd_jwt
+from profiles import insurer, bank, gouv, test, talao_issuer_jwt_vc_json, talao_issuer_vc_sd_jwt, talao_issuer_jwt_vc_json_ld
 
 profile = {
     "INSURER": insurer.INSURER,
@@ -6,6 +6,7 @@ profile = {
     "GOUV": gouv.GOUV,
     "TEST": test.TEST,
     "TALAO_ISSUER_JWT_VC_JSON": talao_issuer_jwt_vc_json.TALAO_ISSUER,
+    "TALAO_ISSUER_JWT_VC_JSON_LD": talao_issuer_jwt_vc_json_ld.TALAO_ISSUER,
     "TALAO_ISSUER_SD_JWT_VC": talao_issuer_vc_sd_jwt.TALAO_ISSUER,
     "EBSI-V3": {
         "oidc4vciDraft": "10",
@@ -1219,7 +1220,10 @@ profile = {
                 "format": "jwt_vc_json",
                 "scope": "PhoneProof_scope",
                 "credential_definition": {
-                    "type": ["VerifiableCredential", "PhoneProof"]
+                    "type": ["VerifiableCredential", "PhoneProof"],
+                    "credentialSubject": {
+                        "phone": {}
+                    }
                 },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [

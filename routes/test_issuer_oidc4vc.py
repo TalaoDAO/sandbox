@@ -331,7 +331,7 @@ def test_7(mode):
     issuer_id = issuer_test(7, mode)
     client_secret = issuer_test(7, mode, secret = True)
 
-    offer = ["EmailPass", "VerifiableId", "Over18", "DBCGuest"]
+    offer = ["EmailPass", "PhoneProof"]
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
@@ -341,7 +341,7 @@ def test_7(mode):
         "vc": build_credential_offered(offer), 
         "issuer_state": "test7",
         "credential_type": offer,
-        "pre-authorized_code": False,
+        "pre-authorized_code": True,
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json=data)
