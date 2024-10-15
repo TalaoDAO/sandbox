@@ -22,6 +22,5 @@
     "credentialSubject" : {
         "type" : "PhoneProof",
         "phone" : "+310998876553"
-      
     }
 }

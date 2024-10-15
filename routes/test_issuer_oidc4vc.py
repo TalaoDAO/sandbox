@@ -507,7 +507,7 @@ def test_12(mode):
 def test_13(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     issuer_id = issuer_test(13, mode)
-    client_secret = issuer_test(13, mode, secret = True)
+    client_secret = issuer_test(13, mode, secret= True)
 
     headers = {
         'Content-Type': 'application/json',
@@ -515,16 +515,16 @@ def test_13(mode):
     }
     with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
         credential1 = json.loads(f.read())
-    with open('./verifiable_credentials/Pid.json', 'r') as f:
+    with open('./verifiable_credentials/EudiPid.json', 'r') as f:
         credential2 = json.loads(f.read())
     data = { 
         "issuer_id": issuer_id,
         "vc": {
             "IdentityCredential": credential1,
-            "Pid": credential2}, 
+            "EudiPid": credential2}, 
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
-        "credential_type": ['IdentityCredential', 'Pid'],
+        "credential_type": ['IdentityCredential', 'EudiPid'],
         "user_pin_required": True,
         "user_pin": "ABCD",
         "input_mode": "text",

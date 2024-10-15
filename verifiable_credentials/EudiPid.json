@@ -31,7 +31,7 @@
   "expiry_date": "2025-01-01",
   "issuing_country": "FR",
   "issuing_authorithy": "Paris_prefecture",
-  "picture": "https://talao.co/sandbox/image",
+  "portrait": "https://talao.co/sandbox/image",
   
-  "disclosure": ["vct", "picture", "status"]
+  "disclosure": ["vct", "portrait", "status"]
 }

@@ -1566,6 +1566,12 @@ profile = {
                             "mandatory": True,
                             "value_type": "image/jpeg",
                             "display": [{"name": "Picture", "locale": "en-US"},
+                                        {"name": "Picture", "locale": "fr-FR"}],
+                        },
+                        "portrait": {
+                            "mandatory": True,
+                            "value_type": "image/jpeg",
+                            "display": [{"name": "Portrait", "locale": "en-US"},
                                         {"name": "Portrait", "locale": "fr-FR"}],
                         },
                         "age_birth_year": {
@@ -1606,6 +1612,7 @@ profile = {
                 "order": [
                     "given_name",
                     "family_name",
+                    "portrait",
                     "birth_date",
                     "gender",
                     "birth_place",
@@ -1631,7 +1638,10 @@ profile = {
                             {"name": "Last Name", "locale": "en-US"},
                             {"name": "Nachname", "locale": "de-DE"},
                             {"name": "Nom", "locale": "fr-FR"},
-                        ],
+                        ]
+                    },
+                    "portrait": {
+                        "value_type": "image/jpeg"
                     },
                     "birth_date": {
                         "mandatory": True,
