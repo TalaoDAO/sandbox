@@ -369,7 +369,7 @@ def test_8(mode):
         "vc": {
             "EmployeeBadge": employee_badge, 
         },
-        "issuer_state": "pid",
+        "issuer_state": "pid_authentication",
         "pre-authorized_code": False,
         "webhook": mode.server + "sandbox/issuer/webhook",
         "credential_type": ['EmployeeBadge'],

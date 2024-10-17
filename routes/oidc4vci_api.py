@@ -731,7 +731,7 @@ def issuer_authorize(issuer_id, red, mode):
         if response_type != 'code':
             return redirect(redirect_uri + '?' + authorization_error('invalid_response_type', 'response_type not supported', None, red, state))
         
-        # redirect user to login/password screen or VP request
+        # redirect user to login/password screen or redirect to VP request
         code_data = {
             'client_id': client_id,
             'scope': scope,
@@ -745,7 +745,7 @@ def issuer_authorize(issuer_id, red, mode):
             'code_challenge_method': code_challenge_method,
         }
         session['code_data'] = code_data
-        if issuer_state != "pid":
+        if issuer_state != "pid_authentication":
             return redirect('/issuer/' + issuer_id + '/authorize/login')
         else:
             issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
@@ -783,6 +783,7 @@ def issuer_authorize(issuer_id, red, mode):
             code_data["stream_id"] = None
             code_data["vc"] = {vc: credential}
             code_data["credential_type"] = [vc]
+            print("code_data[vc] = ", {vc: credential})
             red.setex(VP_request['state'], 10000, json.dumps(code_data))
             return redirect(wallet_authorization_endpoint + "?" + urlencode(VP_request))
     
