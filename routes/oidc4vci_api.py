@@ -647,7 +647,8 @@ def issuer_authorize_login(issuer_id, red):
 # PID login for authorization code flow
 def issuer_authorize_pid(issuer_id, red):
     print("VP POST = ", request.form)
-    code_data = json.loads(red.get("pid"))
+    state = request.form['state']
+    code_data = json.loads(red.get(state).decode())
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
     vc_list = issuer_profile["credential_configurations_supported"].keys()
@@ -742,7 +743,7 @@ def issuer_authorize(issuer_id, red, mode):
         logging.info('client_id of the wallet = %s', client_id)
         logging.info('redirect_uri = %s', redirect_uri)
         logging.info('code_challenge = %s', code_challenge)
-        logging.info('client_metadata = %s type = %s', client_metadata, type(client_metadata))
+        logging.info('client_metadata = %s ', client_metadata)
         logging.info('authorization details = %s', authorization_details)
         logging.info('scope = %s', scope)
         if response_type != 'code':
@@ -778,10 +779,10 @@ def issuer_authorize(issuer_id, red, mode):
                 "response_mode": "direct_post",
                 "response_type": "vp_token",
                 "response_uri": mode.server + 'issuer/' + issuer_id + '/authorize/pid',
-                "state": "53816a62-8c86-11ef-b90b-0a1628958560",
+                "state": str(uuid.uuid1()),
                 "presentation_definition": presentation_definition
             }
-            red.setex("pid", 1000, json.dumps(code_data))
+            red.setex(VP_request['state'], 10000, json.dumps(code_data))
             return redirect(wallet_authorization_endpoint + "?" + urlencode(VP_request))
     
     # return from login/password screen
