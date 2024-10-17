@@ -665,7 +665,8 @@ def issuer_authorize_pid(issuer_id, red):
     credential = json.loads(f.read())
     code_data['stream_id'] = None
     code_data['vc'] = {vc: credential}
-    code_data['credential_type'] = [vc]    
+    code_data['credential_type'] = [vc]
+    print("code data = ", code_data)
     # Code creation
     code = str(uuid.uuid1()) #+ '.' + str(uuid.uuid1()) + '.' + str(uuid.uuid1())
     red.setex(code, GRANT_LIFE, json.dumps(code_data))
@@ -761,7 +762,6 @@ def issuer_authorize(issuer_id, red, mode):
             'code_challenge_method': code_challenge_method,
         }
         session['code_data'] = code_data
-        print("issuer state = ", issuer_state)
         if issuer_state != "pid":
             return redirect('/issuer/' + issuer_id + '/authorize/login')
         else:
@@ -782,9 +782,7 @@ def issuer_authorize(issuer_id, red, mode):
                 "presentation_definition": presentation_definition
             }
             red.setex("pid", 1000, json.dumps(code_data))
-            VP_request_path = wallet_authorization_endpoint + "?" + urlencode(VP_request)
-            print("VP request path = ", VP_request_path)
-            return redirect(VP_request_path)
+            return redirect(wallet_authorization_endpoint + "?" + urlencode(VP_request))
     
     # return from login/password screen
     logging.info('user is logged')
