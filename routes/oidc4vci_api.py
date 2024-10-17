@@ -765,7 +765,7 @@ def issuer_authorize(issuer_id, red, mode):
         if issuer_state != "pid":
             return redirect('/issuer/' + issuer_id + '/authorize/login')
         else:
-            wallet_authorization_endpoint = client_metadata['authorization_endpoint']
+            wallet_authorization_endpoint = json.loads(client_metadata)['authorization_endpoint']
             with open('VP_request_for_PID.json', 'r') as f:
                 VP_request = json.loads(f.read())
             VP_request['response_uri'] = mode.server + 'issuer/' + issuer_id + '/authorize/pid'
