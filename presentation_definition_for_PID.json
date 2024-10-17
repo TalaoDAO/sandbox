@@ -1,11 +1,4 @@
 {
-    "aud": "https://self-issued.me/v2",
-    "client_id": "talao.co",
-    "client_id_scheme": "x509_san_dns",
-    "exp": 1729170402,
-    "iss": "talao.co",
-    "nonce": "5381697f-8c86-11ef-9061-0a1628958560",
-    "presentation_definition": {
         "id": "pid",
         "input_descriptors": [
             {
@@ -50,9 +43,4 @@
                 "id": "pid_credential"
             }
         ]
-    },
-    "response_mode": "direct_post.jwt",
-    "response_type": "vp_token",
-    "response_uri": "",
-    "state": "53816a62-8c86-11ef-b90b-0a1628958560"
-}
+    }

@@ -766,9 +766,21 @@ def issuer_authorize(issuer_id, red, mode):
             return redirect('/issuer/' + issuer_id + '/authorize/login')
         else:
             wallet_authorization_endpoint = json.loads(client_metadata)['authorization_endpoint']
-            with open('VP_request_for_PID.json', 'r') as f:
-                VP_request = json.loads(f.read())
-            VP_request['response_uri'] = mode.server + 'issuer/' + issuer_id + '/authorize/pid'
+            with open('presentation_definition_for_PID.json', 'r') as f:
+                presentation_definition = json.loads(f.read())
+            VP_request = {
+                "aud": "https://self-issued.me/v2",
+                "client_id": "did:web:talao.co",
+                "client_id_scheme": "redirect_uri",
+                "exp": 1829170402,
+                "iss": "did:web:talao.co",
+                "nonce": "5381697f-8c86-11ef-9061-0a1628958560",
+                "response_mode": "direct_post",
+                "response_type": "vp_token",
+                "response_uri": mode.server + 'issuer/' + issuer_id + '/authorize/pid',
+                "state": "53816a62-8c86-11ef-b90b-0a1628958560",
+                "presentation_definition": json.dumps(presentation_definition)
+            }
             red.setex("pid", 1000, json.dumps(code_data))
             VP_request_path = wallet_authorization_endpoint + "?" + urlencode(VP_request)
             print("VP request path = ", VP_request_path)
