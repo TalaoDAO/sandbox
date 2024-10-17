@@ -712,7 +712,6 @@ def oidc4vc_login_qrcode(red, mode):
         # client_id_scheme depending of OIDC4VP draft
         if int(verifier_profile['oidc4vpDraft']) > 13:
             authorization_request['client_id_scheme'] = verifier_data.get('client_id_scheme')
-         
 
         # presentation_definition_uri
         if verifier_data.get('presentation_definition_uri'):
@@ -764,7 +763,7 @@ def oidc4vc_login_qrcode(red, mode):
     else:
         iss = verifier_data['did']
         key = verifier_data['jwk']
-       
+
     request_as_jwt = build_jwt_request(
         key,
         verifier_data['verification_method'],

@@ -779,7 +779,7 @@ def issuer_authorize(issuer_id, red, mode):
                 "response_type": "vp_token",
                 "response_uri": mode.server + 'issuer/' + issuer_id + '/authorize/pid',
                 "state": "53816a62-8c86-11ef-b90b-0a1628958560",
-                "presentation_definition": json.dumps(presentation_definition)
+                "presentation_definition": presentation_definition
             }
             red.setex("pid", 1000, json.dumps(code_data))
             VP_request_path = wallet_authorization_endpoint + "?" + urlencode(VP_request)
