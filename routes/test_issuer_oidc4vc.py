@@ -369,8 +369,8 @@ def test_8(mode):
         "vc": {
             "EmployeeBadge": employee_badge, 
         },
-        "issuer_state": str(uuid.uuid1()),
-        "pre-authorized_code": True,
+        "issuer_state": "pid",
+        "pre-authorized_code": False,
         "webhook": mode.server + "sandbox/issuer/webhook",
         "credential_type": ['EmployeeBadge'],
         "callback": mode.server + 'sandbox/issuer/callback',

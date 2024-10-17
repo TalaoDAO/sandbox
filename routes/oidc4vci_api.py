@@ -45,8 +45,6 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-credential-issuer', view_func=credential_issuer_openid_configuration_endpoint, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/authorize', view_func=issuer_authorize, methods=['GET'], defaults={'red': red, 'mode': mode})
     
-    app.add_url_rule('/issuer/<issuer_id>/authorize/login', view_func=issuer_authorize_login, methods=['GET', 'POST'], defaults={'red': red})
-
     app.add_url_rule('/issuer/<issuer_id>/authorize/par', view_func=issuer_authorize_par, methods=['POST'], defaults={'red': red, 'mode':mode})
 
     app.add_url_rule('/issuer/<issuer_id>/token', view_func=issuer_token, methods=['POST'], defaults={'red': red, 'mode': mode},)
@@ -56,6 +54,12 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/credential_offer_uri/<id>', view_func=issuer_credential_offer_uri, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/issuer/error_uri', view_func=wallet_error_uri, methods=['GET'])
     
+    # login with login/password authorization code flow
+    app.add_url_rule('/issuer/<issuer_id>/authorize/login', view_func=issuer_authorize_login, methods=['GET', 'POST'], defaults={'red': red})
+    # login with PID authorization code flow
+    app.add_url_rule("/issuer/<issuer_id>/authorize/pid", view_func=issuer_authorize_pid, methods=['POST'], defaults={'red': red})
+
+
     # OIDC4VCI protocol with web wallet
     app.add_url_rule('/issuer/<issuer_id>/redirect', view_func=issuer_web_wallet_redirect, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
 
@@ -640,6 +644,39 @@ def issuer_authorize_login(issuer_id, red):
     return redirect('/issuer/' + issuer_id + '/authorize?test=' + session['test']) 
 
 
+# PID login for authorization code flow
+def issuer_authorize_pid(issuer_id, red):
+    print("VP POST = ", request.form)
+    code_data = json.loads(red.get("pid"))
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    issuer_profile = profile[issuer_data['profile']]
+    vc_list = issuer_profile["credential_configurations_supported"].keys()
+    for vc in vc_list:
+        if issuer_profile["credential_configurations_supported"][vc]["scope"] == code_data['scope']:
+            break
+    try:
+        f = open("./verifiable_credentials/" + vc + ".jsonld", 'r')
+    except Exception:
+        # for vc+sd-jwt 
+        try:
+            f = open("./verifiable_credentials/" + vc + ".json", 'r')
+        except Exception:
+            logging.error("file not found")
+    credential = json.loads(f.read())
+    code_data['stream_id'] = None
+    code_data['vc'] = {vc: credential}
+    code_data['credential_type'] = [vc]    
+    # Code creation
+    code = str(uuid.uuid1()) #+ '.' + str(uuid.uuid1()) + '.' + str(uuid.uuid1())
+    red.setex(code, GRANT_LIFE, json.dumps(code_data))
+    resp = {'code': code}
+    if code_data['state']:
+        resp['state'] = code_data['state']
+    redirect_uri = code_data['redirect_uri']
+    session.clear()
+    return redirect(redirect_uri + '?' + urlencode(resp))
+
+
 # authorization code endpoint
 def issuer_authorize(issuer_id, red, mode):
     # user not logged
@@ -710,7 +747,7 @@ def issuer_authorize(issuer_id, red, mode):
         if response_type != 'code':
             return redirect(redirect_uri + '?' + authorization_error('invalid_response_type', 'response_type not supported', None, red, state))
         
-        # redirect user to login screen
+        # redirect user to login/password screen
         code_data = {
             'client_id': client_id,
             'scope': scope,
@@ -724,9 +761,20 @@ def issuer_authorize(issuer_id, red, mode):
             'code_challenge_method': code_challenge_method,
         }
         session['code_data'] = code_data
-        return redirect('/issuer/' + issuer_id + '/authorize/login') 
+        print("issuer state = ", issuer_state)
+        if issuer_state != "pid":
+            return redirect('/issuer/' + issuer_id + '/authorize/login')
+        else:
+            wallet_authorization_endpoint = client_metadata['authorization_endpoint']
+            with open('VP_request_for_PID.json', 'r') as f:
+                VP_request = json.loads(f.read())
+            VP_request['response_uri'] = mode.server + 'issuer/' + issuer_id + '/authorize/pid'
+            red.setex("pid", 1000, json.dumps(code_data))
+            VP_request_path = wallet_authorization_endpoint + "?" + urlencode(VP_request)
+            print("VP request path = ", VP_request_path)
+            return redirect(VP_request_path)
     
-    # return from login screen
+    # return from login/password screen
     logging.info('user is logged')
     session['login'] = False
     test = request.args.get('test')
@@ -775,7 +823,8 @@ def issuer_authorize(issuer_id, red, mode):
     code = str(uuid.uuid1()) #+ '.' + str(uuid.uuid1()) + '.' + str(uuid.uuid1())
     red.setex(code, GRANT_LIFE, json.dumps(session['code_data']))
     resp = {'code': code}
-    if session['code_data']['state']: resp['state'] = session['code_data']['state']
+    if session['code_data']['state']:
+        resp['state'] = session['code_data']['state']
     redirect_uri = session['code_data']['redirect_uri']
     session.clear()
     return redirect(redirect_uri + '?' + urlencode(resp))
