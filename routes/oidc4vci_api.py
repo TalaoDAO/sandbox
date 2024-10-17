@@ -649,24 +649,6 @@ def issuer_authorize_pid(issuer_id, red):
     print("VP POST = ", request.form)
     state = request.form['state']
     code_data = json.loads(red.get(state).decode())
-    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-    issuer_profile = profile[issuer_data['profile']]
-    vc_list = issuer_profile["credential_configurations_supported"].keys()
-    for vc in vc_list:
-        if issuer_profile["credential_configurations_supported"][vc]["scope"] == code_data['scope']:
-            break
-    try:
-        f = open("./verifiable_credentials/" + vc + ".jsonld", 'r')
-    except Exception:
-        # for vc+sd-jwt 
-        try:
-            f = open("./verifiable_credentials/" + vc + ".json", 'r')
-        except Exception:
-            logging.error("file not found")
-    credential = json.loads(f.read())
-    code_data['stream_id'] = None
-    code_data['vc'] = {vc: credential}
-    code_data['credential_type'] = [vc]
     print("code data = ", code_data)
     # Code creation
     code = str(uuid.uuid1()) #+ '.' + str(uuid.uuid1()) + '.' + str(uuid.uuid1())
@@ -749,7 +731,7 @@ def issuer_authorize(issuer_id, red, mode):
         if response_type != 'code':
             return redirect(redirect_uri + '?' + authorization_error('invalid_response_type', 'response_type not supported', None, red, state))
         
-        # redirect user to login/password screen
+        # redirect user to login/password screen or VP request
         code_data = {
             'client_id': client_id,
             'scope': scope,
@@ -766,6 +748,22 @@ def issuer_authorize(issuer_id, red, mode):
         if issuer_state != "pid":
             return redirect('/issuer/' + issuer_id + '/authorize/login')
         else:
+            issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+            issuer_profile = profile[issuer_data['profile']]
+            vc_list = issuer_profile["credential_configurations_supported"].keys()
+            for vc in vc_list:
+                if issuer_profile["credential_configurations_supported"][vc]["scope"] == session['code_data']['scope']:
+                    break
+            try:
+                f = open("./verifiable_credentials/" + vc + ".jsonld", 'r')
+            except Exception:
+                # for vc+sd-jwt 
+                try:
+                    f = open("./verifiable_credentials/" + vc + ".json", 'r')
+                except Exception:
+                    logging.error("file not found")
+                    return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'VC not found', None, red, state))
+            credential = json.loads(f.read())
             wallet_authorization_endpoint = json.loads(client_metadata)['authorization_endpoint']
             with open('presentation_definition_for_PID.json', 'r') as f:
                 presentation_definition = json.loads(f.read())
@@ -782,6 +780,9 @@ def issuer_authorize(issuer_id, red, mode):
                 "state": str(uuid.uuid1()),
                 "presentation_definition": presentation_definition
             }
+            code_data["stream_id"] = None
+            code_data["vc"] = {vc: credential}
+            code_data["credential_type"] = [vc]
             red.setex(VP_request['state'], 10000, json.dumps(code_data))
             return redirect(wallet_authorization_endpoint + "?" + urlencode(VP_request))
     
