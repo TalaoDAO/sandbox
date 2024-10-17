@@ -1,0 +1,80 @@
+{
+        "wallet_name": "Talao_wallet",
+        "key_type": "software",
+        "user_authentication": "system_biometry",
+        "authorization_endpoint": "https://app.altme.io/app/download/authorize",
+        "grant_types_supported": [
+            "authorization_code",
+            "pre-authorized_code"
+        ],
+        "response_types_supported": [
+            "vp_token",
+            "id_token"
+        ],
+        "vp_formats_supported": {
+            "jwt_vc_json": {
+                "alg_values_supported": [
+                    "ES256",
+                    "ES256K",
+                    "EdDSA"
+                ]
+            },
+            "jwt_vp_json": {
+                "alg_values_supported": [
+                    "ES256",
+                    "ES256K",
+                    "EdDSA"
+                ]
+            },
+            "jwt_vc_json-ld": {
+                "alg_values_supported": [
+                    "ES256",
+                    "ES256K",
+                    "EdDSA"
+                ]
+            },
+            "jwt_vp_json-ld": {
+                "alg_values_supported": [
+                    "ES256",
+                    "ES256K",
+                    "EdDSA"
+                ]
+            },
+            "vc+sd-jwt": {
+                "alg_values_supported": [
+                    "ES256",
+                    "ES256K",
+                    "EdDSA"
+                ]
+            },
+            "ldp_vp": {
+                "proof_type": [
+                    "JsonWebSignature2020",
+                    "Ed25519Signature2018",
+                    "EcdsaSecp256k1Signature2019"
+                ]
+            },
+            "ldp_vc": {
+                "proof_type": [
+                    "JsonWebSignature2020",
+                    "Ed25519Signature2018",
+                    "EcdsaSecp256k1Signature2019"
+                ]
+            }
+        },
+        "client_id_schemes_supported":[
+            "did",
+            "redirect_uri",
+            "x509_san_dns",
+            "verifier_attestation"
+        ],
+        "request_object_signing_alg_values_supported": [
+            "ES256",
+            "ES256K"
+        ],
+        "presentation_definition_uri_supported": true,
+        "contacts": [
+            "contact@talao.io"
+        ]
+    }
+
