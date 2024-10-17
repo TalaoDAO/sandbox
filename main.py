@@ -530,6 +530,18 @@ def well_known_did():
 
 
 
+# .well-known for walllet as issuer 
+@app.route('/wallet-issuer/.well-known/openid-configuration', methods=['GET'])
+def wallet_issuer_well_known_did():
+    wallet_issuer = json.load(open('wallet_metadata_for_verifiers.json', 'r'))
+    wallet_issuer["authorization_endpoint"] = "https://app.talao.co/app/download/authorize"
+    headers = {
+        "Content-Type": "application/did+ld+json",
+        "Cache-Control": "no-cache"
+    }
+    return Response(json.dumps(wallet_issuer), headers=headers)
+
+
 # MAIN entry point for test
 if __name__ == '__main__':
     # info release
