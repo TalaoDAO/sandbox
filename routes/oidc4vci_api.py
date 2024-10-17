@@ -741,7 +741,7 @@ def issuer_authorize(issuer_id, red, mode):
         logging.info('client_id of the wallet = %s', client_id)
         logging.info('redirect_uri = %s', redirect_uri)
         logging.info('code_challenge = %s', code_challenge)
-        logging.info('client_metadata = %s', client_metadata, type(client_metadata))
+        logging.info('client_metadata = %s type = %s', client_metadata, type(client_metadata))
         logging.info('authorization details = %s', authorization_details)
         logging.info('scope = %s', scope)
         if response_type != 'code':
