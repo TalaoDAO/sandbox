@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!-- AltMe app_download.html -->
+<html>
+
+<head>
+    {% include 'app_download/head.html' %}
+</head>
+
+<body id="page-top" >
+    <div id="wrapper">
+        <div class="d-flex flex-column" id="content-wrapper">
+            <div id="content" >
+            <!--  {% include 'app_download/nav_bar.html' %} -->
+                <div class="container">
+                    <div class="row mt-5">
+                        <div class="col-sm-6 offset-sm-3">
+                            <div id = "id_loading">
+                                <div class="card">
+                                    <img src="/static/img/7.png" class="card-img-top" alt="...">
+                                    <div class="card-body">
+                                        <div class="text-center">
+                                            <h5 class="card-title">Your smartphone browser does not support Universal Link</h5>
+                                            <p class="card-text">Use Safari on Iphone or Chrome on Android as browser by default</p>
+
+                                        </div>
+                                    </div> 
+                                </div>                                      
+                                    <form id="id_token" action="/user/" method="POST">
+                                        <input id="input_token" hidden  name="token" >
+                                    </form>
+                                    <form id="id_failed" action="/app/login" method="GET">
+                                    </form>
+                            
+                            </div>
+                            <div id="space"></div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'app_download/footer.html' %}  
+
+    <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>   
+    
+    
+    </script>
+
+</body>
+</html>

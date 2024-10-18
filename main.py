@@ -429,6 +429,13 @@ def app_download() :
     return render_template('app_download/talao_app_download.html')
 
 
+# callback link for browser problems
+@app.route('/app/download/authorize' , methods=['GET']) 
+@app.route('/app/download/callback' , methods=['GET']) 
+def app_callback():
+    return render_template('app_download/talao_app_download_callback.html')
+
+
 @app.route('/install', methods=['GET'])
 def link():
     configuration = {
