@@ -430,6 +430,7 @@ def app_download() :
 
 
 # callback link for browser problems
+@app.route('/app/download/oidc4vc' , methods=['GET']) 
 @app.route('/app/download/authorize' , methods=['GET']) 
 @app.route('/app/download/callback' , methods=['GET']) 
 def app_callback():
