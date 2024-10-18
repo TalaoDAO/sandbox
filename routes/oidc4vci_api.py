@@ -646,10 +646,9 @@ def issuer_authorize_login(issuer_id, red):
 
 # PID login for authorization code flow
 def issuer_authorize_pid(issuer_id, red):
-    print("VP POST = ", request.form)
+    print(request.headers)
     state = request.form['state']
     code_data = json.loads(red.get(state).decode())
-    print("code data = ", code_data)
     # Code creation
     code = str(uuid.uuid1()) #+ '.' + str(uuid.uuid1()) + '.' + str(uuid.uuid1())
     red.setex(code, GRANT_LIFE, json.dumps(code_data))
@@ -745,9 +744,13 @@ def issuer_authorize(issuer_id, red, mode):
             'code_challenge_method': code_challenge_method,
         }
         session['code_data'] = code_data
+        # redirect user to login/password screen
         if issuer_state != "pid_authentication":
             return redirect('/issuer/' + issuer_id + '/authorize/login')
+        
+        # redirect user to VP request to get a PID
         else:
+            # fetch credential.
             issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
             issuer_profile = profile[issuer_data['profile']]
             vc_list = issuer_profile["credential_configurations_supported"].keys()
@@ -783,7 +786,6 @@ def issuer_authorize(issuer_id, red, mode):
             code_data["stream_id"] = None
             code_data["vc"] = {vc: credential}
             code_data["credential_type"] = [vc]
-            print("code_data[vc] = ", {vc: credential})
             red.setex(VP_request['state'], 10000, json.dumps(code_data))
             return redirect(wallet_authorization_endpoint + "?" + urlencode(VP_request))
     
@@ -801,6 +803,7 @@ def issuer_authorize(issuer_id, red, mode):
         wallet initiated authorization code flow -> create offer_data from file as it is needed for web wallet tests
         
         """
+        # fetch credential
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
         issuer_profile = profile[issuer_data['profile']]
         vc_list = issuer_profile["credential_configurations_supported"].keys()
@@ -822,7 +825,8 @@ def issuer_authorize(issuer_id, red, mode):
             "vc": {vc: credential},
             "credential_type": [vc]
         }
-        
+    
+    # update code data with credential value   
     vc = offer_data['vc']
     try:
         session['code_data']['stream_id'] = offer_data['stream_id']
