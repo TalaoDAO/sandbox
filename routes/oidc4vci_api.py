@@ -646,7 +646,7 @@ def issuer_authorize_login(issuer_id, red):
 
 # PID login for authorization code flow
 def issuer_authorize_pid(issuer_id, red):
-    print(request.headers)
+    print("header in the POST GET REDIRECT =", request.headers)
     state = request.form['state']
     code_data = json.loads(red.get(state).decode())
     # Code creation
