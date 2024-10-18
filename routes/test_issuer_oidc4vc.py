@@ -55,8 +55,8 @@ def issuer_test(test, mode, secret=False):
             ["zarbjrqrzj", "c755ade2-3b5a-11ee-b7f1-0a1628958560"],# 5
             ["wzxtwpltvn", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"],
             ["mfyttabosy", "c0ab5d96-3113-11ee-a3e3-0a1628958560"],
-            ["npwsshblrm", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"],
-            ["pexkhrzlmj", "7f888504-6ab4-11ee-938e-0a1628958560"],
+            ["npwsshblrm", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"], #8
+            ["pexkhrzlmj", "7f888504-6ab4-11ee-938e-0a1628958560"], #9
             ["grlvzckofy", "731dc86d-2abb-11ee-825b-9db9eb02bfb8"], #10
             ["pcbrwbvrsi", "0f4103ef-42c3-11ee-9015-0a1628958560"],
             ["hrngdrpura", "1c290181-de11-11ee-9fb4-0a1628958560"],
@@ -387,8 +387,8 @@ def test_8(mode):
 
 def test_9(mode): # 
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
-    issuer_id = issuer_test(8, mode)
-    client_secret = issuer_test(8, mode, secret = True)
+    issuer_id = issuer_test(9, mode)
+    client_secret = issuer_test(9, mode, secret = True)
   
     headers = {
         'Content-Type': 'application/json',
