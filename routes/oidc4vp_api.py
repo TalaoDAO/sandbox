@@ -603,7 +603,7 @@ def oidc4vc_login_qrcode(red, mode):
                     )
                 else:
                     prez.add_constraint(
-                        "$.credentialSubject.type",
+                        "$.vc.credentialSubject.type",
                         verifier_data[vc],
                         "Input descriptor for credential " + i,
                         verifier_data[reason],
@@ -809,14 +809,22 @@ def oidc4vc_login_qrcode(red, mode):
     
     # test qrcode size
     logging.info("qrcode qize = %s", len(url))
-    if len(url) > 2900: return jsonify("This QR code is too big, use request uri")
-    
+    if len(url) > 2900:
+        return jsonify("This QR code is too big, use request uri")
+
+    try:
+        request_uri_header = json.dumps(oidc4vc.get_header_from_token(request_uri_jwt), indent=4)
+        request_uri_payload = json.dumps(oidc4vc.get_payload_from_token(request_uri_jwt), indent=4)
+    except Exception:
+        request_uri_header = ""
+        request_uri_payload = ""
+        
     return render_template(
         qrcode_page,
         url=url,
         request_uri=request_uri_jwt,
-        request_uri_header=json.dumps(oidc4vc.get_header_from_token(request_uri_jwt), indent=4),
-        request_uri_payload=json.dumps(oidc4vc.get_payload_from_token(request_uri_jwt), indent=4),
+        request_uri_header=request_uri_header,
+        request_uri_payload=request_uri_payload,
         url_json= unquote(url),
         presentation_definition=json.dumps(presentation_definition, indent=4),
         client_metadata=json.dumps(wallet_metadata, indent=4),
