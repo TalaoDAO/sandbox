@@ -773,8 +773,8 @@ def issuer_authorize(issuer_id, red, mode):
                 wallet_authorization_endpoint = json.loads(client_metadata)['authorization_endpoint']
             elif wallet_issuer:
                 resp = requests.get(wallet_issuer + '/.well-known/openid-configuration')
-                print("resp.json = ", resp.json)
-                wallet_authorization_endpoint = resp.json['authorization_endpoint']
+                print("resp.json = ", resp.json())
+                wallet_authorization_endpoint = resp.json()['authorization_endpoint']
             else:
                 logging.error('no wallet metadata')
                 return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Wallet authorization endpoint not found', None, red, state))
