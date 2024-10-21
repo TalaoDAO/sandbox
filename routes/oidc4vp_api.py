@@ -52,7 +52,7 @@ def init_app(app, red, mode):
     app.add_url_rule('/sandbox/verifier/app/jwks.json', view_func=oidc4vc_jwks, methods=['GET'])
     
     # endpoints for wallet
-    app.add_url_rule('/verifier/wallet',  view_func=oidc4vc_login_qrcode, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/verifier/wallet', view_func=oidc4vc_login_qrcode, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/verifier/wallet/.well-known/openid-configuration',  view_func=wallet_openid_configuration, methods = ['GET'])
     app.add_url_rule('/verifier/wallet/endpoint/<stream_id>',  view_func=oidc4vc_response_endpoint, methods=['POST'],  defaults={'red': red}) # redirect_uri for PODST
     app.add_url_rule('/verifier/wallet/request_uri/<stream_id>',  view_func=oidc4vc_request_uri, methods=['GET'], defaults={'red': red})
@@ -836,7 +836,7 @@ def oidc4vc_login_qrcode(red, mode):
         page_description=verifier_data['page_description'],
         code=request.args['code']
     )
-    
+
 
 def oidc4vc_request_uri(stream_id, red):
     """
@@ -847,12 +847,11 @@ def oidc4vc_request_uri(stream_id, red):
         payload = red.get("request_uri_" + stream_id).decode().replace('"', '')
     except Exception:
         return jsonify("Request timeout"), 408
-    headers = { "Content-Type": "application/oauth-authz-req+jwt",
-                "Cache-Control": "no-cache"
+    headers = { 
+        "Content-Type": "application/oauth-authz-req+jwt",
+        "Cache-Control": "no-cache"
     }
     return Response(payload, headers=headers)
-
-
 
 
 

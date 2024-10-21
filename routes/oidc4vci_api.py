@@ -717,6 +717,7 @@ def issuer_authorize(issuer_id, red, mode):
             code_challenge = request.args.get('code_challenge')
             code_challenge_method = request.args.get('code_challenge_method')
             client_metadata = request.args.get('client_metadata')
+            wallet_issuer = request.args.get('wallet_issuer')
             state = request.args.get('state')  # wallet state
             issuer_state = request.args.get('issuer_state') 
             authorization_details = request.args.get('authorization_details')
@@ -725,6 +726,7 @@ def issuer_authorize(issuer_id, red, mode):
         logging.info('redirect_uri = %s', redirect_uri)
         logging.info('code_challenge = %s', code_challenge)
         logging.info('client_metadata = %s ', client_metadata)
+        logging.info('wallet_issuer = %s ', wallet_issuer)
         logging.info('authorization details = %s', authorization_details)
         logging.info('scope = %s', scope)
         if response_type != 'code':
@@ -767,7 +769,17 @@ def issuer_authorize(issuer_id, red, mode):
                     logging.error("file not found")
                     return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'VC not found', None, red, state))
             credential = json.loads(f.read())
-            wallet_authorization_endpoint = json.loads(client_metadata)['authorization_endpoint']
+            if client_metadata:
+                wallet_authorization_endpoint = json.loads(client_metadata)['authorization_endpoint']
+            elif wallet_issuer:
+                resp = requests.get(wallet_issuer + '/.well-known/openid-configuration')
+                print("resp.json = ", resp.json)
+                wallet_authorization_endpoint = resp.json['authorization_endpoint']
+            else:
+                logging.error('no wallet metadata')
+                return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Wallet authorization endpoint not found', None, red, state))
+            print("wallet authorization endpoint = ", wallet_authorization_endpoint)
+            
             with open('presentation_definition_for_PID.json', 'r') as f:
                 presentation_definition = json.loads(f.read())
             VP_request = {
