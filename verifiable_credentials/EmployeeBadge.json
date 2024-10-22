@@ -3,7 +3,11 @@
     "given_name": "Patrick",
     "family_name": "Doe",
     "email": "contact@talao.io",
-    "organization": "Talao",
+    "organization": {
+        "name": "talao",
+        "identifier": "FR145654-34554",
+        "country": "FR"
+    },
     "role": "employee",
     "website": "https://talao.io",
     "disclosure": ["given_name", "family_name", "organization", "role", "website", "email"]

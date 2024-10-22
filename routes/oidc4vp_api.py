@@ -1149,8 +1149,9 @@ async def oidc4vc_response_endpoint(stream_id, red):
                     "vp_type": vp_type,
                     "sub": sub
                     })
+    print("response = ", response)
     red.setex(stream_id + "_wallet_data", CODE_LIFE, wallet_data)
-    event_data = json.dumps({"stream_id": stream_id})         
+    event_data = json.dumps({"stream_id": stream_id})     
     red.publish('api_oidc4vc_verifier', event_data)
     return jsonify(response), status_code
 

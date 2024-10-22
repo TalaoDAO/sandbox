@@ -646,7 +646,6 @@ def issuer_authorize_login(issuer_id, red):
 
 # PID login for authorization code flow
 def issuer_authorize_pid(issuer_id, red):
-    print("header in the POST GET REDIRECT =", request.headers)
     state = request.form['state']
     code_data = json.loads(red.get(state).decode())
     # Code creation
@@ -773,12 +772,10 @@ def issuer_authorize(issuer_id, red, mode):
                 wallet_authorization_endpoint = json.loads(client_metadata)['authorization_endpoint']
             elif wallet_issuer:
                 resp = requests.get(wallet_issuer + '/.well-known/openid-configuration')
-                print("resp.json = ", resp.json())
                 wallet_authorization_endpoint = resp.json()['authorization_endpoint']
             else:
                 logging.error('no wallet metadata')
                 return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Wallet authorization endpoint not found', None, red, state))
-            print("wallet authorization endpoint = ", wallet_authorization_endpoint)
             
             with open('presentation_definition_for_PID.json', 'r') as f:
                 presentation_definition = json.loads(f.read())
