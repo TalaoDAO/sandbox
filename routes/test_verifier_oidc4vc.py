@@ -301,7 +301,7 @@ def verifier_callback():
 # for sd-jwt
 def verifier_callback3():
     token = request.args.get("id_token")
-    presentation_submission = request.args.get("presentation_submission")
+    presentation_submission = json.loads(request.args.get("presentation_submission"))
     #vcsd = oidc4vc.get_payload_from_token(token)['vc+sd-jwt'].split("~")
     vcsd = token.split("~")
     vcsd_jwt_payload = oidc4vc.get_payload_from_token(vcsd[0])
@@ -322,7 +322,7 @@ def verifier_callback3():
     return render_template(
         'verifier_oidc/vcsd_jwt_test.html',
         raw=token,
-        presentation_submission=presentation_submission,
+        presentation_submission=json.dumps(presentation_submission, indent=4),
         vcsd_jwt_header=json.dumps(vcsd_jwt_header, indent=4),
         vcsd_jwt_payload=json.dumps(vcsd_jwt_payload, indent=4),
         disclosure=disclosure,
