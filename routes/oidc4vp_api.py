@@ -163,14 +163,15 @@ id_token -> implicit flow
 
 
 def oidc4vc_authorize(red, mode):
-    logging.info("authorization endpoint request  = %s", request.args)
-    """ https://www.rfc-editor.org/rfc/rfc6749.html#section-4.1.2
+    """ 
     code_wallet_data = 
-    {
-        "vp_token_payload",: xxxxx
-        "sub": xxxxxx
-    }
+        {
+            "vp_token_payload",: xxxxx
+            "sub": xxxxxx,
+            "presentation_submission": "xxx"
+        }
     """
+    logging.info("authorization endpoint request  = %s", request.args)
     # user is connected, successful exit to client with code
     if session.get('verified') and request.args.get('code'):
         code = request.args['code']
@@ -206,15 +207,16 @@ def oidc4vc_authorize(red, mode):
                 vp = code_wallet_data['vp_token_payload']
                 id_token = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
             elif code_wallet_data['vp_type'] == "vc+sd-jwt":
-                #vp = {"vc+sd-jwt" : code_wallet_data['vp_token_payload']}
                 id_token = code_wallet_data['vp_token_payload']
             else:
                 vp = code_wallet_data['vp_token_payload'].get('vp')
                 logging.info(" code_wallet_data['vp_token_payload'] = %s", code_wallet_data['vp_token_payload'])
                 id_token = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
-            resp = {"id_token": id_token} 
+            resp = {
+                "id_token": id_token,
+                "presentation_submission": json.dumps(code_wallet_data['presentation_submission']) 
+            }
             redirect_url = code_data['redirect_uri'] + sep + urlencode(resp)
-            #logging.info("redirect url to application with id-token = %s", redirect_url)
             return redirect(redirect_url)
 
         else:
@@ -1143,15 +1145,16 @@ async def oidc4vc_response_endpoint(stream_id, red):
         except Exception:
             sub = "Error"
     
+    # data sent to application
     wallet_data = json.dumps({
                     "access": access,
                     "vp_token_payload": vp_token_payload, # jwt_vp payload or json-ld 
                     "vp_type": vp_type,
-                    "sub": sub
+                    "sub": sub,
+                    "presentation_submission": json.loads(presentation_submission)
                     })
-    print("response = ", response)
     red.setex(stream_id + "_wallet_data", CODE_LIFE, wallet_data)
-    event_data = json.dumps({"stream_id": stream_id})     
+    event_data = json.dumps({"stream_id": stream_id})
     red.publish('api_oidc4vc_verifier', event_data)
     return jsonify(response), status_code
 
