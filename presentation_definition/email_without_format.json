@@ -1,0 +1,21 @@
+{
+    "id": "60f32879-3aa3-11ef-9ddc-93d35f5329c1",
+    "input_descriptors": [
+        {
+            "id": "emailpass_without_filter",
+            "name": "Input descriptor for credential 1",
+            "purpose": "",
+            "constraints": {
+                "fields": [
+                    {
+                        "path": [
+                            "$.vc.credentialSubject.email"
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "name": "Test #3",
+    "purpose": "Altme presentation definition subset of PEX v2.0"
+}
