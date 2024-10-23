@@ -898,22 +898,22 @@ async def oidc4vc_response_endpoint(stream_id, red):
         
         vp_token = response.get('vp_token')
         id_token = response.get('id_token')
+        presentation_submission = response.get('presentation_submission')
         
-        if vp_token and not response.get('presentation_submission'):
+        if vp_token and not presentation_submission:
             presentation_submission_status = "Not received"
             logging.info('No presentation submission received')
             access = False
         else:
             presentation_submission_status = "ok"
-            logging.info('presentation submission received = %s', response.get('presentation_submission'))
+            logging.info('presentation submission received = %s', presentation_submission)
         
         if vp_token:
-            try:
-                presentation_submission = json.loads(response.get('presentation_submission'))
+            if isinstance(presentation_submission, str):
+                presentation_submission = json.loads(presentation_submission)
                 logging.info("presentation submission is a string")
-            except Exception:
+            else:
                 logging.info("presentation submission is a dict /json object")
-                presentation_submission = response.get('presentation_submission')
         
         if id_token:
             logging.info('id token received = %s', id_token)
