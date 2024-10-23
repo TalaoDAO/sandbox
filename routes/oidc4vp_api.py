@@ -231,7 +231,10 @@ def oidc4vc_authorize(red, mode):
         logging.warning('Error in the login process, redirect to client with error code = %s', request.args['error'])
         code = request.args['code']
         code_data = json.loads(red.get(code).decode())
-        resp = {'error': request.args['error']}
+        resp = {
+            'error': request.args['error'],
+            'error_description': request.args.get('error_description')
+        }
         if code_data.get('state'):
             resp['state'] = code_data['state']
         redirect_uri = code_data['redirect_uri']
@@ -896,7 +899,8 @@ async def oidc4vc_response_endpoint(stream_id, red):
         vp_token = response.get('vp_token')
         id_token = response.get('id_token')
         
-        presentation_submission = response.get('presentation_submission')
+        presentation_submission = json.loads(response.get('presentation_submission'))
+        print("type of presentation submission =", type(presentation_submission) )
         if presentation_submission:
             presentation_submission_status = "ok"
             logging.info('presentation submission received = %s', presentation_submission)
@@ -912,15 +916,16 @@ async def oidc4vc_response_endpoint(stream_id, red):
         
         if vp_token:
             logging.info('vp token received = %s', vp_token)
-            vp_format = json.loads(presentation_submission)["descriptor_map"][0]["format"]
+            vp_format = presentation_submission["descriptor_map"][0]["format"]
             logging.info("VP format = %s", vp_format)
             if vp_format not in ["vc+sd-jwt", "ldp_vp", "jwt_vp_json", "jwt_vp"]:
                 logging.error("vp format unknown")
+                vp_format = "vp format unknown"
                 access = False
-            #if vp_format == "ldp_vp":
-            #    logging.info('vp token received = %s', json.dumps(json.loads(vp_token), indent=4))
-            #else:
-            #    logging.info('vp token received = %s', vp_token)
+            if vp_format == "ldp_vp" and vp_token[:2] == "ey":
+                logging.error("vp format ldp_vp with vp_token as a string")
+                access = False
+                vp_format = "vp format ldp_vp with vp_token as a string"
         else:
             vp_token_status = "Not received"
         
@@ -1102,6 +1107,8 @@ async def oidc4vc_response_endpoint(stream_id, red):
         "vp_token_status": vp_token_status,
         "status_code": status_code,
     }
+    logging.info("response detailed = %s", json.dumps(detailed_response, indent=4))
+
     if status_code == 400:
         response = {
             "error": "access_denied",
@@ -1110,8 +1117,6 @@ async def oidc4vc_response_endpoint(stream_id, red):
         logging.info("Access denied")
     else:
         response = "{}"
-    
-    logging.info("response detailed = %s", json.dumps(detailed_response, indent=4))
     
     # follow up
     if id_token:
@@ -1125,10 +1130,11 @@ async def oidc4vc_response_endpoint(stream_id, red):
     # data sent to application
     wallet_data = json.dumps({
                     "access": access,
+                    "detailed_response": json.dumps(detailed_response),
                     "vp_token_payload": vp_token_payload, # jwt_vp payload or json-ld 
                     "vp_format": vp_format,
                     "sub": sub,
-                    "presentation_submission": json.loads(presentation_submission)
+                    "presentation_submission": presentation_submission
                     })
     red.setex(stream_id + "_wallet_data", CODE_LIFE, wallet_data)
     event_data = json.dumps({"stream_id": stream_id})
@@ -1164,7 +1170,7 @@ def oidc4vc_login_followup(red):
         resp = {
             'code': code,
             'error': 'access_denied',
-            'error_description': ""
+            'error_description': stream_id_wallet_data['detailed_response']
         }
         session['verified'] = False
     else:

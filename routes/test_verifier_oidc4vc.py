@@ -300,8 +300,10 @@ def verifier_callback():
 
 # for sd-jwt
 def verifier_callback3():
+    if request.args.get("error"):
+        return jsonify(request.args)
     token = request.args.get("id_token")
-    presentation_submission = json.loads(request.args.get("presentation_submission"))
+    presentation_submission = request.args.get("presentation_submission")
     #vcsd = oidc4vc.get_payload_from_token(token)['vc+sd-jwt'].split("~")
     vcsd = token.split("~")
     vcsd_jwt_payload = oidc4vc.get_payload_from_token(vcsd[0])

@@ -254,14 +254,14 @@ def test_5(mode):
         'X-API-KEY': client_secret
     }
 
-    offer = ['VerifiableId']
+    offer = ['VerifiableId', 'EmailPass']
 
     data = { 
         "issuer_id": issuer_id,
         "vc": build_credential_offered(offer), 
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
-        "credential_type": ['VerifiableId'],
+        "credential_type": ['VerifiableId', 'EmailPass'],
         "callback": mode.server + 'sandbox/issuer/callback',
         "user_pin_required": False,
         "user_pin": "4444",
