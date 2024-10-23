@@ -877,7 +877,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
         data = json.loads(red.get(stream_id).decode())
         verifier_id = data['verifier_id']
         verifier_data = json.loads(read_oidc4vc_verifier(verifier_id))
-        logging.info('Profile = %s', verifier_data['profile'])
+        logging.info('Verifier profile = %s', verifier_data['profile'])
     except Exception:
         qrcode_status = "QR code expired"
         logging.info("QR code expired")
@@ -895,45 +895,42 @@ async def oidc4vc_response_endpoint(stream_id, red):
         
         vp_token = response.get('vp_token')
         id_token = response.get('id_token')
-        presentation_submission = response.get('presentation_submission')
         
-        if not id_token:
-            id_token_status = "Not received"
-        if not vp_token:
-            vp_token_status = "Not received"
-        if not presentation_submission:
+        presentation_submission = response.get('presentation_submission')
+        if presentation_submission:
+            presentation_submission_status = "ok"
+            logging.info('presentation submission received = %s', presentation_submission)
+        else:
             presentation_submission_status = "Not received"
+            logging.info('No presentation submission received')
+            access = False
+        
+        if id_token:
+            logging.info('id token received = %s', id_token)
+        else:
+            id_token_status = "Not received"
+        
+        if vp_token:
+            logging.info('vp token received = %s', vp_token)
+            vp_format = json.loads(presentation_submission)["descriptor_map"][0]["format"]
+            logging.info("VP format = %s", vp_format)
+            if vp_format not in ["vc+sd-jwt", "ldp_vp", "jwt_vp_json", "jwt_vp"]:
+                logging.error("vp format unknown")
+                access = False
+            #if vp_format == "ldp_vp":
+            #    logging.info('vp token received = %s', json.dumps(json.loads(vp_token), indent=4))
+            #else:
+            #    logging.info('vp token received = %s', vp_token)
+        else:
+            vp_token_status = "Not received"
+        
         if not id_token and not vp_token:
             response_format = "invalid request format",
             access = False
         else:
             response_format = "ok"
         
-        logging.info('id_token received = %s', id_token)
         state = response.get('id_token')
-        # get VP format, TODO more than 1 VP sent
-        if vp_token:
-            vp_format = json.loads(presentation_submission)["descriptor_map"][0]["format"]
-            if vp_format not in ["vc+sd-jwt", "ldp_vc", "jwt_vp_json", "jwt_vp"]:
-                logging.error("vp token type unknown %s $s", vp_token, type(vp_token))
-            if vp_format == "ldp_vp":
-                logging.info('vp token received = %s', json.dumps(json.loads(vp_token), indent=4))
-            else: 
-                logging.info('vp token received = %s', vp_token)
-            logging.info("VP format = ", vp_format)
-        
-        if presentation_submission:
-            logging.info('presentation submission received = %s', presentation_submission)
-        else:
-            logging.info('No presentation submission received')
-        
-    # check presentation submission
-    if access and vp_token:
-        if not presentation_submission:
-            presentation_submission_status = "Not found"
-            access = False
-        else:
-            presentation_submission_status = "ok"
 
     if access:
         nonce = data['pattern'].get('nonce')
