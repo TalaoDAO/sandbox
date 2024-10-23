@@ -901,16 +901,11 @@ async def oidc4vc_response_endpoint(stream_id, red):
         else:
             presentation_submission_status = "ok"
             logging.info('presentation submission received = %s', presentation_submission)
-            presentation_submission = json.loads(presentation_submission)
-        
-        """
-        if vp_token:
             if isinstance(presentation_submission, str):
                 presentation_submission = json.loads(presentation_submission)
                 logging.info("presentation submission is a string")
             else:
                 logging.info("presentation submission is a dict /json object")
-        """
         
         if id_token:
             logging.info('id token received = %s', id_token)
