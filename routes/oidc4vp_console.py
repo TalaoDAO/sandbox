@@ -58,7 +58,7 @@ def oidc4vc_verifier_console_select(mode):
             vp_token =  "Yes" if data_dict.get('vp_token') == 'on' else 'No'
             try:
                 curve = json.loads(data_dict['jwk']).get('crv')
-            except:
+            except Exception:
                 curve = "Unknown"
             if not curve: curve = "RSA"
             client_id_scheme = data_dict.get('client_id_scheme', "Unknown")
@@ -66,6 +66,7 @@ def oidc4vc_verifier_console_select(mode):
                 if data_dict['user'] == "all" or session['login_name'] in [data_dict['user'], "admin"]:
                     verifier = """<tr>
                         <td>""" + data_dict.get('application_name', "") + """</td>
+                        <td>""" + data_dict.get('predefined_presentation_definition', "") + """</td>
                         <td>""" + client_id_scheme + """</td>
                         <td>""" + data_dict.get('profile', 'Unknwon') + """</td>
                         <td>""" + id_token + """</td>
