@@ -905,7 +905,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
             access = False
         else:
             presentation_submission_status = "ok"
-            logging.info('presentation submission received = %s', presentation_submission)
+            logging.info('presentation submission received = %s', response.get('presentation_submission'))
         
         if vp_token:
             try:
