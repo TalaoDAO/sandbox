@@ -475,6 +475,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
         
     qrcode_page = issuer_data.get('issuer_landing_page')
     logging.info('QR code page file = %s', qrcode_page)
+    logging.info("qrcode content for Altme = %s", mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display}))
     return render_template(
         qrcode_page,
         openid_credential_configuration=json.dumps(credential_issuer_openid_configuration(issuer_id, mode), indent=4),

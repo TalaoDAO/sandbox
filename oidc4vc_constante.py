@@ -85,7 +85,7 @@ oidc4vc_verifier_credential_list = {
     'EUDI_PID_rule_book_1_0_0': 'PID for EUDI wallet',
     'VerifiableDiploma': 'EBSI Diploma',
     'EmployeeCredential': 'Employee Credential',
-    'EmailPass': 'Email proof (ldp_vc)',
+    'EmailPass': 'Email proof',
     'DBCGuest': 'DBC Guest (jwt_vc_json)',
     'PhoneProof': 'Phone proof',
     'WalletCredential': 'Device information',

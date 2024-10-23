@@ -851,13 +851,8 @@ def oidc4vc_request_uri(stream_id, red):
     return Response(payload, headers=headers)
 
 
-
 async def oidc4vc_response_endpoint(stream_id, red):
     logging.info("Enter wallet response endpoint")
-    """
-    Endpoint for the direct post of the wallet
-    
-    """
     # prepare the verifier response to wallet
     response_format = "Unknown"
     vc_format = "Unknown"
@@ -871,7 +866,6 @@ async def oidc4vc_response_endpoint(stream_id, red):
     subject_syntax_type = "DID"
     vp_token_payload = {}
     id_token_payload = {}
-    profile_status = 'Unknown'
     access = True
     qrcode_status = "Unknown"
 
@@ -907,13 +901,16 @@ async def oidc4vc_response_endpoint(stream_id, red):
         else:
             presentation_submission_status = "ok"
             logging.info('presentation submission received = %s', presentation_submission)
+            presentation_submission = json.loads(presentation_submission)
         
+        """
         if vp_token:
             if isinstance(presentation_submission, str):
                 presentation_submission = json.loads(presentation_submission)
                 logging.info("presentation submission is a string")
             else:
                 logging.info("presentation submission is a dict /json object")
+        """
         
         if id_token:
             logging.info('id token received = %s', id_token)
@@ -926,7 +923,6 @@ async def oidc4vc_response_endpoint(stream_id, red):
             logging.info("VP format = %s", vp_format)
             if vp_format not in ["vc+sd-jwt", "ldp_vp", "jwt_vp_json", "jwt_vp"]:
                 logging.error("vp format unknown")
-                vp_format = "vp format unknown"
                 access = False
             if vp_format == "ldp_vp" and vp_token[:2] == "ey":
                 logging.error("vp format ldp_vp with vp_token as a string")
@@ -1076,15 +1072,12 @@ async def oidc4vc_response_endpoint(stream_id, red):
     
     #  check profile compliance
     if access:
-        profile_status = verifier_data['profile']
         if verifier_data['profile'] == 'DEFAULT' and vp_token:
             if vp_format != 'ldp_vp':
                 logging.warning("wrong VP type for profile DEFAULT")
-                profile_status = "Profile DEFAULT is not respected, wrong vc_format for this profile"
                 access = False
             elif vp_sub[:12] != 'did:key:z6Mk':
                 logging.warning("wrong key for profile DEFAULT")
-                profile_status = "Profile DEFAULT is not respected, wrong key for this profile"
             else:
                 logging.info('Profile DEFAULT is respected')
         else:
@@ -1101,7 +1094,6 @@ async def oidc4vc_response_endpoint(stream_id, red):
         "created": datetime.timestamp(datetime.now()),
         "qrcode_status": qrcode_status,
         "state": state_status,
-        "profile": profile_status,
         "vp format": vp_format,
         "vc format": vc_format,
         "subject_syntax_type": subject_syntax_type,

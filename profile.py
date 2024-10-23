@@ -345,7 +345,12 @@ profile = {
                 "credentialSubject": {
                     "firstName": {
                         "mandatory": True,
-                        "display": [{"name": "First Name", "locale": "en-US"}],
+                        "display": [
+                            {
+                                "name": "First Name",
+                                "locale": "en-US"
+                            }
+                        ],
                     },
                     "familyName": {
                         "mandatory": True,
