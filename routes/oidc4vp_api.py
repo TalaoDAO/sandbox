@@ -920,9 +920,9 @@ async def oidc4vc_response_endpoint(stream_id, red):
                 logging.error("vp format unknown")
                 access = False
             if vp_format == "ldp_vp" and vp_token[:2] == "ey":
-                logging.error("vp format ldp_vp with vp_token as a string")
+                logging.error("format in presentation_submission = ldp_vp but vp_token is a jwt")
                 access = False
-                vp_format = "vp format ldp_vp with vp_token as a string"
+                vp_format = "format in presentation_submission = ldp_vp but vp_token is a jwt"
         else:
             vp_token_status = "Not received"
         
