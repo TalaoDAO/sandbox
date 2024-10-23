@@ -44,7 +44,7 @@ predefined_presentation_uri_list = {
     'presentation_definition/age_without_filter_sdjwt': 'Age without filter sd-jwt',
     'presentation_definition/email_without_filter_ldp': 'Email without filter ldp',
     'presentation_definition/pid': 'PID through vct',
-     'presentation_definition/pid_without_vct': 'PID without vct',
+    'presentation_definition/pid_without_vct': 'PID without vct',
     'presentation_definition/pid_with_required': 'PID with limited disclosure',
     'presentation_definition/pension_credential': 'Pension credential',
     'presentation_definition/sicpa': 'Sicpa'
@@ -67,9 +67,9 @@ oidc4vc_profile_list = {
     'INSURER': "Insurer for company - Legal Person - DIIP V 2.1",
     'GOUV': "Gouvernment body for company - Legal Person - DIIP V 2.1",
     'TEST': "Test for PID, DIIP V3.0",
-    "TALAO_ISSUER_JWT_VC_JSON": "Talao Issuer for email proof and phone proof in jwt_vc_json",
-    "TALAO_ISSUER_JWT_VC_JSON_LD": "Talao Issuer for email proof and phone proof in jwt_vc_json_ld",
-    "TALAO_ISSUER_SD_JWT_VC": "Talao Issuer for email proof and phone proof in sd-jwt"
+    "TALAO_ISSUER_JWT_VC_JSON": "Official Talao Issuer in jwt_vc_json",
+    "TALAO_ISSUER_JWT_VC_JSON_LD": "Official Talao Issuer in jwt_vc_json_ld",
+    "TALAO_ISSUER_SD_JWT_VC": "Official Talao Issuer in sd-jwt"
 }
 
 #OIDC4VC Verifier for admin
