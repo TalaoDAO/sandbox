@@ -85,7 +85,7 @@ TALAO_ISSUER = {
                     "ES384",
                     "RS256",
                 ],
-                "vct": "urn:eu.europa.ec.eudi:age_proof:1"
+                "vct": "urn:eu.europa.ec.eudi:age_proof:1",
                 "display": [
                     {
                         "name": "Age proof",
