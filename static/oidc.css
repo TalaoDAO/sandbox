@@ -1928,9 +1928,19 @@ a {
     display: none;
 }
 
+#smartphone_button {
+    display: none;
+
+}
+
 @media screen and (max-width: 1080px) {
     * {
         max-width: 100vw;
+    }
+
+    #smartphone_button {
+        display: flex;
+
     }
 
     #cardBox {

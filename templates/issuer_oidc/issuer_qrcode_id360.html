@@ -90,8 +90,12 @@
         <p id="subTitle">Get your credential</p>
         <div id="cardBox">
             <img id="qrcodeIssuer" src="{{ qrcode(url) }}">
-            <a id="buttonDeepLink" href="https://app.altme.io/app/download?uri={{url}}">WITH ALTME</a>
-            <a id="buttonDeepLink" href="https://app.talao.co/app/download?uri={{url}}">WITH TALAO</a>
+            <div id="smartphone_button">
+                <a id="buttonDeepLink" href="https://app.altme.io/app/download?uri={{url}}">WITH ALTME</a>
+            </div>
+            <div id="smartphone_button">
+                <a id="buttonDeepLink" href="https://app.talao.co/app/download?uri={{url}}">WITH TALAO</a>
+            </div>
         <!-- <img id="arrow" src="/static/img/arrow_right.png">
             <img id="card" src="/static/img/VerifiableId.png"> -->
 
