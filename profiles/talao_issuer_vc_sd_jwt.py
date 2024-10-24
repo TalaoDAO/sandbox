@@ -12,9 +12,95 @@ TALAO_ISSUER = {
         "credentials_types_supported": [
             "EmailPass",
             "PhoneProof",
-            "Pid"
+            "Pid",
+            "AgeProof"
         ],
         "credential_configurations_supported": {
+            "AgeProof": {
+                "format": "vc+sd-jwt",
+                "scope": "AgeProof_scope",
+                "order": [
+                    "age_equal_or_over", 
+                ],
+                "claims": {
+                        "age_equal_or_over": {
+                            "mandatory": True,
+                            "value_type": "bool",
+                            "display": [{"name": "Age", "locale": "en-US"},
+                                        {"name": "Age", "locale": "fr-FR"}],
+                            "12": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Over 12", "locale": "en-US"},
+                                    {"name": "Plus de 12 ans", "locale": "fr-FR"}
+                                ],
+                            },
+                            "14": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Over 14", "locale": "en-US"},
+                                    {"name": "Plus de 14 ans", "locale": "fr-FR"}
+                                ],
+                            },
+                            "16": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Over 16", "locale": "en-US"},
+                                    {"name": "Plus de 16 ans", "locale": "fr-FR"}
+                                ],
+                            },
+                            "18": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Over 18", "locale": "en-US"},
+                                    {"name": "Plus de 18 ans", "locale": "fr-FR"}
+                                ],
+                            },
+                            "21": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Over 21", "locale": "en-US"},
+                                    {"name": "Plus de 21 ans", "locale": "fr-FR"}
+                                ],
+                            },
+                            "65": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [
+                                    {"name": "Senior", "locale": "en-US"},
+                                    {"name": "Senior", "locale": "fr-FR"}
+                                ],
+                            }
+                        }
+                    },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "vct": "urn:eu.europa.ec.eudi:age_proof:1"
+                "display": [
+                    {
+                        "name": "Age proof",
+                        "locale": "en-US",
+                        "background_color": "#14107c",
+                        "text_color": "#FFFFFF",
+                    },
+                    {
+                        "name": "Preuve d'age",
+                        "locale": "fr-FR",
+                        "background_color": "#14107c",
+                        "text_color": "#FFFFFF",
+                    }
+                ],
+            },
             "Pid": {
                 "format": "vc+sd-jwt",
                 "scope": "Pid_scope",
