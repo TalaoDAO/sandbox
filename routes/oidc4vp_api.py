@@ -912,17 +912,31 @@ async def oidc4vc_response_endpoint(stream_id, red):
         else:
             id_token_status = "Not received"
         
+        def format(vp, type="vp"):
+            if isinstance(vp, dict):
+                vp = json.dumps(vp)
+            if vp[:1] == "{":
+                return "ldp_" + type
+            elif len(vp.split("~")) > 1:
+                return "vc+sd-jwt"
+            else:
+                return "jwt_" + type + "_json"
+            
+        vp_format = format(vp_token)   
+        logging.info("VP format = %s", vp_format)   
         if vp_token:
             logging.info('vp token received = %s', vp_token)
-            vp_format = presentation_submission["descriptor_map"][0]["format"]
-            logging.info("VP format = %s", vp_format)
-            if vp_format not in ["vc+sd-jwt", "ldp_vp", "jwt_vp_json", "jwt_vp"]:
+            vp_format_presentation_submission = presentation_submission["descriptor_map"][0]["format"]
+            logging.info("VP format from presentation submission = %s", vp_format_presentation_submission)
+            if vp_format not in ["vc+sd-jwt", "ldp_vp", "jwt_vp_json", "jwt_vp", "jwt_vp_json-ld"]:
                 logging.error("vp format unknown")
                 access = False
-            if vp_format == "ldp_vp" and vp_token[:2] == "ey":
-                logging.error("format in presentation_submission = ldp_vp but vp_token is a jwt")
+            elif vp_format_presentation_submission == "jwt_vp" and vp_format == "jwt_vp_json":
+                pass
+            elif vp_format != vp_format_presentation_submission:
+                presentation_submission_status = "vp_format = " + vp_format + " but presentation submission vp_format = " + vp_format_presentation_submission
+                logging.error(presentation_submission_status)
                 access = False
-                vp_format = "format in presentation_submission = ldp_vp but vp_token is a jwt"
         else:
             vp_token_status = "Not received"
         
@@ -1018,11 +1032,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
         if vp_format in ["jwt_vp", "jwt_vp_json"]:
             vc_list = oidc4vc.get_payload_from_token(vp_token)['vp']["verifiableCredential"]
             for vc in vc_list:
-                try:
-                    vc[:2] == "ey" 
-                    vc_format += " jwt_vc"
-                except Exception:
-                    vc_format += " ldp_vc"
+                vc_format += " " + format(vc, type=vc)
         elif vp_format == "vc+sd-jwt":
             vc_format = "vc+sd-jwt"
         else:
@@ -1030,11 +1040,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
             if isinstance(vc_list, dict):
                 vc_list = [vc_list]
             for vc in vc_list:
-                try:
-                    vc[:2] == "ey" 
-                    vc_format += " jwt_vc"
-                except Exception:
-                    vc_format += " ldp_vc"
+                vc_format += " " + format(vc, type="vc")
 
     # check nonce and aud in vp_token
     if access and vp_token:
