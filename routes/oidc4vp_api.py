@@ -913,7 +913,9 @@ async def oidc4vc_response_endpoint(stream_id, red):
             id_token_status = "Not received"
         
         def format(vp, type="vp"):
-            if isinstance(vp, dict):
+            if not vp:
+                return "no token"
+            elif isinstance(vp, dict):
                 vp = json.dumps(vp)
             if vp[:1] == "{":
                 return "ldp_" + type
