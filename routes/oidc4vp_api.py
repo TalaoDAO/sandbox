@@ -1061,7 +1061,11 @@ async def oidc4vc_response_endpoint(stream_id, red):
         elif vp_format == "vc+sd-jwt":
             logging.info("nonce and aud not tested with sd-jwt")
         else:
-            vp_sub = vp_token_payload['iss']
+            try:
+                vp_sub = vp_token_payload['iss']
+            except Exception:
+                logging.error("iss is missiong in vp_token")
+                vp_sub = vp_token_payload['sub']
             if oidc4vc.get_payload_from_token(vp_token)['nonce'] == nonce:
                 nonce_status = "ok"
             else:
