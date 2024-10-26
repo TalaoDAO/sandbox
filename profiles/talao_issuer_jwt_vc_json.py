@@ -12,8 +12,90 @@ TALAO_ISSUER = {   # DIIP v2.1
         "credentials_types_supported": [
             "EmailPass",
             "PhoneProof",
+            "VerifiableId"
         ],
         "credential_configurations_supported": {
+            "VerifiableId": {
+                "format": "jwt_vc_json",
+                "scope": "VerifiableId_scope",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "VerifiableId"],
+                    "order": [
+                        "firstName",
+                        "familyName",
+                        "dateOfBirth",
+                        "gender",
+                        "dateIssued",
+                        "issuing_country",
+                        "email",
+                        "phone_number"
+                    ],
+                    "credentialSubject": {
+                        "firstName": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "First name", "locale": "en-US"},
+                                {"name": "Prénom(s)", "locale": "fr-FR"}         
+                            ],
+                        },
+                        "familyName": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Family name", "locale": "en-US"},
+                                {"name": "Nom", "locale": "fr-FR"}                                
+                            ],
+                        },
+                        "dateOfBirth": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Date of birth", "locale": "en-US"},
+                                {"name": "Né(e) le", "locale": "fr-FR"}
+                            ],
+                        },
+                        "email": {},
+                        "phone_number": {}, 
+                        "gender": {},
+                        "issuing_country": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Issuing country", "locale": "en-US"},
+                                {"name": "Délivré par", "locale": "fr-FR"}
+                            ],
+                        },
+                        "dateIssued": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Issuance date", "locale": "en-US"},
+                                {"name": "Délivré le", "locale": "fr-FR"}
+                            ],
+                        },
+                    },
+                },
+                "cryptographic_binding_methods_supported": [
+                    "did:jwk",
+                    "did:key"
+                ],
+                "proof_types_supported": {
+                    "jwt": {
+                        "proof_signing_alg_values_supported": ["ES256"]
+                    }
+                },
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "ES384",
+                    "RS256",
+                ],
+                "display": [
+                    {
+                        "name": "Verifiable Id",
+                        "decription": "Personal ID",
+                        "locale": "en-US",
+                        "background_color": "#12107c",
+                        "text_color": "#FFFFFF",
+                    }
+                ],
+            },
             "EmailPass": {
                 "format": "jwt_vc_json",
                 "scope": "EmailPass_scope",
