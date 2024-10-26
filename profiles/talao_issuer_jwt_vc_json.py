@@ -17,12 +17,18 @@ TALAO_ISSUER = {   # DIIP v2.1
             "EmailPass": {
                 "format": "jwt_vc_json",
                 "scope": "EmailPass_scope",
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": [
+                    "did:jwk",
+                    "did:key"
+                ],
+                "proof_types_supported": {
+                    "jwt": {
+                        "proof_signing_alg_values_supported": ["ES256"]
+                    }
+                },
                 "credential_signing_alg_values_supported": [
                     "ES256K",
-                    "ES256",
-                    "ES384",
-                    "RS256",
+                    "ES256"
                 ],
                 "display": [
                     {
@@ -36,10 +42,10 @@ TALAO_ISSUER = {   # DIIP v2.1
                         "locale": "fr-FR"
                     }
                 ],
-                 "credential_definition": {
-                    "type": ["VerifiableCredential", "EmailPass"],
-                    "order": [
-                        "email",
+                "credential_definition": {
+                    "type": [
+                        "VerifiableCredential",
+                        "EmailPass"
                     ],
                     "credentialSubject": {
                         "email": {
@@ -51,14 +57,17 @@ TALAO_ISSUER = {   # DIIP v2.1
                             ]
                         }
                     }
-                 }
+                }
             },
             "PhoneProof": {
                 "format": "jwt_vc_json",
                 "scope": "PhoneProof_scope",
                 "credential_definition": {
-                    "type": ["VerifiableCredential", "PhoneProof"],
-                     "credentialSubject": {
+                    "type": [
+                        "VerifiableCredential",
+                        "PhoneProof"
+                    ],
+                    "credentialSubject": {
                         "phone": {
                             "mandatory": True,
                             "value_type": "email",
@@ -75,12 +84,18 @@ TALAO_ISSUER = {   # DIIP v2.1
                         }
                     }
                 },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": [
+                    "did:jwk",
+                    "did:key"
+                ],
+                "proof_types_supported": {
+                    "jwt": {
+                        "proof_signing_alg_values_supported": ["ES256"]
+                    }
+                },
                 "credential_signing_alg_values_supported": [
                     "ES256K",
-                    "ES256",
-                    "ES384",
-                    "RS256",
+                    "ES256"
                 ],
                 "display": [
                     {
