@@ -304,6 +304,13 @@ def verifier_callback3():
         return jsonify(request.args)
     token = request.args.get("id_token")
     presentation_submission = request.args.get("presentation_submission")
+    if presentation_submission == "null":
+        token =  request.args.get("wallet_id_token")
+        return jsonify(
+            {
+                "header": oidc4vc.get_header_from_token(token),
+                "payload": oidc4vc.get_payload_from_token(token)
+            })
     #vcsd = oidc4vc.get_payload_from_token(token)['vc+sd-jwt'].split("~")
     vcsd = token.split("~")
     vcsd_jwt_payload = oidc4vc.get_payload_from_token(vcsd[0])

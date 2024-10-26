@@ -50,7 +50,12 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/<issuer_id>/token', view_func=issuer_token, methods=['POST'], defaults={'red': red, 'mode': mode},)
     app.add_url_rule('/issuer/<issuer_id>/credential', view_func=issuer_credential, methods=['POST'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/deferred', view_func=issuer_deferred, methods=['POST'], defaults={'red': red, 'mode': mode},)
+    
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=authorization_server_openid_configuration, methods=['GET'], defaults={'mode': mode},)
+    
+    app.add_url_rule('/issuer/<issuer_id>/.well-known/oauth-authorization-server', view_func=oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
+
+    
     app.add_url_rule('/issuer/credential_offer_uri/<id>', view_func=issuer_credential_offer_uri, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/issuer/error_uri', view_func=wallet_error_uri, methods=['GET'])
     
@@ -148,8 +153,11 @@ def manage_error(error, error_description, red, mode, request=None, stream_id=No
 
 # credential issuer openid configuration endpoint
 def credential_issuer_openid_configuration_endpoint(issuer_id, mode):
+    logging.info("Call credential issuer configuration endpoint")
     doc = credential_issuer_openid_configuration(issuer_id, mode)
-    return jsonify(doc) if doc else (jsonify('Not found'), 404)
+    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
+    return Response(response=json.dumps(doc), headers=headers)
+    #return jsonify(doc) if doc else (jsonify('Not found'), 404)
 
 
 # for wallet
@@ -264,9 +272,19 @@ def openid_jwt_vc_issuer_configuration(issuer_id, mode):
     return jsonify(config)
 
 
-# authorization server endpoint
+# authorization server endpoint and oauth authorization server endpoint
 def authorization_server_openid_configuration(issuer_id, mode):
-    return jsonify(as_openid_configuration(issuer_id, mode))
+    logging.info("Call to openid-configuration endpoint")
+    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
+    return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
+
+
+# authorization server endpoint and oauth authorization server endpoint
+def oauth_authorization_server(issuer_id, mode):
+    logging.info("Call to oauth-authorization-server endpoint")
+    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
+    return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
+    #return jsonify(as_openid_configuration(issuer_id, mode))
 
 
 # authorization server configuration
@@ -278,6 +296,7 @@ def as_openid_configuration(issuer_id, mode):
         return
     authorization_server_config = json.load(open('authorization_server_config.json'))
     config = {
+        'issuer': mode.server + 'issuer/' + issuer_id,
         'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/authorize',
         'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token',
         'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
@@ -967,7 +986,7 @@ def issuer_token(issuer_id, red, mode):
     endpoint_response = {
         'access_token': access_token,
         'c_nonce': str(uuid.uuid1()),
-        'token_type': 'Bearer',
+        'token_type': 'bearer',
         'expires_in': ACCESS_TOKEN_LIFE,
         'c_nonce_expires_in': 1704466725,
         'refresh_token': refresh_token

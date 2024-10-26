@@ -117,10 +117,6 @@ def oidc4vc_build_id_token(client_id, sub, nonce, vp, mode):
                 payload['is_over_18'] = True
             elif 'Over15' in vc['type']:
                 payload['is_over_15'] = True
-            elif 'DBCGuest' in vc['type']:
-                payload['firstName'] = vc['credentialSubject'].get('firstName')
-                payload['lastName'] = vc['credentialSubject'].get('lastName')
-                payload['email'] = vc['credentialSubject'].get('email')
             else:
                 logging.info("VC type not supported in id_token")
             
@@ -214,6 +210,7 @@ def oidc4vc_authorize(red, mode):
                 id_token = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
             resp = {
                 "id_token": id_token,
+                "wallet_id_token": code_wallet_data['id_token'],
                 "presentation_submission": json.dumps(code_wallet_data['presentation_submission']) 
             }
             redirect_url = code_data['redirect_uri'] + sep + urlencode(resp)
@@ -745,7 +742,7 @@ def oidc4vc_login_qrcode(red, mode):
             authorization_request['presentation_definition_uri'] = presentation_definition_uri
 
     if response_type == "id_token" and verifier_data.get('request_uri_parameter_supported'):
-        authorization_request['registration'] = wallet_metadata
+        authorization_request['client_metadata'] = wallet_metadata
     
     # manage request_uri as jwt
     if verifier_data.get('client_id_scheme') == "redirect_uri":
@@ -785,13 +782,11 @@ def oidc4vc_login_qrcode(red, mode):
         authorization_request_displayed = authorization_request
 
     url = prefix + '?' + urlencode(authorization_request_displayed)
-    if 'vp_token' in response_type and not verifier_data.get('request_uri_parameter_supported'):
+    if not verifier_data.get('request_uri_parameter_supported'):
         if not verifier_data.get('client_metadata_uri'):
             url += '&client_metadata=' + quote(json.dumps(wallet_metadata))
         if not verifier_data.get('presentation_definition_uri'):
             url += '&presentation_definition=' + quote(json.dumps(presentation_definition))
-    if response_type == "id_token" and not verifier_data.get('request_uri_parameter_supported'):
-        url += '&registration=' + quote(json.dumps(wallet_metadata))
     
     # get request uri as jwt
     try:
@@ -853,6 +848,7 @@ def oidc4vc_request_uri(stream_id, red):
 
 async def oidc4vc_response_endpoint(stream_id, red):
     logging.info("Enter wallet response endpoint")
+    logging.info(request.headers)
     # prepare the verifier response to wallet
     response_format = "Unknown"
     vc_format = "Unknown"
@@ -1034,7 +1030,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
         if vp_format in ["jwt_vp", "jwt_vp_json"]:
             vc_list = oidc4vc.get_payload_from_token(vp_token)['vp']["verifiableCredential"]
             for vc in vc_list:
-                vc_format += " " + format(vc, type=vc)
+                vc_format += " " + format(vc, type="vc")
         elif vp_format == "vc+sd-jwt":
             vc_format = "vc+sd-jwt"
         else:
@@ -1139,6 +1135,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
                     "vp_token_payload": vp_token_payload, # jwt_vp payload or json-ld 
                     "vp_format": vp_format,
                     "sub": sub,
+                    "id_token": id_token,
                     "presentation_submission": presentation_submission
                     })
     red.setex(stream_id + "_wallet_data", CODE_LIFE, wallet_data)

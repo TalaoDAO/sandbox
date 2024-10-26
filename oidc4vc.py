@@ -489,17 +489,7 @@ def did_resolve_lp(did):
     #for legal person  did:ebsi and did:web
     #API v3   Get DID document with EBSI API
     #https://api-pilot.ebsi.eu/docs/apis/did-registry/latest#/operations/get-did-registry-v3-identifier
-    if did.split(':')[1] == 'ebsi':
-        url = 'https://api-pilot.ebsi.eu/did-registry/v3/identifiers/' + did
-        try:
-            r = requests.get(url)
-        except Exception:
-            logging.error('cannot access to EBSI API')
-            return "{'error': 'cannot access to EBSI registry'}"
-        logging.info("DID Document = %s", r.json())
-        return r.json()
-    else:
-        url = 'https://unires:test@unires.talao.co/1.0/identifiers/' + did
+    url = 'https://unires:test@unires.talao.co/1.0/identifiers/' + did
     try:
         r = requests.get(url, timeout=10)
         logging.info('Access to Talao Universal Resolver')
