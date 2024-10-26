@@ -913,8 +913,14 @@ profile = {
                 },
                 "format": "jwt_vc_json",
                 "cryptographic_binding_methods_supported": [
-                    "did:jwk"
+                    "did:jwk",
+                    "did:key"
                 ],
+                "proof_types_supported": {
+                    "jwt": {
+                        "proof_signing_alg_values_supported": ["ES256"]
+                    }
+                },
                 "credential_signing_alg_values_supported": [
                     "ES256"
                 ],
@@ -971,8 +977,14 @@ profile = {
                 },
                 "format": "jwt_vc_json",
                 "cryptographic_binding_methods_supported": [
-                    "did:jwk"
+                    "did:jwk",
+                    "did:key"
                 ],
+                "proof_types_supported": {
+                    "jwt": {
+                        "proof_signing_alg_values_supported": ["ES256", "ES256K"]
+                    }
+                },
                 "credential_signing_alg_values_supported": [
                     "ES256"
                 ],
@@ -1071,7 +1083,15 @@ profile = {
                 "credential_definition": {
                     "type": ["VerifiableCredential", "TestCredential"]
                 },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": [
+                    "did:jwk",
+                    "did:key"
+                ],
+                "proof_types_supported": {
+                    "jwt": {
+                        "proof_signing_alg_values_supported": ["ES256"]
+                    }
+                },
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -1148,7 +1168,15 @@ profile = {
                         },
                     },
                 },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": [
+                    "did:jwk",
+                    "did:key"
+                ],
+                "proof_types_supported": {
+                    "jwt": {
+                        "proof_signing_alg_values_supported": ["ES256"]
+                    }
+                },
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -1168,7 +1196,6 @@ profile = {
             "EmailPass": {
                 "format": "jwt_vc_json",
                 "scope": "EmailPass_scope",
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -1182,6 +1209,15 @@ profile = {
                         "locale": "en-GB"
                     }
                 ],
+                "cryptographic_binding_methods_supported": [
+                    "did:jwk",
+                    "did:key"
+                ],
+                "proof_types_supported": {
+                    "jwt": {
+                        "proof_signing_alg_values_supported": ["ES256"]
+                    }
+                },
                 "credential_definition": {
                     "type": ["VerifiableCredential", "EmailPass"],
                     "order": [
@@ -1205,7 +1241,15 @@ profile = {
                 "credential_definition": {
                     "type": ["VerifiableCredential", "Over18"]
                 },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": [
+                    "did:jwk",
+                    "did:key"
+                ],
+                "proof_types_supported": {
+                    "jwt": {
+                        "proof_signing_alg_values_supported": ["ES256"]
+                    }
+                },
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -1230,7 +1274,15 @@ profile = {
                         "phone": {}
                     }
                 },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": [
+                    "did:jwk",
+                    "did:key"
+                ],
+                "proof_types_supported": {
+                    "jwt": {
+                        "proof_signing_alg_values_supported": ["ES256"]
+                    }
+                },
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
