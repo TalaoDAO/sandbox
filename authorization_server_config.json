@@ -46,10 +46,7 @@
     "urn:ietf:params:oauth:jwk-thumbprint",
     "did:key",
     "did:ebsi",
-    "did:tz",
     "did:pkh",
-    "did:hedera",
-    "did:key",
     "did:ethr",
     "did:web",
     "did:jwk"

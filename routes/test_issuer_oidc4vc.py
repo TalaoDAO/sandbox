@@ -160,7 +160,7 @@ def test_2(mode):
     issuer_id = issuer_test(2, mode)
     client_secret = issuer_test(2, mode, secret = True)
 
-    vc = 'EmailPass'
+    vc = 'InsuranceNaturalPerson'
     with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
         credential = json.loads(f.read())
     credential['id'] = "urn:uuid:" + str(uuid.uuid4())
@@ -177,7 +177,7 @@ def test_2(mode):
         "issuer_state": str(uuid.uuid1()),
         "credential_type": vc,
         "pre-authorized_code": True,
-        "user_pin_required": True,
+        "user_pin_required": False,
         "user_pin": "4444",
         "callback": mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
     }

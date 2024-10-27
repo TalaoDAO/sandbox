@@ -58,7 +58,7 @@ INSURER = {
             ]
         },
         "InsuranceNaturalPerson": {
-            "scope": "InsuranceNaturamPerson_scope",
+            "scope": "InsuranceNaturalPerson_scope",
             "display": [
                 {
                     "name": "Insurance attestation",

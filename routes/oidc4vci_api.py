@@ -176,13 +176,6 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         "display": [
             {
                 "name": "Talao issuer",
-                "logo": {
-                    "uri": "https://talao.co/static/img/talao.png",
-                    "alt_text": "Talao logo"
-                }
-            },
-            {
-                "name": "Talao issuer",
                 "locale": "en-US",
                 "logo": {
                     "uri": "https://talao.co/static/img/talao.png",
@@ -303,13 +296,6 @@ def as_openid_configuration(issuer_id, mode):
         'pushed_authorization_request_endpoint': mode.server +'issuer/' + issuer_id + '/authorize/par' ,
         'pre-authorized_grant_anonymous_access_supported': True,
         "display": [
-            {
-                "name": "Talao issuer",
-                "logo": {
-                    "uri": "https://talao.co/static/img/talao.png",
-                    "alt_text": "Talao logo"
-                }
-            },
             {
                 "name": "Talao issuer",
                 "locale": "en-US",

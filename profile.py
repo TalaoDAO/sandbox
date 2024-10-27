@@ -1,7 +1,8 @@
-from profiles import insurer, bank, gouv, test, talao_issuer_jwt_vc_json, talao_issuer_vc_sd_jwt, talao_issuer_jwt_vc_json_ld
+from profiles import insurer, bank, gouv, test, talao_issuer_jwt_vc_json, talao_issuer_vc_sd_jwt, talao_issuer_jwt_vc_json_ld, documentation
 
 profile = {
     "INSURER": insurer.INSURER,
+    "DOCUMENTATION": documentation.DOCUMENTATION,
     "BANK": bank.BANK,
     "GOUV": gouv.GOUV,
     "TEST": test.TEST,
