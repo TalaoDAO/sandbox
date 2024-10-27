@@ -1,0 +1,25 @@
+{
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1"
+    ],
+    "type": [
+        "VerifiableCredential",
+        "InsuranceNaturalPerson"
+    ],
+    "credentialSubject": {
+        "insurerName": "AXA International",
+        "leiCodeInsurer": "02099876FR75",
+        "contractId": "89789765 976965",
+        "contract": {
+            "contractType": "Liability risks",
+            "contractAmount": 10000000,
+            "currency": "EUR"
+        },
+        "insuredPerson":{
+            "given_name": "John",
+            "family_name": "Doe",
+            "birthdate": "2000-12-01"
+        },
+        "id": ""
+    }
+}
