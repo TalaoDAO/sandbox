@@ -1,80 +1,100 @@
 {
-        "wallet_name": "talao_wallet",
-        "key_type": "software",
-        "user_authentication": "system_biometry",
-        "authorization_endpoint": "https://app.talao.co/app/download/authorize",
-        "grant_types_supported": [
-            "authorization_code",
-            "pre-authorized_code"
-        ],
-        "response_types_supported": [
-            "vp_token",
-            "id_token"
-        ],
-        "vp_formats_supported": {
-            "jwt_vc_json": {
-                "alg_values_supported": [
-                    "ES256",
-                    "ES256K",
-                    "EdDSA"
-                ]
-            },
-            "jwt_vp_json": {
-                "alg_values_supported": [
-                    "ES256",
-                    "ES256K",
-                    "EdDSA"
-                ]
-            },
-            "jwt_vc_json-ld": {
-                "alg_values_supported": [
-                    "ES256",
-                    "ES256K",
-                    "EdDSA"
-                ]
-            },
-            "jwt_vp_json-ld": {
-                "alg_values_supported": [
-                    "ES256",
-                    "ES256K",
-                    "EdDSA"
-                ]
-            },
-            "vc+sd-jwt": {
-                "alg_values_supported": [
-                    "ES256",
-                    "ES256K",
-                    "EdDSA"
-                ]
-            },
-            "ldp_vp": {
-                "proof_type": [
-                    "JsonWebSignature2020",
-                    "Ed25519Signature2018",
-                    "EcdsaSecp256k1Signature2019"
-                ]
-            },
-            "ldp_vc": {
-                "proof_type": [
-                    "JsonWebSignature2020",
-                    "Ed25519Signature2018",
-                    "EcdsaSecp256k1Signature2019"
-                ]
-            }
+    "issuer": "https://app.talao.co/wallet-issuer",
+    "wallet_name": "talao_wallet",
+    "key_type": "software",
+    "user_authentication": "system_biometry",
+    "authorization_endpoint": "https://app.talao.co/app/download/authorize",
+    "grant_types_supported": [
+        "authorization_code",
+        "pre-authorized_code"
+    ],
+    "response_types_supported": [
+        "vp_token",
+        "id_token"
+    ],
+    "scope_supported":[
+        "openid"
+    ],
+    "subject_types_supported":[
+        "pairwise",
+        "public"
+    ],
+    "vp_formats_supported": {
+        "jwt_vc_json": {
+            "alg_values_supported": [
+                "ES256",
+                "ES256K",
+                "EdDSA"
+            ]
         },
-        "client_id_schemes_supported":[
-            "did",
-            "redirect_uri",
-            "x509_san_dns",
-            "verifier_attestation"
-        ],
-        "request_object_signing_alg_values_supported": [
-            "ES256",
-            "ES256K"
-        ],
-        "presentation_definition_uri_supported": true,
-        "contacts": [
-            "contact@talao.io"
-        ]
-    }
+        "jwt_vp_json": {
+            "alg_values_supported": [
+                "ES256",
+                "ES256K",
+                "EdDSA"
+            ]
+        },
+        "jwt_vc_json-ld": {
+            "alg_values_supported": [
+                "ES256",
+                "ES256K",
+                "EdDSA"
+            ]
+        },
+        "jwt_vp_json-ld": {
+            "alg_values_supported": [
+                "ES256",
+                "ES256K",
+                "EdDSA"
+            ]
+        },
+        "vc+sd-jwt": {
+            "alg_values_supported": [
+                "ES256",
+                "ES256K",
+                "EdDSA"
+            ]
+        },
+        "ldp_vp": {
+            "proof_type": [
+                "Ed25519Signature2018",
+                "EcdsaSecp256k1Signature2019"
+            ]
+        },
+        "ldp_vc": {
+            "proof_type": [
+                "Ed25519Signature2018",
+                "EcdsaSecp256k1Signature2019"
+            ]
+        }
+    },
+    "id_token_types_supported": [
+        "subject_signed_id_token"
+    ],
+    "client_id_schemes_supported":[
+        "did",
+        "redirect_uri",
+        "x509_san_dns",
+        "verifier_attestation"
+    ],
+    "subject_syntax_types_supported":[
+        "urn:ietf:params:oauth:jwk-thumbprint",
+        "did:key",
+        "did:jwk"
+    ],
+    "id_token_signing_alg_values_supported": [
+        "ES256",
+        "ES256K",
+        "EdDSA"
+    ],
+    "request_object_signing_alg_values_supported": [
+        "ES256",
+        "ES256K",
+        "EdDSA"
+    ],
+    "presentation_definition_uri_supported": true,
+    "contacts": [
+        "contact@talao.io"
+    ]
+}
 

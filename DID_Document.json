@@ -69,7 +69,11 @@
         {
             "id": "did:web:talao.co#domain-1",
             "type": "LinkedDomains",
-            "serviceEndpoint": "https://talao.co"
+            "serviceEndpoint": [
+                "https://talao.co",
+                "https://issuer.talao.co",
+                "https://talao.io"
+            ]        
         }
     ]
 }

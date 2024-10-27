@@ -543,7 +543,7 @@ def well_known_did():
 def wallet_issuer_well_known_did():
     wallet_issuer = json.load(open('wallet_metadata_for_verifiers.json', 'r'))
     headers = {
-        "Content-Type": "application/did+ld+json",
+        "Content-Type": "application/json",
         "Cache-Control": "no-cache"
     }
     return Response(json.dumps(wallet_issuer), headers=headers)
