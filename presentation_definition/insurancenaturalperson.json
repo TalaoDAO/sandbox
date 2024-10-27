@@ -1,0 +1,42 @@
+{
+    "id": "60f32879-3aa3-11ef-9ddc-93d3876329c1",
+    "input_descriptors": [
+        {
+            "id": "Insurance_for_natural_person_1",
+            "name": "Input descriptor for credential 1",
+            "constraints": {
+                "fields": [
+                    {
+                        "path": [
+                            "$.vc.type"
+                        ],
+                        "filter": {
+                            "type": "array",
+                            "contains": {
+                                "const": "InsuranceNaturalPerson"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "name": "Test #2",
+    "purpose": "Altme presentation definition subset of PEX v2.0",
+    "format": {
+        "jwt_vp_json": {
+            "alg": [
+                "ES256k",
+                "ES256",
+                "EdDSA"
+            ]
+        },
+        "jwt_vc_json": {
+            "alg": [
+                "ES256k",
+                "ES256",
+                "EdDSA"
+            ]
+        }
+    }
+}
