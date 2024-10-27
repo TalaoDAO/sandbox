@@ -849,6 +849,7 @@ def oidc4vc_request_uri(stream_id, red):
 async def oidc4vc_response_endpoint(stream_id, red):
     logging.info("Enter wallet response endpoint")
     logging.info(request.headers)
+    logging.info(request.form)
     # prepare the verifier response to wallet
     response_format = "Unknown"
     vc_format = "Unknown"
