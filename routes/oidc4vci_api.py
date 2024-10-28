@@ -52,7 +52,6 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/<issuer_id>/deferred', view_func=issuer_deferred, methods=['POST'], defaults={'red': red, 'mode': mode},)
     
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=authorization_server_openid_configuration, methods=['GET'], defaults={'mode': mode},)
-    
     app.add_url_rule('/issuer/<issuer_id>/.well-known/oauth-authorization-server', view_func=oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
 
     
@@ -160,7 +159,7 @@ def credential_issuer_openid_configuration_endpoint(issuer_id, mode):
     #return jsonify(doc) if doc else (jsonify('Not found'), 404)
 
 
-# for wallet
+# Credential issuer metadata
 def credential_issuer_openid_configuration(issuer_id, mode):
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
@@ -196,14 +195,24 @@ def credential_issuer_openid_configuration(issuer_id, mode):
     }
 
     # setup authorization server if needed
-    if issuer_profile.get('authorization_server_support'):
+    if issuer_id in ["raamxepqex", "tdiwmpyhzc"]:  # OIDC4VCI Test 
+        """
+        the authorization server metadata is available through the oauth-authorization-server endpoind
+        """
+        pass
+    elif issuer_profile.get('authorization_server_support') :
+        """
+        the authorization server URL is provided through a claim in the issuer metadata
+        """    
         if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
             credential_issuer_openid_configuration['authorization_servers'] = [mode.server + 'issuer/' + issuer_id, "https://fake.com/as"]
             credential_issuer_openid_configuration['jwks_uri'] = mode.server + 'issuer/' + issuer_id + '/jwks'
         else:
             credential_issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id
-
     else:
+        """
+        The authorization server metadata are provided with the issuer metadata
+        """
         as_config = json.load(open('authorization_server_config.json'))
         as_config.update({
             'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/authorize',
@@ -213,8 +222,6 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         })
         if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
             as_config["require_pushed_authorization_requests"] = True
-        #if issuer_id == "grlvzckofy":
-        #    as_config["require_pushed_authorization_requests"] = True # test 1O as PAR is mandatory
         credential_issuer_openid_configuration.update(as_config)
 
     # Credentials supported section
@@ -265,22 +272,30 @@ def openid_jwt_vc_issuer_configuration(issuer_id, mode):
     return jsonify(config)
 
 
-# authorization server endpoint and oauth authorization server endpoint
+# /.well-known/openid-configuration endpoint  authorization server endpoint for draft 11
 def authorization_server_openid_configuration(issuer_id, mode):
     logging.info("Call to openid-configuration endpoint")
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    profile_data = profile[issuer_data['profile']]
+    if int(profile_data['oidc4vciDraft']) >= 13 and issuer_id not in ["kivrsduinn", "grlvzckofy"]:
+        return jsonify("This endpoint is no more available, use /.well-known/oauth-authorization-server endpoint "), 400
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
 
 
-# authorization server endpoint and oauth authorization server endpoint
+# /.well-known/oauth-authorization-server endpoint
 def oauth_authorization_server(issuer_id, mode):
     logging.info("Call to oauth-authorization-server endpoint")
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    profile_data = profile[issuer_data['profile']]
+    if int(profile_data['oidc4vciDraft']) < 12:
+        return jsonify("This endpoint is no available, use /.well-known/openid-configuration endpoint "), 400
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
     #return jsonify(as_openid_configuration(issuer_id, mode))
 
 
-# authorization server configuration
+# authorization server configuration 
 def as_openid_configuration(issuer_id, mode):
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
