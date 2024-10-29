@@ -965,19 +965,27 @@ async def oidc4vc_response_endpoint(stream_id, red):
             id_token_header = oidc4vc.get_header_from_token(id_token)
             id_token_jwk = id_token_header.get('jwk')
             id_token_kid = id_token_header.get('kid')
-            id_token_iss = id_token_payload.get('iss')
-            id_token_sub = id_token_payload.get('sub')
+            id_token_iss = id_token_payload['iss']
+            id_token_sub = id_token_payload['sub']
             id_token_sub_jwk = id_token_payload.get('sub_jwk')
         except Exception:
-            id_token_status += " id_token invalid format "
+            id_token_status += " id_token invalid format, iss or sub is missing "
             access = False
-            logging.info(" id_token invalid format ")
+            logging.info(" id_token invalid format, iss or sub is missing ")
+    
+    if access and id_token:
+        if id_token_sub != id_token_iss:
+            id_token_status += " id_token invalid format, iss and sub should be equal "
+            access = False
+            logging.info(" id_token invalid format, iss and sub should be equal ")
         if id_token_sub_jwk:
             subject_syntax_type = "JWK Thumbprint"
         if not id_token_sub_jwk and not id_token_kid and not id_token_jwk:
             access = False
+            id_token_status += " id_token not correct format, kid or jwk missiong "
             logging.info("not correct format")
         if id_token_sub_jwk and id_token_kid:
+            id_token_status += " id_token kid and jwk both present "
             access = False
         
     if access and id_token:
