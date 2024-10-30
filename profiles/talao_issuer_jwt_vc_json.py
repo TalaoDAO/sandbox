@@ -21,39 +21,44 @@ TALAO_ISSUER = {   # DIIP v2.1
                 "credential_definition": {
                     "type": ["VerifiableCredential", "VerifiableId"],
                     "order": [
-                        "firstName",
-                        "familyName",
-                        "dateOfBirth",
+                        "given_name",
+                        "family_name",
+                        "birth_date",
+                        "age_over_18",
                         "gender",
-                        "dateIssued",
+                        "issuance_date",
                         "issuing_country",
-                        "email",
-                        "phone_number"
                     ],
                     "credentialSubject": {
-                        "firstName": {
+                        "given_name": {
                             "mandatory": True,
                             "display": [
                                 {"name": "First name", "locale": "en-US"},
                                 {"name": "Prénom(s)", "locale": "fr-FR"}         
                             ],
                         },
-                        "familyName": {
+                        "family_name": {
                             "mandatory": True,
                             "display": [
                                 {"name": "Family name", "locale": "en-US"},
                                 {"name": "Nom", "locale": "fr-FR"}                                
                             ],
                         },
-                        "dateOfBirth": {
+                        "birth_date": {
                             "mandatory": True,
                             "display": [
                                 {"name": "Date of birth", "locale": "en-US"},
                                 {"name": "Né(e) le", "locale": "fr-FR"}
                             ],
                         },
-                        "email": {},
-                        "phone_number": {}, 
+                        "age_over_18": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Over 18", "locale": "en-US"},
+                                {"name": "Majorité", "locale": "fr-FR"}
+                            ],
+                        },
+                        
                         "gender": {},
                         "issuing_country": {
                             "mandatory": True,
@@ -62,7 +67,7 @@ TALAO_ISSUER = {   # DIIP v2.1
                                 {"name": "Délivré par", "locale": "fr-FR"}
                             ],
                         },
-                        "dateIssued": {
+                        "issuance_date": {
                             "mandatory": True,
                             "display": [
                                 {"name": "Issuance date", "locale": "en-US"},
