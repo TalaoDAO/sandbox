@@ -59,7 +59,13 @@ TALAO_ISSUER = {   # DIIP v2.1
                             ],
                         },
                         
-                        "gender": {},
+                        "gender": {
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Gender", "locale": "en-US"},
+                                {"name": "Sexe", "locale": "fr-FR"}
+                            ]
+                        },
                         "issuing_country": {
                             "mandatory": True,
                             "display": [
