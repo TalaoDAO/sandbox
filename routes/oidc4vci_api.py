@@ -288,7 +288,7 @@ def oauth_authorization_server(issuer_id, mode):
     logging.info("Call to oauth-authorization-server endpoint")
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     profile_data = profile[issuer_data['profile']]
-    if int(profile_data['oidc4vciDraft']) < 12:
+    if int(profile_data['oidc4vciDraft']) < 13:
         return jsonify("This endpoint is no available, use /.well-known/openid-configuration endpoint "), 400
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
@@ -492,14 +492,22 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
         arg_for_web_wallet = '?credential_offer_uri=' + credential_offer_uri
     else:
         arg_for_web_wallet = '?' + urlencode({'credential_offer': json.dumps(offer)})
-        
+    
+    resp = requests.get(mode.server + '/issuer/' + issuer_id + '/.well-known/openid-credential-issuer')
+    credential_issuer_configuration = resp.json()
+    resp = requests.get(mode.server + '/issuer/' + issuer_id + '/.well-known/oauth-authorization-server')
+    oauth_authorization_server = resp.json()
+    resp = requests.get(mode.server + '/issuer/' + issuer_id + '/.well-known/openid-configuration')
+    openid_configuration = resp.json()
+    
     qrcode_page = issuer_data.get('issuer_landing_page')
     logging.info('QR code page file = %s', qrcode_page)
     logging.info("qrcode content for Altme = %s", mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display}))
     return render_template(
         qrcode_page,
-        openid_credential_configuration=json.dumps(credential_issuer_openid_configuration(issuer_id, mode), indent=4),
-        openid_configuration=json.dumps(as_openid_configuration(issuer_id, mode), indent=4),
+        openid_credential_configuration=json.dumps(credential_issuer_configuration, indent=4),
+        openid_configuration=json.dumps(openid_configuration, indent=4),
+        oauth_authorization_server= json.dumps(oauth_authorization_server, indent=4),
         url_data=json.dumps(json_url, indent=6),
         arg_for_web_wallet=arg_for_web_wallet,
         url=url_to_display,

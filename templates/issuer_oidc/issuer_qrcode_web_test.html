@@ -81,7 +81,12 @@
 
          
           <div class="text-center mt-5">
-            <h2>/.well-known/oauth-authorization-server endpoint</h2><br>
+            <h2>Oauth authorization server</h2><br>
+          <textarea rows="30" cols="150">{{oauth_authorization_server|safe}}</textarea>
+          </div>
+
+          <div class="text-center mt-5">
+            <h2>OpenId configuration</h2><br>
           <textarea rows="30" cols="150">{{openid_configuration|safe}}</textarea>
           </div>
 
