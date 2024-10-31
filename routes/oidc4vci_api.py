@@ -474,6 +474,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     # credential offer is passed by value
     url_to_display = data_profile['oidc4vci_prefix'] + '?' + urlencode({'credential_offer': json.dumps(offer)})
     json_url = {'credential_offer': offer}
+    logging.info("credential offer = %s", json.dumps(offer, indent=6))
 
     # credential offer is passed by reference: credential offer uri
     arg_for_web_wallet = ""
@@ -502,7 +503,6 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     
     qrcode_page = issuer_data.get('issuer_landing_page')
     logging.info('QR code page file = %s', qrcode_page)
-    logging.info("qrcode content for Altme = %s", mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display}))
     return render_template(
         qrcode_page,
         openid_credential_configuration=json.dumps(credential_issuer_configuration, indent=4),

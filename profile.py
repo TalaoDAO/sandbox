@@ -331,7 +331,10 @@ profile = {
             {
                 "id": "VerifiableId",
                 "format": "ldp_vc",
-                "types": ["VerifiableCredential", "VerifiableId"],
+                "types": [
+                    "VerifiableCredential",
+                    "VerifiableId"
+                ],
                 "cryptographic_binding_methods_supported": ["DID"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
@@ -344,7 +347,7 @@ profile = {
                     }
                 ],
                 "credentialSubject": {
-                    "firstName": {
+                    "given_name": {
                         "mandatory": True,
                         "display": [
                             {
@@ -353,19 +356,24 @@ profile = {
                             }
                         ],
                     },
-                    "familyName": {
+                    "family_name": {
                         "mandatory": True,
-                        "display": [{"name": "Family Name", "locale": "en-US"}],
+                        "display": [
+                            {
+                                "name": "Family Name",
+                                "locale": "en-US"
+                            }
+                        ],
                     },
                     "gender": {
                         "mandatory": True,
                         "display": [{"name": "Gender", "locale": "en-US"}],
                     },
-                    "dateOfBirth": {
+                    "birth_date": {
                         "mandatory": True,
                         "display": [{"name": "Birth Date", "locale": "en-US"}],
                     },
-                    "dateIssued": {
+                    "issuance_date": {
                         "mandatory": True,
                         "display": [{"name": "Issue Date", "locale": "en-US"}],
                     },
