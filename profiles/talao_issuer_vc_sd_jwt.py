@@ -118,174 +118,76 @@ TALAO_ISSUER = {
                 ],
                 "claims": {
                         "given_name": {
-                            "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "First Name", "locale": "en-US"},
                                         {"name": "Prénom", "locale": "fr-FR"}],
                         },
                         "family_name": {
-                            "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Family Name", "locale": "en-US"},
                                         {"name": "Nom", "locale": "fr-FR"}],
                         },
-                        "birthdate": {
-                            "mandatory": True,
+                        "birth_date": {
                             "value_type": "string",
                             "display": [{"name": "Birth date", "locale": "en-US"},
                                         {"name": "Date de naissance", "locale": "fr-FR"}],
                         },
-                        "place_of_birth": {
-                            "locality": {
-                                "mandatory": True,
-                                "value_type": "string",
-                                "display": [
-                                    {"name": "Locality", "locale": "en-US"},
-                                    {"name": "Ville", "locale": "fr-FR"}],
-                                },
-                            "region": {
-                                "mandatory": True,
-                                "value_type": "string",
-                                "display": [
-                                    {"name": "Region", "locale": "en-US"},
-                                    {"name": "Région", "locale": "fr-FR"}],
-                                },
-                            "country": {
-                                "mandatory": True,
-                                "value_type": "string",
-                                "display": [
-                                    {"name": "Country", "locale": "en-US"},
-                                    {"name": "Pays", "locale": "fr-FR"}],
-                                },
-                            
-                        },
-                        "nationalities": {
-                            "mandatory": True,
+                        "nationality": {
                             "value_type": "string",
-                            "display": [{"name": "Nationalities", "locale": "en-US"},
-                                        {"name": "Nationalités", "locale": "fr-FR"}],
+                            "display": [{"name": "Nationality", "locale": "en-US"},
+                                        {"name": "Nationalité", "locale": "fr-FR"}],
                         },
                         "gender": {
-                            "mandatory": True,
-                            "value_type": "string",
+                            "value_type": "number",
                             "display": [{"name": "Gender", "locale": "en-US"},
                                         {"name": "Sexe", "locale": "fr-FR"}],
                         },
-                        "address": {
-                            "formatted": {
-                                "mandatory": True,
-                                "value_type": "string",
-                                "display": [
-                                    {"name": "Formatted", "locale": "en-US"},
-                                    {"name": "Complete", "locale": "fr-FR"}],
-                                },
-                            "street_address": {
-                                "mandatory": True,
-                                "value_type": "string",
-                                "display": [
-                                    {"name": "Street address", "locale": "en-US"},
-                                    {"name": "Rue", "locale": "fr-FR"}],
-                                },
-                            "locality": {
-                                "mandatory": True,
-                                "value_type": "string",
-                                "display": [
-                                    {"name": "Locality", "locale": "en-US"},
-                                    {"name": "Ville", "locale": "fr-FR"}],
-                                },
-                            "region": {
-                                "mandatory": True,
-                                "value_type": "string",
-                                "display": [
-                                    {"name": "Region", "locale": "en-US"},
-                                    {"name": "Région", "locale": "fr-FR"}],
-                                },
-                            "country": {
-                                "mandatory": True,
-                                "value_type": "string",
-                                "display": [
-                                    {"name": "Country", "locale": "en-US"},
-                                    {"name": "Pays", "locale": "fr-FR"}],
-                                },
-                        },
-                        "age_equal_or_over": {
-                            "mandatory": True,
-                            "value_type": "bool",
-                            "display": [{"name": "Age", "locale": "en-US"},
-                                        {"name": "Age", "locale": "fr-FR"}],
-                            "12": {
-                                "mandatory": True,
-                                "value_type": "string",
+                        "age_over_12": {
+                                "value_type": "bool",
                                 "display": [
                                     {"name": "Over 12", "locale": "en-US"},
                                     {"name": "Plus de 12 ans", "locale": "fr-FR"}],
-                                },
-                            "14": {
-                                "mandatory": True,
-                                "value_type": "string",
+                        },
+                        "age_over_14": {
+                                "value_type": "bool",
                                 "display": [
                                     {"name": "Over 14", "locale": "en-US"},
                                     {"name": "Plus de 14 ans", "locale": "fr-FR"}],
-                                },
-                            "16": {
-                                "mandatory": True,
-                                "value_type": "string",
+                        },
+                        "age_over_16": {
+                                "value_type": "bool",
                                 "display": [
                                     {"name": "Over 16", "locale": "en-US"},
                                     {"name": "Plus de 16 ans", "locale": "fr-FR"}],
-                                },
-                            "18": {
-                                "mandatory": True,
-                                "value_type": "string",
+                        },
+                        "age_over_18": {
+                                "value_type": "bool",
                                 "display": [
                                     {"name": "Over 18", "locale": "en-US"},
                                     {"name": "Plus de 18 ans", "locale": "fr-FR"}],
-                                },
-                            "21": {
-                                "mandatory": True,
-                                "value_type": "string",
+                        },
+                        "age_over_21": {
+                                "value_type": "bool",
                                 "display": [
                                     {"name": "Over 21", "locale": "en-US"},
                                     {"name": "Plus de 21 ans", "locale": "fr-FR"}],
-                                },
-                            "65": {
-                                "mandatory": True,
-                                "value_type": "string",
+                        },
+                        "age_over_65": {
+                                "value_type": "bool",
                                 "display": [
                                     {"name": "Senior", "locale": "en-US"},
                                     {"name": "Senior", "locale": "fr-FR"}],
-                                },
                         },
-                        "picture": {
-                            "mandatory": True,
-                            "value_type": "image/jpeg",
-                            "display": [{"name": "Picture", "locale": "en-US"},
-                                        {"name": "Portrait", "locale": "fr-FR"}],
-                        },
-                        "dateIssued": {
-                            "mandatory": True,
+                        "issuance_date": {
                             "value_type": "string",
                             "display": [{"name": "Issuance date", "locale": "en-US"},
                                         {"name": "Délivré le", "locale": "fr-FR"}],
                         },
-                        "expiry_date": {
-                            "mandatory": True,
-                            "value_type": "string",
-                            "display": [{"name": "Expiry date", "locale": "en-US"},
-                                        {"name": "Date d'expiration", "locale": "fr-FR"}],
-                        },
                         "issuing_country": {
-                            "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Issuing country", "locale": "en-US"},
                                         {"name": "Pays d'emission", "locale": "fr-FR"}],
-                        },
-                        "issuing_authority": {
-                            "mandatory": True,
-                            "value_type": "string",
-                            "display": [{"name": "Issuing autority", "locale": "en-US"},
-                                        {"name": "Authorité d'emission", "locale": "fr-FR"}],
-                        },
+                        }
                     },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [
