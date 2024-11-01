@@ -2741,7 +2741,7 @@ profile = {
                                 "@id": "https://github.com/TalaoDAO/context#emailpass",
                                 "@context": {
                                     "@version": 1.1,
-                                    "@protected": true,
+                                    "@protected": True,
                                     "schema" : "https://schema.org/",
                                     "id": "@id",
                                     "type": "@type",
