@@ -2734,7 +2734,26 @@ profile = {
                 "format": "ldp_vc",
                 "scope": "EmailPass_scope",
                 "credential_definition": {
-                    "type": ["VerifiableCredential", "EmailPass"]
+                    "@context": [
+                        "https://www.w3.org/2018/credentials/v1",
+                        {
+                            "EmailPass": {
+                                "@id": "https://github.com/TalaoDAO/context#emailpass",
+                                "@context": {
+                                    "@version": 1.1,
+                                    "@protected": true,
+                                    "schema" : "https://schema.org/",
+                                    "id": "@id",
+                                    "type": "@type",
+                                    "email": "schema:email"
+                                }
+                            }
+                        }
+                    ],
+                    "type": [
+                        "VerifiableCredential",
+                        "EmailPass"
+                    ]
                 },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
                 "credential_signing_alg_values_supported": [
