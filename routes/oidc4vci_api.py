@@ -1431,7 +1431,10 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
             except Exception:
                 pass
         credential["id"] = jti
-        credential['issuer'] = issuer_did
+        if isinstance(credential['issuer'], str):
+            credential['issuer'] = issuer_did
+        else:
+            credential['issuer']["id"] = issuer_did
         credential['issued'] = f"{datetime.now().replace(microsecond=0).isoformat()}Z"
         # credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
         credential['validFrom'] = datetime.now().replace(microsecond=0).isoformat() + "Z"

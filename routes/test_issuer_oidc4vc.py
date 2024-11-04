@@ -254,14 +254,18 @@ def test_5(mode):
         'X-API-KEY': client_secret
     }
 
-    offer = ['VerifiableId', 'EmailPass']
+    offer = [
+        'VerifiableId',
+        'EmailPass',
+        'EmailPass2'
+    ]
 
     data = { 
         "issuer_id": issuer_id,
         "vc": build_credential_offered(offer), 
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
-        "credential_type": ['VerifiableId', 'EmailPass'],
+        "credential_type": ['VerifiableId', 'EmailPass', 'EmailPass2'],
         "callback": mode.server + 'sandbox/issuer/callback',
         "user_pin_required": False,
         "user_pin": "4444",
@@ -279,7 +283,6 @@ def test_6_2(red, mode): # VC is sent after delay
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     issuer_id = issuer_test(6, mode)
     client_secret = issuer_test(6, mode, secret = True)
-   
     offer = ["EmailPass"]
 
     headers = {

@@ -11,14 +11,18 @@
   "@context": [
     "https://schema-registry.aster-x.demo23.gxfs.fr/contexts/jws-2020",
     "https://schema-registry.aster-x.demo23.gxfs.fr/contexts/credentials",
-    "https://registry.lab.gaia-x.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#"
+    "https://registry.lab.gaia-x.eu/development/api/trusted-shape-registry/v1/shapes/jsonld/trustframework#",
+    {"name": "https://schema.org/name"}
   ],
   "type": [
     "VerifiableCredential",
     "gx:GaiaXTermsAndConditions"
   ],
   "id": "did:web:montblanc-iot.provider.demo23.gxfs.fr:68ce6dd5-6da0-4f02-bdf1-8256753f82b8:data.json",
-  "issuer": "did:web:montblanc-iot.provider.demo23.gxfs.fr",
+  "issuer": {
+    "id": "did:web:montblanc-iot.provider.demo23.gxfs.fr",
+    "name": "Talao"
+  },
   "issuanceDate": "2024-03-15T17:03:34.585Z",
   "validFrom": "2024-03-15T17:03:34.585Z",
   "expirationDate": "2025-03-15T17:03:34.585Z",

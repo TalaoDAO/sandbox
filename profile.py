@@ -440,10 +440,60 @@ profile = {
         "credentials_types_supported": [
             "Over18",
             "EmailPass",
-            "VerifiableId"
+            "VerifiableId",
+            "EmailPass2"
         ],
         "trust_framework": {"name": "default", "type": "Accreditation"},
         "credential_configurations_supported": {
+            "EmailPass2": {
+                "format": "ldp_vc",
+                "scope": "EmailPass2_scope",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "EmailPass2"],
+                    "@context": [
+                        "https://www.w3.org/2018/credentials/v1",
+                        {   
+                            "name": "https://schema.org/name",
+                            "EmailPass2": {
+                                "@id": "https://github.com/TalaoDAO/context#emailpass2",
+                                "@context": {
+                                    "@version": 1.1,
+                                    "@protected": True,
+                                    "schema": "https://schema.org/",
+                                    "id": "@id",
+                                    "type": "@type",
+                                    "email": "schema:email",
+                                    "issuedBy": {
+                                        "@id": "schema:issuedBy",
+                                        "@context": {
+                                            "@version": 1.1,
+                                            "@protected": True,
+                                            "logo": {"@id": "schema:image", "@type": "@id"},
+                                            "name": "schema:name"
+                                        }
+                                    }
+
+                                }
+                            }
+                        }
+                    ]
+                },
+                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "Ed25519Signature2018"
+                ],
+                "display": [{"name": "Proof of Email", "locale": "en-US"}],
+                "credentialSubject": {
+                        "email": {
+                            "value_type": "email",
+                            "mandatory": True,
+                            "display": [
+                                {"name": "Email", "locale": "en-US"},
+                                {"name": "Email", "locale": "fr-FR"}         
+                            ],
+                        }
+                },
+            },
             "EmailPass": {
                 "format": "ldp_vc",
                 "scope": "EmailPass_scope",

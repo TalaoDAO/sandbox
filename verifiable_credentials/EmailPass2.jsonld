@@ -1,0 +1,29 @@
+{
+    "@context": ["https://www.w3.org/2018/credentials/v1",
+        {
+            "name": "https://schema.org/name",
+            "EmailPass2" : {
+                "@id": "https://github.com/TalaoDAO/context#emailpass2",
+                "@context": {
+                    "@version": 1.1,
+                    "@protected": true,
+                    "schema" : "https://schema.org/",
+                    "id": "@id",
+                    "type": "@type",
+                    "email": "schema:email"
+                }
+            }
+        }
+    ],
+    "id": "",
+    "type": ["VerifiableCredential", "EmailPass2"],
+    "issuer": {
+        "id" : "",
+        "name": "Talao"
+    },
+    "issuanceDate": "",
+    "credentialSubject" : {
+        "type" : "EmailPass2",
+        "email" : "john.doe@gmail.com"
+    }
+}
