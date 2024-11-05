@@ -887,6 +887,7 @@ profile = {
         "credential_configurations_supported": {
             "OpenBadgeCredential": {
                 "format": "jwt_vc_json",
+                "id": "OpenBadgeCredential",
                 "scope": "scope_1",
                 "cryptographic_binding_methods_supported": [
                     "did:jwk",
@@ -902,6 +903,7 @@ profile = {
                         "name": "Dienjaar",
                         "description": "Dienjar for testing",
                         "text_color": "#FBFBFB",
+                        "locale": "en-US"
                     }
                 ],
                 "credential_signing_alg_values_supported": [
