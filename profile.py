@@ -875,6 +875,7 @@ profile = {
         "oidc4vp_prefix": "openid-vc://",
         "credentials_types_supported": [
             "TestCredential",
+            "OpenBadgeCredential",
             "VerifiableId",
             "EmailPass",
             "PhoneProof",
@@ -884,6 +885,77 @@ profile = {
             "InsuranceLegalPerson"
         ],
         "credential_configurations_supported": {
+            "OpenBadgeCredential": {
+                "format": "jwt_vc_json",
+                "scope": "scope_1",
+                "cryptographic_binding_methods_supported": [
+                    "did:jwk",
+                    "did:key"
+                ],
+                "proof_types_supported": {
+                    "jwt": {
+                        "proof_signing_alg_values_supported": ["ES256"]
+                    }
+                },
+                "display": [
+                    {
+                        "name": "Dienjaar",
+                        "description": "Dienjar for testing",
+                        "text_color": "#FBFBFB",
+                    }
+                ],
+                "credential_signing_alg_values_supported": [
+                    "ES256"
+                ],
+                "credential_definition": {
+                    "type": [
+                        "VerifiableCredential",
+                        "OpenBadgeCredential"
+                    ],
+                    "credentialSubject": {
+                        "achievement": {
+                            "display": {
+                                    "name": "Achievement",
+                                    "locale": "en-US"
+                            },
+                            "achievementType": {
+                                "display": {
+                                    "name": "Type",
+                                    "locale": "en-US"
+                                }
+                            },
+                            "description": {
+                                    "display": {
+                                        "name": "Description",
+                                        "locale": "en-US"
+                                    }
+                            },
+                            "name": {
+                                    "display": {
+                                        "name": "Name",
+                                        "locale": "en-US"
+                                    }
+                            },
+                            "alignment": {
+                                "targetDescription": {
+                                    "value_type": "string",
+                                    "display": {
+                                        "name": "Description",
+                                        "locale": "en-US"
+                                    }
+                                },
+                                "targetName": {
+                                    "value_type": "string",
+                                    "display": {
+                                        "name": "Name",
+                                        "locale": "en-US"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "IBANLegalPerson": {
                 "scope": "IBANLegalPerson_scope",
                 "display": [
