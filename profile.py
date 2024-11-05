@@ -916,42 +916,42 @@ profile = {
                     ],
                     "credentialSubject": {
                         "achievement": {
-                            "display": {
+                            "display": [{
                                     "name": "Achievement",
                                     "locale": "en-US"
-                            },
+                            }],
                             "achievementType": {
-                                "display": {
+                                "display": [{
                                     "name": "Type",
                                     "locale": "en-US"
-                                }
+                                }]
                             },
                             "description": {
-                                    "display": {
+                                    "display": [{
                                         "name": "Description",
                                         "locale": "en-US"
-                                    }
+                                    }]
                             },
                             "name": {
-                                    "display": {
+                                    "display": [{
                                         "name": "Name",
                                         "locale": "en-US"
-                                    }
+                                    }]
                             },
                             "alignment": {
                                 "targetDescription": {
                                     "value_type": "string",
-                                    "display": {
+                                    "display": [{
                                         "name": "Description",
                                         "locale": "en-US"
-                                    }
+                                    }]
                                 },
                                 "targetName": {
                                     "value_type": "string",
-                                    "display": {
+                                    "display": [{
                                         "name": "Name",
                                         "locale": "en-US"
-                                    }
+                                    }]
                                 }
                             }
                         }
