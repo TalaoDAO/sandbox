@@ -167,7 +167,7 @@ def sign_jwt_vp(vc, audience, holder_vm, holder_did, nonce, vp_id, holder_key):
     }
     iat = round(datetime.timestamp(datetime.now()))
     payload = {
-        "iat": iat,
+        #"iat": iat,
         "jti": vp_id,
         "nbf": iat,
         "aud": audience,

@@ -1,0 +1,65 @@
+{
+    "id": "two_sd_jwt",
+    "input_descriptors": [
+        {
+            "id": "pid_credential",
+            "format": {
+                "vc+sd-jwt": {
+                    "sd-jwt_alg_values": [
+                        "ES256",
+                        "ES256K",
+                        "EdDSA"
+                    ],
+                    "kb-jwt_alg_values": [
+                        "ES256",
+                        "ES256K",
+                        "EdDSA"
+                    ]
+                }
+            },
+            "constraints": {
+                "fields": [
+                    {
+                        "path": [
+                            "$.vct"
+                        ],
+                        "filter": {
+                            "type": "string",
+                            "const": "urn:eu.europa.ec.eudi:pid:1"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": "employee_badge_credential",
+            "format": {
+                "vc+sd-jwt": {
+                    "sd-jwt_alg_values": [
+                        "ES256",
+                        "ES256K",
+                        "EdDSA"
+                    ],
+                    "kb-jwt_alg_values": [
+                        "ES256",
+                        "ES256K",
+                        "EdDSA"
+                    ]
+                }
+            },
+            "constraints": {
+                "fields": [
+                    {
+                        "path": [
+                            "$.vct"
+                        ],
+                        "filter": {
+                            "type": "string",
+                            "const": "urn:eu.europa.ec.eudi:employee_badge:1"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

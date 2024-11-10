@@ -920,18 +920,8 @@ profile = {
                                     "name": "Achievement",
                                     "locale": "en-US"
                             }],
-                            "achievementType": {
-                                "display": [{
-                                    "name": "Type",
-                                    "locale": "en-US"
-                                }]
-                            },
-                            "description": {
-                                    "display": [{
-                                        "name": "Description",
-                                        "locale": "en-US"
-                                    }]
-                            },
+                            "achievementType": {},
+                            "description": {},
                             "name": {
                                     "display": [{
                                         "name": "Name",

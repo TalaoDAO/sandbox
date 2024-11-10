@@ -179,6 +179,7 @@ def test_2(mode):
         "pre-authorized_code": True,
         "user_pin_required": False,
         "user_pin": "4444",
+        "input_mode": "numeric",
         "callback": mode.server + 'sandbox/issuer/callback', # to replace with application call back endpoint
     }
     resp = requests.post(api_endpoint, headers=headers, json=data)
