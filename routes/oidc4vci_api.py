@@ -1321,7 +1321,7 @@ async def issuer_deferred(issuer_id, red, mode):
     try:
         transaction_id_data = json.loads(red.get(transaction_id).decode())
     except Exception:
-        return Response(**manage_error("invalid_transaction_id", "Transaction data expired", red, mode, request=request, status=410))
+        return Response(**manage_error("invalid_transaction_id", "Transaction data expired", red, mode, request=request, status=400))
 
     # check access token 
     if access_token != transaction_id_data.get("access_token"):
@@ -1330,12 +1330,19 @@ async def issuer_deferred(issuer_id, red, mode):
     issuer_state = transaction_id_data["issuer_state"]
     credential_type = transaction_id_data["credential_type"]
 
-    # VC is not ready return 404
+    # VC is not ready return 400, issuance_pending
     try:
         deferred_data = json.loads(red.get(issuer_state).decode())
         credential = deferred_data["deferred_vc"][credential_type]
     except Exception:
-        return Response(**manage_error("issuance_pending", "Credential is not available yet", red, mode, request=request, status=404))
+        payload = {
+            'error': "issuance_pending",
+            'interval': 30,
+            'error_description': "Credential is not available yet",
+        }
+        logging.info('endpoint error response = %s', json.dumps(payload, indent=4))
+        headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
+        return {'response': json.dumps(payload), 'status': 400, 'headers': headers}
 
     # sign_credential
     credential_signed = await sign_credential(
