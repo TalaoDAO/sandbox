@@ -1342,7 +1342,7 @@ async def issuer_deferred(issuer_id, red, mode):
         }
         logging.info('endpoint error response = %s', json.dumps(payload, indent=4))
         headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
-        return {'response': json.dumps(payload), 'status': 400, 'headers': headers}
+        return Response(response=json.dumps(payload), status=400, headers=headers)
 
     # sign_credential
     credential_signed = await sign_credential(
