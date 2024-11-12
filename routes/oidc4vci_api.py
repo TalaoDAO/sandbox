@@ -719,6 +719,7 @@ def issuer_authorize(issuer_id, red, mode):
             code_challenge = request_uri_data.get('code_challenge')
             code_challenge_method = request_uri_data.get('code_challenge_method')
             client_metadata = request_uri_data.get('client_metadata')
+            wallet_issuer = request.uri_data.get('wallet_issuer')
             state = request_uri_data.get('state')
             authorization_details = request_uri_data.get('authorization_details')
         
