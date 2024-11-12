@@ -872,6 +872,7 @@ def issuer_authorize(issuer_id, red, mode):
         session['code_data']['vc'] = vc
         session['code_data']['credential_type'] = offer_data['credential_type']
     except Exception:
+        redirect_uri = session['code_data']['redirect_uri']
         logging.error('code_data key error oidc_vci 612')
         return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Session expired', None, red, state))
 
