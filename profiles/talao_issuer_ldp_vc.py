@@ -23,6 +23,7 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
                     "@context": [
                         "https://www.w3.org/2018/credentials/v1",
                         {
+                            "@vocab": "https://schema.org/",
                             "VerifiableId": {
                                 "@id": "urn:employeecredential",
                                 "@context": {
