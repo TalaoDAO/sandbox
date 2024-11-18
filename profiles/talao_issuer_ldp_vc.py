@@ -12,8 +12,71 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
         "credentials_types_supported": [
             "EmailPass",
             "PhoneProof",
+            "VerifiableId"
         ],
         "credential_configurations_supported": {
+            "VerifiableId": {
+                "format": "ldp_vc",
+                "scope": "VerifiableId_scope",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "VerifiableId"],
+                    "@context": [
+                        "https://www.w3.org/2018/credentials/v1",
+                        {
+                            "VerifiableId": {
+                                "@id": "urn:employeecredential",
+                                "@context": {
+                                    "@version": 1.1,
+                                    "@protected": True,
+                                    "id": "@id",
+                                    "type": "@type",
+                                    "schema": "https://schema.org/",
+                                    "familyName": "schema:lastName",
+                                    "firstName": "schema:firstName",
+                                    "dateOfBirth": "schema:birthDate",
+                                    "gender": "schema:gender",
+                                    "idRecto": "schema:image",
+                                    "dateIssued": "schema:dateIssued",
+                                    "idVerso": "schema:image"
+                                }
+                            }
+                        }
+                    ],
+                },
+                "cryptographic_binding_methods_supported": ["DID"],
+                "credential_signing_alg_values_supported": [
+                    "Ed25519Signature2018"
+                ],
+                "display": [
+                    {
+                        "name": "Verifiable Id",
+                        "description": "This credential is a proof of your identity. You can use it when you need to prove your identity with services that have already adopted a decentralized identity system.",
+                        "locale": "en-GB",
+                    }
+                ],
+                "credentialSubject": {
+                    "firstName": {
+                        "mandatory": True,
+                        "display": [{"name": "First Name", "locale": "en-US"}],
+                    },
+                    "familyName": {
+                        "mandatory": True,
+                        "display": [{"name": "Family Name", "locale": "en-US"}],
+                    },
+                    "gender": {
+                        "mandatory": True,
+                        "display": [{"name": "Gender", "locale": "en-US"}],
+                    },
+                    "dateOfBirth": {
+                        "mandatory": True,
+                        "display": [{"name": "Birth Date", "locale": "en-US"}],
+                    },
+                    "dateIssued": {
+                        "mandatory": True,
+                        "display": [{"name": "Issue Date", "locale": "en-US"}],
+                    },
+                },
+            },
             "EmailPass": {
                 "format": "ldp_vc",
                 "scope": "EmailPass_scope",
