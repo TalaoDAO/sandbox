@@ -1,4 +1,4 @@
-from profiles import insurer, bank, gouv, test, talao_issuer_jwt_vc_json, talao_issuer_vc_sd_jwt, talao_issuer_jwt_vc_json_ld, documentation
+from profiles import insurer, bank, gouv, test, talao_issuer_jwt_vc_json, talao_issuer_vc_sd_jwt, talao_issuer_jwt_vc_json_ld, documentation, talao_issuer_ldp_vc
 
 profile = {
     "INSURER": insurer.INSURER,
@@ -9,6 +9,7 @@ profile = {
     "TALAO_ISSUER_JWT_VC_JSON": talao_issuer_jwt_vc_json.TALAO_ISSUER,
     "TALAO_ISSUER_JWT_VC_JSON_LD": talao_issuer_jwt_vc_json_ld.TALAO_ISSUER,
     "TALAO_ISSUER_SD_JWT_VC": talao_issuer_vc_sd_jwt.TALAO_ISSUER,
+    "TALAO_ISSUER_LDP_VC": talao_issuer_ldp_vc.TALAO_ISSUER,
     "EBSI-V3": {
         "oidc4vciDraft": "10",
         "siopv2Draft": "12",

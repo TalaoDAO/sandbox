@@ -75,6 +75,8 @@ oidc4vc_profile_list = {
     "TALAO_ISSUER_JWT_VC_JSON": "Official Talao Issuer in jwt_vc_json",
     "TALAO_ISSUER_JWT_VC_JSON_LD": "Official Talao Issuer in jwt_vc_json_ld",
     "TALAO_ISSUER_SD_JWT_VC": "Official Talao Issuer in sd-jwt"
+    "TALAO_ISSUER_LDP_VC": "Official Talao Issuer in ldp_vc"
+
 }
 
 #OIDC4VC Verifier for admin

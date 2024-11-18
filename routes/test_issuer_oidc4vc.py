@@ -824,11 +824,11 @@ def build_credential_offered(offer):
                 credential = json.loads(f.read())
         except Exception:
             return
-        credential['id'] = "urn:uuid:" + str(uuid.uuid4())
-        credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-        credential['issued'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-        credential['validFrom'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
-        credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
+        #credential['id'] = "urn:uuid:" + str(uuid.uuid4())
+        #credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+        #credential['issued'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+        #credential['validFrom'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
+        #credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
         credential_offered[vc] = credential
     return credential_offered
 
@@ -839,11 +839,11 @@ def build_credential(vc):
             credential = json.loads(f.read())
     except Exception:
         return
-    credential['id'] = "urn:uuid:" + str(uuid.uuid4())
-    credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-    credential['issued'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-    credential['validFrom'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
-    credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
+    #credential['id'] = "urn:uuid:" + str(uuid.uuid4())
+    #credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+    #credential['issued'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
+    #credential['validFrom'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
+    #credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
     return credential
 
 

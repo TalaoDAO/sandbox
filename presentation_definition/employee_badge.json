@@ -31,7 +31,8 @@
                         {
                             "path": [
                                 "$.family_name"
-                            ]
+                            ],
+                            "optional": true
                         },
                         {
                             "path": [
