@@ -229,7 +229,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
         elif claim in disclosure_list or claim in disclosed_claims:
             payload[claim] = unsecured[claim]
         # for undisclosed attribute
-        elif isinstance(unsecured[claim], str) or  isinstance(unsecured[claim], bool) :
+        elif isinstance(unsecured[claim], (str, bool, int)):
             contents = json.dumps([salt(), claim, unsecured[claim]])
             disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
             _disclosure += "~" + disclosure 
