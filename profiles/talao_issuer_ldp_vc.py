@@ -32,13 +32,11 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
                                     "id": "@id",
                                     "type": "@type",
                                     "schema": "https://schema.org/",
-                                    "familyName": "schema:lastName",
-                                    "firstName": "schema:firstName",
-                                    "dateOfBirth": "schema:birthDate",
+                                    "family_name": "schema:lastName",
+                                    "given_name": "schema:firstName",
+                                    "birth_date": "schema:birthDate",
                                     "gender": "schema:gender",
-                                    "idRecto": "schema:image",
-                                    "dateIssued": "schema:dateIssued",
-                                    "idVerso": "schema:image"
+                                    "issuance_date": "schema:dateIssued",
                                 }
                             }
                         }
@@ -56,11 +54,11 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
                     }
                 ],
                 "credentialSubject": {
-                    "firstName": {
+                    "given_name": {
                         "mandatory": True,
                         "display": [{"name": "First Name", "locale": "en-US"}],
                     },
-                    "familyName": {
+                    "family_name": {
                         "mandatory": True,
                         "display": [{"name": "Family Name", "locale": "en-US"}],
                     },
@@ -68,15 +66,15 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
                         "mandatory": True,
                         "display": [{"name": "Gender", "locale": "en-US"}],
                     },
-                    "dateOfBirth": {
+                    "birth_date": {
                         "mandatory": True,
                         "display": [{"name": "Birth Date", "locale": "en-US"}],
                     },
-                    "dateIssued": {
+                    "issuance_date": {
                         "mandatory": True,
                         "display": [{"name": "Issue Date", "locale": "en-US"}],
-                    },
-                },
+                    }
+                }
             },
             "EmailPass": {
                 "format": "ldp_vc",
