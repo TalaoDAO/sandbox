@@ -41,17 +41,8 @@ TALAO_ISSUER = {   # DIIP v2.1
                     "@context": [
                         "https://www.w3.org/2018/credentials/v1",
                         {
-                            "EmailPass": {
-                                "@id": "https://github.com/TalaoDAO/context#emailpass",
-                                "@context": {
-                                    "@version": 1.1,
-                                    "@protected": True,
-                                    "schema" : "https://schema.org/",
-                                    "id": "@id",
-                                    "type": "@type",
-                                    "email": "schema:email"
-                                }
-                            }
+                            "EmailPass": "https://doc.wallet-provider.io/wallet/vc_type/#EmailPass",
+                            "@vocab": "https://schema.org/"
                         }
                     ],
                     "order": [
@@ -77,17 +68,8 @@ TALAO_ISSUER = {   # DIIP v2.1
                     "@context": [
                         "https://www.w3.org/2018/credentials/v1",
                         {
-                            "PhoneProof": {
-                                "@id": "https://github.com/TalaoDAO/context#emailpass",
-                                "@context": {
-                                    "@version": 1.1,
-                                    "@protected": True,
-                                    "schema" : "https://schema.org/",
-                                    "id": "@id",
-                                    "type": "@type",
-                                    "email": "schema:email"
-                                }
-                            }
+                            "PhoneProof": "https://doc.wallet-provider.io/wallet/vc_type/#PhoneProof",
+                            "@vocab": "https://schema.org/"
                         }
                     ],
                     "credentialSubject": {

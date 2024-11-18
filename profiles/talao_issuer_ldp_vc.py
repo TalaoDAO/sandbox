@@ -38,7 +38,7 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
                     "@context": [
                         "https://www.w3.org/2018/credentials/v1",
                         {
-                            "PhoneProof": "https://doc.wallet-provider.io/wallet/vc_type/#EmailPass",
+                            "EmailPass": "https://doc.wallet-provider.io/wallet/vc_type/#EmailPass",
                             "@vocab": "https://schema.org/"
                         }
                     ],
