@@ -27,6 +27,7 @@
       "VerifiableCredential",
       "VerifiableId"
     ],
+    "issuer": "",
     "credentialSubject": {
       "type" : "VerifiableId",
       "family_name": "John",
