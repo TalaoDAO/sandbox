@@ -893,6 +893,8 @@ def issuer_token(issuer_id, red, mode):
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-token-endpoint
     https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
     """
+    
+    print("request get_data = ", request.get_data())
     logging.info('token endoint header %s', request.headers)
     logging.info('token endoint form %s', json.dumps(request.form, indent=4))
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
@@ -1125,7 +1127,7 @@ async def issuer_credential(issuer_id, red, mode):
             iss = proof_payload.get('iss')
             if access_token_data['client_id'] and iss != access_token_data['client_id']:
                 logging.warning('iss %s of proof of key is different from client_id %s', iss,access_token_data['client_id'] )
-                return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
+                #return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
         elif proof_type == 'ldp_vp':
             proof = result['proof']['ldp_vp']
             proof = json.dumps(proof) if isinstance(proof, dict) else proof
@@ -1241,6 +1243,7 @@ async def issuer_credential(issuer_id, red, mode):
     else:
         logging.info("Only one VC of the same type")
         try:
+            print("acces token data = ", access_token_data)
             credential = access_token_data["vc"][credential_type]
         except Exception:
             return Response(**manage_error("unsupported_credential_type", "The credential type is not offered", red, mode, request=request, stream_id=stream_id, ))
