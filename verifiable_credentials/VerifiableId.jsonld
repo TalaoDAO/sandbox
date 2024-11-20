@@ -2,23 +2,22 @@
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
       {
+        "@vocab": "https://schema.org/",
         "VerifiableId" : {
-          "@id" : "urn:employeecredential",
+          "@id" : "urn:verfiableid",
           "@context" : {
               "@version": 1.1,
               "@protected": true,
               "id": "@id",
               "type": "@type",
               "schema" : "https://schema.org/",
-              "familyName": "schema:lastName",
-              "firstName": "schema:firstName",
+              "family_name": "schema:lastName",
+              "given_name": "schema:firstName",
               "email": "schema:email",
-              "dateOfBirth" : "schema:birthDate",
+              "birth_date" : "schema:birthDate",
               "gender": "schema:gender",
-              "idRecto": "schema:image",
               "phone_number": "schema:phone",
-              "dateIssued": "schema:dateIssued",
-              "idVerso": "schema:image"
+              "issuance_date": "schema:dateIssued"
           }
         }
       }
@@ -28,19 +27,14 @@
       "VerifiableCredential",
       "VerifiableId"
     ],
-    "issuer": "did:ebsi:zcfcwGjLBojczw9yhmUFE3Z",
-    "issuanceDate": "2022-12-20T14:25:22Z",
-    "validFrom": "2022-12-20T14:25:22Z",
-    "issued": "2022-12-20T14:25:22Z",
     "credentialSubject": {
       "type" : "VerifiableId",
-      "familyName": "John",
-      "firstName": "Doe",
-      "dateOfBirth": "1970-10-01",
-      "gender": "F",
+      "family_name": "John",
+      "given_name": "Doe",
+      "birth_date": "1970-10-01",
+      "gender": 0,
       "email": "john.doe@gmail.com",
-      "phone_number": "+31545465787",
-      "dateIssued": "2022-12-20"
+      "phone_number": "+31545465787"
     },
     "credentialSchema": {
       "id": "https://api-conformance.ebsi.eu/trusted-schemas-registry/v2/schemas/z22ZAMdQtNLwi51T2vdZXGGZaYyjrsuP1yzWyXZirCAHv",
