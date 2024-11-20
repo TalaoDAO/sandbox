@@ -10,7 +10,7 @@
     "verificationMethod": [ 
         {
             "id": "did:web:talao.co#key-1",
-            "type": "JwsVerificationKey2020",
+            "type": "JsonWebKey2020",
             "controller": "did:web:talao.co",
             "publicKeyJwk": {
                 "e":"AQAB",
@@ -19,7 +19,7 @@
         },
         {
             "id": "did:web:talao.co#key-2",
-            "type": "JwsVerificationKey2020",
+            "type": "JsonWebKey2020",
             "controller": "did:web:talao.co",
             "publicKeyJwk": {
                 "crv": "P-256",
@@ -30,7 +30,7 @@
         },
         {
             "id": "did:web:talao.co#key-3",
-            "type": "JwsVerificationKey2020",
+            "type": "JsonWebKey2020",
             "controller": "did:web:talao.co",
             "publicKeyJwk": {
                 "crv": "Ed25519",

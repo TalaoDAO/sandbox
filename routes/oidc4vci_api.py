@@ -1125,7 +1125,7 @@ async def issuer_credential(issuer_id, red, mode):
             iss = proof_payload.get('iss')
             if access_token_data['client_id'] and iss != access_token_data['client_id']:
                 logging.warning('iss %s of proof of key is different from client_id %s', iss,access_token_data['client_id'] )
-                #return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
+                return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
         elif proof_type == 'ldp_vp':
             proof = result['proof']['ldp_vp']
             proof = json.dumps(proof) if isinstance(proof, dict) else proof
