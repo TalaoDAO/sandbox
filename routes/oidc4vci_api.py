@@ -1441,15 +1441,12 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
             except Exception:
                 pass
         credential["id"] = jti
-        if isinstance(credential['issuer'], str):
-            credential['issuer'] = issuer_did
-        else:
+        try:
             credential['issuer']["id"] = issuer_did
-        #credential['issued'] = f"{datetime.now().replace(microsecond=0).isoformat()}Z"
+        except Exception:
+            credential['issuer'] = issuer_did
         credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-        #credential['validFrom'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
         credential['expirationDate'] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
-        #credential["validUntil"] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
         
     elif format in ['jwt_vc_json', 'jwt_vc']:     # jwt_vc format is used for ebsi V3 only with draft 10/11
         credential = clean_jwt_vc_json(credential)

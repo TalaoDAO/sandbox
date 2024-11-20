@@ -27,7 +27,7 @@
       "VerifiableCredential",
       "VerifiableId"
     ],
-    "issuer": "",
+    "issuer": "did:web:talao.co",
     "credentialSubject": {
       "type" : "VerifiableId",
       "family_name": "John",
