@@ -894,7 +894,6 @@ def issuer_token(issuer_id, red, mode):
     https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
     """
     
-    print("request get_data = ", request.get_data())
     logging.info('token endoint header %s', request.headers)
     logging.info('token endoint form %s', json.dumps(request.form, indent=4))
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
@@ -1099,7 +1098,6 @@ async def issuer_credential(issuer_id, red, mode):
             return Response(**manage_error('unsupported_credential_format', 'Invalid VC format, types is missing', red, mode, request=request, stream_id=stream_id))
 
     # check proof if it exists depending on type of proof
-    wallet_identifier = "did" # default case
     proof = result.get('proof')
     if proof:
         proof_type = result['proof']['proof_type']
@@ -1118,30 +1116,32 @@ async def issuer_credential(issuer_id, red, mode):
                 logging.error('proof is not validated validated')
                 #return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id, status=403))
             
-            wallet_jwk = proof_header.get('jwk')  
-            if wallet_jwk: # used for HAIP
+            if proof_header.get('jwk'):  # used for HAIP
+                wallet_jwk = proof_header.get('jwk')
                 wallet_identifier = "jwk_thumbprint"
             else:
+                wallet_identifier = "did"
                 wallet_jwk = oidc4vc.resolve_did(proof_header.get('kid'))
 
             iss = proof_payload.get('iss')
             if access_token_data['client_id'] and iss != access_token_data['client_id']:
                 logging.warning('iss %s of proof of key is different from client_id %s', iss,access_token_data['client_id'] )
-                #return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
+                return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
+        
         elif proof_type == 'ldp_vp':
+            wallet_identifier = "did"
+            wallet_jwk = None
             proof = result['proof']['ldp_vp']
             proof = json.dumps(proof) if isinstance(proof, dict) else proof
             proof_check = await didkit.verify_presentation(proof, '{}')
             iss = json.loads(proof)['holder']
-            wallet_jwk = None
             logging.info('ldp_vp proof check  = %s', proof_check)
             if iss != access_token_data['client_id']:
                 logging.warning('iss %s of proof of key is different from client_id %s', iss,access_token_data['client_id'] )
-                #return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id in token request', red, mode, request=, stream_id=stream_id))
+                return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id in token request', red, mode, request=, stream_id=stream_id))
         else:
-            return Response(**manage_error('invalid_proof', 'The credential withoout proof type is not supported', red, mode, request=request, stream_id=stream_id))
+            return Response(**manage_error('invalid_proof', 'Proof type not supported', red, mode, request=request, stream_id=stream_id))
     else:
-        #return Response(**manage_error('invalid_proof', 'The credential without proof is not supported', red, mode, request=request, stream_id=stream_id, status=403))
         logging.warning('No proof available -> Bearer credential, iss = client_id')
         wallet_jwk = None
         if vc_format == 'ldp_vc':
@@ -1154,11 +1154,9 @@ async def issuer_credential(issuer_id, red, mode):
     # Get credential type requested
     credential_identifier = None
     credential_type = None
-    
-    # standard case
-    if int(issuer_profile['oidc4vciDraft']) >= 13:
+    if int(issuer_profile['oidc4vciDraft']) >= 13:   # standard case
         credentials_supported = list(issuer_profile['credential_configurations_supported'].keys())
-        if vc_format == 'vc+sd-jwt' and result.get('vct'):  # draft 13 with vc+sd-jwt'
+        if vc_format == 'vc+sd-jwt' and result.get('vct'):  # vc+sd-jwt'
             vct = result.get('vct')
             for vc in credentials_supported:
                 if issuer_profile['credential_configurations_supported'][vc].get('vct') == vct:

@@ -195,7 +195,7 @@ def test_3(mode):
     issuer_id = issuer_test(3, mode)
     client_secret = issuer_test(3, mode, secret = True)
 
-    offer = ["VerifiableId", "EmailPass", "Over18", "PhoneProof"]
+    offer = ["VerifiableId", "EmailPass", "PhoneProof"]
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
