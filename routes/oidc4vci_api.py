@@ -1243,7 +1243,6 @@ async def issuer_credential(issuer_id, red, mode):
     else:
         logging.info("Only one VC of the same type")
         try:
-            print("acces token data = ", access_token_data)
             credential = access_token_data["vc"][credential_type]
         except Exception:
             return Response(**manage_error("unsupported_credential_type", "The credential type is not offered", red, mode, request=request, stream_id=stream_id, ))
