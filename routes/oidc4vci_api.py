@@ -1135,10 +1135,12 @@ async def issuer_credential(issuer_id, red, mode):
             proof = json.dumps(proof) if isinstance(proof, dict) else proof
             proof_check = await didkit.verify_presentation(proof, '{}')
             iss = json.loads(proof)['holder']
+            print("iss = ", iss)
+            print(" client_id  = ", access_token_data['client_id'])
             logging.info('ldp_vp proof check  = %s', proof_check)
             if iss != access_token_data['client_id']:
                 logging.warning('iss %s of proof of key is different from client_id %s', iss,access_token_data['client_id'] )
-                return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id in token request', red, mode, request=request, stream_id=stream_id))
+                #return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id in token request', red, mode, request=request, stream_id=stream_id))
         else:
             return Response(**manage_error('invalid_proof', 'Proof type not supported', red, mode, request=request, stream_id=stream_id))
     else:
