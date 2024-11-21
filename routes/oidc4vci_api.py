@@ -1124,9 +1124,10 @@ async def issuer_credential(issuer_id, red, mode):
                 wallet_jwk = oidc4vc.resolve_did(proof_header.get('kid'))
 
             iss = proof_payload.get('iss')
-            if access_token_data['client_id'] and iss != access_token_data['client_id']:
-                logging.warning('iss %s of proof of key is different from client_id %s', iss,access_token_data['client_id'] )
-                return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
+            if access_token_data['client_id'] and iss :
+                if iss != access_token_data['client_id']:
+                    logging.warning('iss %s of proof of key is different from client_id %s', iss,access_token_data['client_id'] )
+                    return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
         
         elif proof_type == 'ldp_vp':
             wallet_identifier = "did"
@@ -1134,13 +1135,12 @@ async def issuer_credential(issuer_id, red, mode):
             proof = result['proof']['ldp_vp']
             proof = json.dumps(proof) if isinstance(proof, dict) else proof
             proof_check = await didkit.verify_presentation(proof, '{}')
-            iss = json.loads(proof)['holder']
-            print("iss = ", iss)
-            print(" client_id  = ", access_token_data['client_id'])
+            iss = json.loads(proof).get('holder')
             logging.info('ldp_vp proof check  = %s', proof_check)
-            if iss != access_token_data['client_id']:
-                logging.warning('iss %s of proof of key is different from client_id %s', iss,access_token_data['client_id'] )
-                #return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id in token request', red, mode, request=request, stream_id=stream_id))
+            if access_token_data['client_id'] and iss :
+                if iss != access_token_data['client_id']:
+                    logging.warning('iss %s of proof of key is different from client_id %s', iss,access_token_data['client_id'] )
+                    return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id in token request', red, mode, request=request, stream_id=stream_id))
         else:
             return Response(**manage_error('invalid_proof', 'Proof type not supported', red, mode, request=request, stream_id=stream_id))
     else:
