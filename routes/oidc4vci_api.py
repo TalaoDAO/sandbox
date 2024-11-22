@@ -1123,11 +1123,10 @@ async def issuer_credential(issuer_id, red, mode):
                 wallet_identifier = "did"
                 wallet_jwk = oidc4vc.resolve_did(proof_header.get('kid'))
 
-            iss = proof_payload.get('iss')
-            if access_token_data['client_id'] and iss :
-                if iss != access_token_data['client_id']:
-                    logging.warning('iss %s of proof of key is different from client_id %s', iss,access_token_data['client_id'] )
-                    return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
+            wallet_did = access_token_data['client_id']
+            if wallet_did and proof_payload.get('iss') and wallet_did != proof_payload.get('iss'):
+                logging.warning('iss %s of proof of key is different from client_id %s', wallet_did ,access_token_data['client_id'] )
+                return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
         
         elif proof_type == 'ldp_vp':
             wallet_identifier = "did"
@@ -1135,23 +1134,24 @@ async def issuer_credential(issuer_id, red, mode):
             proof = result['proof']['ldp_vp']
             proof = json.dumps(proof) if isinstance(proof, dict) else proof
             proof_check = await didkit.verify_presentation(proof, '{}')
-            iss = json.loads(proof).get('holder')
+            wallet_did = json.loads(proof).get('holder')
             logging.info('ldp_vp proof check  = %s', proof_check)
-            if access_token_data['client_id'] and iss :
-                if iss != access_token_data['client_id']:
-                    logging.warning('iss %s of proof of key is different from client_id %s', iss,access_token_data['client_id'] )
-                    return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id in token request', red, mode, request=request, stream_id=stream_id))
+            if access_token_data['client_id'] and wallet_did and wallet_did != access_token_data['client_id']:
+                logging.warning('iss %s of proof of key is different from client_id %s', wallet_did, access_token_data['client_id'] )
+                return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id in token request', red, mode, request=request, stream_id=stream_id))
         else:
             return Response(**manage_error('invalid_proof', 'Proof type not supported', red, mode, request=request, stream_id=stream_id))
     else:
-        logging.warning('No proof available -> Bearer credential, iss = client_id')
+        logging.warning('No proof available -> Bearer credential, wallet_did = client_id')
         wallet_jwk = None
         if vc_format == 'ldp_vc':
-            iss = None  # wallet_did
+            wallet_did = None  # wallet_did
         else:
-            iss = access_token_data['client_id']  # wallet_did
+            wallet_did = access_token_data['client_id']  # wallet_did
         
-    logging.info('iss / wallet_did = %s', iss)
+    logging.info('wallet_did = %s', wallet_did)
+    logging.info('wallet_identifier = %s', wallet_identifier)
+    logging.info('wallet_jwk = %s', wallet_jwk)
 
     # Get credential type requested
     credential_identifier = None
@@ -1219,7 +1219,7 @@ async def issuer_credential(issuer_id, red, mode):
             'issuer_id': issuer_id,
             'access_token': access_token,
             'format': vc_format,
-            'subjectId': iss,
+            'subjectId': wallet_did,
             'issuer_state': access_token_data['issuer_state'],
             'credential_type': credential_type,
             'c_nonce': payload['c_nonce'],
@@ -1249,17 +1249,17 @@ async def issuer_credential(issuer_id, red, mode):
     if not credential:
         return Response(**manage_error("unsupported_credential_type", "Credential is not found for this credential identifier", red, mode, request=request, stream_id=stream_id,))
 
-    # sign_credential(credential, wallet_did, issuer_did, issuer_key, issuer_vm, c_nonce, format, issuer, duration=365, wallet_jwk=None):
+    # sign_credential(credential, wallet_did, issuer_id, c_nonce, format, issuer, mode, duration=365, wallet_jwk=None, wallet_identifier=None):
     credential_signed = await sign_credential(
         credential,
-        iss,  # wallet_did
+        wallet_did,  # wallet_did
         issuer_id,
         access_token_data.get("c_nonce", "nonce"),
         vc_format,
         mode.server + 'issuer/' + issuer_id,  # issuer
         mode,
         wallet_jwk=wallet_jwk,
-        wallet_identifier=wallet_identifier
+        wallet_identifier=wallet_identifier # "did" or 
     )
     logging.info("credential signed sent to wallet = %s", credential_signed)
     if not credential_signed:
@@ -1434,6 +1434,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
             x5c = False
         return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk, wallet_did, wallet_identifier, x5c=x5c)
     elif format in ['ldp_vc', 'jwt_vc_json-ld']:
+        print("wallet did = ", wallet_did)
         if wallet_did:
             credential['credentialSubject']['id'] = wallet_did
         else:
