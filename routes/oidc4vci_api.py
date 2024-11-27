@@ -262,7 +262,8 @@ def openid_jwt_vc_issuer_configuration(issuer_id, mode):
     statuslist_key['kid'] = statuslist_key.get('kid') if statuslist_key.get('kid') else thumbprint(statuslist_key)
     jwks['keys'].append(statuslist_key)
     logging.info('jwks = %s', jwks)
-    if random.choice([True, False]):
+    choice = random.choice([True, False])
+    if choice:
         config = {
             'issuer': mode.server + 'issuer/' + issuer_id,
             'jwks': jwks
