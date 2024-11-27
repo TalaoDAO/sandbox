@@ -347,8 +347,6 @@ def thumbprint(key):
 
 # jwks endpoint
 def issuer_jwks(issuer_id):
-    if issuer_id in ["grlvzckofy", "kivrsduinn"]: #OIDC4VCI test 10
-        return jsonify("wrong endpoin"), 400
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     pub_key = copy.copy(json.loads(issuer_data['jwk']))
     del pub_key['d']
