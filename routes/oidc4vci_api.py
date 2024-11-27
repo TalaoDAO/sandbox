@@ -273,6 +273,7 @@ def openid_jwt_vc_issuer_configuration(issuer_id, mode):
             'issuer': mode.server + 'issuer/' + issuer_id,
             'jwks_uri': mode.server + 'issuer/' + issuer_id + '/jwks'
         }
+    print("jwks config = ", config)
     return jsonify(config)
 
 
