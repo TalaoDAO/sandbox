@@ -257,11 +257,11 @@ def openid_jwt_vc_issuer_configuration(issuer_id, mode):
     pub_key['kid'] = pub_key.get('kid') if pub_key.get('kid') else thumbprint(pub_key)
     jwks ={'keys': [pub_key]}
     # add statuslist issuer key
-    statuslist_key = copy.copy(json.loads(STATUSLIST_ISSUER_KEY))
-    del statuslist_key['d']
-    statuslist_key['kid'] = statuslist_key.get('kid') if statuslist_key.get('kid') else thumbprint(statuslist_key)
-    jwks['keys'].append(statuslist_key)
-    logging.info('jwks = %s', jwks)
+    #statuslist_key = copy.copy(json.loads(STATUSLIST_ISSUER_KEY))
+    #del statuslist_key['d']
+    #statuslist_key['kid'] = statuslist_key.get('kid') if statuslist_key.get('kid') else thumbprint(statuslist_key)
+    #jwks['keys'].append(statuslist_key)
+    #logging.info('jwks = %s', jwks)
     choice_bool = random.choice([True, False])
     if choice_bool:
         config = {
@@ -353,10 +353,10 @@ def issuer_jwks(issuer_id):
     pub_key['kid'] = pub_key.get('kid') if pub_key.get('kid') else thumbprint(pub_key)
     jwks = {'keys': [pub_key]}
     # add statuslist issuer key
-    statuslist_key = copy.copy(json.loads(STATUSLIST_ISSUER_KEY))
-    del statuslist_key['d']
-    statuslist_key['kid'] = statuslist_key.get('kid') if statuslist_key.get('kid') else thumbprint(statuslist_key)
-    jwks['keys'].append(statuslist_key)
+    #statuslist_key = copy.copy(json.loads(STATUSLIST_ISSUER_KEY))
+    #del statuslist_key['d']
+    #statuslist_key['kid'] = statuslist_key.get('kid') if statuslist_key.get('kid') else thumbprint(statuslist_key)
+    #jwks['keys'].append(statuslist_key)
     logging.info('jwks = %s', jwks)
     return jsonify(jwks)
 
