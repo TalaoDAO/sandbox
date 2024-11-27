@@ -20,6 +20,7 @@ import copy
 from jwcrypto import jwk
 from random import randint
 import contextlib
+import random
 
 logging.basicConfig(level=logging.INFO)
 
@@ -67,14 +68,11 @@ def init_app(app, red, mode):
     # OIDC4VCI protocol with web wallet
     app.add_url_rule('/issuer/<issuer_id>/redirect', view_func=issuer_web_wallet_redirect, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
 
-    
-    # to manage different specs and interpretations
-    app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-vc-issuer', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
-    app.add_url_rule('/issuer/<issuer_id>/.well-known/jwt-issuer', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
+    # keys for  sd-jwt vc
     app.add_url_rule('/.well-known/jwt-vc-issuer/issuer/<issuer_id>', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
-    app.add_url_rule('/.well-known/jwt-issuer/issuer/<issuer_id>', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
 
-    app.add_url_rule('/issuer/<issuer_id>/jwks', view_func=issuer_jwks, methods=['GET', 'POST'])
+    # keys for jwt_vc_json and jwt_vc_json-ld
+    app.add_url_rule('/issuer/<issuer_id>/jwks', view_func=issuer_jwks, methods=['GET'])
 
     return
 
@@ -264,11 +262,16 @@ def openid_jwt_vc_issuer_configuration(issuer_id, mode):
     statuslist_key['kid'] = statuslist_key.get('kid') if statuslist_key.get('kid') else thumbprint(statuslist_key)
     jwks['keys'].append(statuslist_key)
     logging.info('jwks = %s', jwks)
-    config = {
-        'issuer': mode.server + 'issuer/' + issuer_id,
-        #'jwks_uri': mode.server + 'issuer/' + issuer_id + '/jwks', 
-        'jwks': jwks
-    }
+    if random.choice([True, False]):
+        config = {
+            'issuer': mode.server + 'issuer/' + issuer_id,
+            'jwks': jwks
+        }
+    else:
+        config = {
+            'issuer': mode.server + 'issuer/' + issuer_id,
+            'jwks_uri': mode.server + 'issuer/' + issuer_id + '/jwks'
+        }
     return jsonify(config)
 
 
@@ -342,6 +345,8 @@ def thumbprint(key):
 
 # jwks endpoint
 def issuer_jwks(issuer_id):
+    if issuer_id in ["grlvzckofy", "kivrsduinn"]: #OIDC4VCI test 10
+        return jsonify("wrong endpoin"), 400
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     pub_key = copy.copy(json.loads(issuer_data['jwk']))
     del pub_key['d']
