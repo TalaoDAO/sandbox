@@ -43,27 +43,42 @@
             "type": "Ed25519VerificationKey2018",
             "controller": "did:web:talao.co",
             "publicKeyBase58": "2S73k5pn5umfnaW31qx6dXFndEn6SmWw7LpgSjNNC5BF"
+        },
+        {
+            "id": "did:web:talao.co#key-5",
+            "type": "JsonWebKey2020",
+            "controller": "did:web:talao.co",
+            "publicKeyJwk": {
+                "crv":"P-256",
+                "kty":"EC",
+                "x":"XlorFi-4xHZT7KZOapzydiuoA9wo6do0cB9y92ySRcI",
+                "y":"aXJLmBIoPhuFvuP32XOamdRXjgHZ3Lf2fPmYsTr316M"
+            }
         }
     ],
     "authentication" : [
         "did:web:talao.co#key-1",
         "did:web:talao.co#key-2",
         "did:web:talao.co#key-3",
-        "did:web:talao.co#key-4"
+        "did:web:talao.co#key-4",
+        "did:web:talao.co#key-5"
     ],
     "assertionMethod" : [
         "did:web:talao.co#key-1",
         "did:web:talao.co#key-2",
         "did:web:talao.co#key-3",
-        "did:web:talao.co#key-4"
+        "did:web:talao.co#key-4",
+        "did:web:talao.co#key-5"
     ],
     "keyAgreement" : [
         "did:web:talao.co#key-3",
-        "did:web:talao.co#key-4"
+        "did:web:talao.co#key-4",
+        "did:web:talao.co#key-5"
     ],
     "capabilityInvocation":[
         "did:web:talao.co#key-1",
-        "did:web:talao.co#key-4"
+        "did:web:talao.co#key-4",
+        "did:web:talao.co#key-5"
     ],
     "service": [
         {

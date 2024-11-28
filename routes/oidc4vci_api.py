@@ -52,7 +52,7 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/<issuer_id>/credential', view_func=issuer_credential, methods=['POST'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/deferred', view_func=issuer_deferred, methods=['POST'], defaults={'red': red, 'mode': mode},)
     
-    app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=authorization_server_openid_configuration, methods=['GET'], defaults={'mode': mode},)
+    app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=openid_configuration, methods=['GET'], defaults={'mode': mode},)
     app.add_url_rule('/issuer/<issuer_id>/.well-known/oauth-authorization-server', view_func=oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
 
     
@@ -255,7 +255,7 @@ def openid_jwt_vc_issuer_configuration(issuer_id, mode):
     pub_key = copy.copy(json.loads(issuer_data['jwk']))
     del pub_key['d']
     pub_key['kid'] = pub_key.get('kid') if pub_key.get('kid') else thumbprint(pub_key)
-    jwks ={'keys': [pub_key]}
+    jwks = {'keys': [pub_key]}
     # add statuslist issuer key
     #statuslist_key = copy.copy(json.loads(STATUSLIST_ISSUER_KEY))
     #del statuslist_key['d']
@@ -273,12 +273,12 @@ def openid_jwt_vc_issuer_configuration(issuer_id, mode):
             'issuer': mode.server + 'issuer/' + issuer_id,
             'jwks_uri': mode.server + 'issuer/' + issuer_id + '/jwks'
         }
-    print("jwks config = ", config)
+    logging.info("jwks for sd-jwt config = %s", config)
     return jsonify(config)
 
 
-# /.well-known/openid-configuration endpoint  authorization server endpoint for draft 11
-def authorization_server_openid_configuration(issuer_id, mode):
+# /.well-known/openid-configuration endpoint  authorization server endpoint for draft 11 DEPRECATED
+def openid_configuration(issuer_id, mode):
     logging.info("Call to openid-configuration endpoint")
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     profile_data = profile[issuer_data['profile']]
@@ -357,7 +357,7 @@ def issuer_jwks(issuer_id):
     #del statuslist_key['d']
     #statuslist_key['kid'] = statuslist_key.get('kid') if statuslist_key.get('kid') else thumbprint(statuslist_key)
     #jwks['keys'].append(statuslist_key)
-    logging.info('jwks = %s', jwks)
+    logging.info('issuer jwks = %s', jwks)
     return jsonify(jwks)
 
 
