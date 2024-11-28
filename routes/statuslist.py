@@ -62,7 +62,8 @@ def issuer_statuslist_openid(mode):
         config = {
             'issuer': mode.server + 'sandbox/issuer/statuslist',
             "jwks": jwks
-        }  
+        }
+    print("status list config = ", config)
     return jsonify(config)
 
 
