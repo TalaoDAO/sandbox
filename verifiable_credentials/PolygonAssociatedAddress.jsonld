@@ -3,7 +3,7 @@
 		{
 			"@vocab": "https://schema.org",
 			"associatedAddress" : "https://w3id.org/security#blockchainAccountId",
-			"PolygonAssociatedAddress" : "https://doc.wallet-provider.io/wallet/vc_type/#PolygonAssociatedAdress"
+			"PolygonAssociatedAddress" : "https://doc.wallet-provider.io/vc_type#polygonassociatedadress"
 		}
 	],
 	"id" : "",
@@ -15,6 +15,7 @@
 		"id": "",
 		"name": "My Wallet"
 	},
+	"expirationDate": "",
 	"credentialSubject" : {
 		"id" : "",
 		"type" : "PolygonAssociatedAddress",

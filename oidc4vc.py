@@ -322,11 +322,14 @@ def build_pre_authorized_code(key, wallet_did, issuer_did, issuer_vm, nonce):
 
 def resolve_did(vm) -> dict:
     logging.info('vm = %s', vm)
+    if vm[:4] != "did:":
+        logging.error("Not a verificationMethod  %s", vm)
+        return
     try:
         did = vm.split('#')[0]
     except Exception:
         logging.error("This verification method is not supported  %s", vm)
-        return
+        return 
     # try did for ebsi v3
     try:
         jwk = resolve_wallet_did_ebsi_v3(did)

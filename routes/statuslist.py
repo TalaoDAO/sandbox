@@ -10,6 +10,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 from flask import render_template, request, redirect, Response, jsonify
 import copy
+import random
 
 ISSUER_KEY = json.dumps(json.load(open('keys.json', 'r'))['talao_Ed25519_private_key'])
 #ISSUER_VM = 'did:web:app.altme.io:issuer#key-1'
@@ -47,10 +48,21 @@ def issuer_statuslist_jwks():
 
 
 def issuer_statuslist_openid(mode):
-    config = {
-        'issuer': mode.server + 'sandbox/issuer/statuslist',
-        "jwks_uri": mode.server + "sandbox/issuer/statuslist/jwks"
-    }
+    pub_key = copy.copy(json.loads(ISSUER_KEY))
+    del pub_key['d']
+    pub_key['kid'] = pub_key.get('kid') if pub_key.get('kid') else thumbprint(pub_key)
+    jwks = {'keys': [pub_key]}
+    choice_bool = random.choice([True, False])
+    if choice_bool:
+        config = {
+            'issuer': mode.server + 'sandbox/issuer/statuslist',
+            "jwks_uri": mode.server + "sandbox/issuer/statuslist/jwks"
+        }
+    else:        
+        config = {
+            'issuer': mode.server + 'sandbox/issuer/statuslist',
+            "jwks": jwks
+        }  
     return jsonify(config)
 
 
