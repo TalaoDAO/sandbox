@@ -4,23 +4,25 @@ https://issuer.walt.id/issuer-api/default/oidc
 EBSI V2 https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html
 support Authorization code flow and pre-authorized code flow of OIDC4VCI
 """
-from flask import jsonify, request, render_template, Response, redirect, session, flash
+import contextlib
+import copy
 import json
-from datetime import datetime, timedelta
-import uuid
 import logging
-import didkit
+import random
+import uuid
+from datetime import datetime, timedelta
+from profile import profile
+from random import randint
 from urllib.parse import urlencode
 import db_api
-import oidc4vc
-from profile import profile
+import oidc4vc  # type: ignore
 import pkce
 import requests
-import copy
-from jwcrypto import jwk
-from random import randint
-import contextlib
-import random
+from flask import (Response, flash, jsonify, redirect,  # type: ignore
+                   render_template, request, session)
+from jwcrypto import jwk # type: ignore
+
+import didkit
 
 logging.basicConfig(level=logging.INFO)
 
@@ -897,16 +899,31 @@ def issuer_token(issuer_id, red, mode):
     """
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-token-endpoint
     https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
+    
+    DPoP : https://datatracker.ietf.org/doc/rfc9449/
     """
     
     logging.info('token endoint header %s', request.headers)
     logging.info('token endoint form %s', json.dumps(request.form, indent=4))
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
-
+    
+    # DPoP
+    if request.headers.get('DPoP'):
+        try:
+            DPoP_header = oidc4vc.get_header_from_token(request.headers.get('DPoP'))
+            DPoP_payload = oidc4vc.get_payload_from_token(request.headers.get('DPoP'))
+            logging.info('DPoP header = %s', json.dumps(DPoP_header, indent=4))
+            logging.info('DPoP payload = %s', json.dumps(DPoP_payload, indent=4))
+        except Exception as e:
+            return Response(**manage_error('invalid_request', 'DPoP is incorrect ' + str(e), red, mode, request=request))
+    else:
+        logging.info('No DPoP')
+    
+    
     # Grant type
     grant_type = request.form.get('grant_type')
-    if  not grant_type:
+    if not grant_type:
         return Response(**manage_error('invalid_request', 'Request format is incorrect, grant is missing', red, mode, request=request))
 
     if grant_type == 'urn:ietf:params:oauth:grant-type:pre-authorized_code' and not request.form.get('pre-authorized_code'):
@@ -1051,6 +1068,18 @@ async def issuer_credential(issuer_id, red, mode):
     logging.info('credential endoint header %s', request.headers)
     logging.info('credential endpoint request %s', json.dumps(request.json, indent=4))
     
+    # DPoP
+    if request.headers.get('DPoP'):
+        try:
+            DPoP_header = oidc4vc.get_header_from_token(request.headers.get('DPoP'))
+            DPoP_payload = oidc4vc.get_payload_from_token(request.headers.get('DPoP'))
+            logging.info('DPoP header = %s', json.dumps(DPoP_header, indent=4))
+            logging.info('DPoP payload = %s', json.dumps(DPoP_payload, indent=4))
+        except Exception as e:
+            return Response(**manage_error('invalid_request', 'DPoP is incorrect ' + str(e), red, mode, request=request))
+    else:
+        logging.info('No DPoP')
+        
     # Check access token
     try:
         access_token = request.headers['Authorization'].split()[1]
