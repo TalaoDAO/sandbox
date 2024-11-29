@@ -1,11 +1,11 @@
 
 import base64
-import zlib # https://www.ietf.org/archive/id/draft-ietf-oauth-status-list-02.html
-import gzip # 
+import zlib  # https://www.ietf.org/archive/id/draft-ietf-oauth-status-list-02.html
+import gzip
 from datetime import datetime
-from oidc4vc import alg, get_payload_from_token
+from oidc4vc import alg, get_payload_from_token  # type: ignore
 import json
-from jwcrypto import jwk, jwt
+from jwcrypto import jwk, jwt  # type: ignore
 import logging
 logging.basicConfig(level=logging.INFO)
 from flask import render_template, request, redirect, Response, jsonify
@@ -13,23 +13,25 @@ import copy
 import random
 
 ISSUER_KEY = json.dumps(json.load(open('keys.json', 'r'))['talao_Ed25519_private_key'])
-#ISSUER_VM = 'did:web:app.altme.io:issuer#key-1'
-#ISSUER_DID = 'did:web:app.altme.io:issuer'
+#  ISSUER_VM = 'did:web:app.altme.io:issuer#key-1'
+#  ISSUER_DID = 'did:web:app.altme.io:issuer'
 
 
 def init_app(app, red, mode):
-    app.add_url_rule('/sandbox/issuer/statuslist',  view_func=issuer_statuslist, methods=['GET', 'POST'], defaults={"mode":mode})
+    app.add_url_rule('/sandbox/issuer/statuslist',  view_func=issuer_statuslist, methods=['GET', 'POST'], defaults={"mode": mode})
+    app.add_url_rule('/issuer/statuslist',  view_func=issuer_statuslist, methods=['GET', 'POST'], defaults={"mode": mode})
+
     app.add_url_rule('/sandbox/issuer/statuslist/<list_id>', view_func=issuer_status_list, methods=['GET'])
+    app.add_url_rule('/issuer/statuslist/<list_id>', view_func=issuer_status_list, methods=['GET'])
 
-    app.add_url_rule('/sandbox/issuer/statuslist/api', view_func=issuer_status_list_api, methods=['POST'],  defaults={"mode":mode})
+    app.add_url_rule('/sandbox/issuer/statuslist/api', view_func=issuer_status_list_api, methods=['POST'],  defaults={"mode": mode})
 
-
-    app.add_url_rule('/sandbox/issuer/bitstringstatuslist',  view_func=issuer_bitstringstatuslist, methods=['GET', 'POST'], defaults={"mode":mode})
+    app.add_url_rule('/sandbox/issuer/bitstringstatuslist',  view_func=issuer_bitstringstatuslist, methods=['GET', 'POST'], defaults={"mode": mode})
     app.add_url_rule('/sandbox/issuer/bitstringstatuslist/<list_id>', view_func=issuer_bitstring_status_list, methods=['GET'])
 
     app.add_url_rule('/sandbox/issuer/statuslist/jwks', view_func=issuer_statuslist_jwks, methods=['GET'])
-    app.add_url_rule('/sandbox/issuer/statuslist/.well-known/openid-configuration', view_func=issuer_statuslist_openid, methods=['GET'], defaults={"mode":mode})
-    app.add_url_rule('/sandbox/issuer/statuslist/.well-known/oauth-authorization-server', view_func=issuer_statuslist_openid, methods=['GET'], defaults={"mode":mode})
+    app.add_url_rule('/sandbox/issuer/statuslist/.well-known/openid-configuration', view_func=issuer_statuslist_openid, methods=['GET'], defaults={"mode": mode})
+    app.add_url_rule('/sandbox/issuer/statuslist/.well-known/oauth-authorization-server', view_func=issuer_statuslist_openid, methods=['GET'], defaults={"mode": mode})
 
     return
 
@@ -55,15 +57,15 @@ def issuer_statuslist_openid(mode):
     choice_bool = random.choice([True, False])
     if choice_bool:
         config = {
-            'issuer': mode.server + 'sandbox/issuer/statuslist',
-            "jwks_uri": mode.server + "sandbox/issuer/statuslist/jwks"
+            'issuer': mode.server + 'issuer/statuslist',
+            "jwks_uri": mode.server + "issuer/statuslist/jwks"
         }
-    else:        
+    else:
         config = {
-            'issuer': mode.server + 'sandbox/issuer/statuslist',
+            'issuer': mode.server + 'issuer/statuslist',
             "jwks": jwks
         }
-    print("status list config = ", config)
+    logging.info("status list config = %s", config)
     return jsonify(config)
 
 
@@ -71,20 +73,20 @@ def issuer_status_list(list_id):
     """
     GET for IETF status list
     """
-    logging.info("request headers for ietf statuslist = %s", list_id)
     try:
         list_id = str(list_id)
         listname = "statuslist_ietf_" + list_id + ".txt"
         f = open(listname, "r")
-        status_list_token = f.read() 
+        status_list_token = f.read()
         headers = {
             'Cache-Control': 'no-store',
             'Content-Type': 'application/statuslist+jwt'
         }
+        logging.info("status list token = %s", status_list_token)
         return Response(status_list_token, headers=headers)
     except Exception:
         return jsonify("status list token not found"), 400
-    
+
 
 def issuer_bitstring_status_list(list_id):
     """
@@ -119,7 +121,7 @@ def issuer_statuslist(mode):
         else:
             update_status_list_token_file(1, int(index), True, mode)
             logging.info("revoke index = %s", index)
-        return redirect("/sandbox/issuer/statuslist")
+        return redirect("/issuer/statuslist")
 
 
 def issuer_bitstringstatuslist(mode):
@@ -139,12 +141,15 @@ def issuer_bitstringstatuslist(mode):
         return redirect("/sandbox/issuer/bitstringstatuslist")
 
 
-def sign_status_list_token(lst, list_id, mode):  # for sd-jwt   
+def sign_status_list_token(lst, list_id, mode):  # for sd-jwt
+    """
+    https://www.ietf.org/archive/id/draft-ietf-oauth-status-list-05.html#name-status-list-token
+    """
     key = json.loads(ISSUER_KEY) if isinstance(ISSUER_KEY, str) else ISSUER_KEY
-    key = jwk.JWK(**key) 
+    key = jwk.JWK(**key)
     kid = key.get('kid') if key.get('kid') else key.thumbprint()
     header = {
-        "typ":"statuslist+jwt",
+        "typ": "statuslist+jwt",
         "alg": alg(key),
         "kid": kid,
     }
@@ -154,28 +159,29 @@ def sign_status_list_token(lst, list_id, mode):  # for sd-jwt
             "bits": 1,
             "lst": lst
         },
-        "sub": mode.server + "sandbox/issuer/statuslist/" + list_id,
-        "exp": round(datetime.timestamp(datetime.now())) + 365*24*60*60,
-        "iss": mode.server + "sandbox/issuer/statuslist",
+        "sub": mode.server + "issuer/statuslist/" + list_id,
+        #  "exp": round(datetime.timestamp(datetime.now())) + 365*24*60*60,
+        "iss": mode.server + "issuer/statuslist",
+        "ttl": 86400  # 1 day
     }
     token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
     token.make_signed_token(key)
     return token.serialize()
 
 
-def sign_status_list_bitstring_credential(lst, list_id, mode):  # for sd-jwt   
+def sign_status_list_bitstring_credential(lst, list_id, mode):  # for sd-jwt
     key = json.loads(ISSUER_KEY) if isinstance(ISSUER_KEY, str) else ISSUER_KEY
-    key = jwk.JWK(**key) 
+    key = jwk.JWK(**key)
     kid = key.get('kid') if key.get('kid') else key.thumbprint()
     header = {
-        "typ":"statuslist+json",
+        "typ": "statuslist+json",
         "alg": alg(key),
         "kid":  kid,
     }
     payload = {
         "iat": round(datetime.timestamp(datetime.now())),
         "jti": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id,
-        "vc" : {
+        "vc": {
             "@context": [
                 "https://www.w3.org/ns/credentials/v2"
             ],
@@ -205,7 +211,7 @@ def set_bit(v, index, x):
     v &= ~mask          # Clear the bit indicated by the mask (if x is False)
     if x:
         v |= mask         # If x was True, set the bit indicated by the mask.
-    return v   
+    return v
 
 
 def set_status_list_frame(frame, index, status, standard):
@@ -226,7 +232,7 @@ def set_status_list_frame(frame, index, status, standard):
 
 def issuer_status_list_api(mode):
     """
-    @status = "suspended" to suspend or revoke 
+    @status = "suspended" to suspend or revoke
     curl -d "status=false" -d "index=1000" -H "Content-Type: application/x-www-form-urlencoded"  -H "X-Api-Key: 123456" -X POST http://192.168.0.20:3000/sandbox/issuer/statuslist/api
     curl -d "status=suspended" -d "index=5320" -H "Content-Type: application/x-www-form-urlencoded"  -H "X-Api-Key: 123456" -X POST https://talao.co/sandbox/issuer/statuslist/api
 
@@ -308,7 +314,7 @@ def update_status_list_bitstring_file(list_id, index, status, mode):
         list_id = str(list_id)
         listname = "statuslist_w3c_bitstring_" + list_id + ".txt"
         f = open(listname, "r")
-        status_list_token = f.read() 
+        status_list_token = f.read()
         lst = get_payload_from_token(status_list_token)['vc']['credentialSubject']["encodedList"]
         lst += "=" * ((4 - len(lst) % 4) % 4)
         lst = base64.urlsafe_b64decode(lst)
@@ -341,5 +347,3 @@ def generate_w3c_bitstring_lst(frame):
     compressed = gzip.compress(frame, compresslevel=9)
     c = base64.urlsafe_b64encode(compressed)
     return c.decode().replace("=", "")
-
-

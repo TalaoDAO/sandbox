@@ -598,6 +598,19 @@ def authorization_error(error, error_description, stream_id, red, state):
 def issuer_authorize_par(issuer_id, red, mode):
     logging.info('request header = %s', request.headers)
     logging.info('request body = %s', json.dumps(request.form, indent=4))
+    
+    # DPoP
+    if request.headers.get('DPoP'):
+        try:
+            DPoP_header = oidc4vc.get_header_from_token(request.headers.get('DPoP'))
+            DPoP_payload = oidc4vc.get_payload_from_token(request.headers.get('DPoP'))
+            logging.info('DPoP header = %s', json.dumps(DPoP_header, indent=4))
+            logging.info('DPoP payload = %s', json.dumps(DPoP_payload, indent=4))
+        except Exception as e:
+            return Response(**manage_error('invalid_request', 'DPoP is incorrect ' + str(e), red, mode, request=request))
+    else:
+        logging.info('No DPoP')
+        
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     except Exception:
@@ -1459,7 +1472,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
         credential["status"] = {
             "status_list": {
                 "idx": randint(0, 99999),
-                "uri": mode.server + "sandbox/issuer/statuslist/1"
+                "uri": mode.server + "issuer/statuslist/1"
             }
         }
         if issuer_id in ['raamxepqex', 'tdiwmpyhzc']:
@@ -1468,7 +1481,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
             x5c = False
         return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk, wallet_did, wallet_identifier, x5c=x5c)
     elif format in ['ldp_vc', 'jwt_vc_json-ld']:
-        print("wallet did = ", wallet_did)
+        logging.info("wallet did = %s", wallet_did)
         if wallet_did:
             credential['credentialSubject']['id'] = wallet_did
         else:

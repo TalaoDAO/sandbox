@@ -1,7 +1,7 @@
 import requests
 from jwcrypto import jwk, jwt
 import base64
-import base58
+import base58  # type: ignore
 import json
 from datetime import datetime
 import logging
@@ -18,10 +18,6 @@ DIDS method https://ec.europa.eu/digital-building-blocks/wikis/display/EBSIDOC/E
 supported signature: https://ec.europa.eu/digital-building-blocks/wikis/display/EBSIDOC/E-signing+and+e-sealing+Verifiable+Credentials+and+Verifiable+Presentations
 
 """
-
-
-#issuer_did = 'did:jwk:' + base64.urlsafe_b64encode(json.dumps(issuer_public_key).replace(" ", "").encode()).decode()
-
 
 
 def generate_key(curve):
@@ -50,7 +46,7 @@ alg value https://www.rfc-editor.org/rfc/rfc7518#page-6
         key = jwk.JWK.generate(kty='RSA', size=2048)
     else:
         raise Exception("Curve not supported")
-    return json.loads(key.export(private_key=True))  
+    return json.loads(key.export(private_key=True))
 
 
 def alg(key):
@@ -58,7 +54,7 @@ def alg(key):
     if key['kty'] == 'EC':
         if key['crv'] in ['secp256k1', 'P-256K']:
             key['crv'] = 'secp256k1'
-            return 'ES256K' 
+            return 'ES256K'
         elif key['crv'] == 'P-256':
             return 'ES256'
         elif key['crv'] == 'P-384':
@@ -85,19 +81,19 @@ def resolve_wallet_did_ebsi_v3(did) -> str:
 
 
 def generate_wallet_did_ebsiv3(key):
-    # json string, remove space, alphabetical ordered 
+    # json string, remove space, alphabetical ordered
     if isinstance(key, str):
         key = json.loads(pub_key)
     if key["kty"] == "EC":
         jwk = {
-            "crv": key["crv"], # seckp256k1 or P-256 
+            "crv": key["crv"],  # seckp256k1 or P-256 
             "kty": "EC",
             "x": key["x"],
             "y": key["y"]
         }
     elif key["kty"] == "OKP":
         jwk = {
-            "crv": "Ed25519", # pub_key["crv"], # Ed25519
+            "crv": "Ed25519",  # pub_key["crv"], # Ed25519
             "kty": "OKP",
             "x": key["x"]
         }
@@ -126,7 +122,7 @@ def sign_jwt_vc(vc, kid, issuer_key, nonce, iss, jti, sub):
     vc = json.loads(vc) if isinstance(vc, str) else vc
     signer_key = jwk.JWK(**issuer_key) 
     header = {
-        'typ':'JWT',
+        'typ': 'JWT',
         'kid': kid,
         'alg': alg(issuer_key)
     }
@@ -147,7 +143,7 @@ def sign_jwt_vc(vc, kid, issuer_key, nonce, iss, jti, sub):
     a = jwt.JWT.from_jose_token(token.serialize())
     verif_key = jwk.JWK(**issuer_key)
     a.validate(verif_key)
-    print("payload VC = ", json.dumps(payload, indent= 4))
+    logging.info("payload VC = %s", json.dumps(payload, indent=4))
     return token.serialize()
 
 
@@ -160,14 +156,14 @@ def sign_jwt_vp(vc, audience, holder_vm, holder_did, nonce, vp_id, holder_key):
     holder_key = json.loads(holder_key) if isinstance(holder_key, str) else holder_key
     signer_key = jwk.JWK(**holder_key) 
     header = {
-        "typ":"JWT",
+        "typ": "JWT",
         "alg": alg(holder_key),
         "kid": holder_vm,
         "jwk": pub_key(holder_key),
     }
     iat = round(datetime.timestamp(datetime.now()))
     payload = {
-        #"iat": iat,
+        #  "iat": iat,
         "jti": vp_id,
         "nbf": iat,
         "aud": audience,
@@ -232,7 +228,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
         elif isinstance(unsecured[claim], (str, bool, int)):
             contents = json.dumps([salt(), claim, unsecured[claim]])
             disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
-            _disclosure += "~" + disclosure 
+            _disclosure += "~" + disclosure
             payload['_sd'].append(hash(disclosure))
         # for nested json
         elif isinstance(unsecured[claim], dict):
@@ -248,11 +244,11 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
                 else:
                     nested_contents = json.dumps([salt(), nested_claim, unsecured[claim][nested_claim]])
                     nested_disclosure = base64.urlsafe_b64encode(nested_contents.encode()).decode().replace("=", "")
-                    _disclosure += "~" + nested_disclosure 
+                    _disclosure += "~" + nested_disclosure
                     payload[claim]['_sd'].append(hash(nested_disclosure))
             if not payload[claim]['_sd']: del payload[claim]['_sd']
         # for list
-        elif isinstance(unsecured[claim], list): # list
+        elif isinstance(unsecured[claim], list):  # list
             nb = len(unsecured[claim])
             payload.update({claim: []})
             for index in range(0, nb):
@@ -262,7 +258,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
                         logging.warning("disclosure is missing for %s", claim)
                 else:
                     nested_disclosure_list = []
-            for index in range(0,nb):
+            for index in range(0, nb):
                 if isinstance(unsecured[claim][index], dict):
                     pass
                 elif unsecured[claim][index] in nested_disclosure_list:
@@ -271,28 +267,32 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
                     contents = json.dumps([salt(), unsecured[claim][index]])
                     nested_disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
                     _disclosure += "~" + nested_disclosure 
-                    payload[claim].append({"..." : hash(nested_disclosure)})
+                    payload[claim].append({"...": hash(nested_disclosure)})
         else:
             logging.warning("type not supported")
     if not payload['_sd']:
         del payload['_sd']
         del payload["_sd_alg"]
-    logging.info("sd-jwt payload = %s", payload)
+    logging.info("sd-jwt payload = %s", json.dumps(payload, indent=4))
     signer_key = jwk.JWK(**issuer_key)
     kid = issuer_key.get('kid') if issuer_key.get('kid') else signer_key.thumbprint()
+    # https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-06.html#name-jose-header
+    # chang in hehader typ
     header = {
-        'typ': "vc+sd-jwt",
+        'typ': "dc+sd-jwt",
         'alg': alg(issuer_key)
     }
     if x5c:
         header['x5c'] = x509_attestation.build_x509_san_dns(hostname=issuer)
     else:
         header['kid'] = kid
-    try:
-        if subject_key.get("use"): del subject_key['use']
-    except:
-        logging.error("error, subject_key = none")
-    if unsecured.get('status'): payload['status'] = unsecured['status']
+    if subject_key:
+        try:
+            del subject_key['use']
+        except Exception:
+            pass
+    if unsecured.get('status'): 
+        payload['status'] = unsecured['status']
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
     return token.serialize() + _disclosure + "~"
@@ -302,7 +302,7 @@ def build_pre_authorized_code(key, wallet_did, issuer_did, issuer_vm, nonce):
     key = json.loads(key) if isinstance(key, str) else key
     key = jwk.JWK(**key) 
     header = {
-        "typ":"JWT",
+        "typ": "JWT",
         "alg": alg(key),
         "kid": issuer_vm,
     }
@@ -372,14 +372,14 @@ def resolve_did(vm) -> dict:
                     publicKeyBase58 = verificationMethod.get('publicKeyBase58')
                     logging.info('wallet publiccKeyBase48 = %s', publicKeyBase58)
                     return publicKeyBase58
-                else:  
+                else:
                     logging.info('wallet jwk = %s', jwk)
                     return jwk
 
 
 def verif_token(token, nonce, aud=None):
     """
-    For issuer 
+    For issuer
     raise exception if problem
     https://jwcrypto.readthedocs.io/en/latest/jwt.html#jwcrypto.jwt.JWT.validate
     """
@@ -409,19 +409,19 @@ def verif_token(token, nonce, aud=None):
 
 def get_payload_from_token(token) -> dict:
     payload = token.split('.')[1]
-    payload += "=" * ((4 - len(payload) % 4) % 4) # solve the padding issue of the base64 python lib
+    payload += "=" * ((4 - len(payload) % 4) % 4)  # solve the padding issue of the base64 python lib
     return json.loads(base64.urlsafe_b64decode(payload).decode())
 
 
 def get_header_from_token(token):
     header = token.split('.')[0]
-    header += "=" * ((4 - len(header) % 4) % 4) # solve the padding issue of the base64 python lib
+    header += "=" * ((4 - len(header) % 4) % 4)  # solve the padding issue of the base64 python lib
     return json.loads(base64.urlsafe_b64decode(header).decode())
 
 
 def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce, jwk=False):
     key = json.loads(key) if isinstance(key, str) else key
-    signer_key = jwk.JWK(**key) 
+    signer_key = jwk.JWK(**key)
     header = {
         'typ': 'openid4vci-proof+jwt',
         'alg': alg(key),
@@ -435,7 +435,7 @@ def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce, jwk=False):
         'nonce': nonce,
         'iat': datetime.timestamp(datetime.now()),
         'aud': aud  # Credential Issuer URL
-    }  
+    }
     token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
     token.make_signed_token(signer_key)
     return token.serialize()
@@ -445,9 +445,9 @@ def thumbprint(key):
     key = json.loads(key) if isinstance(key, str) else key
     if key['crv'] == 'P-256K':
         key['crv'] = 'secp256k1'
-    signer_key = jwk.JWK(**key) 
+    signer_key = jwk.JWK(**key)
     a = signer_key.thumbprint()
-    a  += "=" * ((4 - len(a) % 4) % 4) 
+    a  += "=" * ((4 - len(a) % 4) % 4)
     return base64.urlsafe_b64decode(a).hex()
 
 
@@ -455,13 +455,13 @@ def thumbprint_str(key):
     key = json.loads(key) if isinstance(key, str) else key
     if key['crv'] == 'P-256K':
         key['crv'] = 'secp256k1'
-    signer_key = jwk.JWK(**key) 
+    signer_key = jwk.JWK(**key)
     return signer_key.thumbprint()
-    
+
 
 def verification_method(did, key):  # = kid
     key = json.loads(key) if isinstance(key, str) else key
-    signer_key = jwk.JWK(**key) 
+    signer_key = jwk.JWK(**key)
     thumb_print = signer_key.thumbprint()
     return did + '#' + thumb_print
 
@@ -472,11 +472,11 @@ def resolve_did_web(did) -> str:
     """
     if did.split(':')[1] != 'web':
         return
-    url = 'https://' + did.split(':')[2] 
+    url = 'https://' + did.split(':')[2]
     i = 3
     try:
         while did.split(':')[i]:
-            url = url + '/' +  did.split(':')[i]
+            url = url + '/' + did.split(':')[i]
             i += 1
     except Exception:
         pass
@@ -489,9 +489,11 @@ def resolve_did_web(did) -> str:
 
 
 def did_resolve_lp(did):
-    #for legal person  did:ebsi and did:web
-    #API v3   Get DID document with EBSI API
-    #https://api-pilot.ebsi.eu/docs/apis/did-registry/latest#/operations/get-did-registry-v3-identifier
+    """
+    for legal person  did:ebsi and did:web
+    API v3   Get DID document with EBSI API
+    https://api-pilot.ebsi.eu/docs/apis/did-registry/latest#/operations/get-did-registry-v3-identifier
+    """
     url = 'https://unires:test@unires.talao.co/1.0/identifiers/' + did
     try:
         r = requests.get(url, timeout=10)
@@ -510,14 +512,14 @@ def get_issuer_registry_data(did):
     """
     try:
         url = 'https://api-pilot.ebsi.eu/trusted-issuers-registry/v3/issuers/' + did
-        r = requests.get(url) 
+        r = requests.get(url)
     except Exception:
         logging.error('cannot access API')
-        return 
+        return
     if 399 < r.status_code < 500:
         logging.warning('return API code = %s', r.status_code)
         return
-    try: 
+    try:
         body = r.json()['attributes'][0]['body']
         return base64.urlsafe_b64decode(body).decode()
     except Exception:
