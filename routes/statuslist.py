@@ -33,7 +33,10 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/statuslist/jwks', view_func=issuer_statuslist_jwks, methods=['GET'])
 
     app.add_url_rule('/sandbox/issuer/statuslist/.well-known/openid-configuration', view_func=issuer_statuslist_openid, methods=['GET'], defaults={"mode": mode})
+    app.add_url_rule('/issuer/statuslist/.well-known/openid-configuration', view_func=issuer_statuslist_openid, methods=['GET'], defaults={"mode": mode})
+ 
     app.add_url_rule('/sandbox/issuer/statuslist/.well-known/oauth-authorization-server', view_func=issuer_statuslist_openid, methods=['GET'], defaults={"mode": mode})
+    app.add_url_rule('/issuer/statuslist/.well-known/oauth-authorization-server', view_func=issuer_statuslist_openid, methods=['GET'], defaults={"mode": mode})
 
     return
 
