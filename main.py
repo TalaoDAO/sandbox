@@ -212,7 +212,9 @@ payload = api.model(
         'pre-authorized_code': fields.Boolean(example=True, required=True),
         'user_pin_required': fields.Boolean(example=False),
         'user_pin': fields.String(),
+        'input_length': fields.Integer(),
         "input_mode": fields.String(),
+        "input_description": fields.String(),
         'callback': fields.String(example=callback, required=True),
     },
     description="API payload",
@@ -355,9 +357,12 @@ class Issuer(Resource):
             "user_pin_required": request.json.get("user_pin_required"),
             "user_pin": request.json.get("user_pin"),
             "input_mode": request.json.get("input_mode"),
+            "input_description": request.json.get("input_description"),
+            "input_length": request.json.get("input_length"),
             "callback": request.json.get("callback"),
             "login": request.json.get("login"),
         }
+        print("session_data = ", session_data)
         # For deferred API call only VC is stored in redis with issuer_state as key
         if deferred_vc and red.get(issuer_state): # red.get exists if the call without VC has been done previously
             session_data.update(

@@ -19,7 +19,7 @@ import oidc4vc  # type: ignore
 import pkce
 import requests
 from flask import (Response, flash, jsonify, redirect,  # type: ignore
-                   render_template, request, session)
+                render_template, request, session)
 from jwcrypto import jwk # type: ignore
 
 import didkit
@@ -363,7 +363,13 @@ def issuer_jwks(issuer_id):
     return jsonify(jwks)
 
 
-def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state, user_pin_required, input_mode, mode):
+def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state, user_pin_required, tx_code_input_mode, tx_code_length, tx_code_description, mode):
+    if not tx_code_input_mode:
+        tx_code_input_mode = 'text'
+    if not tx_code_length:
+        tx_code_length = 4
+    if not tx_code_description:
+        tx_code_description = 'Please enter the secret code you received by email'
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = issuer_data['profile']
     profile_data = profile[issuer_profile]
@@ -436,9 +442,9 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                     'urn:ietf:params:oauth:grant-type:pre-authorized_code'
                 ].update({
                     'tx_code': {
-                        'length': 4,
-                        'input_mode': input_mode,
-                        'description': 'Please provide the one-time code which was sent via e-mail'
+                        'length': tx_code_length,
+                        'input_mode': tx_code_input_mode,
+                        'description': tx_code_description
                     }
                 })
         else:
@@ -472,10 +478,11 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     credential_type = session_data['credential_type']
     pre_authorized_code = session_data['pre-authorized_code']
     user_pin_required = session_data['user_pin_required']
-    input_mode = session_data.get('input_mode', 'numeric')
+    input_mode = session_data.get('input_mode')
+    input_length = session_data.get('input_length')
+    input_description = session_data.get('input_description')
     issuer_state = session_data['issuer_state']
-    offer = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state,  user_pin_required, input_mode, mode)
-
+    offer = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state,  user_pin_required, input_mode, input_length, input_description, mode)
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     data_profile = profile[issuer_data['profile']]
     # credential offer is passed by value
@@ -539,10 +546,11 @@ def oidc_issuer_qrcode_value(issuer_id, stream_id, red, mode):
     credential_type = session_data['credential_type']
     pre_authorized_code = session_data['pre-authorized_code']
     user_pin_required = session_data['user_pin_required']
-    input_mode = session_data.get('input_mode', 'numeric')
     issuer_state = session_data['issuer_state']
-    offer = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state,  user_pin_required, input_mode, mode)
-
+    input_mode = session_data.get('input_mode')
+    input_length = session_data.get('input_length')
+    input_description = session_data.get('input_description')
+    offer = build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state,  user_pin_required, input_mode, input_length, input_description, mode)
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     data_profile = profile[issuer_data['profile']]
     # credential offer is passed by value
@@ -910,18 +918,15 @@ def issuer_authorize(issuer_id, red, mode):
 # token endpoint
 def issuer_token(issuer_id, red, mode):
     """
-    https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-token-endpoint
-    https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
-    
+    token endpoint : https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
     DPoP : https://datatracker.ietf.org/doc/rfc9449/
     """
-    
     logging.info('token endoint header %s', request.headers)
     logging.info('token endoint form %s', json.dumps(request.form, indent=4))
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
     
-    # DPoP
+    # display DPoP
     if request.headers.get('DPoP'):
         try:
             DPoP_header = oidc4vc.get_header_from_token(request.headers.get('DPoP'))
@@ -933,8 +938,7 @@ def issuer_token(issuer_id, red, mode):
     else:
         logging.info('No DPoP')
     
-    
-    # Grant type
+    # check grant type
     grant_type = request.form.get('grant_type')
     if not grant_type:
         return Response(**manage_error('invalid_request', 'Request format is incorrect, grant is missing', red, mode, request=request))
@@ -1006,24 +1010,25 @@ def issuer_token(issuer_id, red, mode):
             if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(PoP).get('iss'):
                 return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
 
-    # Code expired
+    # check code validity
     try:
         data = json.loads(red.get(code).decode())
     except Exception:
         return Response(**manage_error('access_denied', 'Grant code expired', red, mode, request=request, status=404))
     stream_id = data['stream_id']
         
-    # check code verifier
+    # check PKCE
     if grant_type == 'authorization_code' and int(issuer_profile['oidc4vciDraft']) >= 10:
         code_verifier = request.form.get('code_verifier')
         code_challenge_calculated = pkce.get_code_challenge(code_verifier)
         if code_challenge_calculated != data['code_challenge']:
             return Response(**manage_error('access_denied', 'Code verifier is incorrect', red, mode, request=request, stream_id=stream_id, status=404))
 
+    # check tx_code
     if data.get('user_pin_required') and not user_pin:
         return Response(**manage_error('invalid_request', 'User pin is missing', red, mode, request=request, stream_id=stream_id))
     logging.info('user_pin = %s', data.get('user_pin'))
-    if data.get('user_pin_required') and data.get('user_pin') != user_pin:
+    if data.get('user_pin_required') and data.get('user_pin') not in [user_pin, str(user_pin)]:
         return Response(**manage_error('access_denied', 'User pin is incorrect', red, mode, request=request, stream_id=stream_id, status=404))
 
     # token endpoint response
@@ -1128,25 +1133,23 @@ async def issuer_credential(issuer_id, red, mode):
         elif result.get('format') in ['ldp_vc', 'jwt_vc_json-ld']:
             try:
                 credential_definition = result['credential_definition']
-                type = credential_definition['type']
-                context = credential_definition['@context']
+                type = credential_definition['type'] # to check if it exists
+                context = credential_definition['@context'] # to check if it exists
             except Exception:
                 return Response(**manage_error('invalid_request', 'Invalid request format, type or @context is missing for ldp_vc or jwt_vc_json-ld', red, mode, request=request, stream_id=stream_id))
         elif result.get('format') == 'jwt_vc_json':
             try:
                 credential_definition = result['credential_definition']
-                type = credential_definition['type']
+                type = credential_definition['type']  # to check if it exists
             except Exception:
                 return Response(**manage_error('invalid_request', 'Invalid request format, type  is missing for jwt_vc_json', red, mode, request=request, stream_id=stream_id))
 
-    # check types
-    if int(issuer_profile['oidc4vciDraft']) < 13:
-        if vc_format in ['ldp_vc', 'jwt_vc_json', 'jwt_vc_json-ld', 'jwt_vc'] and not result.get('types'):
-            return Response(**manage_error('unsupported_credential_format', 'Invalid VC format, types is missing', red, mode, request=request, stream_id=stream_id))
+    # check types fo deprecated draft
+    if int(issuer_profile['oidc4vciDraft']) < 13 and not result.get('types'):
+        return Response(**manage_error('unsupported_credential_format', 'Invalid VC format, types is missing', red, mode, request=request, stream_id=stream_id))
 
     # check proof if it exists depending on type of proof
-    proof = result.get('proof')
-    if proof:
+    if proof := result.get('proof'):
         proof_type = result['proof']['proof_type']
         if proof_type == 'jwt':
             proof = result['proof']['jwt']
@@ -1192,9 +1195,9 @@ async def issuer_credential(issuer_id, red, mode):
         logging.warning('No proof available -> Bearer credential, wallet_did = client_id')
         wallet_jwk = None
         if vc_format == 'ldp_vc':
-            wallet_did = None  # wallet_did
+            wallet_did = None
         else:
-            wallet_did = access_token_data['client_id']  # wallet_did
+            wallet_did = access_token_data['client_id']
         
     logging.info('wallet_did = %s', wallet_did)
     logging.info('wallet_identifier = %s', wallet_identifier)
@@ -1299,7 +1302,7 @@ async def issuer_credential(issuer_id, red, mode):
     # sign_credential(credential, wallet_did, issuer_id, c_nonce, format, issuer, mode, duration=365, wallet_jwk=None, wallet_identifier=None):
     credential_signed = await sign_credential(
         credential,
-        wallet_did,  # wallet_did
+        wallet_did,
         issuer_id,
         access_token_data.get("c_nonce", "nonce"),
         vc_format,
