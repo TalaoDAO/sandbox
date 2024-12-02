@@ -1,0 +1,32 @@
+{
+    "id": "employee_1",
+    "input_descriptors": [
+        {
+            "id": "custome_employee",
+            "format": {
+                "vc+sd-jwt": {
+                    "sd-jwt_alg_values": [
+                        "ES256"
+                    ],
+                    "kb-jwt_alg_values": [
+                        "ES256"
+                    ]
+                }
+            },
+            "constraints": {
+                "fields": [
+                        {
+                            "path": [
+                                "$.vct"
+                            ],
+                            "filter": {
+                                "type": "string",
+                                "const": "https://issuer.didaas.org/CustomEmployeeCredential"
+                            }
+                        }
+                    ]
+            }
+        }
+    ]
+}
+
