@@ -29,11 +29,13 @@ from routes import oidc4vp_api, oidc4vp_console
 from routes import oidc4vci_api, oidc4vci_console
 from routes import wallet
 
+
 # for testing purpose
 from routes import test_issuer_oidc4vc
 from routes import test_verifier_oidc4vc
 #from routes import web_wallet_test
 from routes import web_display_VP
+from routes import waltid_server
 
 from routes import statuslist
 
@@ -95,6 +97,7 @@ test_verifier_oidc4vc.init_app(app, red, mode)
 #ciba.init_app(app, red, mode)
 #jpma2jpma.init_app(app, red, mode)
 statuslist.init_app(app, red, mode)
+waltid_server.init_app(app, red, mode)
 
 sess = Session()
 sess.init_app(app)
