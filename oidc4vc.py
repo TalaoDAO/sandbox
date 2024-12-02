@@ -9,6 +9,7 @@ import math
 import hashlib
 from random import randbytes
 import x509_attestation
+import copy
 logging.basicConfig(level=logging.INFO)
 
 """
@@ -193,6 +194,71 @@ def hash(text):
     m.update(text.encode())
     return base64.urlsafe_b64encode(m.digest()).decode().replace("=", "")
 
+def sd(data):
+    unsecured = copy.deepcopy(data)
+    payload = {}
+    disclosed_claims = ['status', 'vct', 'iat', 'iss', 'exp', '_sd_alg', 'cnf']
+    payload['_sd'] = []
+    _disclosure = ""
+    disclosure_list = unsecured.get("disclosure", [])
+    if not disclosure_list:
+        logging.warning("disclosure is missing in sd-jwt")
+    for claim in [attribute for attribute in unsecured.keys()]:
+        if claim == "disclosure":
+            pass
+        # for undisclosed attribute
+        elif isinstance(unsecured[claim], (str, bool, int)):
+            if claim in disclosure_list or claim in disclosed_claims:
+                payload[claim] = unsecured[claim]
+            else:
+                contents = json.dumps([salt(), claim, unsecured[claim]])
+                disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
+                _disclosure += "~" + disclosure
+                payload['_sd'].append(hash(disclosure))
+        # for nested json
+        elif isinstance(unsecured[claim], dict):
+            if claim in disclosure_list or claim in disclosed_claims:
+                payload[claim], disclosure = sd(unsecured[claim])
+                _disclosure += "~" + disclosure
+            else:
+                nested_content, nested_disclosure = sd(unsecured[claim])
+                contents = json.dumps([salt(), claim, nested_content])
+                _disclosure += "~" + nested_disclosure
+                disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
+                _disclosure += "~" + disclosure
+                payload['_sd'].append(hash(disclosure))
+        # for list
+        elif isinstance(unsecured[claim], list):  # list
+            if claim in disclosure_list or claim in disclosed_claims:
+                payload[claim] = unsecured[claim]
+            else:
+                nb = len(unsecured[claim])
+                payload.update({claim: []})
+                for index in range(0, nb):
+                    if isinstance(unsecured[claim][index], dict):
+                        nested_disclosure_list = unsecured[claim][index].get("disclosure", [])
+                        if not nested_disclosure_list:
+                            logging.warning("disclosure is missing for %s", claim)
+                    else:
+                        nested_disclosure_list = []
+                for index in range(0, nb):
+                    if isinstance(unsecured[claim][index], dict):
+                        pass
+                    elif unsecured[claim][index] in nested_disclosure_list:
+                        payload[claim].append(unsecured[claim][index])
+                    else:
+                        contents = json.dumps([salt(), unsecured[claim][index]])
+                        nested_disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
+                        _disclosure += "~" + nested_disclosure 
+                        payload[claim].append({"...": hash(nested_disclosure)})
+        else:
+            logging.warning("type not supported")
+    if not payload['_sd']:
+        del payload['_sd']
+    _disclosure = _disclosure.replace("~~", "~")
+    return payload, _disclosure
+
+
 
 def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_identifier, duration=365*24*60*60, x5c=False):
     """
@@ -200,7 +266,6 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
     GAIN POC https://gist.github.com/javereec/48007399d9876d71f523145da307a7a3
     HAIP : https://openid.net/specs/openid4vc-high-assurance-interoperability-profile-sd-jwt-vc-1_0-00.html
     """
-    disclosed_claims = ['status', 'vct', 'iat', 'iss', 'exp', '_sd_alg', 'cnf']
     issuer_key = json.loads(issuer_key) if isinstance(issuer_key, str) else issuer_key
     subject_key = json.loads(subject_key) if isinstance(subject_key, str) else subject_key
     payload = {
@@ -213,66 +278,10 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
         payload['cnf'] = {"jwk": subject_key}
     else:
         payload['cnf'] = {"kid": wallet_did}
-    payload['_sd'] = []
-    _disclosure = ""
-    disclosure_list = unsecured.get("disclosure", [])
-    if not disclosure_list:
-        logging.warning("disclosure is missing in sd-jwt")
-    for claim in [attribute for attribute in unsecured.keys()]:
-        if claim == "disclosure":
-            pass
-        # for attribute to disclose
-        elif claim in disclosure_list or claim in disclosed_claims:
-            payload[claim] = unsecured[claim]
-        # for undisclosed attribute
-        elif isinstance(unsecured[claim], (str, bool, int)):
-            contents = json.dumps([salt(), claim, unsecured[claim]])
-            disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
-            _disclosure += "~" + disclosure
-            payload['_sd'].append(hash(disclosure))
-        # for nested json
-        elif isinstance(unsecured[claim], dict):
-            payload.update({claim: {'_sd': []}})
-            nested_disclosure_list = unsecured[claim].get("disclosure", [])
-            if not nested_disclosure_list:
-                logging.warning("disclosure is missing for %s", claim)
-            for nested_claim in [attribute for attribute in unsecured[claim].keys()]:
-                if nested_claim == 'disclosure':
-                    pass
-                elif nested_claim in nested_disclosure_list:
-                    payload[claim][nested_claim] = unsecured[claim][nested_claim]
-                else:
-                    nested_contents = json.dumps([salt(), nested_claim, unsecured[claim][nested_claim]])
-                    nested_disclosure = base64.urlsafe_b64encode(nested_contents.encode()).decode().replace("=", "")
-                    _disclosure += "~" + nested_disclosure
-                    payload[claim]['_sd'].append(hash(nested_disclosure))
-            if not payload[claim]['_sd']: del payload[claim]['_sd']
-        # for list
-        elif isinstance(unsecured[claim], list):  # list
-            nb = len(unsecured[claim])
-            payload.update({claim: []})
-            for index in range(0, nb):
-                if isinstance(unsecured[claim][index], dict):
-                    nested_disclosure_list = unsecured[claim][index].get("disclosure", [])
-                    if not nested_disclosure_list:
-                        logging.warning("disclosure is missing for %s", claim)
-                else:
-                    nested_disclosure_list = []
-            for index in range(0, nb):
-                if isinstance(unsecured[claim][index], dict):
-                    pass
-                elif unsecured[claim][index] in nested_disclosure_list:
-                    payload[claim].append(unsecured[claim][index])
-                else:
-                    contents = json.dumps([salt(), unsecured[claim][index]])
-                    nested_disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
-                    _disclosure += "~" + nested_disclosure 
-                    payload[claim].append({"...": hash(nested_disclosure)})
-        else:
-            logging.warning("type not supported")
-    if not payload['_sd']:
-        del payload['_sd']
-        del payload["_sd_alg"]
+    
+    _payload, _disclosure = sd(unsecured)
+    
+    payload.update(_payload)
     logging.info("sd-jwt payload = %s", json.dumps(payload, indent=4))
     signer_key = jwk.JWK(**issuer_key)
     kid = issuer_key.get('kid') if issuer_key.get('kid') else signer_key.thumbprint()
@@ -295,7 +304,13 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
         payload['status'] = unsecured['status']
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
-    return token.serialize() + _disclosure + "~"
+    sd_token = token.serialize() + _disclosure + "~"
+    #sd_token = sd_token.replace("~~", "~")
+    print('.....')
+    print("sd token = ", sd_token)
+    print('......')
+    return sd_token
+
 
 
 def build_pre_authorized_code(key, wallet_did, issuer_did, issuer_vm, nonce):
