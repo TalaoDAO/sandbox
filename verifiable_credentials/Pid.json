@@ -42,6 +42,6 @@
     "issuing_authority": "DE",
 
   
-    "disclosure": ["vct", "status", "gender"]
+    "disclosure": ["gender"]
 }
 

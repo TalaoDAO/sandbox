@@ -1472,12 +1472,13 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
     jti = 'urn:uuid:' + str(uuid.uuid1())
     
     if format == 'vc+sd-jwt':
-        credential["status"] = {
-            "status_list": {
-                "idx": randint(0, 99999),
-                "uri": mode.server + "issuer/statuslist/1"
+        if issuer_id not in ["grlvzckofy", "kivrsduinn"]:
+            credential["status"] = {
+                "status_list": {
+                    "idx": randint(0, 99999),
+                    "uri": mode.server + "issuer/statuslist/1"
+                }
             }
-        }
         if issuer_id in ['raamxepqex', 'tdiwmpyhzc']:
             x5c = True
         else:

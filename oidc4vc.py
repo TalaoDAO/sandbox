@@ -196,13 +196,10 @@ def hash(text):
 
 def sd(data):
     unsecured = copy.deepcopy(data)
-    payload = {}
+    payload = {'_sd': []}
     disclosed_claims = ['status', 'vct', 'iat', 'iss', 'exp', '_sd_alg', 'cnf']
-    payload['_sd'] = []
     _disclosure = ""
     disclosure_list = unsecured.get("disclosure", [])
-    if not disclosure_list:
-        logging.warning("disclosure is missing in sd-jwt")
     for claim in [attribute for attribute in unsecured.keys()]:
         if claim == "disclosure":
             pass
@@ -243,7 +240,7 @@ def sd(data):
                         nested_disclosure_list = []
                 for index in range(0, nb):
                     if isinstance(unsecured[claim][index], dict):
-                        pass
+                        pass  # TODO
                     elif unsecured[claim][index] in nested_disclosure_list:
                         payload[claim].append(unsecured[claim][index])
                     else:
@@ -257,7 +254,6 @@ def sd(data):
         del payload['_sd']
     _disclosure = _disclosure.replace("~~", "~")
     return payload, _disclosure
-
 
 
 def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_identifier, duration=365*24*60*60, x5c=False):
@@ -279,14 +275,17 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
     else:
         payload['cnf'] = {"kid": wallet_did}
     
+    # Calculate selective disclosure 
     _payload, _disclosure = sd(unsecured)
     
+    # update payload with selective disclosure
     payload.update(_payload)
     logging.info("sd-jwt payload = %s", json.dumps(payload, indent=4))
+    
     signer_key = jwk.JWK(**issuer_key)
     kid = issuer_key.get('kid') if issuer_key.get('kid') else signer_key.thumbprint()
-    # https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-06.html#name-jose-header
-    # chang in hehader typ
+    
+    # build header
     header = {
         'typ': "dc+sd-jwt",
         'alg': alg(issuer_key)
@@ -295,22 +294,16 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
         header['x5c'] = x509_attestation.build_x509_san_dns(hostname=issuer)
     else:
         header['kid'] = kid
-    if subject_key:
-        try:
-            del subject_key['use']
-        except Exception:
-            pass
+    try:
+        del subject_key['use']
+    except Exception:
+        pass
     if unsecured.get('status'): 
         payload['status'] = unsecured['status']
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
     sd_token = token.serialize() + _disclosure + "~"
-    #sd_token = sd_token.replace("~~", "~")
-    print('.....')
-    print("sd token = ", sd_token)
-    print('......')
     return sd_token
-
 
 
 def build_pre_authorized_code(key, wallet_did, issuer_did, issuer_vm, nonce):
