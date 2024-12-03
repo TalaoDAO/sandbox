@@ -212,6 +212,10 @@ def sd(data):
                 disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
                 _disclosure += "~" + disclosure
                 payload['_sd'].append(hash(disclosure))
+                # fake digest / decoy
+                contents = json.dumps([salt(), "decoy", "decoy"])
+                disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
+                payload['_sd'].append(hash(disclosure))
         # for nested json
         elif isinstance(unsecured[claim], dict):
             if claim in disclosure_list or claim in disclosed_claims:
