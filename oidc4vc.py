@@ -197,7 +197,7 @@ def hash(text):
 def sd(data):
     unsecured = copy.deepcopy(data)
     payload = {'_sd': []}
-    disclosed_claims = ['status', 'vct', 'iat', 'iss', 'exp', '_sd_alg', 'cnf']
+    disclosed_claims = ['status', 'vct', 'iat', 'nbf', 'aud', 'iss', 'exp', '_sd_alg', 'cnf']
     _disclosure = ""
     disclosure_list = unsecured.get("disclosure", [])
     for claim in [attribute for attribute in unsecured.keys()]:
@@ -211,10 +211,6 @@ def sd(data):
                 contents = json.dumps([salt(), claim, unsecured[claim]])
                 disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
                 _disclosure += "~" + disclosure
-                payload['_sd'].append(hash(disclosure))
-                # fake digest / decoy
-                contents = json.dumps([salt(), "decoy", "decoy"])
-                disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
                 payload['_sd'].append(hash(disclosure))
         # for nested json
         elif isinstance(unsecured[claim], dict):
@@ -256,6 +252,11 @@ def sd(data):
             logging.warning("type not supported")
     if not payload['_sd']:
         del payload['_sd']
+    else:
+        # add 1 fake digest
+        contents = json.dumps([salt(), "decoy", "decoy"])
+        disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
+        payload['_sd'].append(hash(disclosure))
     _disclosure = _disclosure.replace("~~", "~")
     return payload, _disclosure
 
