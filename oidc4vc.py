@@ -197,7 +197,7 @@ def hash(text):
 def sd(data):
     unsecured = copy.deepcopy(data)
     payload = {'_sd': []}
-    disclosed_claims = ['status', 'vct', 'iat', 'nbf', 'aud', 'iss', 'exp', '_sd_alg', 'cnf']
+    disclosed_claims = ['status', 'status_list', 'idx', 'uri', 'vct', 'iat', 'nbf', 'aud', 'iss', 'exp', '_sd_alg', 'cnf']
     _disclosure = ""
     disclosure_list = unsecured.get("disclosure", [])
     for claim in [attribute for attribute in unsecured.keys()]:
@@ -210,19 +210,23 @@ def sd(data):
             else:
                 contents = json.dumps([salt(), claim, unsecured[claim]])
                 disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
-                _disclosure += "~" + disclosure
+                if disclosure:
+                    _disclosure += "~" + disclosure
                 payload['_sd'].append(hash(disclosure))
         # for nested json
         elif isinstance(unsecured[claim], dict):
             if claim in disclosure_list or claim in disclosed_claims:
                 payload[claim], disclosure = sd(unsecured[claim])
-                _disclosure += "~" + disclosure
+                if disclosure:
+                    _disclosure += "~" + disclosure
             else:
                 nested_content, nested_disclosure = sd(unsecured[claim])
                 contents = json.dumps([salt(), claim, nested_content])
-                _disclosure += "~" + nested_disclosure
+                if nested_disclosure:
+                    _disclosure += "~" + nested_disclosure
                 disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
-                _disclosure += "~" + disclosure
+                if disclosure:
+                    _disclosure += "~" + disclosure
                 payload['_sd'].append(hash(disclosure))
         # for list
         elif isinstance(unsecured[claim], list):  # list
@@ -246,7 +250,8 @@ def sd(data):
                     else:
                         contents = json.dumps([salt(), unsecured[claim][index]])
                         nested_disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
-                        _disclosure += "~" + nested_disclosure 
+                        if nested_disclosure:
+                            _disclosure += "~" + nested_disclosure
                         payload[claim].append({"...": hash(nested_disclosure)})
         else:
             logging.warning("type not supported")
