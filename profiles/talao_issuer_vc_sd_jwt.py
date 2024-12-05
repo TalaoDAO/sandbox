@@ -112,7 +112,6 @@ TALAO_ISSUER = {
                     "gender",
                     "place_of_birth",
                     "nationalities",
-                    "age_equal_or_over", 
                     "issuing_country",
                     "issuing_authority"
                 ],
@@ -187,6 +186,11 @@ TALAO_ISSUER = {
                             "value_type": "string",
                             "display": [{"name": "Issuing country", "locale": "en-US"},
                                         {"name": "Pays d'emission", "locale": "fr-FR"}],
+                        },
+                        "issuing_authority": {
+                            "value_type": "string",
+                            "display": [{"name": "Issuing authority", "locale": "en-US"},
+                                        {"name": "Authorité", "locale": "fr-FR"}],
                         }
                     },
                 "cryptographic_binding_methods_supported": ["DID", "jwk"],
