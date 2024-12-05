@@ -920,7 +920,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
                 return "vc+sd-jwt"
             else:
                 return "jwt_" + type + "_json"
-            
+        
         vp_format = format(vp_token)   
         logging.info("VP format = %s", vp_format)   
         if vp_token:
