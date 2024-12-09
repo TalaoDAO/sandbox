@@ -6,12 +6,6 @@
         "id_token",
         "vp_token"
     ],
-    "response_modes_supported": [
-        "query"
-    ],
-    "subject_types_supported": [
-        "public"
-    ],
     "id_token_signing_alg_values_supported": [
         "ES256",
         "ES256k",
@@ -25,41 +19,41 @@
                 "EdDSA"
             ]
         },
-    "jwt_vp_json": {
-        "alg_values_supported": [
-            "ES256",
-            "ES256K",
-            "EdDSA"
-        ]
-    },
-    "ldp_vp": {
-        "proof_type": [
-            "JsonWebSignature2020",
-            "Ed25519Signature2018",
-            "EcdsaSecp256k1Signature2019",
-            "RsaSignature2018"
-        ]
-    },
-    "ldp_vc": {
-        "proof_type": [
-            "JsonWebSignature2020",
-            "Ed25519Signature2018",
-            "EcdsaSecp256k1Signature2019",
-            "RsaSignature2018"
-        ]
-    },
-    "vc+sd-jwt": {
-        "sd-jwt_alg_values": [
-            "ES256",
-            "ES256K",
-            "EdDSA"
-        ],
-        "kb-jwt_alg_values": [
-            "ES256",
-            "ES256K",
-            "EdDSA"
-        ]
-    }
+        "jwt_vp_json": {
+            "alg_values_supported": [
+                "ES256",
+                "ES256K",
+                "EdDSA"
+            ]
+        },
+        "ldp_vp": {
+            "proof_type": [
+                "JsonWebSignature2020",
+                "Ed25519Signature2018",
+                "EcdsaSecp256k1Signature2019",
+                "RsaSignature2018"
+            ]
+        },
+        "ldp_vc": {
+            "proof_type": [
+                "JsonWebSignature2020",
+                "Ed25519Signature2018",
+                "EcdsaSecp256k1Signature2019",
+                "RsaSignature2018"
+            ]
+        },
+        "vc+sd-jwt": {
+            "sd-jwt_alg_values": [
+                "ES256",
+                "ES256K",
+                "EdDSA"
+            ],
+            "kb-jwt_alg_values": [
+                "ES256",
+                "ES256K",
+                "EdDSA"
+            ]
+        }
     },
     "subject_syntax_types_supported": [
         "urn:ietf:params:oauth:jwk-thumbprint", 
@@ -76,6 +70,5 @@
     ],
     "id_token_types_supported": [
         "subject_signed_id_token"
-    ],
-    "client_name": "Altme Verifier platform"
+    ]
 }

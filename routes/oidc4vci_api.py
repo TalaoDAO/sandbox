@@ -1025,6 +1025,7 @@ def issuer_token(issuer_id, red, mode):
             return Response(**manage_error('access_denied', 'Code verifier is incorrect', red, mode, request=request, stream_id=stream_id, status=404))
 
     # check tx_code
+    print(user_pin, data.get('user_pin'))
     if data.get('user_pin_required') and not user_pin:
         return Response(**manage_error('invalid_request', 'User pin is missing', red, mode, request=request, stream_id=stream_id))
     logging.info('user_pin = %s', data.get('user_pin'))

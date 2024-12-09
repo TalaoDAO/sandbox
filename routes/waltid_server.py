@@ -42,6 +42,7 @@ payload = {
     "issuerDid": "https://issuer.didaas.org",
     "credentialConfigurationId": "CustomEmployeeCredential_vc+sd-jwt",
     "credentialData": {
+        "identifier": "0000",
         "employee": {
             "name": "Dentsu Taro",
             "employeeId": "12346",
@@ -56,6 +57,9 @@ payload = {
     },
     "selectiveDisclosure": {
         "fields": {
+            "identifier": {
+                "sd": True
+            },
             "employee": {
                 "sd": True,
                 "children": {

@@ -435,11 +435,10 @@ def test_10(mode):
         "credential_type":  ['Pid'],
         "pre-authorized_code": True,
         "callback": mode.server + 'sandbox/issuer/callback',
-        "user_pin_required": False,
-        "user_pin": 00000,
-        "input_length": 5,
-        "input_mode": "numeric",
-        "input_description": 'Please enter the secret code you received by email' 
+        "user_pin_required": True,
+        "user_pin": "ABCD",
+        "input_length": 4,
+        "input_mode": "text"
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
     try:
