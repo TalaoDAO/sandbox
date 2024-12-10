@@ -770,7 +770,7 @@ def oidc4vc_login_qrcode(red, mode):
     if verifier_data.get('request_uri_parameter_supported') or verifier_data['profile'] in ["HAIP", "POTENTIAL"]: # request uri as jwt
         red.setex("request_uri_" + stream_id, QRCODE_LIFE, json.dumps(request_as_jwt))
         authorization_request_displayed = { 
-            "client_id": client_id,
+            "client_id": authorization_request['client_id'],
             "request_uri": mode.server + "verifier/wallet/request_uri/" + stream_id 
         }
     elif verifier_data.get('request_parameter_supported'):
