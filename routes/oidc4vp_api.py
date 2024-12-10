@@ -449,10 +449,6 @@ def wallet_openid_configuration():
 
 
 def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None, client_id=None) -> str:
-    """
-    For wallets natural person as jwk is added in header
-    https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-proof-types
-    """
     if key:
         key = json.loads(key) if isinstance(key, str) else key
         signer_key = jwk.JWK(**key) 
@@ -703,9 +699,19 @@ def oidc4vc_login_qrcode(red, mode):
             red.setex("client_metadata_" + verifier_id, QRCODE_LIFE, json.dumps(wallet_metadata))
             client_metadata_uri = mode.server + "verifier/wallet/client_metadata_uri/" + verifier_id
         
-        # client_id_scheme depending of OIDC4VP draft
-        if int(verifier_profile['oidc4vpDraft']) > 13:
+        # client_id_scheme depending of OIDC4VP draft between 13 and 22 included
+        if int(verifier_profile['oidc4vpDraft']) > 13 and int(verifier_profile['oidc4vpDraft']) < 22: #TODO
             authorization_request['client_id_scheme'] = verifier_data.get('client_id_scheme')
+        elif int(verifier_profile['oidc4vpDraft']) >= 22:
+            if verifier_data.get('client_id_scheme') == "x509_san_dns":
+                authorization_request['client_id'] = "x509_san_dns:talao.co"
+            elif verifier_data.get('client_id_scheme') == "redirect_uri":
+                authorization_request['client_id'] = "redirect_uri:" + client_id
+            elif verifier_data.get('client_id_scheme') == "verifier_attestation":
+                authorization_request['client_id'] = "verifier_attestation:" + client_id
+            else:
+                pass
+            
 
         # presentation_definition_uri
         if verifier_data.get('presentation_definition_uri'):
@@ -746,25 +752,17 @@ def oidc4vc_login_qrcode(red, mode):
     
     # manage request_uri as jwt
     if verifier_data.get('client_id_scheme') == "redirect_uri":
-        iss = client_id
         key = None
-    elif verifier_data.get('client_id_scheme') == "did":
-        iss = verifier_data['did']
-        key = verifier_data['jwk']
-    elif verifier_data.get('client_id_scheme') == 'x509_san_dns':
-        iss = client_id
-        key = verifier_data['jwk']
     else:
-        iss = verifier_data['did']
         key = verifier_data['jwk']
 
     request_as_jwt = build_jwt_request(
         key,
         verifier_data['verification_method'],
-        iss,
+        authorization_request['client_id'],  # iss ??????
         'https://self-issued.me/v2', # aud requires static siopv2 data
         authorization_request,
-        client_id_scheme = verifier_data.get('client_id_scheme'),
+        client_id_scheme=verifier_data.get('client_id_scheme'),
         client_id=client_id
     )
 
