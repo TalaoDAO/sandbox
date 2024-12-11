@@ -77,7 +77,7 @@ def init_app(app, red, mode):
     app.add_url_rule('/.well-known/jwt-vc-issuer/issuer/<issuer_id>', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
 
     # keys for jwt_vc_json and jwt_vc_json-ld
-    app.add_url_rule('/issuer/<issuer_id>/jwks', view_func=issuer_jwks, methods=['GET'], defaults={'red': red})
+    app.add_url_rule('/issuer/<issuer_id>/jwks', view_func=issuer_jwks, methods=['GET'])
 
     return
 
