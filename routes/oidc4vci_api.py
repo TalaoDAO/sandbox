@@ -61,6 +61,9 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/credential_offer_uri/<id>', view_func=issuer_credential_offer_uri, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/issuer/error_uri', view_func=wallet_error_uri, methods=['GET'])
     
+    # nonce endpoint
+    app.add_url_rule('/issuer/nonce', view_func=issuer_nonce, methods=['POST'], defaults={'red': red})
+    
     # login with login/password authorization code flow
     app.add_url_rule('/issuer/<issuer_id>/authorize/login', view_func=issuer_authorize_login, methods=['GET', 'POST'], defaults={'red': red})
     # login with PID authorization code flow
@@ -74,7 +77,7 @@ def init_app(app, red, mode):
     app.add_url_rule('/.well-known/jwt-vc-issuer/issuer/<issuer_id>', view_func=openid_jwt_vc_issuer_configuration, methods=['GET'], defaults={'mode': mode})
 
     # keys for jwt_vc_json and jwt_vc_json-ld
-    app.add_url_rule('/issuer/<issuer_id>/jwks', view_func=issuer_jwks, methods=['GET'])
+    app.add_url_rule('/issuer/<issuer_id>/jwks', view_func=issuer_jwks, methods=['GET'], defaults={'red': red})
 
     return
 
@@ -193,6 +196,11 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         'credential_endpoint': mode.server + 'issuer/' + issuer_id + '/credential',
         'deferred_credential_endpoint': mode.server + 'issuer/' + issuer_id + '/deferred',
     }
+    
+    # nonce endpoint for draft >= 14
+    if int(issuer_profile.get("oidc4vciDraft")) >= 13: # TODO
+        credential_issuer_openid_configuration.update(
+            {'nonce_endpoint':  mode.server + 'issuer/nonce'})
 
     # setup authorization server if needed
     if issuer_id in ["raamxepqex", "tdiwmpyhzc"]:  # OIDC4VCI Test 
@@ -915,6 +923,19 @@ def issuer_authorize(issuer_id, red, mode):
     return redirect(redirect_uri + '?' + urlencode(resp))
 
 
+# nonce endpoint
+def issuer_nonce(red):
+    """
+    https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html#name-nonce-endpoint
+    """
+    logging.info("Call of the nonce endpoint")
+    nonce = str(uuid.uuid1())
+    endpoint_response = {"c_nonce": nonce}
+    red.setex(nonce, 60,'nonce')
+    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
+    return Response(response=json.dumps(endpoint_response), headers=headers)
+
+
 # token endpoint
 def issuer_token(issuer_id, red, mode):
     """
@@ -1038,12 +1059,15 @@ def issuer_token(issuer_id, red, mode):
     vc = data.get('vc')
     endpoint_response = {
         'access_token': access_token,
-        'c_nonce': str(uuid.uuid1()),
         'token_type': 'bearer',
         'expires_in': ACCESS_TOKEN_LIFE,
-        'c_nonce_expires_in': 1704466725,
         'refresh_token': refresh_token
     }
+    if int(issuer_profile['oidc4vciDraft']) < 14 and issuer_id not in ['kivrsduinn']:
+        endpoint_response['c_nonce'] = str(uuid.uuid1())
+        endpoint_response['c_nonce_expires_in'] = 1704466725
+        red.setex(endpoint_response['c_nonce'], 60, 'nonce')
+        
     # authorization_details in case of multiple VC of the same type
     authorization_details = []
     if int(issuer_profile['oidc4vciDraft']) >= 13 and isinstance(vc, list):
@@ -1161,11 +1185,15 @@ async def issuer_credential(issuer_id, red, mode):
             if not proof_payload.get('nonce'):
                 return Response(**manage_error('invalid_proof', 'c_nonce is missing', red, mode, request=request, stream_id=stream_id, status=403))
             try:
-                oidc4vc.verif_token(proof, access_token_data['c_nonce'])
+                oidc4vc.verif_token(proof, 'nonce')
                 logging.info('proof is validated')
             except Exception:
-                logging.error('proof is not validated validated')
+                logging.error('proof is not validated')
                 #return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id, status=403))
+            if not red.get(proof_payload['nonce']):
+                logging.error('nonce does not exist')
+            else:
+                logging.info('nonce exists')
             
             if proof_header.get('jwk'):  # used for HAIP
                 wallet_jwk = proof_header.get('jwk')

@@ -403,8 +403,6 @@ def verif_token(token, nonce, aud=None):
     """
     header = get_header_from_token(token)
     payload = get_payload_from_token(token)
-    if nonce and payload.get('nonce') != nonce:
-        raise Exception("nonce is incorrect")
     if aud and payload.get('aud') != aud:
         raise Exception("aud is incorrect")
     if header.get('jwk'):
