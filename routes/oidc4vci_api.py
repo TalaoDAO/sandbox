@@ -69,7 +69,6 @@ def init_app(app, red, mode):
     # login with PID authorization code flow
     app.add_url_rule("/issuer/<issuer_id>/authorize/pid", view_func=issuer_authorize_pid, methods=['POST'], defaults={'red': red})
 
-
     # OIDC4VCI protocol with web wallet
     app.add_url_rule('/issuer/<issuer_id>/redirect', view_func=issuer_web_wallet_redirect, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
 
@@ -159,7 +158,6 @@ def credential_issuer_openid_configuration_endpoint(issuer_id, mode):
     doc = credential_issuer_openid_configuration(issuer_id, mode)
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(doc), headers=headers)
-    #return jsonify(doc) if doc else (jsonify('Not found'), 404)
 
 
 # Credential issuer metadata
@@ -197,18 +195,12 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         'deferred_credential_endpoint': mode.server + 'issuer/' + issuer_id + '/deferred',
     }
     
-    # nonce endpoint for draft >= 14
+    # nonce endpoint to add for draft >= 14
     if int(issuer_profile.get("oidc4vciDraft")) >= 13: # TODO
-        credential_issuer_openid_configuration.update(
-            {'nonce_endpoint':  mode.server + 'issuer/nonce'})
+        credential_issuer_openid_configuration['nonce_endpoint'] = mode.server + 'issuer/nonce'
 
-    # setup authorization server if needed
-    if issuer_id in ["raamxepqex", "tdiwmpyhzc"]:  # OIDC4VCI Test 
-        """
-        the authorization server metadata is available through the oauth-authorization-server endpoind
-        """
-        pass
-    elif issuer_profile.get('authorization_server_support') :
+    # setup authorization server attribute if needed
+    if issuer_profile.get('authorization_server_support'):
         """
         the authorization server URL is provided through a claim in the issuer metadata
         """    
@@ -217,20 +209,6 @@ def credential_issuer_openid_configuration(issuer_id, mode):
             credential_issuer_openid_configuration['jwks_uri'] = mode.server + 'issuer/' + issuer_id + '/jwks'
         else:
             credential_issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id
-    else:
-        """
-        The authorization server metadata are provided with the issuer metadata
-        """
-        as_config = json.load(open('authorization_server_config.json'))
-        as_config.update({
-            'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/authorize',
-            'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token',
-            'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
-            'pushed_authorization_request_endpoint': mode.server +'issuer/' + issuer_id + '/authorize/par' 
-        })
-        if issuer_data['profile'] in ["HAIP", "POTENTIAL"]:
-            as_config["require_pushed_authorization_requests"] = True
-        credential_issuer_openid_configuration.update(as_config)
 
     # Credentials supported section
     if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
@@ -266,12 +244,6 @@ def openid_jwt_vc_issuer_configuration(issuer_id, mode):
     del pub_key['d']
     pub_key['kid'] = pub_key.get('kid') if pub_key.get('kid') else thumbprint(pub_key)
     jwks = {'keys': [pub_key]}
-    # add statuslist issuer key
-    #statuslist_key = copy.copy(json.loads(STATUSLIST_ISSUER_KEY))
-    #del statuslist_key['d']
-    #statuslist_key['kid'] = statuslist_key.get('kid') if statuslist_key.get('kid') else thumbprint(statuslist_key)
-    #jwks['keys'].append(statuslist_key)
-    #logging.info('jwks = %s', jwks)
     choice_bool = random.choice([True, False])
     if choice_bool:
         config = {
@@ -290,10 +262,6 @@ def openid_jwt_vc_issuer_configuration(issuer_id, mode):
 # /.well-known/openid-configuration endpoint  authorization server endpoint for draft 11 DEPRECATED
 def openid_configuration(issuer_id, mode):
     logging.info("Call to openid-configuration endpoint")
-    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-    profile_data = profile[issuer_data['profile']]
-    if int(profile_data['oidc4vciDraft']) >= 13 and issuer_id not in ["kivrsduinn", "grlvzckofy"]:
-        return jsonify("This endpoint is no more available, use /.well-known/oauth-authorization-server endpoint "), 400
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
 
@@ -301,13 +269,8 @@ def openid_configuration(issuer_id, mode):
 # /.well-known/oauth-authorization-server endpoint
 def oauth_authorization_server(issuer_id, mode):
     logging.info("Call to oauth-authorization-server endpoint")
-    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-    profile_data = profile[issuer_data['profile']]
-    if int(profile_data['oidc4vciDraft']) < 13:
-        return jsonify("This endpoint is no available, use /.well-known/openid-configuration endpoint "), 400
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
-    #return jsonify(as_openid_configuration(issuer_id, mode))
 
 
 # authorization server configuration 
@@ -362,11 +325,6 @@ def issuer_jwks(issuer_id):
     del pub_key['d']
     pub_key['kid'] = pub_key.get('kid') if pub_key.get('kid') else thumbprint(pub_key)
     jwks = {'keys': [pub_key]}
-    # add statuslist issuer key
-    #statuslist_key = copy.copy(json.loads(STATUSLIST_ISSUER_KEY))
-    #del statuslist_key['d']
-    #statuslist_key['kid'] = statuslist_key.get('kid') if statuslist_key.get('kid') else thumbprint(statuslist_key)
-    #jwks['keys'].append(statuslist_key)
     logging.info('issuer jwks = %s', jwks)
     return jsonify(jwks)
 
@@ -736,7 +694,7 @@ def issuer_authorize(issuer_id, red, mode):
             return
         
         # Push Authorization Request
-        if request_uri := request.args.get('request_uri'):
+        if request_uri:= request.args.get('request_uri'):
             try:
                 request_uri_data = json.loads(red.get(request_uri).decode())   
             except Exception:
@@ -939,8 +897,8 @@ def issuer_nonce(red):
 # token endpoint
 def issuer_token(issuer_id, red, mode):
     """
-    token endpoint : https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
-    DPoP : https://datatracker.ietf.org/doc/rfc9449/
+    token endpoint: https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
+    DPoP: https://datatracker.ietf.org/doc/rfc9449/
     """
     logging.info('token endoint header %s', request.headers)
     logging.info('token endoint form %s', json.dumps(request.form, indent=4))
@@ -1501,7 +1459,6 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
     jti = 'urn:uuid:' + str(uuid.uuid1())
     
     if format == 'vc+sd-jwt':
-        #if issuer_id not in ["grlvzckofy", "kivrsduinn"]:
         credential["status"] = {
             "status_list": {
                 "idx": randint(0, 99999),
