@@ -477,11 +477,11 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     else:
         arg_for_web_wallet = '?' + urlencode({'credential_offer': json.dumps(offer)})
     
-    resp = requests.get(mode.server + '/issuer/' + issuer_id + '/.well-known/openid-credential-issuer')
+    resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/openid-credential-issuer')
     credential_issuer_configuration = resp.json()
-    resp = requests.get(mode.server + '/issuer/' + issuer_id + '/.well-known/oauth-authorization-server')
+    resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/oauth-authorization-server')
     oauth_authorization_server = resp.json()
-    resp = requests.get(mode.server + '/issuer/' + issuer_id + '/.well-known/openid-configuration')
+    resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/openid-configuration')
     openid_configuration = resp.json()
     
     qrcode_page = issuer_data.get('issuer_landing_page')
