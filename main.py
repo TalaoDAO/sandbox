@@ -212,6 +212,7 @@ payload = api.model(
         'deferred_vc': fields.String(),
         'issuer_state': fields.String(example='test', required=True),
         'credential_type': fields.List(fields.String, example=offer, required=True),
+        'webhook': fields.String(),
         'pre-authorized_code': fields.Boolean(example=True, required=True),
         'user_pin_required': fields.Boolean(example=False),
         'user_pin': fields.String(),
@@ -365,15 +366,13 @@ class Issuer(Resource):
             "callback": request.json.get("callback"),
             "login": request.json.get("login"),
         }
-        print("session_data = ", session_data)
         # For deferred API call only VC is stored in redis with issuer_state as key
         if deferred_vc and red.get(issuer_state): # red.get exists if the call without VC has been done previously
             session_data.update(
                 {
                     "deferred_vc": deferred_vc,
-                    "deferred_vc_iat": round(datetime.timestamp(datetime.now())),
-                    "deferred_vc_exp": round(datetime.timestamp(datetime.now()))
-                    + ACCEPTANCE_TOKEN_LIFE,
+                    "deferred_vc_iat": round(datetime.timestamp(datetime.now())), 
+                    "deferred_vc_exp": round(datetime.timestamp(datetime.now())) + ACCEPTANCE_TOKEN_LIFE,
                 }
             )
             red.setex(issuer_state, API_LIFE, json.dumps(session_data))
@@ -398,7 +397,7 @@ class Issuer(Resource):
             qrcode_value = ""
         
         # response to issuer
-        response = {
+        api_response = {
             "redirect_uri": mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/" + stream_id,
             "qrcode_value": qrcode_value
         }
@@ -406,7 +405,7 @@ class Issuer(Resource):
             "initiate qrcode = %s",
             mode.server + "sandbox/ebsi/issuer/" + issuer_id + "/" + stream_id,
         )
-        return jsonify(response)
+        return jsonify(api_response)
 
 
 """
@@ -477,7 +476,7 @@ def link():
         return render_template('app_download/install_link_error.html', message=message)
 
 
-# configuration for linkk to downloads with configuration
+# configuration for link to downloads with configuration
 @app.route('/configuration' , methods=['GET']) 
 def app_download_configuration():                           
     host = request.headers['X-Real-Ip'] # + ' ' + request.headers['User-Agent']

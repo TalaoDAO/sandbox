@@ -125,7 +125,7 @@ def error_uri_build(request, error, error_description, mode):
     return mode.server + 'issuer/error_uri?' + urlencode(data)
 
 
-def manage_error(error, error_description, red, mode, request=None, stream_id=None, status=400):
+def manage_error(error, error_description, red, mode, request=None, stream_id=None, status=400, webhook=None):
     """
     Return error code to wallet and front channel
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-credential-error-response
@@ -133,6 +133,9 @@ def manage_error(error, error_description, red, mode, request=None, stream_id=No
     # front channel
     if stream_id:
         front_publish(stream_id, red, error=error, error_description=error_description)
+    
+    if webhook:
+        requests.post(webhook, json={"event": "ERROR"})
 
     # wallet
     payload = {
@@ -886,8 +889,8 @@ def issuer_nonce(red):
     """
     https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html#name-nonce-endpoint
     """
-    logging.info("Call of the nonce endpoint")
     nonce = str(uuid.uuid1())
+    logging.info("Call of the nonce endpoint, nonce = %s", nonce)
     endpoint_response = {"c_nonce": nonce}
     red.setex(nonce, 60,'nonce')
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
@@ -1006,10 +1009,10 @@ def issuer_token(issuer_id, red, mode):
     # check tx_code
     print(user_pin, data.get('user_pin'))
     if data.get('user_pin_required') and not user_pin:
-        return Response(**manage_error('invalid_request', 'User pin is missing', red, mode, request=request, stream_id=stream_id))
+        return Response(**manage_error('invalid_request', 'User code is missing', red, mode, request=request, stream_id=stream_id))
     logging.info('user_pin = %s', data.get('user_pin'))
     if data.get('user_pin_required') and data.get('user_pin') not in [user_pin, str(user_pin)]:
-        return Response(**manage_error('access_denied', 'User pin is incorrect', red, mode, request=request, stream_id=stream_id, status=404))
+        return Response(**manage_error('invalid_grant', 'User code is incorrect', red, mode, request=request, stream_id=stream_id, status=404))
 
     # token endpoint response
     access_token = str(uuid.uuid1())
