@@ -437,7 +437,7 @@ def test_10(mode):
         "callback": mode.server + 'sandbox/issuer/callback',
         "user_pin_required": True,
         "user_pin": "123456",
-        "input_length": 4,
+        "input_length": 6,
         "input_mode": "numeric"
         }
     resp = requests.post(api_endpoint, headers=headers, json = data)
