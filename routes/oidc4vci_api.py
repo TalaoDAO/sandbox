@@ -936,6 +936,7 @@ def issuer_token(issuer_id, red, mode):
             user_pin = request.form.get('user_pin')
     elif grant_type == 'authorization_code':
         code = request.form.get('code')
+        user_pin = None
     else:
         return Response(**manage_error('invalid_request', 'Grant type not supported', red, mode, request=request))
     if not code and grant_type != 'client_credentials':
