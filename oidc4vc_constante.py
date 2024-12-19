@@ -31,7 +31,8 @@ client_id_scheme_list = {
     "did": "did",
     "redirect_uri": "redirect_uri",
     "verifier_attestation": "verifier_attestation",
-    "x509_san_dns": "x509_san_dns"
+    "x509_san_dns": "x509_san_dns",
+    "fake": "fake for test"
 }
 
 

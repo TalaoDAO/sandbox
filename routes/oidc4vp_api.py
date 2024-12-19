@@ -815,7 +815,7 @@ def oidc4vc_login_qrcode(red, mode):
         request_uri=request_uri_jwt,
         request_uri_header=request_uri_header,
         request_uri_payload=request_uri_payload,
-        url_json= unquote(url),
+        url_json=unquote(url),
         presentation_definition=json.dumps(presentation_definition, indent=4),
         client_metadata=json.dumps(wallet_metadata, indent=4),
         deeplink_altme=deeplink_altme,
@@ -876,6 +876,14 @@ async def oidc4vc_response_endpoint(stream_id, red):
         access = False
         id_token = vp_token = False
 
+    # get if error
+    if request.form.get('error'):
+        response_data = {
+            "error":  request.form.get('error'),
+            "error_description": request.form.get('error_description')
+        }
+        access = False
+    
     # get id_token, vp_token and presentation_submission
     if access:
         if request.form.get('response'):
@@ -1101,6 +1109,8 @@ async def oidc4vc_response_endpoint(stream_id, red):
         state_status = "Unknown"
         
     detailed_response = {
+        "wallet_error_response": request.form.get('error'),
+        "wallet_error_description_response": request.form.get('error_description'),
         "created": datetime.timestamp(datetime.now()),
         "qrcode_status": qrcode_status,
         "state": state_status,

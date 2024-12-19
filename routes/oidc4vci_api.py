@@ -1281,7 +1281,6 @@ async def issuer_credential(issuer_id, red, mode):
                     logging.info("credential found for identifier = %s", credential_identifier)
                     break
     else:
-        print("access_token_data = ", access_token_data)
         logging.info("Only one VC of the same type")
         try:
             credential = access_token_data["vc"][credential_type]
