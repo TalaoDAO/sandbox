@@ -884,6 +884,8 @@ async def oidc4vc_response_endpoint(stream_id, red):
         }
         logging.info("wallet response error = %s", json.dumps(response_data, indent=4))
         access = False
+        id_token = vp_token = False
+
     
     # get id_token, vp_token and presentation_submission
     if access:
