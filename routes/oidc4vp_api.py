@@ -848,6 +848,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
     logging.info("Enter wallet response endpoint")
     logging.info("Header = %s", request.headers)
     logging.info("Form = %s", request.form)
+    
     # prepare the verifier response to wallet
     response_format = "Unknown"
     vc_format = "Unknown"
@@ -863,6 +864,8 @@ async def oidc4vc_response_endpoint(stream_id, red):
     id_token_payload = {}
     access = True
     qrcode_status = "Unknown"
+    id_token = vp_token = None
+    presentation_submission = None
 
     try:
         qrcode_status = "ok"
@@ -874,7 +877,6 @@ async def oidc4vc_response_endpoint(stream_id, red):
         qrcode_status = "QR code expired"
         logging.info("QR code expired")
         access = False
-        id_token = vp_token = False
 
     # get if error
     if request.form.get('error'):
@@ -882,10 +884,8 @@ async def oidc4vc_response_endpoint(stream_id, red):
             "error":  request.form.get('error'),
             "error_description": request.form.get('error_description')
         }
-        logging.info("wallet response error = %s", json.dumps(response_data, indent=4))
+        logging.warning("wallet response error = %s", json.dumps(response_data, indent=4))
         access = False
-        id_token = vp_token = False
-
     
     # get id_token, vp_token and presentation_submission
     if access:
