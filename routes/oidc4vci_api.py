@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from profile import profile
 from random import randint
 from urllib.parse import urlencode
+import urllib
 import db_api
 import oidc4vc  # type: ignore
 import pkce
@@ -471,7 +472,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
         url_to_display = (
             data_profile['oidc4vci_prefix']
             + '?credential_offer_uri='
-            + credential_offer_uri
+            + urllib.parse.quote(credential_offer_uri, safe='')
         )
         arg_for_web_wallet = '?credential_offer_uri=' + credential_offer_uri
     else:
