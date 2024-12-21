@@ -82,7 +82,7 @@ TALAO_ISSUER = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "vct": "urn:eu.europa.ec.eudi:age_proof:1",
@@ -197,7 +197,7 @@ TALAO_ISSUER = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "vct": "urn:eu.europa.ec.eudi:pid:1",
@@ -224,7 +224,7 @@ TALAO_ISSUER = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "display": [
@@ -268,8 +268,8 @@ TALAO_ISSUER = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
-                    "RS256",
+                    "EdDSA",
+                    "RS256"
                 ],
                 "display": [
                     {

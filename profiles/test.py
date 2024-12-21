@@ -205,8 +205,7 @@ TEST = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
-                    "RS256",
+                    "EdDSA",
                 ],
                 "vct": "urn:eu.europa.ec.eudi:pid:1",
                 "display": [

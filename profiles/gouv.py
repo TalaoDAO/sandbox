@@ -111,7 +111,7 @@ GOUV = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
             "display": [

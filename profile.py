@@ -42,7 +42,7 @@ profile = {
                     "VerifiableDiploma2",
                 ],
                 "cryptographic_binding_methods_supported": ["did"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "cryptographic_suites_supported": ["ES256K", "ES256", "EdDSA", "RS256"],
                 "display": [
                     {
                         "name": "EU Diploma",
@@ -94,7 +94,7 @@ profile = {
                     "IndividualVerifiableAttestation",
                 ],
                 "cryptographic_binding_methods_supported": ["did"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "cryptographic_suites_supported": ["ES256K", "ES256", "EdDSA", "RS256"],
                 "display": [
                     {
                         "name": "Individual attestation",
@@ -146,7 +146,7 @@ profile = {
                 "format": "jwt_vc",
                 "types": ["VerifiableCredential", "EmailPass"],
                 "cryptographic_binding_methods_supported": ["did"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "cryptographic_suites_supported": ["ES256K", "ES256", "EdDSA", "RS256"],
                 "display": [
                     {
                         "name": "Email proof",
@@ -168,7 +168,7 @@ profile = {
                     "VerifiableId",
                 ],
                 "cryptographic_binding_methods_supported": ["did"],
-                "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
+                "cryptographic_suites_supported": ["ES256K", "ES256", "EdDSA", "RS256"],
                 "display": [
                     {
                         "name": "Verifiable Id",
@@ -1222,7 +1222,7 @@ profile = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "display": [
@@ -1307,7 +1307,7 @@ profile = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "display": [
@@ -1326,7 +1326,7 @@ profile = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "display": [
@@ -1380,7 +1380,7 @@ profile = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "display": [
@@ -1413,7 +1413,7 @@ profile = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "display": [{"name": "Proof of phone number", "locale": "en-GB"}],
@@ -1485,7 +1485,7 @@ profile = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "vct": "urn:eu.europa.ec.eudi:employee_badge:1",
@@ -1671,7 +1671,7 @@ profile = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "vct": "urn:eu.europa.ec.eudi:pid:1",
@@ -1769,7 +1769,7 @@ profile = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "vct": "EUDI_PID_rule_book_1_0_0",
@@ -1916,7 +1916,7 @@ profile = {
                 "cryptographic_binding_methods_supported": ["jwk", "did"],
                 "credential_signing_alg_values_supported": [
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "ES512",
                     "ES256K",
                 ],
@@ -2144,7 +2144,7 @@ profile = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "vct": "urn:eu.europa.ec.eudi:pid:1",
@@ -2286,7 +2286,7 @@ profile = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "vct": "EUDI_PID_rule_book_1_0_0",
@@ -2595,7 +2595,7 @@ profile = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "vct": "EUDI_PID_rule_book_1_0_0",
@@ -2808,7 +2808,7 @@ profile = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "vct": "urn:eu.europa.ec.eudi:pid:1",
@@ -2877,7 +2877,7 @@ profile = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "display": [{"name": "Proof of Email", "locale": "en-US"}],
@@ -3144,7 +3144,7 @@ profile = {
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
-                    "ES384",
+                    "EdDSA",
                     "RS256",
                 ],
                 "vct": "urn:eu.europa.ec.eudi:pid:1",
