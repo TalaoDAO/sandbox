@@ -42,7 +42,7 @@ TALAO_ISSUER = {   # DIIP v2.1
                         }
                     ],
                 },
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -82,7 +82,7 @@ TALAO_ISSUER = {   # DIIP v2.1
             "EmailPass": {
                 "format": "jwt_vc_json-ld",
                 "scope": "EmailPass_scope",
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -154,7 +154,7 @@ TALAO_ISSUER = {   # DIIP v2.1
                         }
                     }
                 },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",

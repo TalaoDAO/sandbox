@@ -78,7 +78,7 @@ TALAO_ISSUER = {
                             }
                         }
                     },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -193,7 +193,7 @@ TALAO_ISSUER = {
                                         {"name": "Authorité", "locale": "fr-FR"}],
                         }
                     },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -220,7 +220,7 @@ TALAO_ISSUER = {
                 "format": "vc+sd-jwt",
                 "vct": "talao:issuer:emailpass:1",
                 "scope": "EmailPass_scope",
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -264,7 +264,7 @@ TALAO_ISSUER = {
                         ],
                     },
                 },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",

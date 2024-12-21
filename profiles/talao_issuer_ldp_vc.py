@@ -42,7 +42,7 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
                         }
                     ],
                 },
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -79,7 +79,7 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
             "EmailPass": {
                 "format": "ldp_vc",
                 "scope": "EmailPass_scope",
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -148,7 +148,7 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
                         }
                     }
                 },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],

@@ -41,7 +41,7 @@ profile = {
                     "VerifiableAttestation",
                     "VerifiableDiploma2",
                 ],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
                 "display": [
                     {
@@ -93,7 +93,7 @@ profile = {
                     "VerifiableAttestation",
                     "IndividualVerifiableAttestation",
                 ],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
                 "display": [
                     {
@@ -145,7 +145,7 @@ profile = {
             {
                 "format": "jwt_vc",
                 "types": ["VerifiableCredential", "EmailPass"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
                 "display": [
                     {
@@ -167,7 +167,7 @@ profile = {
                     "VerifiableAttestation",
                     "VerifiableId",
                 ],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "cryptographic_suites_supported": ["ES256K", "ES256", "ES384", "RS256"],
                 "display": [
                     {
@@ -224,7 +224,7 @@ profile = {
                 "id": "Over18",
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "Over18"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -240,7 +240,7 @@ profile = {
                 "id": "Over15",
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "Over15"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -256,7 +256,7 @@ profile = {
                 "id": "Over13",
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "Over13"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -272,7 +272,7 @@ profile = {
                 "id": "Over21",
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "Over21"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -288,7 +288,7 @@ profile = {
                 "id": "Over50",
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "Over50"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -304,7 +304,7 @@ profile = {
                 "id": "Over65",
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "Over65"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -320,7 +320,7 @@ profile = {
                 "id": "Liveness",
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "Liveness"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -339,7 +339,7 @@ profile = {
                     "VerifiableCredential",
                     "VerifiableId"
                 ],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -387,7 +387,7 @@ profile = {
                 "id": "EmailPass",
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "EmailPass"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -410,7 +410,7 @@ profile = {
                 "id": "PhoneProof",
                 "format": "ldp_vc",
                 "types": ["VerifiableCredential", "PhoneProof"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -482,7 +482,7 @@ profile = {
                         }
                     ]
                 },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -530,7 +530,7 @@ profile = {
                         }
                     ],
                 },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -573,7 +573,7 @@ profile = {
                         }
                     ],
                 },
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -641,7 +641,7 @@ profile = {
                         }
                     ],
                 },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2018"
                 ],
@@ -686,7 +686,7 @@ profile = {
                 "id": "VerifiableId",
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "VerifiableId"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "ES256"
                 ],
@@ -720,7 +720,7 @@ profile = {
                 "id": "Over13",
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "Over13"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "ES256"
                 ],
@@ -736,7 +736,7 @@ profile = {
                 "id": "Over15",
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "Over15"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "ES256"
                 ],
@@ -752,7 +752,7 @@ profile = {
                 "id": "Over18",
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "Over18"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "ES256"
                 ],
@@ -768,7 +768,7 @@ profile = {
                 "id": "Over21",
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "Over21"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "ES256"
                 ],
@@ -784,7 +784,7 @@ profile = {
                 "id": "Over50",
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "Over50"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "ES256"
                 ],
@@ -800,7 +800,7 @@ profile = {
                 "id": "Over65",
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "Over65"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "ES256"
                 ],
@@ -816,7 +816,7 @@ profile = {
                 "id": "Liveness",
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "Liveness"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "ES256"
                 ],
@@ -832,7 +832,7 @@ profile = {
                 "id": "EmailPass",
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "EmailPass"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "ES256"
                 ],
@@ -848,7 +848,7 @@ profile = {
                 "id": "PhoneProof",
                 "format": "jwt_vc_json",
                 "types": ["VerifiableCredential", "PhoneProof"],
-                "cryptographic_binding_methods_supported": ["DID"],
+                "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
                     "ES256"
                 ],
@@ -1481,7 +1481,7 @@ profile = {
                                         {"name": "Website", "locale": "fr-FR"}]
                         }
                     },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -1667,7 +1667,7 @@ profile = {
                                         {"name": "Authorité d'emission", "locale": "fr-FR"}],
                         },
                     },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -1765,7 +1765,7 @@ profile = {
                                         {"name": "Année de naissance", "locale": "fr-FR"}],
                         },
                     },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -1913,7 +1913,7 @@ profile = {
                         ],
                     }
                 },
-                "cryptographic_binding_methods_supported": ["jwk", "DID"],
+                "cryptographic_binding_methods_supported": ["jwk", "did"],
                 "credential_signing_alg_values_supported": [
                     "ES256",
                     "ES384",
@@ -2140,7 +2140,7 @@ profile = {
                                         {"name": "Authorité d'emission", "locale": "fr-FR"}],
                         },
                     },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -2282,7 +2282,7 @@ profile = {
                                         {"name": "Authorité d'emission", "locale": "fr-FR"}],
                         },
                     },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -2394,7 +2394,7 @@ profile = {
                         ],
                     },
                 },
-                "cryptographic_binding_methods_supported": ["jwk", "DID"],
+                "cryptographic_binding_methods_supported": ["jwk", "did"],
                 "credential_signing_alg_values_supported": [
                     "ES256",
                     "ES256K",
@@ -2591,7 +2591,7 @@ profile = {
                                         {"name": "Authorité d'emission", "locale": "fr-FR"}],
                         },
                     },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -2804,7 +2804,7 @@ profile = {
                                         {"name": "Authorité d'emission", "locale": "fr-FR"}],
                         },
                     },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -2873,7 +2873,7 @@ profile = {
                         "EmailPass"
                     ]
                 },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
@@ -3140,7 +3140,7 @@ profile = {
                                         {"name": "Authorité d'emission", "locale": "fr-FR"}],
                         },
                     },
-                "cryptographic_binding_methods_supported": ["DID", "jwk"],
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",

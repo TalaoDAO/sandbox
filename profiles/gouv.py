@@ -107,7 +107,7 @@ GOUV = {
                         ]
                 }
             },
-            "cryptographic_binding_methods_supported": ["DID", "jwk"],
+            "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
                     "ES256",
