@@ -668,7 +668,6 @@ def oidc4vc_login_qrcode(red, mode):
     else:
         authorization_request["response_mode"] = "direct_post"
 
-    
     # Set client_id
     if verifier_data.get('client_id_scheme') == "x509_san_dns":
         client_id = "talao.co"
@@ -679,11 +678,12 @@ def oidc4vc_login_qrcode(red, mode):
     else:
         client_id = verifier_data['did']
     
-    authorization_request['client_id'] = client_id
-    wallet_metadata = build_verifier_metadata(verifier_id, redirect_uri)
-    print("verifier_id = ", verifier_id)
     if verifier_id not in ['fzqtmovhto', 'woxvjqkbrb']:
-        authorization_request['nonce'] = nonce 
+        authorization_request['client_id'] = client_id
+        
+    wallet_metadata = build_verifier_metadata(verifier_id, redirect_uri)
+    
+    authorization_request['nonce'] = nonce
 
     # OIDC4VP
     if 'vp_token' in response_type:
@@ -713,7 +713,10 @@ def oidc4vc_login_qrcode(red, mode):
                 authorization_request['client_id'] = "verifier_attestation:" + client_id
             else:
                 pass
-            
+        
+        if verifier_id not in ['fzqtmovhto', 'woxvjqkbrb']:
+            pass
+            #authorization_request['client_id_scheme'] = 'fake' 
 
         # presentation_definition_uri
         if verifier_data.get('presentation_definition_uri'):
@@ -748,7 +751,12 @@ def oidc4vc_login_qrcode(red, mode):
                 authorization_request['presentation_definition'] = presentation_definition
         else:
             authorization_request['presentation_definition_uri'] = presentation_definition_uri
+            
+        #if verifier_id in ['fzqtmovhto', 'woxvjqkbrb']:
+        #    authorization_request['presentation_definition'] = presentation_definition
+        #    authorization_request['presentation_definition_uri'] = mode.server + 'verifier/wallet/presentation_definition_uri/' + verifier_id
 
+    
     if response_type == "id_token" and verifier_data.get('request_uri_parameter_supported'):
         authorization_request['client_metadata'] = wallet_metadata
     
@@ -761,18 +769,21 @@ def oidc4vc_login_qrcode(red, mode):
     request_as_jwt = build_jwt_request(
         key,
         verifier_data['verification_method'],
-        authorization_request['client_id'],  # iss ??????
+        client_id,  # iss ??????
         'https://self-issued.me/v2', # aud requires static siopv2 data
         authorization_request,
         client_id_scheme=verifier_data.get('client_id_scheme'),
         client_id=client_id
     )
 
+    #if verifier_id in ['fzqtmovhto', 'woxvjqkbrb']:
+    #    del authorization_request['client_id']
+    
     # QRCode preparation with authorization_request_displayed
     if verifier_data.get('request_uri_parameter_supported') or verifier_data['profile'] in ["HAIP", "POTENTIAL"]: # request uri as jwt
         red.setex("request_uri_" + stream_id, QRCODE_LIFE, json.dumps(request_as_jwt))
         authorization_request_displayed = { 
-            "client_id": authorization_request['client_id'],
+            "client_id": client_id,
             "request_uri": mode.server + "verifier/wallet/request_uri/" + stream_id 
         }
     elif verifier_data.get('request_parameter_supported'):

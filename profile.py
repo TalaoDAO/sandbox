@@ -1227,17 +1227,14 @@ profile = {
                 ],
                 "display": [
                     {
-                        "name": "Test Credential",
-                        "description": "For testing purpose",
+                        "text_color": "#FFFFFF",
                         "locale": "en-US",
                         "background_image": {
-                            "uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPcAAACUCAMAAAB4Mk+VAAAACVBMVEX///94qff///xmEYKgAAAArUlEQVR4nO3PAQEAAAiAoOr/6IYgD5i9IfW29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS29Lb0tvS2oO8HwB8BvTnVwPgAAAAASUVORK5CYII=",
-                            "alt_text": "ABN Amro Card"
+                            "uri": "https://vpid.talao.co/accounts/vpid-credential.png",
+                            "alt_text": "Image of a VPID",
                         },
-                        "background_color": "#FFFFFF",
-                        "text_color": "#000000",
                     }
-                ],
+                ]
             },
             "VerifiableId": {
                 "format": "jwt_vc_json",
