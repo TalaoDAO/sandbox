@@ -1,7 +1,7 @@
 import os
 import time
 import markdown
-from flask import Flask, redirect, request, render_template_string, request, jsonify, Response, render_template
+from flask import Flask, redirect, request, render_template_string, jsonify, Response, render_template
 from flask_session import Session
 from flask_mobility import Mobility
 from datetime import timedelta, datetime
@@ -33,14 +33,11 @@ from routes import wallet
 # for testing purpose
 from routes import test_issuer_oidc4vc
 from routes import test_verifier_oidc4vc
-#from routes import web_wallet_test
 from routes import web_display_VP
 from routes import waltid_server
 
 from routes import statuslist
 
-#from routes import ciba
-#from routes import jpma2jpma
 
 API_LIFE = 5000
 #ACCESS_TOKEN_LIFE = 1000
@@ -59,13 +56,9 @@ mode = environment.currentMode(mychain, myenv)
 # Redis init red = redis.StrictRedis()
 red = redis.Redis(host='localhost', port=6379, db=0)
 
-
 # Framework Flask and Session setup
-#app = Flask(__name__)
-
 app = Flask(__name__,
             static_url_path='/static') 
-
 
 app.jinja_env.globals['Version'] = "0.5.2"
 app.jinja_env.globals['Created'] = time.ctime(os.path.getctime('main.py'))
@@ -91,11 +84,8 @@ saas4ssi.init_app(app, red, mode)
 
 # TEST
 web_display_VP.init_app(app, red, mode)
-#web_wallet_test.init_app(app, red, mode)
 test_issuer_oidc4vc.init_app(app, red, mode)
 test_verifier_oidc4vc.init_app(app, red, mode)
-#ciba.init_app(app, red, mode)
-#jpma2jpma.init_app(app, red, mode)
 statuslist.init_app(app, red, mode)
 waltid_server.init_app(app, red, mode)
 
@@ -103,6 +93,7 @@ sess = Session()
 sess.init_app(app)
 qrcode = QRcode(app)
 Mobility(app)
+
 
 @app.errorhandler(403)
 def page_abort(e):
@@ -180,7 +171,6 @@ def md_file():
 
 
 # Customer API for issuer - swagger support
-
 authorizations = {
     'apikey': {
         'type': 'apiKey',
@@ -408,13 +398,6 @@ class Issuer(Resource):
         return jsonify(api_response)
 
 
-"""
-@app.route('/app/download' , methods=['GET']) 
-def app_download():
-    return render_template('app_download/talao_app_download.html')
-"""
-
-
 def hash(text):
     m = hashlib.sha256()
     m.update(text.encode())
@@ -422,14 +405,14 @@ def hash(text):
 
 
 # download link with configuration
-@app.route('/app/download' , methods=['GET']) 
-def app_download() :
+@app.route('/app/download', methods=['GET']) 
+def app_download():
     configuration = {
         "login": request.args.get('login'),
         "password": request.args.get('password'),
         "wallet-provider": request.args.get('wallet-provider')
     }
-    host = request.headers['X-Real-Ip'] #+ ' ' +  request.headers['User-Agent']
+    host = request.headers['X-Real-Ip']   #+ ' ' +  request.headers['User-Agent']
     host_hash = hash(host)
     logging.info('configuration : %s stored for wallet : %s',configuration, host)
     red.setex(host_hash, 300, json.dumps(configuration))
@@ -454,11 +437,11 @@ def link():
     try:
         host = request.headers['X-Real-Ip'] #+ ' ' +  request.headers['User-Agent']
     except Exception:
-        message = "Not an https call"
-        return render_template('app_download/install_link_error.html', message=message)
+        _message = "Not an https call"
+        return render_template('app_download/install_link_error.html', message=_message)
         
     host_hash = hash(host)
-    logging.info('configuration : %s stored for wallet : %s',configuration, host)
+    logging.info('configuration : %s stored for wallet : %s', configuration, host)
     red.setex(host_hash, 300, json.dumps(configuration))
     try:
         if request.MOBILE:
@@ -469,11 +452,11 @@ def link():
                 return redirect('https://play.google.com/store/apps/details?id=co.talao.wallet')
             else:
                 return redirect('https://apps.apple.com/fr/app/talao-wallet/id1582183266?platform=iphone')
-        message = "This installation link must be used through your smartphone"
-        return render_template('app_download/install_link_error.html', message=message)
+        _message = "This installation link must be used through your smartphone"
+        return render_template('app_download/install_link_error.html', message=_message)
     except Exception:
-        message = "Install link error"
-        return render_template('app_download/install_link_error.html', message=message)
+        _message = "Install link error"
+        return render_template('app_download/install_link_error.html', message=_message)
 
 
 # configuration for link to downloads with configuration
@@ -486,9 +469,9 @@ def app_download_configuration():
         configuration = json.loads(red.get(host_hash).decode())
         red.delete(host_hash)
         logging.info("Configuration sent to this wallet")
-    except:
+    except Exception:
         logging.warning("No configuration available for this wallet")
-        configuration = None
+        configuration = {}
     return jsonify(configuration)
 
 
@@ -517,7 +500,6 @@ def well_known_did_configuration():
     return Response(json.dumps(document), headers=headers)
 
 
-
 @app.route('/device_detector' , methods=['GET']) 
 def device_detector():
     ua = request.headers.get('User-Agent')
@@ -544,7 +526,7 @@ def well_known_did():
     return Response(json.dumps(DID_Document), headers=headers)
 
 
-# .well-known for walllet as issuer 
+# .well-known for walllet as issuer
 @app.route('/wallet_issuer/.well-known/openid-configuration', methods=['GET'])
 @app.route('/wallet-issuer/.well-known/openid-configuration', methods=['GET'])
 def wallet_issuer_well_known_did():

@@ -681,7 +681,9 @@ def oidc4vc_login_qrcode(red, mode):
     
     authorization_request['client_id'] = client_id
     wallet_metadata = build_verifier_metadata(verifier_id, redirect_uri)
-    authorization_request['nonce'] = nonce 
+    print("verifier_id = ", verifier_id)
+    if verifier_id not in ['fzqtmovhto', 'woxvjqkbrb']:
+        authorization_request['nonce'] = nonce 
 
     # OIDC4VP
     if 'vp_token' in response_type:
@@ -791,7 +793,7 @@ def oidc4vc_login_qrcode(red, mode):
         r = requests.get(authorization_request_displayed['request_uri'])
         request_uri_jwt = r.content.decode()
     except Exception:
-        request_uri_jwt =""
+        request_uri_jwt = ""
 
     deeplink_altme = mode.deeplink_altme + 'app/download/authorize?' + urlencode(authorization_request_displayed)
     logging.info("weblink for same device flow = %s", deeplink_altme)
