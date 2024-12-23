@@ -879,6 +879,7 @@ profile = {
         "oidc4vp_prefix": "openid-vc://",
         "credentials_types_supported": [
             "TestCredential",
+             "TestCredential2",
             "OpenBadgeCredential",
             "VerifiableId",
             "EmailPass",
@@ -1223,7 +1224,6 @@ profile = {
                     "ES256K",
                     "ES256",
                     "EdDSA",
-                    "RS256",
                 ],
                 "display": [
                     {
@@ -1233,6 +1233,35 @@ profile = {
                             "uri": "https://vpid.talao.co/accounts/vpid-credential.png",
                             "alt_text": "Image of a VPID",
                         },
+                    }
+                ]
+            },
+            "TestCredential2": {
+                "format": "jwt_vc_json",
+                "scope": "TestCredential_scope",
+                "credential_definition": {
+                    "type": ["VerifiableCredential", "TestCredential2"]
+                },
+                "cryptographic_binding_methods_supported": [
+                    "did:jwk",
+                    "did:key"
+                ],
+                "proof_types_supported": {
+                    "jwt": {
+                        "proof_signing_alg_values_supported": ["ES256"]
+                    }
+                },
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "EdDSA",
+                ],
+                "display": [
+                    {
+                        "name": "Test Credential 2 ",
+                        "description": "This is a test",
+                        "background_color": "#3BVF6D",
+                        "text_color": "#FFFFFF",
                     }
                 ]
             },

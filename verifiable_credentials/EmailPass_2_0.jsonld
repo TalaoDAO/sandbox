@@ -1,0 +1,20 @@
+{
+    "@context": ["https://www.w3.org/ns/credentials/v2",
+        {
+            "@vocab": "https://schema.org/",
+            "EmailPass2" : "https://github.com/TalaoDAO/context#emailpass2"
+        }
+    ],
+    "id": "urn:123",
+    "description": "Proof of email",
+    "type": ["VerifiableCredential", "EmailPass2"],
+    "issuer": {
+        "id" : "did:web:talao.co",
+        "name": "Talao"
+    },
+    "validFrom": "2024-03-16T18:21:13Z",
+    "credentialSubject" : {
+        "type" : "EmailPass2",
+        "email" : "john.doe@gmail.com"
+    }
+}

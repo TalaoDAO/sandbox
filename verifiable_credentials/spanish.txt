@@ -1,0 +1,4 @@
+{
+  "thisFeatureIsNotSupportedYetForEtherlink": "This feature is not supported yet for Etherlink Chain.",
+  "walletSecurityAndBackup": "Wallet Security and Backup"
+}

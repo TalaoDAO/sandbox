@@ -1,0 +1,24 @@
+{
+	"@context": [ "https://www.w3.org/2018/credentials/v1", 
+		{
+			"@vocab": "https://schema.org",
+			"associatedAddress" : "https://w3id.org/security#blockchainAccountId",
+			"EtherlinkAssociatedAddress" : "https://doc.wallet-provider.io/vc_type#etherlinkassociatedadress"
+		}
+	],
+	"id" : "",
+	"type": [
+		"VerifiableCredential",
+		"EtherlinkAssociatedAddress"
+	],
+	"issuer" : {
+		"id": "",
+		"name": "My Wallet"
+	},
+	"expirationDate": "",
+	"credentialSubject" : {
+		"id" : "",
+		"type" : "EtherlinkAssociatedAddress",
+		"associatedAddress" : ""
+	}
+}
