@@ -221,7 +221,7 @@ def test_4(mode):
     issuer_id = issuer_test(4, mode)
     client_secret = issuer_test(4, mode, secret = True)
 
-    offer = ["OpenBadgeCredential", "TestCredential", "TestCredential2"]
+    offer = ["OpenBadgeCredential", "TestCredential", "TestCredential2",  "DBCGuest", "EmailPass"]
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
