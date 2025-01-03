@@ -206,15 +206,16 @@ def credential_issuer_openid_configuration(issuer_id, mode):
     if int(issuer_profile.get("oidc4vciDraft")) >= 13: # TODO
         credential_issuer_openid_configuration['nonce_endpoint'] = mode.server + 'issuer/nonce'
 
-    # setup authorization server attribute is always there
+    # setup authorization server attribute
     """
     the authorization server URL list is provided in the issuer metadata
     """    
-    if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
-        credential_issuer_openid_configuration['authorization_servers'] = [ mode.server + 'issuer/' + issuer_id + '/standalone', "https://fake.com/as"]
-        credential_issuer_openid_configuration['jwks_uri'] = mode.server + 'issuer/' + issuer_id + '/jwks'
-    else:
-        credential_issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id
+    if issuer_profile.get('authorization_server_support') and int(issuer_profile["oidc4vciDraft"]) >= 13:
+        if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
+            credential_issuer_openid_configuration['authorization_servers'] = [ mode.server + 'issuer/' + issuer_id + '/standalone', "https://fake.com/as"]
+            credential_issuer_openid_configuration['jwks_uri'] = mode.server + 'issuer/' + issuer_id + '/jwks'
+        else: # EBSI
+            credential_issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id
 
     # Credentials supported section
     if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
@@ -281,10 +282,10 @@ def oauth_authorization_server(issuer_id, mode):
 
 # /standalone/.well-known/oauth-authorization-server endpoint
 def standalone_oauth_authorization_server(issuer_id, mode):
-    logging.info("Call to the standalne oauth-authorization-server endpoint")
+    logging.info("Call to the standalone oauth-authorization-server endpoint")
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     config = as_openid_configuration(issuer_id, mode)
-    config['issuer'] =  mode.server + 'issuer/' + issuer_id + '/standalone'
+    config['issuer'] = mode.server + 'issuer/' + issuer_id + '/standalone'
     return Response(response=json.dumps(config), headers=headers)
 
 
@@ -302,25 +303,7 @@ def as_openid_configuration(issuer_id, mode):
         'token_endpoint': mode.server + 'issuer/' + issuer_id + '/token',
         'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
         'pushed_authorization_request_endpoint': mode.server +'issuer/' + issuer_id + '/authorize/par' ,
-        'pre-authorized_grant_anonymous_access_supported': True,
-        "display": [
-            {
-                "name": "Talao issuer",
-                "locale": "en-US",
-                "logo": {
-                    "uri": "https://talao.co/static/img/talao.png",
-                    "alt_text": "Talao logo"
-                }
-            },
-            {
-                "name": "Talao issuer",
-                "locale": "fr-FR",
-                "logo": {
-                    "uri": "https://talao.co/static/img/talao.png",
-                    "alt_text": "Talao logo"
-                }
-            }
-        ],
+        'pre-authorized_grant_anonymous_access_supported': True
     }
     if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
         config['require_pushed_authorization_requests'] = True
@@ -495,13 +478,14 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     
     resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/openid-credential-issuer', timeout=10)
     credential_issuer_configuration = resp.json()
+    
     if profile_data['authorization_server_support'] and int(profile_data["oidc4vciDraft"]) >= 13:
         url_authorization_server = mode.server + 'issuer/' + issuer_id + '/standalone/.well-known/oauth-authorization-server'
     else:
         url_authorization_server = mode.server + 'issuer/' + issuer_id + '/.well-known/oauth-authorization-server'
-    print('url authorization server = ', url_authorization_server)
     resp = requests.get(url_authorization_server, timeout=10)
     oauth_authorization_server = resp.json()
+    
     resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/openid-configuration', timeout=10)
     openid_configuration = resp.json()
     
