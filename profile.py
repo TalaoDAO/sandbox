@@ -1459,7 +1459,7 @@ profile = {
         "vc_format": "vc+sd-jwt",
         "verifier_vp_type": "vc+sd-jwt",
         "oidc4vci_prefix": "openid-credential-offer://",
-        "authorization_server_support": False,
+        "authorization_server_support": True,
         "credentials_as_json_object_array": False,
         "siopv2_prefix": "openid-vc://",
         "oidc4vp_prefix": "openid-vc://",

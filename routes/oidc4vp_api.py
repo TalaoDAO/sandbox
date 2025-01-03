@@ -801,7 +801,7 @@ def oidc4vc_login_qrcode(red, mode):
     
     # get request uri as jwt
     try:
-        r = requests.get(authorization_request_displayed['request_uri'])
+        r = requests.get(authorization_request_displayed['request_uri'], timeout=10)
         request_uri_jwt = r.content.decode()
     except Exception:
         request_uri_jwt = ""

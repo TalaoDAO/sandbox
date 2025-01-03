@@ -501,7 +501,7 @@ def resolve_did_web(did) -> str:
     except Exception:
         pass
     url = url + '/did.json'
-    r = requests.get(url)
+    r = requests.get(url, timeout=10)
     if 399 < r.status_code < 500:
         logging.warning('return API code = %s', r.status_code)
         return "{'error': 'did:web not found on server'}"
@@ -532,7 +532,7 @@ def get_issuer_registry_data(did):
     """
     try:
         url = 'https://api-pilot.ebsi.eu/trusted-issuers-registry/v3/issuers/' + did
-        r = requests.get(url)
+        r = requests.get(url, timeout=10)
     except Exception:
         logging.error('cannot access API')
         return

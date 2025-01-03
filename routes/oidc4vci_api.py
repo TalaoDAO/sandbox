@@ -136,7 +136,7 @@ def manage_error(error, error_description, red, mode, request=None, stream_id=No
         front_publish(stream_id, red, error=error, error_description=error_description)
     
     if webhook:
-        requests.post(webhook, json={"event": "ERROR"})
+        requests.post(webhook, json={"event": "ERROR"}, timeout=10)
 
     # wallet
     payload = {
@@ -166,6 +166,9 @@ def credential_issuer_openid_configuration_endpoint(issuer_id, mode):
 
 # Credential issuer metadata
 def credential_issuer_openid_configuration(issuer_id, mode):
+    """
+    /.well-known/openid-credential-issuer
+    """
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
         issuer_profile = profile[issuer_data['profile']]
@@ -176,7 +179,6 @@ def credential_issuer_openid_configuration(issuer_id, mode):
     # general section
     credential_issuer_openid_configuration = {
         'credential_issuer': mode.server + 'issuer/' + issuer_id,
-        'pre-authorized_grant_anonymous_access_supported': True,
         "display": [
             {
                 "name": "Talao issuer",
@@ -203,16 +205,15 @@ def credential_issuer_openid_configuration(issuer_id, mode):
     if int(issuer_profile.get("oidc4vciDraft")) >= 13: # TODO
         credential_issuer_openid_configuration['nonce_endpoint'] = mode.server + 'issuer/nonce'
 
-    # setup authorization server attribute if needed
-    if issuer_profile.get('authorization_server_support'):
-        """
-        the authorization server URL is provided through a claim in the issuer metadata
-        """    
-        if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
-            credential_issuer_openid_configuration['authorization_servers'] = [mode.server + 'issuer/' + issuer_id, "https://fake.com/as"]
-            credential_issuer_openid_configuration['jwks_uri'] = mode.server + 'issuer/' + issuer_id + '/jwks'
-        else:
-            credential_issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id
+    # setup authorization server attribute is always there
+    """
+    the authorization server URL list is provided in the issuer metadata
+    """    
+    if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
+        credential_issuer_openid_configuration['authorization_servers'] = [mode.server + 'issuer/' + issuer_id, "https://fake.com/as"]
+        credential_issuer_openid_configuration['jwks_uri'] = mode.server + 'issuer/' + issuer_id + '/jwks'
+    else:
+        credential_issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id
 
     # Credentials supported section
     if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
@@ -265,7 +266,7 @@ def openid_jwt_vc_issuer_configuration(issuer_id, mode):
 
 # /.well-known/openid-configuration endpoint  authorization server endpoint for draft 11 DEPRECATED
 def openid_configuration(issuer_id, mode):
-    logging.info("Call to openid-configuration endpoint")
+    logging.warning("Call to openid-configuration endpoint")
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
 
@@ -478,11 +479,11 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     else:
         arg_for_web_wallet = '?' + urlencode({'credential_offer': json.dumps(offer)})
     
-    resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/openid-credential-issuer')
+    resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/openid-credential-issuer', timeout=10)
     credential_issuer_configuration = resp.json()
-    resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/oauth-authorization-server')
+    resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/oauth-authorization-server', timeout=10)
     oauth_authorization_server = resp.json()
-    resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/openid-configuration')
+    resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/openid-configuration', timeout=10)
     openid_configuration = resp.json()
     
     qrcode_page = issuer_data.get('issuer_landing_page')
@@ -1329,7 +1330,7 @@ async def issuer_credential(issuer_id, red, mode):
         data = {
                 "event": "CREDENTIAL_SENT",
         }
-        requests.post(webhook, json=data)
+        requests.post(webhook, json=data, timeout=10)
     
     # update counter for issuance of verifiable id
     if issuer_id in ["vqzljjitre", "lbeuegiasm"]:
@@ -1337,7 +1338,7 @@ async def issuer_credential(issuer_id, red, mode):
             "vc": "verifiableid",
             "count": "1"
             }
-        requests.post('https://issuer.talao.co/counter/update', data=data)
+        requests.post('https://issuer.talao.co/counter/update', data=data, timeout=10)
 
     # send VC to wallet
     headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}

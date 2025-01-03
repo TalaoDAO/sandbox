@@ -97,7 +97,7 @@ def waltid():
     headers = {
         'Content-Type': 'application/json'
     }
-    resp = requests.post(url, headers=headers, data=json.dumps(payload)) 
+    resp = requests.post(url, headers=headers, data=json.dumps(payload), timeout=10)
     if resp.status_code > 399 :
         print("status code = ", resp.content)
     code = resp.text

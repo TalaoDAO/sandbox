@@ -380,7 +380,7 @@ class Issuer(Resource):
         
         # Get the QR code value from oidc4vci_api.py
         try:
-            r = requests.get(mode.server + "sandbox/ebsi/issuer/qrcode/" + issuer_id + "/" + stream_id)
+            r = requests.get(mode.server + "sandbox/ebsi/issuer/qrcode/" + issuer_id + "/" + stream_id, timeout=10)
             qrcode_value = r.json()["qrcode_value"]
         except Exception:
             logging.error("QR code value error ")
