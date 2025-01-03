@@ -284,7 +284,7 @@ def standalone_oauth_authorization_server(issuer_id, mode):
     logging.info("Call to the standalne oauth-authorization-server endpoint")
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     config = as_openid_configuration(issuer_id, mode)
-    config['issuer'] =  mode.server + 'issuer/' + issuer_id + '/standalone',
+    config['issuer'] =  mode.server + 'issuer/' + issuer_id + '/standalone'
     return Response(response=json.dumps(config), headers=headers)
 
 
