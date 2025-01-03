@@ -57,6 +57,7 @@ def init_app(app, red, mode):
     
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=openid_configuration, methods=['GET'], defaults={'mode': mode},)
     app.add_url_rule('/issuer/<issuer_id>/.well-known/oauth-authorization-server', view_func=oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
+    app.add_url_rule('/issuer/<issuer_id>/standalone/.well-known/oauth-authorization-server', view_func=standalone_oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
 
     
     app.add_url_rule('/issuer/credential_offer_uri/<id>', view_func=issuer_credential_offer_uri, methods=['GET'], defaults={'red': red})
@@ -210,7 +211,7 @@ def credential_issuer_openid_configuration(issuer_id, mode):
     the authorization server URL list is provided in the issuer metadata
     """    
     if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
-        credential_issuer_openid_configuration['authorization_servers'] = [mode.server + 'issuer/' + issuer_id, "https://fake.com/as"]
+        credential_issuer_openid_configuration['authorization_servers'] = [ mode.server + 'issuer/' + issuer_id + '/standalone', "https://fake.com/as"]
         credential_issuer_openid_configuration['jwks_uri'] = mode.server + 'issuer/' + issuer_id + '/jwks'
     else:
         credential_issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id
@@ -276,6 +277,15 @@ def oauth_authorization_server(issuer_id, mode):
     logging.info("Call to oauth-authorization-server endpoint")
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
+
+
+# /standalone/.well-known/oauth-authorization-server endpoint
+def standalone_oauth_authorization_server(issuer_id, mode):
+    logging.info("Call to the standalne oauth-authorization-server endpoint")
+    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
+    config = as_openid_configuration(issuer_id, mode)
+    config['issuer'] =  mode.server + 'issuer/' + issuer_id + '/standalone',
+    return Response(response=json.dumps(config), headers=headers)
 
 
 # authorization server configuration 
@@ -407,7 +417,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                 }
             }
             if profile_data['authorization_server_support'] and int(profile_data["oidc4vciDraft"]) >= 13:
-                offer['grants']['urn:ietf:params:oauth:grant-type:pre-authorized_code'].update({"authorization_server": mode.server + 'issuer/' + issuer_id})
+                offer['grants']['urn:ietf:params:oauth:grant-type:pre-authorized_code'].update({"authorization_server": mode.server + 'issuer/' + issuer_id + '/standalone'})
             if user_pin_required:
                 offer['grants'][
                     'urn:ietf:params:oauth:grant-type:pre-authorized_code'
@@ -421,7 +431,7 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
         else:
             offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
             if profile_data['authorization_server_support'] and int(profile_data["oidc4vciDraft"]) >= 13:
-                offer['grants']['authorization_code'].update({"authorization_server": mode.server + 'issuer/' + issuer_id})
+                offer['grants']['authorization_code'].update({"authorization_server": mode.server + 'issuer/' + issuer_id + '/standalone'})
     return offer
 
 
@@ -446,6 +456,10 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     except Exception:
         logging.warning('session expired')
         return jsonify('Session expired'), 404
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    issuer_profile = issuer_data['profile']
+    profile_data = profile[issuer_profile]
+    
     credential_type = session_data['credential_type']
     pre_authorized_code = session_data['pre-authorized_code']
     user_pin_required = session_data['user_pin_required']
@@ -481,7 +495,12 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     
     resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/openid-credential-issuer', timeout=10)
     credential_issuer_configuration = resp.json()
-    resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/oauth-authorization-server', timeout=10)
+    if profile_data['authorization_server_support'] and int(profile_data["oidc4vciDraft"]) >= 13:
+        url_authorization_server = mode.server + 'issuer/' + issuer_id + '/standalone/.well-known/oauth-authorization-server'
+    else:
+        url_authorization_server = mode.server + 'issuer/' + issuer_id + '/.well-known/oauth-authorization-server'
+    print('url authorization server = ', url_authorization_server)
+    resp = requests.get(url_authorization_server, timeout=10)
     oauth_authorization_server = resp.json()
     resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/openid-configuration', timeout=10)
     openid_configuration = resp.json()
