@@ -279,10 +279,12 @@ def openid_configuration(issuer_id, mode):
 def oauth_authorization_server(issuer_id, mode):
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
+    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     if issuer_profile.get('authorization_server_support') and int(issuer_profile["oidc4vciDraft"]) >= 13:
         logging.error("CALL TO WRONG AUTHORIZATION SERVER")
+        message = {"error": "access_denied", "error_description": "invalid authorization server"}
+        return Response(response=json.dumps(message), headers=headers)
     logging.info("Call to oauth-authorization-server endpoint")
-    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
 
 
