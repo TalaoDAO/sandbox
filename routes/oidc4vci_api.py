@@ -277,6 +277,10 @@ def openid_configuration(issuer_id, mode):
 
 # /.well-known/oauth-authorization-server endpoint
 def oauth_authorization_server(issuer_id, mode):
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    issuer_profile = profile[issuer_data['profile']]
+    if issuer_profile.get('authorization_server_support') and int(issuer_profile["oidc4vciDraft"]) >= 13:
+        logging.error("CALL TO WRONG AUTHORIZATION SERVER")
     logging.info("Call to oauth-authorization-server endpoint")
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
@@ -620,11 +624,11 @@ def issuer_authorize_par(issuer_id, red, mode):
         if not request.form.get('client_assertion_type') and not request.headers.get('Oauth-Client-Attestation'):
             return Response(**manage_error('invalid_request', 'HAIP and POTENTIAL request client assertion authentication', red, mode, request=request))
     
-    # test is standalone AS is used
+    # test if a standalone AS is used
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
     if issuer_profile.get('authorization_server_support') and int(issuer_profile["oidc4vciDraft"]) >= 13:
-        return jsonify("wrong endpoint"), 400
+        return Response(**manage_error('invalid_request', 'invalid authorization server', red, mode, request=request))
     
     # Check content of client assertion and proof of possession (DPoP)
     if request.form.get('client_assertion'):
@@ -717,12 +721,15 @@ def issuer_authorize_pid(issuer_id, red):
 # authorization code endpoint
 def issuer_authorize(issuer_id, red, mode):
     
-    # test is standalone AS is used
+    # test if a standalone AS is used
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
     if issuer_profile.get('authorization_server_support') and int(issuer_profile["oidc4vciDraft"]) >= 13:
         logging.error("wrong authorization endpoint used")
-        return jsonify ("invalid endpoint"), 400
+        return jsonify({
+                    'error': 'invalid_request',
+                    'error_description': 'invalid authorization server'
+                }), 403
     
     # user not logged
     if not session.get('login'):

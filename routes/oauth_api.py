@@ -7,13 +7,11 @@ support Authorization code flow and pre-authorized code flow of OIDC4VCI
 import copy
 import json
 import logging
-import random
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from profile import profile
 from random import randint
 from urllib.parse import urlencode
-import urllib
 import db_api
 import oidc4vc  # type: ignore
 import pkce
@@ -30,12 +28,11 @@ ACCESS_TOKEN_LIFE = 10000
 GRANT_LIFE = 5000
 C_NONCE_LIFE = 5000
 ACCEPTANCE_TOKEN_LIFE = 28 * 24 * 60 * 60
-STATUSLIST_ISSUER_KEY = json.dumps(json.load(open('keys.json', 'r'))['talao_Ed25519_private_key'])
 
 
 def init_app(app, red, mode):
     
-    # AS endpoint   
+    # AS endpoint
     app.add_url_rule('/issuer/<issuer_id>/standalone/authorize', view_func=standalone_issuer_authorize, methods=['GET'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/standalone/authorize/par', view_func=standalone_issuer_authorize_par, methods=['POST'], defaults={'red': red, 'mode':mode})
     app.add_url_rule('/issuer/<issuer_id>/standalone/token', view_func=standalone_issuer_token, methods=['POST'], defaults={'red': red, 'mode': mode},)
