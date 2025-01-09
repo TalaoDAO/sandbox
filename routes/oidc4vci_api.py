@@ -47,25 +47,27 @@ def init_app(app, red, mode):
     
     # OIDC4VCI protocol with wallet
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-credential-issuer', view_func=credential_issuer_openid_configuration_endpoint, methods=['GET'], defaults={'mode': mode})
-    app.add_url_rule('/issuer/<issuer_id>/authorize', view_func=issuer_authorize, methods=['GET'], defaults={'red': red, 'mode': mode})
     
-    app.add_url_rule('/issuer/<issuer_id>/authorize/par', view_func=issuer_authorize_par, methods=['POST'], defaults={'red': red, 'mode':mode})
-
-    app.add_url_rule('/issuer/<issuer_id>/token', view_func=issuer_token, methods=['POST'], defaults={'red': red, 'mode': mode},)
-    app.add_url_rule('/issuer/<issuer_id>/credential', view_func=issuer_credential, methods=['POST'], defaults={'red': red, 'mode': mode})
-    app.add_url_rule('/issuer/<issuer_id>/deferred', view_func=issuer_deferred, methods=['POST'], defaults={'red': red, 'mode': mode},)
-    
+    # AS endpoint when issuer = AS
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=openid_configuration, methods=['GET'], defaults={'mode': mode},)
     app.add_url_rule('/issuer/<issuer_id>/.well-known/oauth-authorization-server', view_func=oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
-    app.add_url_rule('/issuer/<issuer_id>/standalone/.well-known/oauth-authorization-server', view_func=standalone_oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
-
     
+    app.add_url_rule('/issuer/<issuer_id>/authorize', view_func=issuer_authorize, methods=['GET'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/issuer/<issuer_id>/authorize/par', view_func=issuer_authorize_par, methods=['POST'], defaults={'red': red, 'mode':mode})
+    app.add_url_rule('/issuer/<issuer_id>/token', view_func=issuer_token, methods=['POST'], defaults={'red': red, 'mode': mode},)
+    
+    # Issuer endpoint
+    app.add_url_rule('/issuer/<issuer_id>/credential', view_func=issuer_credential, methods=['POST'], defaults={'red': red, 'mode': mode})
+    app.add_url_rule('/issuer/<issuer_id>/deferred', view_func=issuer_deferred, methods=['POST'], defaults={'red': red, 'mode': mode},)
     app.add_url_rule('/issuer/credential_offer_uri/<id>', view_func=issuer_credential_offer_uri, methods=['GET'], defaults={'red': red})
-    app.add_url_rule('/issuer/error_uri', view_func=wallet_error_uri, methods=['GET'])
-    
-    # nonce endpoint
     app.add_url_rule('/issuer/nonce', view_func=issuer_nonce, methods=['POST'], defaults={'red': red})
+
+    # standalone AS metadata
+    app.add_url_rule('/issuer/<issuer_id>/standalone/.well-known/oauth-authorization-server', view_func=standalone_oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
     
+    
+    app.add_url_rule('/issuer/error_uri', view_func=wallet_error_uri, methods=['GET'])
+        
     # login with login/password authorization code flow
     app.add_url_rule('/issuer/<issuer_id>/authorize/login', view_func=issuer_authorize_login, methods=['GET', 'POST'], defaults={'red': red})
     # login with PID authorization code flow
@@ -283,8 +285,24 @@ def oauth_authorization_server(issuer_id, mode):
 # /standalone/.well-known/oauth-authorization-server endpoint
 def standalone_oauth_authorization_server(issuer_id, mode):
     logging.info("Call to the standalone oauth-authorization-server endpoint")
+    try:
+        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    except Exception:
+        logging.warning('issuer_id not found for %s', issuer_id)
+        return
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
-    config = as_openid_configuration(issuer_id, mode)
+    authorization_server_config = json.load(open('authorization_server_config.json'))
+    config = {
+        'issuer': mode.server + 'issuer/' + issuer_id +'/standalone',
+        'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/standalone/authorize',
+        'token_endpoint': mode.server + 'issuer/' + issuer_id + '/standalone/token',
+        'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
+        'pushed_authorization_request_endpoint': mode.server +'issuer/' + issuer_id + '/standalone/authorize/par' ,
+        'pre-authorized_grant_anonymous_access_supported': True
+    }
+    if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
+        config['require_pushed_authorization_requests'] = True
+    config.update(authorization_server_config)
     config['issuer'] = mode.server + 'issuer/' + issuer_id + '/standalone'
     return Response(response=json.dumps(config), headers=headers)
 
@@ -602,6 +620,12 @@ def issuer_authorize_par(issuer_id, red, mode):
         if not request.form.get('client_assertion_type') and not request.headers.get('Oauth-Client-Attestation'):
             return Response(**manage_error('invalid_request', 'HAIP and POTENTIAL request client assertion authentication', red, mode, request=request))
     
+    # test is standalone AS is used
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    issuer_profile = profile[issuer_data['profile']]
+    if issuer_profile.get('authorization_server_support') and int(issuer_profile["oidc4vciDraft"]) >= 13:
+        return jsonify("wrong endpoint"), 400
+    
     # Check content of client assertion and proof of possession (DPoP)
     if request.form.get('client_assertion'):
         client_assertion = request.form.get('client_assertion').split("~")[0]
@@ -692,6 +716,14 @@ def issuer_authorize_pid(issuer_id, red):
 
 # authorization code endpoint
 def issuer_authorize(issuer_id, red, mode):
+    
+    # test is standalone AS is used
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    issuer_profile = profile[issuer_data['profile']]
+    if issuer_profile.get('authorization_server_support') and int(issuer_profile["oidc4vciDraft"]) >= 13:
+        logging.error("wrong authorization endpoint used")
+        return jsonify ("invalid endpoint"), 400
+    
     # user not logged
     if not session.get('login'):
         logging.info('User is not logged')
@@ -912,6 +944,10 @@ def issuer_token(issuer_id, red, mode):
     logging.info('token endoint form %s', json.dumps(request.form, indent=4))
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
+    
+    # test if standalone AS is used
+    if issuer_profile.get('authorization_server_support') and int(issuer_profile["oidc4vciDraft"]) >= 13:
+        return Response(**manage_error('invalid_request', 'invalid token endpoint', red, mode, request=request))
     
     # display DPoP
     if request.headers.get('DPoP'):

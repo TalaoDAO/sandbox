@@ -27,6 +27,7 @@ from routes import saas4ssi
 # OIDC4VC
 from routes import oidc4vp_api, oidc4vp_console
 from routes import oidc4vci_api, oidc4vci_console
+from routes import oauth_api
 from routes import wallet
 
 
@@ -75,6 +76,7 @@ oidc4vp_console.init_app(app, red, mode)
 oidc4vp_api.init_app(app, red, mode)
 oidc4vci_console.init_app(app, red, mode)
 oidc4vci_api.init_app(app, red, mode)
+oauth_api.init_app(app, red, mode)
 
 #OIDC4VC web wallet
 wallet.init_app(app, red, mode)
