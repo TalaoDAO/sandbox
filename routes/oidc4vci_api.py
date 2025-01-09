@@ -51,7 +51,9 @@ def init_app(app, red, mode):
     # AS endpoint when issuer = AS
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=openid_configuration, methods=['GET'], defaults={'mode': mode},)
     app.add_url_rule('/issuer/<issuer_id>/.well-known/oauth-authorization-server', view_func=oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
-    
+        
+    app.add_url_rule('/issuer/<issuer_id>/standalone/.well-known/oauth-authorization-server', view_func=standalone_oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
+
     app.add_url_rule('/issuer/<issuer_id>/authorize', view_func=issuer_authorize, methods=['GET'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/authorize/par', view_func=issuer_authorize_par, methods=['POST'], defaults={'red': red, 'mode':mode})
     app.add_url_rule('/issuer/<issuer_id>/token', view_func=issuer_token, methods=['POST'], defaults={'red': red, 'mode': mode},)
@@ -62,16 +64,12 @@ def init_app(app, red, mode):
     app.add_url_rule('/issuer/credential_offer_uri/<id>', view_func=issuer_credential_offer_uri, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/issuer/nonce', view_func=issuer_nonce, methods=['POST'], defaults={'red': red})
 
-    # standalone AS metadata
-    app.add_url_rule('/issuer/<issuer_id>/standalone/.well-known/oauth-authorization-server', view_func=standalone_oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
-    
-    
     app.add_url_rule('/issuer/error_uri', view_func=wallet_error_uri, methods=['GET'])
         
     # login with login/password authorization code flow
     app.add_url_rule('/issuer/<issuer_id>/authorize/login', view_func=issuer_authorize_login, methods=['GET', 'POST'], defaults={'red': red})
     # login with PID authorization code flow
-    app.add_url_rule("/issuer/<issuer_id>/authorize/pid", view_func=issuer_authorize_pid, methods=['POST'], defaults={'red': red})
+    app.add_url_rule('/issuer/<issuer_id>/authorize/pid', view_func=issuer_authorize_pid, methods=['POST'], defaults={'red': red})
 
     # OIDC4VCI protocol with web wallet
     app.add_url_rule('/issuer/<issuer_id>/redirect', view_func=issuer_web_wallet_redirect, methods=['GET', 'POST'], defaults={'red': red, 'mode': mode})
@@ -139,7 +137,7 @@ def manage_error(error, error_description, red, mode, request=None, stream_id=No
         front_publish(stream_id, red, error=error, error_description=error_description)
     
     if webhook:
-        requests.post(webhook, json={"event": "ERROR"}, timeout=10)
+        requests.post(webhook, json={'event': 'ERROR'}, timeout=10)
 
     # wallet
     payload = {
@@ -161,7 +159,7 @@ def manage_error(error, error_description, red, mode, request=None, stream_id=No
 
 # credential issuer openid configuration endpoint
 def credential_issuer_openid_configuration_endpoint(issuer_id, mode):
-    logging.info("Call credential issuer configuration endpoint")
+    logging.info('Call credential issuer configuration endpoint')
     doc = credential_issuer_openid_configuration(issuer_id, mode)
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(doc), headers=headers)
@@ -182,21 +180,21 @@ def credential_issuer_openid_configuration(issuer_id, mode):
     # general section
     credential_issuer_openid_configuration = {
         'credential_issuer': mode.server + 'issuer/' + issuer_id,
-        "display": [
+        'display': [
             {
-                "name": "Talao issuer",
-                "locale": "en-US",
-                "logo": {
-                    "uri": "https://talao.co/static/img/talao.png",
-                    "alt_text": "Talao logo"
+                'name': 'Talao issuer',
+                'locale': 'en-US',
+                'logo': {
+                    'uri': 'https://talao.co/static/img/talao.png',
+                    'alt_text': 'Talao logo'
                 }
             },
             {
-                "name": "Talao issuer",
-                "locale": "fr-FR",
-                "logo": {
-                    "uri": "https://talao.co/static/img/talao.png",
-                    "alt_text": "Talao logo"
+                'name': 'Talao issuer',
+                'locale': 'fr-FR',
+                'logo': {
+                    'uri': 'https://talao.co/static/img/talao.png',
+                    'alt_text': 'Talao logo'
                 }
             }
         ],
@@ -205,22 +203,22 @@ def credential_issuer_openid_configuration(issuer_id, mode):
     }
     
     # nonce endpoint to add for draft >= 14
-    if int(issuer_profile.get("oidc4vciDraft")) >= 13: # TODO
+    if int(issuer_profile.get('oidc4vciDraft')) >= 13: # TODO
         credential_issuer_openid_configuration['nonce_endpoint'] = mode.server + 'issuer/nonce'
 
     # setup authorization server attribute
     """
     the authorization server URL list is provided in the issuer metadata
     """    
-    if issuer_profile.get('authorization_server_support') and int(issuer_profile["oidc4vciDraft"]) >= 13:
-        if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
-            credential_issuer_openid_configuration['authorization_servers'] = [ mode.server + 'issuer/' + issuer_id + '/standalone', "https://fake.com/as"]
+    if issuer_profile.get('authorization_server_support') and int(issuer_profile['oidc4vciDraft']) >= 13:
+        if int(issuer_profile.get('oidc4vciDraft', '11')) >= 13:
+            credential_issuer_openid_configuration['authorization_servers'] = [ mode.server + 'issuer/' + issuer_id + '/standalone', 'https://fake.com/as']
             credential_issuer_openid_configuration['jwks_uri'] = mode.server + 'issuer/' + issuer_id + '/jwks'
         else: # EBSI
             credential_issuer_openid_configuration['authorization_server'] = mode.server + 'issuer/' + issuer_id
 
     # Credentials supported section
-    if int(issuer_profile.get("oidc4vciDraft", "11")) >= 13:
+    if int(issuer_profile.get('oidc4vciDraft', '11')) >= 13:
         credential_issuer_openid_configuration.update(
             {'credential_configurations_supported':  issuer_profile.get('credential_configurations_supported')}
         )
@@ -264,18 +262,18 @@ def openid_jwt_vc_issuer_configuration(issuer_id, mode):
             'issuer': mode.server + 'issuer/' + issuer_id,
             'jwks_uri': mode.server + 'issuer/' + issuer_id + '/jwks'
         }
-    logging.info("jwks for sd-jwt config = %s", config)
+    logging.info('jwks for sd-jwt config = %s', config)
     return jsonify(config)
 
 
 # /.well-known/openid-configuration endpoint  authorization server endpoint for draft 11 DEPRECATED
 def openid_configuration(issuer_id, mode):
-    logging.warning("Call to openid-configuration endpoint")
+    logging.warning('Call to openid-configuration endpoint')
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
-    if int(issuer_profile["oidc4vciDraft"]) >= 13:
-        logging.error("CALL TO WRONG ENDPOINT")
-        message = {"error": "access_denied", "error_description": "invalid endpoint"}
+    if int(issuer_profile['oidc4vciDraft']) >= 13:
+        logging.error('CALL TO WRONG ENDPOINT')
+        message = {'error': 'access_denied', 'error_description': 'invalid endpoint'}
         return jsonify(message), 404
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
@@ -286,46 +284,42 @@ def oauth_authorization_server(issuer_id, mode):
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
-    if issuer_profile.get('authorization_server_support') and int(issuer_profile["oidc4vciDraft"]) >= 13:
-        logging.error("CALL TO WRONG AUTHORIZATION SERVER")
-        message = {"error": "access_denied", "error_description": "invalid authorization server"}
+    if issuer_profile.get('authorization_server_support') and int(issuer_profile['oidc4vciDraft']) >= 13:
+        logging.error('CALL TO WRONG AUTHORIZATION SERVER')
+        message = {'error': 'access_denied', 'error_description': 'invalid authorization server'}
         return jsonify(message), 404
-    logging.info("Call to oauth-authorization-server endpoint")
+    logging.info('Call to oauth-authorization-server endpoint')
     return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
 
 
 # /standalone/.well-known/oauth-authorization-server endpoint
 def standalone_oauth_authorization_server(issuer_id, mode):
-    logging.info("Call to the standalone oauth-authorization-server endpoint")
-    try:
-        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-    except Exception:
-        logging.warning('issuer_id not found for %s', issuer_id)
-        return
+    logging.info('Call to the standalone oauth-authorization-server endpoint')
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    issuer_profile = profile[issuer_data['profile']]
+    if not issuer_profile.get('authorization_server_support'):
+        logging.error('CALL TO WRONG AUTHORIZATION SERVER')
+        message = {'error': 'access_denied', 'error_description': 'invalid authorization server'}
+        return jsonify(message), 404
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     authorization_server_config = json.load(open('authorization_server_config.json'))
     config = {
-        'issuer': mode.server + 'issuer/' + issuer_id +'/standalone',
+        'issuer': mode.server + 'issuer/' + issuer_id + '/standalone',
         'authorization_endpoint': mode.server + 'issuer/' + issuer_id + '/standalone/authorize',
         'token_endpoint': mode.server + 'issuer/' + issuer_id + '/standalone/token',
         'jwks_uri':  mode.server + 'issuer/' + issuer_id + '/jwks',
-        'pushed_authorization_request_endpoint': mode.server +'issuer/' + issuer_id + '/standalone/authorize/par' ,
+        'pushed_authorization_request_endpoint': mode.server + 'issuer/' + issuer_id + '/standalone/authorize/par' ,
         'pre-authorized_grant_anonymous_access_supported': True
     }
     if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
         config['require_pushed_authorization_requests'] = True
     config.update(authorization_server_config)
-    config['issuer'] = mode.server + 'issuer/' + issuer_id + '/standalone'
     return Response(response=json.dumps(config), headers=headers)
 
 
 # authorization server configuration 
 def as_openid_configuration(issuer_id, mode):
-    try:
-        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-    except Exception:
-        logging.warning('issuer_id not found for %s', issuer_id)
-        return
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     authorization_server_config = json.load(open('authorization_server_config.json'))
     config = {
         'issuer': mode.server + 'issuer/' + issuer_id,
@@ -429,8 +423,8 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                     'pre-authorized_code': pre_authorized_code
                 }
             }
-            if profile_data['authorization_server_support'] and int(profile_data["oidc4vciDraft"]) >= 13:
-                offer['grants']['urn:ietf:params:oauth:grant-type:pre-authorized_code'].update({"authorization_server": mode.server + 'issuer/' + issuer_id + '/standalone'})
+            if profile_data['authorization_server_support'] and int(profile_data['oidc4vciDraft']) >= 13:
+                offer['grants']['urn:ietf:params:oauth:grant-type:pre-authorized_code'].update({'authorization_server': mode.server + 'issuer/' + issuer_id + '/standalone'})
             if user_pin_required:
                 offer['grants'][
                     'urn:ietf:params:oauth:grant-type:pre-authorized_code'
@@ -443,8 +437,8 @@ def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issu
                 })
         else:
             offer['grants'] = {'authorization_code': {'issuer_state': issuer_state}}
-            if profile_data['authorization_server_support'] and int(profile_data["oidc4vciDraft"]) >= 13:
-                offer['grants']['authorization_code'].update({"authorization_server": mode.server + 'issuer/' + issuer_id + '/standalone'})
+            if profile_data['authorization_server_support'] and int(profile_data['oidc4vciDraft']) >= 13:
+                offer['grants']['authorization_code'].update({'authorization_server': mode.server + 'issuer/' + issuer_id + '/standalone'})
     return offer
 
 
@@ -486,7 +480,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     # credential offer is passed by value
     url_to_display = data_profile['oidc4vci_prefix'] + '?' + urlencode({'credential_offer': json.dumps(offer)})
     json_url = {'credential_offer': offer}
-    logging.info("credential offer = %s", json.dumps(offer, indent=6))
+    logging.info('credential offer = %s', json.dumps(offer, indent=6))
 
     # credential offer is passed by reference: credential offer uri
     arg_for_web_wallet = ""
@@ -509,7 +503,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/openid-credential-issuer', timeout=10)
     credential_issuer_configuration = resp.json()
     
-    if profile_data['authorization_server_support'] and int(profile_data["oidc4vciDraft"]) >= 13:
+    if profile_data['authorization_server_support'] and int(profile_data['oidc4vciDraft']) >= 13:
         url_authorization_server = mode.server + 'issuer/' + issuer_id + '/standalone/.well-known/oauth-authorization-server'
     else:
         url_authorization_server = mode.server + 'issuer/' + issuer_id + '/.well-known/oauth-authorization-server'
@@ -573,18 +567,18 @@ def oidc_issuer_qrcode_value(issuer_id, stream_id, red, mode):
             + '?credential_offer_uri='
             + credential_offer_uri
         )        
-    return jsonify({"qrcode_value": url_to_display})
+    return jsonify({'qrcode_value': url_to_display})
 
 
 def issuer_web_wallet_redirect(issuer_id, red, mode):
     arg_for_web_wallet = request.form['arg_for_web_wallet']
-    web_wallet_url = request.form["web_wallet_url"]
+    web_wallet_url = request.form['web_wallet_url']
     wallet_config_url = web_wallet_url + '/.well-known/openid-configuration'
     wallet_config = requests.get(wallet_config_url).json()
     wallet_credential_offer_endpoint = wallet_config.get('credential_offer_endpoint')
     if not wallet_credential_offer_endpoint:
-        logging.error("wallet credential offer endpoint not found")
-        return jsonify("wallet credential offer endpoint not found"), 400
+        logging.error('wallet credential offer endpoint not found')
+        return jsonify('wallet credential offer endpoint not found'), 400
     redirect_uri = wallet_credential_offer_endpoint + arg_for_web_wallet
     return redirect(redirect_uri)
 
@@ -635,17 +629,17 @@ def issuer_authorize_par(issuer_id, red, mode):
     # test if a standalone AS is used
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
-    if issuer_profile.get('authorization_server_support') and int(issuer_profile["oidc4vciDraft"]) >= 13:
+    if issuer_profile.get('authorization_server_support') and int(issuer_profile['oidc4vciDraft']) >= 13:
         return Response(**manage_error('invalid_request', 'invalid authorization server', red, mode, request=request))
     
     # Check content of client assertion and proof of possession (DPoP)
     if request.form.get('client_assertion'):
-        client_assertion = request.form.get('client_assertion').split("~")[0]
+        client_assertion = request.form.get('client_assertion').split('~')[0]
         logging.info('client _assertion = %s', client_assertion)
         if request.form.get('client_id') != oidc4vc.get_payload_from_token(client_assertion).get('sub'):
             return Response(**manage_error('invalid_request', 'client_id does not match client assertion sub', red, mode, request=request))
         try:
-            DPoP = request.form.get('client_assertion').split("~")[1]
+            DPoP = request.form.get('client_assertion').split('~')[1]
         except Exception:
             return Response(**manage_error('invalid_request', 'PoP is missing', red, mode, request=request))
         logging.info('proof of possession = %s', DPoP)
@@ -665,7 +659,7 @@ def issuer_authorize_par(issuer_id, red, mode):
         if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(DPoP).get('iss'):
             return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
     else:
-        logging.warning("No client assertion / wallet attestation")
+        logging.warning('No client assertion / wallet attestation')
     try:
         request_uri_data = {
             'redirect_uri': request.form['redirect_uri'],
@@ -732,8 +726,8 @@ def issuer_authorize(issuer_id, red, mode):
     # test if a standalone AS is used
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
-    if issuer_profile.get('authorization_server_support') and int(issuer_profile["oidc4vciDraft"]) >= 13:
-        logging.error("wrong authorization endpoint used")
+    if issuer_profile.get('authorization_server_support') and int(issuer_profile['oidc4vciDraft']) >= 13:
+        logging.error('wrong authorization endpoint used')
         return jsonify({
                     'error': 'invalid_request',
                     'error_description': 'invalid authorization server'
@@ -825,7 +819,7 @@ def issuer_authorize(issuer_id, red, mode):
         }
         session['code_data'] = code_data
         # redirect user to login/password screen
-        if issuer_state != "pid_authentication":
+        if issuer_state != 'pid_authentication':
             return redirect('/issuer/' + issuer_id + '/authorize/login')
         
         # redirect user to VP request to get a PID
@@ -833,18 +827,18 @@ def issuer_authorize(issuer_id, red, mode):
             # fetch credential.
             issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
             issuer_profile = profile[issuer_data['profile']]
-            vc_list = issuer_profile["credential_configurations_supported"].keys()
+            vc_list = issuer_profile['credential_configurations_supported'].keys()
             for vc in vc_list:
-                if issuer_profile["credential_configurations_supported"][vc]["scope"] == session['code_data']['scope']:
+                if issuer_profile['credential_configurations_supported'][vc]['scope'] == session['code_data']['scope']:
                     break
             try:
-                f = open("./verifiable_credentials/" + vc + ".jsonld", 'r')
+                f = open('./verifiable_credentials/' + vc + '.jsonld', 'r')
             except Exception:
                 # for vc+sd-jwt 
                 try:
-                    f = open("./verifiable_credentials/" + vc + ".json", 'r')
+                    f = open('./verifiable_credentials/' + vc + '.json', 'r')
                 except Exception:
-                    logging.error("file not found")
+                    logging.error('file not found')
                     return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'VC not found', None, red, state))
             credential = json.loads(f.read())
             if client_metadata:
@@ -859,23 +853,23 @@ def issuer_authorize(issuer_id, red, mode):
             with open('presentation_definition_for_PID.json', 'r') as f:
                 presentation_definition = json.loads(f.read())
             VP_request = {
-                "aud": "https://self-issued.me/v2",
-                "client_id": "did:web:talao.co",
-                "client_id_scheme": "redirect_uri",
-                "exp": 1829170402,
-                "iss": "did:web:talao.co",
-                "nonce": "5381697f-8c86-11ef-9061-0a1628958560",
-                "response_mode": "direct_post",
-                "response_type": "vp_token",
-                "response_uri": mode.server + 'issuer/' + issuer_id + '/authorize/pid',
-                "state": str(uuid.uuid1()),
-                "presentation_definition": presentation_definition
+                'aud': 'https://self-issued.me/v2',
+                'client_id': 'did:web:talao.co',
+                'client_id_scheme': 'redirect_uri',
+                'exp': 1829170402,
+                'iss': 'did:web:talao.co',
+                'nonce': '5381697f-8c86-11ef-9061-0a1628958560',
+                'response_mode': 'direct_post',
+                'response_type': 'vp_token',
+                'response_uri': mode.server + 'issuer/' + issuer_id + '/authorize/pid',
+                'state': str(uuid.uuid1()),
+                'presentation_definition': presentation_definition
             }
-            code_data["stream_id"] = None
-            code_data["vc"] = {vc: credential}
-            code_data["credential_type"] = [vc]
+            code_data['stream_id'] = None
+            code_data['vc'] = {vc: credential}
+            code_data['credential_type'] = [vc]
             red.setex(VP_request['state'], 10000, json.dumps(code_data))
-            return redirect(wallet_authorization_endpoint + "?" + urlencode(VP_request))
+            return redirect(wallet_authorization_endpoint + '?' + urlencode(VP_request))
     
     # return from login/password screen
     logging.info('user is logged')
@@ -894,24 +888,24 @@ def issuer_authorize(issuer_id, red, mode):
         # fetch credential
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
         issuer_profile = profile[issuer_data['profile']]
-        vc_list = issuer_profile["credential_configurations_supported"].keys()
+        vc_list = issuer_profile['credential_configurations_supported'].keys()
         for vc in vc_list:
-            if issuer_profile["credential_configurations_supported"][vc]["scope"] == session['code_data']['scope']:
+            if issuer_profile['credential_configurations_supported'][vc]['scope'] == session['code_data']['scope']:
                 break
         try:
-            f = open("./verifiable_credentials/" + vc + ".jsonld", 'r')
+            f = open('./verifiable_credentials/' + vc + '.jsonld', 'r')
         except Exception:
             # for vc+sd-jwt 
             try:
-                f = open("./verifiable_credentials/" + vc + ".json", 'r')
+                f = open('./verifiable_credentials/' + vc + '.json', 'r')
             except Exception:
-                logging.error("file not found")
+                logging.error('file not found')
                 return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'VC not found', None, red, state))
         credential = json.loads(f.read())
         offer_data = {
-            "stream_id": None,
-            "vc": {vc: credential},
-            "credential_type": [vc]
+            'stream_id': None,
+            'vc': {vc: credential},
+            'credential_type': [vc]
         }
     
     # update code data with credential value   
@@ -942,8 +936,8 @@ def issuer_nonce(red):
     https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html#name-nonce-endpoint
     """
     nonce = str(uuid.uuid1())
-    logging.info("Call of the nonce endpoint, nonce = %s", nonce)
-    endpoint_response = {"c_nonce": nonce}
+    logging.info('Call of the nonce endpoint, nonce = %s', nonce)
+    endpoint_response = {'c_nonce': nonce}
     red.setex(nonce, 60,'nonce')
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(endpoint_response), headers=headers)
@@ -955,13 +949,16 @@ def issuer_token(issuer_id, red, mode):
     token endpoint: https://datatracker.ietf.org/doc/html/rfc6749#section-5.2
     DPoP: https://datatracker.ietf.org/doc/rfc9449/
     """
+    # TEST
+    #return Response(**manage_error('invalid_grant', 'User code is incorrect', red, mode, request=request, status=404))
+
     logging.info('token endoint header %s', request.headers)
     logging.info('token endoint form %s', json.dumps(request.form, indent=4))
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
     
     # test if standalone AS is used
-    if issuer_profile.get('authorization_server_support') and int(issuer_profile["oidc4vciDraft"]) >= 13:
+    if issuer_profile.get('authorization_server_support') and int(issuer_profile['oidc4vciDraft']) >= 13:
         return Response(**manage_error('invalid_request', 'invalid token endpoint', red, mode, request=request))
     
     # display DPoP
@@ -1040,11 +1037,11 @@ def issuer_token(issuer_id, red, mode):
                 return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
         except Exception:
             #https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-02.html    
-            client_assertion = request.form.get('client_assertion').split("~")[0]
+            client_assertion = request.form.get('client_assertion').split('~')[0]
             logging.info('client _assertion = %s', client_assertion)
             if request.form.get('client_id') != oidc4vc.get_payload_from_token(client_assertion).get('sub'):
                 return Response(**manage_error('invalid_request', 'client_id does not match client assertion subject', red, mode, request=request))
-            PoP = request.form.get('client_assertion').split("~")[1]
+            PoP = request.form.get('client_assertion').split('~')[1]
             logging.info('client assertion PoP = %s', PoP)
             if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(PoP).get('iss'):
                 return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
@@ -1054,6 +1051,8 @@ def issuer_token(issuer_id, red, mode):
         data = json.loads(red.get(code).decode())
     except Exception:
         return Response(**manage_error('access_denied', 'Grant code expired', red, mode, request=request, status=404))
+    
+    # get stream id
     stream_id = data['stream_id']
         
     # check PKCE
@@ -1214,9 +1213,9 @@ async def issuer_credential(issuer_id, red, mode):
             
             if proof_header.get('jwk'):  # used for HAIP
                 wallet_jwk = proof_header.get('jwk')
-                wallet_identifier = "jwk_thumbprint"
+                wallet_identifier = 'jwk_thumbprint'
             else:
-                wallet_identifier = "did"
+                wallet_identifier = 'did'
                 wallet_jwk = oidc4vc.resolve_did(proof_header.get('kid'))
 
             wallet_did = access_token_data['client_id']
@@ -1225,7 +1224,7 @@ async def issuer_credential(issuer_id, red, mode):
                 return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
         
         elif proof_type == 'ldp_vp':
-            wallet_identifier = "did"
+            wallet_identifier = 'did'
             wallet_jwk = None
             proof = result['proof']['ldp_vp']
             proof = json.dumps(proof) if isinstance(proof, dict) else proof
@@ -1328,74 +1327,74 @@ async def issuer_credential(issuer_id, red, mode):
     # get credential to issue
     credential = None
     if credential_identifier:
-        logging.info("Multiple VCs of the same type")
-        for one_type in access_token_data["vc"]:
-            for one_credential in one_type["list"]:
-                if one_credential["identifier"] == credential_identifier:
-                    vc_format = one_type["vc_format"]
-                    credential = one_credential["value"]
-                    logging.info("credential found for identifier = %s", credential_identifier)
+        logging.info('Multiple VCs of the same type')
+        for one_type in access_token_data['vc']:
+            for one_credential in one_type['list']:
+                if one_credential['identifier'] == credential_identifier:
+                    vc_format = one_type['vc_format']
+                    credential = one_credential['value']
+                    logging.info('credential found for identifier = %s', credential_identifier)
                     break
     else:
-        logging.info("Only one VC of the same type")
+        logging.info('Only one VC of the same type')
         try:
-            credential = access_token_data["vc"][credential_type]
+            credential = access_token_data['vc'][credential_type]
         except Exception:
-            return Response(**manage_error("unsupported_credential_type", "The credential type is not offered", red, mode, request=request, stream_id=stream_id, ))
+            return Response(**manage_error('unsupported_credential_type', 'The credential type is not offered', red, mode, request=request, stream_id=stream_id, ))
     if not credential:
-        return Response(**manage_error("unsupported_credential_type", "Credential is not found for this credential identifier", red, mode, request=request, stream_id=stream_id,))
+        return Response(**manage_error('unsupported_credential_type', 'Credential is not found for this credential identifier', red, mode, request=request, stream_id=stream_id,))
 
     # sign_credential(credential, wallet_did, issuer_id, c_nonce, format, issuer, mode, duration=365, wallet_jwk=None, wallet_identifier=None):
     credential_signed = await sign_credential(
         credential,
         wallet_did,
         issuer_id,
-        access_token_data.get("c_nonce", "nonce"),
+        access_token_data.get('c_nonce', 'nonce'),
         vc_format,
         mode.server + 'issuer/' + issuer_id,  # issuer
         mode,
         wallet_jwk=wallet_jwk,
-        wallet_identifier=wallet_identifier # "did" or 
+        wallet_identifier=wallet_identifier # 'did' or 
     )
-    logging.info("credential signed sent to wallet = %s", credential_signed)
+    logging.info('credential signed sent to wallet = %s', credential_signed)
     if not credential_signed:
-        return Response(**manage_error("internal_error", "Credential signing error", red, mode, request=request, stream_id=stream_id,))
+        return Response(**manage_error('internal_error', 'Credential signing error', red, mode, request=request, stream_id=stream_id,))
 
     # send event to front to go forward callback and send credential to wallet
-    front_publish(access_token_data["stream_id"], red)
+    front_publish(access_token_data['stream_id'], red)
 
     # Transfer VC
     c_nonce = str(uuid.uuid1())
     payload = {
-        "credential": credential_signed,  # string or json depending on the format
-        "c_nonce": c_nonce,
-        "c_nonce_expires_in": C_NONCE_LIFE,
+        'credential': credential_signed,  # string or json depending on the format
+        'c_nonce': c_nonce,
+        'c_nonce_expires_in': C_NONCE_LIFE,
     }
     
     if int(issuer_profile['oidc4vciDraft']) < 13:
-        payload.update({"format": vc_format})
+        payload.update({'format': vc_format})
 
     # update nonce in access token for next VC request
-    access_token_data["c_nonce"] = c_nonce
+    access_token_data['c_nonce'] = c_nonce
     red.setex(access_token, ACCESS_TOKEN_LIFE, json.dumps(access_token_data))
 
     # send event to webhook if it exists    
     if webhook := access_token_data['webhook']:
         data = {
-                "event": "CREDENTIAL_SENT",
+                'event': 'CREDENTIAL_SENT',
         }
         requests.post(webhook, json=data, timeout=10)
     
     # update counter for issuance of verifiable id
-    if issuer_id in ["vqzljjitre", "lbeuegiasm"]:
+    if issuer_id in ['vqzljjitre', 'lbeuegiasm']:
         data = {
-            "vc": "verifiableid",
-            "count": "1"
+            'vc': 'verifiableid',
+            'count': '1'
             }
         requests.post('https://issuer.talao.co/counter/update', data=data, timeout=10)
 
     # send VC to wallet
-    headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
+    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(payload), headers=headers)
 
 
@@ -1404,41 +1403,41 @@ async def issuer_deferred(issuer_id, red, mode):
     Deferred endpoint
     https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#name-deferred-credential-endpoin
     """
-    logging.info("deferred endpoint request")
+    logging.info('deferred endpoint request')
 
     # Check access token
     try:
-        access_token = request.headers["Authorization"].split()[1]
+        access_token = request.headers['Authorization'].split()[1]
     except Exception:
-        return Response(**manage_error("invalid_request", "Access token not passed in request header", red, mode, request=request))
+        return Response(**manage_error('invalid_request', 'Access token not passed in request header', red, mode, request=request))
     try:
-        transaction_id = request.json["transaction_id"]
+        transaction_id = request.json['transaction_id']
     except Exception:
-        return Response(**manage_error("invalid_request", "Transaction id not passed in request body", red, mode, request=request))
+        return Response(**manage_error('invalid_request', 'Transaction id not passed in request body', red, mode, request=request))
 
 
     # Offer expired, VC is no more available return 410
     try:
         transaction_id_data = json.loads(red.get(transaction_id).decode())
     except Exception:
-        return Response(**manage_error("invalid_transaction_id", "Transaction data expired", red, mode, request=request, status=400))
+        return Response(**manage_error('invalid_transaction_id', 'Transaction data expired', red, mode, request=request, status=400))
 
     # check access token 
-    if access_token != transaction_id_data.get("access_token"):
-        return Response(**manage_error("invalid_request", "access token does not fit transaction_id", red, mode, request=request, status=410))
+    if access_token != transaction_id_data.get('access_token'):
+        return Response(**manage_error('invalid_request', 'access token does not fit transaction_id', red, mode, request=request, status=410))
 
-    issuer_state = transaction_id_data["issuer_state"]
-    credential_type = transaction_id_data["credential_type"]
+    issuer_state = transaction_id_data['issuer_state']
+    credential_type = transaction_id_data['credential_type']
 
     # VC is not ready return 400, issuance_pending
     try:
         deferred_data = json.loads(red.get(issuer_state).decode())
-        credential = deferred_data["deferred_vc"][credential_type]
+        credential = deferred_data['deferred_vc'][credential_type]
     except Exception:
         payload = {
-            'error': "issuance_pending",
+            'error': 'issuance_pending',
             'interval': 30,
-            'error_description': "Credential is not available yet",
+            'error_description': 'Credential is not available yet',
         }
         logging.info('endpoint error response = %s', json.dumps(payload, indent=4))
         headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
@@ -1447,29 +1446,29 @@ async def issuer_deferred(issuer_id, red, mode):
     # sign_credential
     credential_signed = await sign_credential(
         credential,
-        transaction_id_data["subjectId"],
+        transaction_id_data['subjectId'],
         issuer_id,
-        transaction_id_data["c_nonce"],
-        transaction_id_data["format"],
+        transaction_id_data['c_nonce'],
+        transaction_id_data['format'],
         mode.server + 'issuer/' + issuer_id,
         mode
     )
     if not credential_signed:
-        return Response(**manage_error("internal_error", "Credential signature failed due to format", red, mode, request=request, status=404))
+        return Response(**manage_error('internal_error', 'Credential signature failed due to format', red, mode, request=request, status=404))
 
-    logging.info("credential signed sent to wallet = %s", credential_signed)
+    logging.info('credential signed sent to wallet = %s', credential_signed)
 
     # delete deferred VC data
     red.delete(issuer_state)
 
     # Transfer VC
     payload = {
-        "format": transaction_id_data["format"],
-        "credential": credential_signed,  # string or json depending on the format
-        "c_nonce": str(uuid.uuid1()),
-        "c_nonce_expires_in": C_NONCE_LIFE,
+        'format': transaction_id_data['format'],
+        'credential': credential_signed,  # string or json depending on the format
+        'c_nonce': str(uuid.uuid1()),
+        'c_nonce_expires_in': C_NONCE_LIFE,
     }
-    headers = {"Cache-Control": "no-store", "Content-Type": "application/json"}
+    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(payload), headers=headers)
 
 
@@ -1477,18 +1476,18 @@ def oidc_issuer_followup(stream_id, red):
     try:
         user_data = json.loads(red.get(stream_id).decode())
     except Exception:
-        return jsonify("Unauthorized"), 401
-    callback = user_data["callback"]
+        return jsonify('Unauthorized'), 401
+    callback = user_data['callback']
     if not callback:
-        issuer_id = user_data["issuer_id"]
+        issuer_id = user_data['issuer_id']
         issuer_data = db_api.read_oidc4vc_issuer(issuer_id)
-        callback = json.loads(issuer_data)["callback"]
+        callback = json.loads(issuer_data)['callback']
     callback_uri = callback + '?'
-    data = {"issuer_state": user_data.get("issuer_state")}
-    if request.args.get("error"):
-        data["error"] = request.args.get("error")
-    if request.args.get("error_description"):
-        data["error_description"] = request.args.get("error_description")
+    data = {'issuer_state': user_data.get('issuer_state')}
+    if request.args.get('error'):
+        data['error'] = request.args.get('error')
+    if request.args.get('error_description'):
+        data['error_description'] = request.args.get('error_description')
     logging.info('callback uri = %s', callback_uri + urlencode(data))
     return redirect(callback_uri + urlencode(data))
 
@@ -1497,31 +1496,31 @@ def oidc_issuer_followup(stream_id, red):
 def oidc_issuer_stream(red):
     def event_stream(red):
         pubsub = red.pubsub()
-        pubsub.subscribe("issuer_oidc")
+        pubsub.subscribe('issuer_oidc')
         for message in pubsub.listen():
-            if message["type"] == "message":
-                yield "data: %s\n\n" % message["data"].decode()
+            if message['type'] == 'message':
+                yield 'data: %s\n\n' % message['data'].decode()
 
     headers = {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        "X-Accel-Buffering": "no",
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'X-Accel-Buffering': 'no',
     }
     return Response(event_stream(red), headers=headers)
 
 
 async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, issuer, mode, duration=365, wallet_jwk=None, wallet_identifier=None):
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-    issuer_did = issuer_data["did"]
-    issuer_key = issuer_data["jwk"]
-    issuer_vm = issuer_data["verification_method"]
+    issuer_did = issuer_data['did']
+    issuer_key = issuer_data['jwk']
+    issuer_vm = issuer_data['verification_method']
     jti = 'urn:uuid:' + str(uuid.uuid1())
     
     if format == 'vc+sd-jwt':
-        credential["status"] = {
-            "status_list": {
-                "idx": randint(0, 99999),
-                "uri": mode.server + "issuer/statuslist/1"
+        credential['status'] = {
+            'status_list': {
+                'idx': randint(0, 99999),
+                'uri': mode.server + 'issuer/statuslist/1'
             }
         }
         if issuer_id in ['raamxepqex', 'tdiwmpyhzc']:
@@ -1530,7 +1529,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
             x5c = False
         return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk, wallet_did, wallet_identifier, x5c=x5c)
     elif format in ['ldp_vc', 'jwt_vc_json-ld']:
-        logging.info("wallet did = %s", wallet_did)
+        logging.info('wallet did = %s', wallet_did)
         if wallet_did:
             credential['credentialSubject']['id'] = wallet_did
         else:
@@ -1538,31 +1537,31 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
                 del credential['credentialSubject']['id']
             except Exception:
                 pass
-        credential["id"] = jti
+        credential['id'] = jti
         try:
-            credential['issuer']["id"] = issuer_did
+            credential['issuer']['id'] = issuer_did
         except Exception:
             credential['issuer'] = issuer_did
-        credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-        credential['expirationDate'] = (datetime.now() + timedelta(days=duration)).isoformat() + "Z"
+        credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + 'Z'
+        credential['expirationDate'] = (datetime.now() + timedelta(days=duration)).isoformat() + 'Z'
         
     elif format in ['jwt_vc_json', 'jwt_vc']:     # jwt_vc format is used for ebsi V3 only with draft 10/11
         credential = clean_jwt_vc_json(credential)
         index = str(randint(0, 99999))
-        credential["credentialStatus"] = [{
-            "id":  mode.server + "sandbox/issuer/bitstringstatuslist/1#" + index,
-            "type": "BitstringStatusListEntry",
-            "statusPurpose": "revocation",
-            "statusListIndex": index,
-            "statusListCredential":  mode.server + "sandbox/issuer/bitstringstatuslist/1"
+        credential['credentialStatus'] = [{
+            'id':  mode.server + 'sandbox/issuer/bitstringstatuslist/1#' + index,
+            'type': 'BitstringStatusListEntry',
+            'statusPurpose': 'revocation',
+            'statusListIndex': index,
+            'statusListCredential':  mode.server + 'sandbox/issuer/bitstringstatuslist/1'
         }]
     else:
         logging.error('credential format not supported %s', format)
         return
-    logging.info("credential to sign = %s", credential)
+    logging.info('credential to sign = %s', credential)
     if format in ['jwt_vc', 'jwt_vc_json', 'jwt_vc_json-ld']:
         # sign_jwt_vc(vc, kid, issuer_key, nonce, iss, jti, sub)
-        if issuer_data.get("issuer_id_as_url"):
+        if issuer_data.get('issuer_id_as_url'):
             kid = oidc4vc.thumbprint_str(issuer_key)
             credential_signed = oidc4vc.sign_jwt_vc(credential, kid, issuer_key, c_nonce, issuer, jti, wallet_did)
         else:
@@ -1570,8 +1569,8 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
     else:  # proof_format == 'ldp_vc':
         try:
             didkit_options = {
-                "proofPurpose": "assertionMethod",
-                "verificationMethod": issuer_vm,
+                'proofPurpose': 'assertionMethod',
+                'verificationMethod': issuer_vm,
             }
             credential_signed = await didkit.issue_credential(
                 json.dumps(credential),
@@ -1579,7 +1578,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
                 issuer_key,
             )
         except Exception as e:
-            logging.warning("Didkit exception = %s", str(e))
+            logging.warning('Didkit exception = %s', str(e))
             logging.warning('incorrect json_ld = %s', json.dumps(credential))
             return
         logging.info('VC signed with didkit')

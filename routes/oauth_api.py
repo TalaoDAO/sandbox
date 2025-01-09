@@ -1,16 +1,9 @@
-"""
-NEW
-https://issuer.walt.id/issuer-api/default/oidc
-EBSI V2 https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html
-support Authorization code flow and pre-authorized code flow of OIDC4VCI
-"""
 import copy
 import json
 import logging
 import uuid
 from datetime import datetime
 from profile import profile
-from random import randint
 from urllib.parse import urlencode
 import db_api
 import oidc4vc  # type: ignore
