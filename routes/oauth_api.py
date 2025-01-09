@@ -246,13 +246,13 @@ def standalone_issuer_authorize_login(issuer_id, red):
     if request.method == 'GET':
         session['login'] = False
         session['test'] = False
-        return render_template('issuer_oidc/authorize.html', url= '/issuer/' + issuer_id + '/authorize/login')
+        return render_template('issuer_oidc/authorize.html', url= '/issuer/' + issuer_id + '/standalone/authorize/login')
     if not red.get( request.form['test']):
         flash('Wrong test name', 'danger')
-        #return redirect('/issuer/' + issuer_id + '/authorize/login') 
+        #return redirect('/issuer/' + issuer_id + '/standalone/authorize/login') 
     session['login'] = True
     session['test'] = request.form['test']
-    return redirect('/issuer/' + issuer_id + 'standalone/authorize?test=' + session['test']) 
+    return redirect('/issuer/' + issuer_id + '/standalone/authorize?test=' + session['test']) 
 
 
 # PID login for authorization code flow
@@ -359,7 +359,7 @@ def standalone_issuer_authorize(issuer_id, red, mode):
         session['code_data'] = code_data
         # redirect user to login/password screen
         if issuer_state != "pid_authentication":
-            return redirect('/issuer/' + issuer_id + '/authorize/login')
+            return redirect('/issuer/' + issuer_id + '/standalone/authorize/login')
         
         # redirect user to VP request to get a PID
         else:
@@ -400,7 +400,7 @@ def standalone_issuer_authorize(issuer_id, red, mode):
                 "nonce": "5381697f-8c86-11ef-9061-0a1628958560",
                 "response_mode": "direct_post",
                 "response_type": "vp_token",
-                "response_uri": mode.server + 'issuer/' + issuer_id + '/authorize/pid',
+                "response_uri": mode.server + 'issuer/' + issuer_id + '/standalone/authorize/pid',
                 "state": str(uuid.uuid1()),
                 "presentation_definition": presentation_definition
             }
