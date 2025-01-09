@@ -283,7 +283,7 @@ def oauth_authorization_server(issuer_id, mode):
     if issuer_profile.get('authorization_server_support') and int(issuer_profile["oidc4vciDraft"]) >= 13:
         logging.error("CALL TO WRONG AUTHORIZATION SERVER")
         message = {"error": "access_denied", "error_description": "invalid authorization server"}
-        return Response(response=json.dumps(message), headers=headers)
+        return jsonify(message), 404
     logging.info("Call to oauth-authorization-server endpoint")
     return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
 
