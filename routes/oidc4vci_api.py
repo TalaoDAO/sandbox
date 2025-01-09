@@ -271,6 +271,12 @@ def openid_jwt_vc_issuer_configuration(issuer_id, mode):
 # /.well-known/openid-configuration endpoint  authorization server endpoint for draft 11 DEPRECATED
 def openid_configuration(issuer_id, mode):
     logging.warning("Call to openid-configuration endpoint")
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    issuer_profile = profile[issuer_data['profile']]
+    if int(issuer_profile["oidc4vciDraft"]) >= 13:
+        logging.error("CALL TO WRONG ENDPOINT")
+        message = {"error": "access_denied", "error_description": "invalid endpoint"}
+        return jsonify(message), 404
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
 
