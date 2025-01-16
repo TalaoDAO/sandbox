@@ -280,10 +280,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
         'exp': math.ceil(datetime.timestamp(datetime.now())) + duration,
         "_sd_alg": "sha-256",
     }
-    if subject_key.get('use'):
-        del subject_key['use']
-    if subject_key.get('alg'):
-        del subject_key['alg']
+    
     if wallet_identifier == "jwk_thumbprint":
         payload['cnf'] = {"jwk": subject_key}
     else:
@@ -310,6 +307,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
         header['kid'] = kid
     try:
         del subject_key['use']
+        del subject_key['alg']
     except Exception:
         pass
     if unsecured.get('status'): 

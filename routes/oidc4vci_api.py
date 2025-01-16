@@ -513,13 +513,19 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/openid-configuration', timeout=10)
     openid_configuration = resp.json()
     
+    # https://app.talao.co/app/download?uri=openid-credential-offer://?key1=val1&key2=val2 
+    # openid-credential-offer://?key1=val1&key2=val2
+    
+    # https://app.talao.co/app/download/offer?key1=val1
+
+    
     qrcode_page = issuer_data.get('issuer_landing_page')
     logging.info('QR code page file = %s', qrcode_page)
     return render_template(
         qrcode_page,
         openid_credential_configuration=json.dumps(credential_issuer_configuration, indent=4),
         openid_configuration=json.dumps(openid_configuration, indent=4),
-        oauth_authorization_server= json.dumps(oauth_authorization_server, indent=4),
+        oauth_authorization_server=json.dumps(oauth_authorization_server, indent=4),
         url_data=json.dumps(json_url, indent=6),
         arg_for_web_wallet=arg_for_web_wallet,
         url=url_to_display,
