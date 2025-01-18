@@ -518,6 +518,13 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     
     # https://app.talao.co/app/download/offer?key1=val1
 
+    if issuer_id in ["raamxepqex", "tdiwmpyhzc"]:
+        deeplink_talao = 'talao-openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
+        deeplink_altme = 'altme-openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
+    else:
+        deeplink_altme = mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display}),
+        deeplink_talao = mode.deeplink_talao + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display}),
+        
     
     qrcode_page = issuer_data.get('issuer_landing_page')
     logging.info('QR code page file = %s', qrcode_page)
@@ -529,8 +536,8 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
         url_data=json.dumps(json_url, indent=6),
         arg_for_web_wallet=arg_for_web_wallet,
         url=url_to_display,
-        deeplink_altme=mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display}),
-        deeplink_talao=mode.deeplink_talao + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display}),
+        deeplink_altme=deeplink_altme,
+        deeplink_talao=deeplink_talao,
         stream_id=stream_id,
         issuer_id=issuer_id,
         page_title=issuer_data['page_title'],

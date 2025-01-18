@@ -879,7 +879,7 @@ profile = {
         "oidc4vp_prefix": "openid-vc://",
         "credentials_types_supported": [
             "TestCredential",
-             "TestCredential2",
+            "TestCredential2",
             "OpenBadgeCredential",
             "VerifiableId",
             "EmailPass",
