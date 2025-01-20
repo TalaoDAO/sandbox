@@ -678,8 +678,7 @@ def oidc4vc_login_qrcode(red, mode):
     else:
         client_id = verifier_data['did']
     
-    if verifier_id not in ['fzqtmovhto', 'woxvjqkbrb']:
-        authorization_request['client_id'] = client_id
+    authorization_request['client_id'] = client_id
         
     wallet_metadata = build_verifier_metadata(verifier_id, redirect_uri)
     
@@ -714,9 +713,6 @@ def oidc4vc_login_qrcode(red, mode):
             else:
                 pass
         
-        if verifier_id not in ['fzqtmovhto', 'woxvjqkbrb']:
-            pass
-            #authorization_request['client_id_scheme'] = 'fake' 
 
         # presentation_definition_uri
         if verifier_data.get('presentation_definition_uri'):
@@ -751,10 +747,6 @@ def oidc4vc_login_qrcode(red, mode):
                 authorization_request['presentation_definition'] = presentation_definition
         else:
             authorization_request['presentation_definition_uri'] = presentation_definition_uri
-            
-        #if verifier_id in ['fzqtmovhto', 'woxvjqkbrb']:
-        #    authorization_request['presentation_definition'] = presentation_definition
-        #    authorization_request['presentation_definition_uri'] = mode.server + 'verifier/wallet/presentation_definition_uri/' + verifier_id
 
     
     if response_type == "id_token" and verifier_data.get('request_uri_parameter_supported'):
@@ -775,9 +767,6 @@ def oidc4vc_login_qrcode(red, mode):
         client_id_scheme=verifier_data.get('client_id_scheme'),
         client_id=client_id
     )
-
-    #if verifier_id in ['fzqtmovhto', 'woxvjqkbrb']:
-    #    del authorization_request['client_id']
     
     # QRCode preparation with authorization_request_displayed
     if verifier_data.get('request_uri_parameter_supported') or verifier_data['profile'] in ["HAIP", "POTENTIAL"]: # request uri as jwt
