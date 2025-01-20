@@ -561,12 +561,12 @@ profile = {
                                     "id": "@id",
                                     "type": "@type",
                                     "schema": "https://schema.org/",
-                                    "familyName": "schema:lastName",
-                                    "firstName": "schema:firstName",
-                                    "dateOfBirth": "schema:birthDate",
+                                    "family_name": "schema:lastName",
+                                    "given_name": "schema:firstName",
+                                    "birth_date": "schema:birthDate",
                                     "gender": "schema:gender",
                                     "idRecto": "schema:image",
-                                    "dateIssued": "schema:dateIssued",
+                                    "issuance_date": "schema:dateIssued",
                                     "idVerso": "schema:image"
                                 }
                             }
@@ -585,11 +585,11 @@ profile = {
                     }
                 ],
                 "credentialSubject": {
-                    "firstName": {
+                    "given_name": {
                         "mandatory": True,
                         "display": [{"name": "First Name", "locale": "en-US"}],
                     },
-                    "familyName": {
+                    "family_name": {
                         "mandatory": True,
                         "display": [{"name": "Family Name", "locale": "en-US"}],
                     },
@@ -597,11 +597,11 @@ profile = {
                         "mandatory": True,
                         "display": [{"name": "Gender", "locale": "en-US"}],
                     },
-                    "dateOfBirth": {
+                    "birth_date": {
                         "mandatory": True,
                         "display": [{"name": "Birth Date", "locale": "en-US"}],
                     },
-                    "dateIssued": {
+                    "issuance_date": {
                         "mandatory": True,
                         "display": [{"name": "Issue Date", "locale": "en-US"}],
                     },
@@ -698,15 +698,15 @@ profile = {
                     }
                 ],
                 "credentialSubject": {
-                    "firstName": {
+                    "given_name": {
                         "mandatory": True,
                         "display": [{"name": "First Name", "locale": "en-US"}],
                     },
-                    "familyName": {
+                    "family_name": {
                         "mandatory": True,
                         "display": [{"name": "Family Name", "locale": "en-US"}],
                     },
-                    "dateOfBirth": {
+                    "birth_date": {
                         "mandatory": True,
                         "display": [{"name": "Date of Birth", "locale": "en-US"}],
                     },
@@ -1275,7 +1275,7 @@ profile = {
                         "family_name",
                         "birth_date",
                         "gender",
-                        "dateIssued",
+                        "issuance_date",
                         "issuing_country",
                         "email",
                         "phone_number"
