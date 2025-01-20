@@ -320,7 +320,7 @@ def standalone_issuer_authorize(issuer_id, red, mode):
             client_metadata = request.args.get('client_metadata')
             wallet_issuer = request.args.get('wallet_issuer')
             state = request.args.get('state')  # wallet state
-            issuer_state = request.args.get('issuer_state') 
+            issuer_state = request.args.get('issuer_state')
             authorization_details = request.args.get('authorization_details')
         
         logging.info('client_id of the wallet = %s', client_id)
@@ -330,6 +330,7 @@ def standalone_issuer_authorize(issuer_id, red, mode):
         logging.info('wallet_issuer = %s ', wallet_issuer)
         logging.info('authorization details = %s', authorization_details)
         logging.info('scope = %s', scope)
+        logging.info('issuer state = %s', issuer_state)
         if response_type != 'code':
             return redirect(redirect_uri + '?' + authorization_error('invalid_response_type', 'response_type not supported', None, red, state))
         
@@ -627,3 +628,4 @@ def standalone_issuer_token(issuer_id, red, mode):
     red.setex(access_token, ACCESS_TOKEN_LIFE, json.dumps(access_token_data))
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(endpoint_response), headers=headers)
+
