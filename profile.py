@@ -1271,9 +1271,9 @@ profile = {
                 "credential_definition": {
                     "type": ["VerifiableCredential", "VerifiableId"],
                     "order": [
-                        "firstName",
-                        "familyName",
-                        "dateOfBirth",
+                        "given_name",
+                        "family_name",
+                        "birth_date",
                         "gender",
                         "dateIssued",
                         "issuing_country",
@@ -1281,21 +1281,21 @@ profile = {
                         "phone_number"
                     ],
                     "credentialSubject": {
-                        "firstName": {
+                        "given_name": {
                             "mandatory": True,
                             "display": [
                                 {"name": "First name", "locale": "en-US"},
                                 {"name": "Prénom(s)", "locale": "fr-FR"}         
                             ],
                         },
-                        "familyName": {
+                        "family_name": {
                             "mandatory": True,
                             "display": [
                                 {"name": "Family name", "locale": "en-US"},
                                 {"name": "Nom", "locale": "fr-FR"}                                
                             ],
                         },
-                        "dateOfBirth": {
+                        "birth_date": {
                             "mandatory": True,
                             "display": [
                                 {"name": "Date of birth", "locale": "en-US"},
@@ -1312,7 +1312,7 @@ profile = {
                                 {"name": "Délivré par", "locale": "fr-FR"}
                             ],
                         },
-                        "dateIssued": {
+                        "issuance_date": {
                             "mandatory": True,
                             "display": [
                                 {"name": "Issuance date", "locale": "en-US"},
