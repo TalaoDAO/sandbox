@@ -534,8 +534,8 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     #    deeplink_altme = 'openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
     #
     else:
-        deeplink_altme = mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display}),
-        deeplink_talao = mode.deeplink_talao + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display}),
+        deeplink_altme = mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display})
+        deeplink_talao = mode.deeplink_talao + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display})
         
     qrcode_page = issuer_data.get('issuer_landing_page')
     logging.info('QR code page file = %s', qrcode_page)
