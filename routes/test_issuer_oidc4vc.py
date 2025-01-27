@@ -528,12 +528,12 @@ def test_13(mode):
     data = { 
         "issuer_id": issuer_id,
         "vc": {
-            "IdentityCredential": credential1,
+            #"IdentityCredential": credential1,
             "EudiPid": credential2}, 
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
-        "credential_type": ['IdentityCredential', 'EudiPid'],
-        "user_pin_required": True,
+        "credential_type": ['EudiPid'],
+        "user_pin_required": False,
         "user_pin": "ABCD",
         "input_mode": "text",
         "callback": mode.server + 'sandbox/issuer/callback',
