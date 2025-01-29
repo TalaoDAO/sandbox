@@ -35,6 +35,7 @@
     "client_secret_basic",
     "client_secret_post",
     "client_secret_jwt",
+    "attest_jwt_client_auth",
     "none"
   ],
   "request_authentication_methods_supported": {

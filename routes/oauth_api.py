@@ -377,9 +377,10 @@ def standalone_issuer_authorize(issuer_id, red, mode):
                 resp = requests.get(wallet_issuer + '/.well-known/openid-configuration')
                 wallet_authorization_endpoint = resp.json()['authorization_endpoint']
             else:
-                logging.error('no wallet metadata')
+                logging.error('no wallet metadata, redirect_uri = %s', redirect_uri)
                 return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Wallet authorization endpoint not found', None, red, state))
             
+            # PID for dynamic credentnila request
             with open('presentation_definition_for_PID.json', 'r') as f:
                 presentation_definition = json.loads(f.read())
             VP_request = {
@@ -445,9 +446,10 @@ def standalone_issuer_authorize(issuer_id, red, mode):
         session['code_data']['vc'] = vc
         session['code_data']['credential_type'] = offer_data['credential_type']
     except Exception:
-        redirect_uri = session['code_data']['redirect_uri']
+        #redirect_uri = session['code_data']['redirect_uri']
         logging.error('code_data key error oidc_vci 612')
-        return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Session expired', None, red, state))
+        return jsonify('invalid_request'), 400
+        #return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'Session expired', None, red, state))
 
     # Code creation
     code = str(uuid.uuid1()) #+ '.' + str(uuid.uuid1()) + '.' + str(uuid.uuid1())
