@@ -371,9 +371,9 @@ def standalone_issuer_authorize(issuer_id, red, mode):
                     logging.error("file not found")
                     return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'VC not found', None, red, state))
             credential = json.loads(f.read())
-            if client_metadata:
+            if client_metadata:  # deprecated Draft <13
                 wallet_authorization_endpoint = json.loads(client_metadata)['authorization_endpoint']
-            elif wallet_issuer:
+            elif wallet_issuer:  # current specs
                 resp = requests.get(wallet_issuer + '/.well-known/openid-configuration')
                 wallet_authorization_endpoint = resp.json()['authorization_endpoint']
             else:

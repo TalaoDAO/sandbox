@@ -36,7 +36,7 @@ from routes import test_issuer_oidc4vc
 from routes import test_verifier_oidc4vc
 from routes import web_display_VP
 from routes import waltid_server
-
+from routes import mosip_issuer
 from routes import statuslist
 
 
@@ -90,6 +90,7 @@ test_issuer_oidc4vc.init_app(app, red, mode)
 test_verifier_oidc4vc.init_app(app, red, mode)
 statuslist.init_app(app, red, mode)
 waltid_server.init_app(app, red, mode)
+mosip_issuer.init_app(app, red, mode)
 
 sess = Session()
 sess.init_app(app)
