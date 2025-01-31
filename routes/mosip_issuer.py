@@ -28,8 +28,8 @@ def init_app(app, red, mode):
 
 def mosip():
     code = "openid-credential-offer://?" + urlencode({"credential_offer": json.dumps(OFFER)})
-    button = '<a href ="' + code + '"><button><h1>deeplink for same device mode</h1></button></a>'
-    print(button)
+    code_deeplink = "talao-openid-credential-offer://?" + urlencode({"credential_offer": json.dumps(OFFER)})
+    button = '<a href ="' + code_deeplink + '"><button><h1>deeplink for same device mode</h1></button></a>'
     html_string = """<html><head></head>
                         <body><div><div>  <center>   
                         <img src="{{ qrcode('""" + code + """') }}"> 
