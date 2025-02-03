@@ -215,6 +215,7 @@ def standalone_issuer_authorize_par(issuer_id, red, mode):
         'code_challenge': request.form.get('code_challenge'),
         'code_challenge_method': request.form.get('code_challenge_method'),
         'client_metadata': request.form.get('client_metadata'),
+        'wallet_issuer': request.form.get('wallet_issuer'),
         'state': request.form.get('state'),
         'authorization_details': request.form.get('authorization_details')
     })
