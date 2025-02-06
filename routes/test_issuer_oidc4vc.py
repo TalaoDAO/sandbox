@@ -530,18 +530,22 @@ def test_13(mode):
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
     }
-    with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
-        credential1 = json.loads(f.read())
-    with open('./verifiable_credentials/EudiPid.json', 'r') as f:
-        credential2 = json.loads(f.read())
+    with open('./verifiable_credentials/Pid.json', 'r') as f:
+        pid = json.loads(f.read())
+    with open('./verifiable_credentials/binance_sdjwt.json', 'r') as f:
+        crypto_account = json.loads(f.read())
+
     data = { 
         "issuer_id": issuer_id,
         "vc": {
-            #"IdentityCredential": credential1,
-            "EudiPid": credential2}, 
+            "Pid": pid,
+            "BinanceCryptoAccount": crypto_account
+        },
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
-        "credential_type": ['EudiPid'],
+        "credential_type": [
+            'Pid',
+            'BinanceCryptoAccount'],
         "user_pin_required": False,
         "user_pin": "ABCD",
         "input_mode": "text",

@@ -1,5 +1,6 @@
 {
     "vct": "https://doc.wallet-provider.io/vc_type#binanceassociatedaddress",
     "blockchain": "binance",
-    "address": "0x464765564987687689769876"
+    "address": "0x053c6133ed36fe151c95caf98e87d977c6d5c660",
+    "disclosure": ["blockchain", "address"]
 }

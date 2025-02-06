@@ -256,10 +256,7 @@ def sd(data):
                         payload[claim].append({"...": hash(nested_disclosure)})
         else:
             logging.warning("type not supported")
-    if not payload.get('_sd'):
-        #del payload['_sd_alg']
-        pass
-    else:
+    if payload.get('_sd'):
         # add 1 fake digest
         contents = json.dumps([salt(), "decoy", "decoy"])
         disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
@@ -293,6 +290,11 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
     
     # update payload with selective disclosure
     payload.update(_payload)
+    if not payload.get("_sd"):
+        print("no _sd")
+        del payload["_sd_alg"]
+    else:
+        print("_sd")
     logging.info("sd-jwt payload = %s", json.dumps(payload, indent=4))
     
     signer_key = jwk.JWK(**issuer_key)
