@@ -1,13 +1,9 @@
 {
-  "vct": "https://example.eudi.eu/credential/pid/1.0",
+  "vct": "https://doc.wallet-provider.io/vc_type#binanceassociatedaddress",
 
-  "given_name": "Patrick",
-  "family_name": "Doe",
-  "birthdate": "2000-12-01",
-
- 
-
+  "blockchain": "binance",
+  "address": "0x464765564",
   
-    "disclosure": ["vct"]
+  "disclosure": ["vct"]
 }
 

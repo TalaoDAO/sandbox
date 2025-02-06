@@ -393,16 +393,20 @@ def test_9(mode): #
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     issuer_id = issuer_test(9, mode)
     client_secret = issuer_test(9, mode, secret = True)
-  
+
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
     }
     with open('./verifiable_credentials/Pid.json', 'r') as f:
-        credential = json.loads(f.read())
+        pid = json.loads(f.read())
+    
+        
     data = { 
         "issuer_id": issuer_id,
-        "vc": {"Pid" : credential}, 
+        "vc": {
+            "Pid": pid,
+        }, 
         "issuer_state": "test9",
         "pre-authorized_code": False,
         "credential_type": ['Pid'],
@@ -422,7 +426,9 @@ def test_10(mode):
     client_secret = issuer_test(10, mode, secret = True)
     
     with open('./verifiable_credentials/Pid.json', 'r') as f:
-        credential = json.loads(f.read())
+        pid = json.loads(f.read())
+    with open('./verifiable_credentials/binance_sdjwt.json', 'r') as f:
+        crypto_account = json.loads(f.read())
 
     headers = {
         'Content-Type': 'application/json',
@@ -430,9 +436,12 @@ def test_10(mode):
     }
     data = { 
         "issuer_id": issuer_id,
-        "vc": {"Pid" : credential}, 
+        "vc": {
+            "Pid": pid,
+            "BinanceCryptoAccount" : crypto_account
+        }, 
         "issuer_state": 'test10',
-        "credential_type":  ['Pid'],
+        "credential_type":  ['Pid', 'BinanceCryptoAccount'],
         "pre-authorized_code": True,
         "callback": mode.server + 'sandbox/issuer/callback',
         "user_pin_required": False,

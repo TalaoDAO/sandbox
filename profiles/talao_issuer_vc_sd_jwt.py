@@ -13,9 +13,45 @@ TALAO_ISSUER = {
             "EmailPass",
             "PhoneProof",
             "Pid",
-            "AgeProof"
+            "AgeProof",
+            "BinanceCryptoAccount"
         ],
         "credential_configurations_supported": {
+            "BinanceCryptoAccount": {
+                "format": "vc+sd-jwt",
+                "scope": "BinanceCryptoAccount_scope",
+                "order": [
+                    "blockchain"
+                ],
+                "claims": {
+                        "blockchain": {
+                            "value_type": "string",
+                            "display": [{"name": "Blockchain", "locale": "en-US"},
+                                        {"name": "Blockchain", "locale": "fr-FR"}]
+                        },
+                        "address": {
+                            "value_type": "string",
+                            "display": [{"name": "Address", "locale": "en-US"},
+                                        {"name": "Adresse", "locale": "fr-FR"}]
+                        }
+                    },
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "EdDSA",
+                    "RS256",
+                ],
+                "vct": "https://doc.wallet-provider.io/vc_type#binanceassociatedaddress",
+                "display": [
+                    {
+                        "name": "Crypto Account Proof",
+                        "locale": "en-US",
+                        "background_color": "#ed7b76",
+                        "text_color": "#FFFFFF",
+                    }
+                ],
+            },
             "AgeProof": {
                 "format": "vc+sd-jwt",
                 "scope": "AgeProof_scope",

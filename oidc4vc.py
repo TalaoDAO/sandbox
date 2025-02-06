@@ -194,6 +194,7 @@ def hash(text):
     m.update(text.encode())
     return base64.urlsafe_b64encode(m.digest()).decode().replace("=", "")
 
+
 def sd(data):
     unsecured = copy.deepcopy(data)
     payload = {'_sd': []}
@@ -255,8 +256,8 @@ def sd(data):
                         payload[claim].append({"...": hash(nested_disclosure)})
         else:
             logging.warning("type not supported")
-    if not payload['_sd']:
-        del payload['_sd']
+    if not payload.get('_sd'):
+        del payload['_sd_alg']
     else:
         # add 1 fake digest
         contents = json.dumps([salt(), "decoy", "decoy"])
@@ -298,7 +299,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
     
     # build header
     header = {
-        'typ': "dc+sd-jwt",
+        'typ': "vc+sd-jwt",
         'alg': alg(issuer_key)
     }
     if x5c:

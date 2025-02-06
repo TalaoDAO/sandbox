@@ -1023,8 +1023,8 @@ def issuer_token(issuer_id, red, mode):
         return Response(**manage_error('invalid_request', 'Request format is incorrect, redirect_uri is missing', red, mode, request=request))
 
     # display client_authentication method
-    if request.form.get('assertion') or request.form.get('client_assertion') or request.headers.get('Oauth-Client-Attestation'):
-        client_authentication_method = 'client_secret_jwt'
+    if request.headers.get('Oauth-Client-Attestation'):
+        client_authentication_method = 'client_attestation'
     elif request.headers.get('Authorization'):
         client_authentication_method = 'client_secret_basic'
     elif request.form.get('client_id') and request.form.get('client_secret'):
@@ -1049,27 +1049,19 @@ def issuer_token(issuer_id, red, mode):
         pass
     
     # Check content of client assertion and proof of possession (PoP)
-    if client_authentication_method == 'client_secret_jwt':
+    if client_authentication_method == 'client_attestation':
         try:
-            # https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-03.html
-            client_assertion = request.headers.get('Oauth-Client-Attestation')
+            # https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-04.html
+            client_assertion = request.headers['Oauth-Client-Attestation']
+            PoP = request.headers['Oauth-Client-Attestation-Pop']
             logging.info('OAuth-Client-Attestation = %s', client_assertion)
+            logging.info('OAuth-Client-Attestation-PoP = %s', PoP)
             if request.form.get('client_id') != oidc4vc.get_payload_from_token(client_assertion).get('sub'):
                 return Response(**manage_error('invalid_request', 'client_id does not match client assertion subject', red, mode, request=request))
-            PoP = request.headers.get('Oauth-Client-Attestation-Pop')
-            logging.info('OAuth-Client-Attestation-PoP = %s', PoP)
             if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(PoP).get('iss'):
                 return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
         except Exception:
-            #https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-02.html    
-            client_assertion = request.form.get('client_assertion').split('~')[0]
-            logging.info('client _assertion = %s', client_assertion)
-            if request.form.get('client_id') != oidc4vc.get_payload_from_token(client_assertion).get('sub'):
-                return Response(**manage_error('invalid_request', 'client_id does not match client assertion subject', red, mode, request=request))
-            PoP = request.form.get('client_assertion').split('~')[1]
-            logging.info('client assertion PoP = %s', PoP)
-            if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(PoP).get('iss'):
-                return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red, mode, request=request))
+            return Response(**manage_error('invalid_request', 'Headres is notr correct for client attestation', red, mode, request=request))
 
     # check code validity
     try:
@@ -1104,7 +1096,7 @@ def issuer_token(issuer_id, red, mode):
         'expires_in': ACCESS_TOKEN_LIFE,
         'refresh_token': refresh_token
     }
-    if int(issuer_profile['oidc4vciDraft']) < 14 and issuer_id not in ['kivrsduinn']:
+    if int(issuer_profile['oidc4vciDraft']) < 14 and issuer_id not in ['kivrsduinn', 'grlvzckofy']:
         endpoint_response['c_nonce'] = str(uuid.uuid1())
         endpoint_response['c_nonce_expires_in'] = 1704466725
         red.setex(endpoint_response['c_nonce'], 60, 'nonce')

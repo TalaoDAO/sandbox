@@ -1463,8 +1463,40 @@ profile = {
         "credentials_as_json_object_array": False,
         "siopv2_prefix": "openid-vc://",
         "oidc4vp_prefix": "openid-vc://",
-        "credentials_types_supported": ["IdentityCredential", "EudiPid", "Pid", "EmployeeBadge", "AdminBadge", "LegalRepresentativeBadge", "ManagerBadge"],
+        "credentials_types_supported": ["IdentityCredential", "EudiPid", "Pid", "EmployeeBadge", "AdminBadge", "LegalRepresentativeBadge", "ManagerBadge", "BinanceCryptoAccount"],
         "credential_configurations_supported": {
+            "BinanceCryptoAccount": {
+                "format": "vc+sd-jwt",
+                "scope": "BinanceCryptoAccount_scope",
+                "claims": {
+                        "blockchain": {
+                            "value_type": "string",
+                            "display": [{"name": "Blockchain", "locale": "en-US"},
+                                        {"name": "Blockchain", "locale": "fr-FR"}]
+                        },
+                        "address": {
+                            "value_type": "string",
+                            "display": [{"name": "Address", "locale": "en-US"},
+                                        {"name": "Adresse", "locale": "fr-FR"}]
+                        }
+                    },
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "EdDSA",
+                    "RS256",
+                ],
+                "vct": "https://doc.wallet-provider.io/vc_type#binanceassociatedaddress",
+                "display": [
+                    {
+                        "name": "Crypto Account Proof",
+                        "locale": "en-US",
+                        "background_color": "#ed7b76",
+                        "text_color": "#FFFFFF",
+                    }
+                ],
+            },
             "EmployeeBadge": {
                 "format": "vc+sd-jwt",
                 "scope": "EmployeeBadge_scope",
