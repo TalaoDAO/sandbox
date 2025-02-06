@@ -257,7 +257,8 @@ def sd(data):
         else:
             logging.warning("type not supported")
     if not payload.get('_sd'):
-        del payload['_sd_alg']
+        #del payload['_sd_alg']
+        pass
     else:
         # add 1 fake digest
         contents = json.dumps([salt(), "decoy", "decoy"])
