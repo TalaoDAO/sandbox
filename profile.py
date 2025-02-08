@@ -1492,7 +1492,7 @@ profile = {
                         "background_color": "#f2d450",
                         "text_color": "#FFFFFF",
                         "background_image": {
-                            "uri": "",
+                            "uri": "https://talao.co/image/bnb",
                             "alt_text": "Binance account proof of ownership",
                         }
                     }
