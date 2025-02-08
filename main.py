@@ -1,9 +1,9 @@
 import os
 import time
 import markdown
-from flask import Flask, redirect, request, render_template_string, jsonify, Response, render_template
-from flask_session import Session
+from flask import Flask, redirect, request, render_template_string, jsonify, Response, render_template, send_file
 from flask_mobility import Mobility
+from flask_session import Session
 from datetime import timedelta, datetime
 from flask_qrcode import QRcode
 import redis
@@ -96,6 +96,8 @@ sess = Session()
 sess.init_app(app)
 qrcode = QRcode(app)
 Mobility(app)
+
+
 
 
 @app.errorhandler(403)
@@ -539,6 +541,13 @@ def wallet_issuer_well_known_did():
         "Cache-Control": "no-cache"
     }
     return Response(json.dumps(wallet_issuer), headers=headers)
+
+
+# image server
+@app.route('/image/bnb', methods=['GET'])
+def bnb():
+    filename = 'binance_card.jpg'
+    return send_file(filename, mimetype='image/jpg')
 
 
 # MAIN entry point for test

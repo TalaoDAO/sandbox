@@ -1482,18 +1482,19 @@ profile = {
                     },
                 "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
-                    "ES256K",
-                    "ES256",
-                    "EdDSA",
-                    "RS256",
+                    "ES256"
                 ],
                 "vct": "https://doc.wallet-provider.io/vc_type#binanceassociatedaddress",
                 "display": [
                     {
-                        "name": "Crypto Account Proof",
+                        "name": "Binance Account",
                         "locale": "en-US",
-                        "background_color": "#ed7b76",
+                        "background_color": "#f2d450",
                         "text_color": "#FFFFFF",
+                        "background_image": {
+                            "uri": "",
+                            "alt_text": "Binance account proof of ownership",
+                        }
                     }
                 ],
             },
