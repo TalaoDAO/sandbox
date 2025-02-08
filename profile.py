@@ -1487,7 +1487,6 @@ profile = {
                 "vct": "https://doc.wallet-provider.io/vc_type#binanceassociatedaddress",
                 "display": [
                     {
-                        "name": "Binance Account",
                         "locale": "en-US",
                         "background_color": "#f2d450",
                         "text_color": "#FFFFFF",
