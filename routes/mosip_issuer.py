@@ -4,13 +4,13 @@ from urllib.parse import urlencode
 
 
 OFFER = {
-    "credential_issuer": "https://injicertify-mosipid.collab.mosip.net/v1/certify/issuance",
+    "credential_issuer": "https://injicertify-academic.collab.mosip.net/v1/certify/issuance",
     "credential_configuration_ids": [
-        "MosipVerifiableCredential"
+        "UniversityCredential"
     ],
     "grants": {
         "authorization_code": {
-            "authorization_server": "https://esignet-mosipid.collab.mosip.net"
+            "authorization_server": "https://keycloak-26.dev2.mosip.net/auth/realms/inji"
         }
     }
 }
