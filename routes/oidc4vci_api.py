@@ -1588,9 +1588,13 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
         old_context = credential['@context']
         new_context = ["https://www.w3.org/2018/credentials/v1", "https://w3id.org/security/suites/ed25519-2020/v1"]
         for url in old_context:
-            if url not in  ["https://www.w3.org/2018/credentials/v1", "https://w3id.org/security/suites/ed25519-2020/v1"]:
+            if isinstance(url, dict):
+                new_context.append(url)
+            elif url not in  ["https://www.w3.org/2018/credentials/v1", "https://w3id.org/security/suites/ed25519-2020/v1"]:
                 remote_file = requests.get(url, timeout=10).json()
                 new_context.append(remote_file['@context'])
+            else:
+                pass
         credential["@context"] = new_context
         try:
             didkit_options = {
