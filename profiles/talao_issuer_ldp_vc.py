@@ -31,13 +31,19 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
                 "credential_signing_alg_values_supported": [
                     "Ed25519Signature2020"
                 ],
-                "display": [
-                    {
-                        "name": "Mosip example",
-                        "description": "This credential is a proof of your certification.",
-                        "locale": "en-GB",
-                    }
-                ],
+                "display": [{
+                    "name": "Graduation Certificate",
+                    "locale": "en",
+                    "logo": {
+                        "url": "https://mosip.github.io/inji-config/logos/mosipid-logo.png",
+                        "alt_text": "Certificate logo"
+                    },
+                    "background_color": "#f8efea",
+                    "background_image": {
+                        "uri": "https://mosip.github.io/inji-config/logos/mosipid-logo.png"
+                    },
+                    "text_color": "#000000"
+                }],
                 "credentialSubject": {
                     "studentName": {
                         "display": [{"name": "Name", "locale": "en-US"}]
@@ -50,6 +56,9 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
                     },
                     "courseName": {
                         "display": [{"name": "Course", "locale": "en-US"}]
+                    },
+                    "face": {
+                            "value_type": "image/jpeg"
                     }
                 }
             },
