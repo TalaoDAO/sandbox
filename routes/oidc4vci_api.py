@@ -1231,11 +1231,12 @@ async def issuer_credential(issuer_id, red, mode):
             if proof_header.get('jwk'):  # used for HAIP
                 wallet_jwk = proof_header.get('jwk')
                 wallet_identifier = 'jwk_thumbprint'
+                wallet_did = access_token_data['client_id']
             else:
                 wallet_identifier = 'did'
                 wallet_jwk = oidc4vc.resolve_did(proof_header.get('kid'))
+                wallet_did = proof_header.get('kid').split("#")[0]
 
-            wallet_did = access_token_data['client_id']
             if wallet_did and proof_payload.get('iss') and wallet_did != proof_payload.get('iss'):
                 logging.warning('iss %s of proof of key is different from client_id %s', wallet_did ,access_token_data['client_id'] )
                 return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
@@ -1584,16 +1585,28 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
         else:
             credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm, issuer_key, c_nonce, issuer_did, jti, wallet_did)
     else:  # proof_format == 'ldp_vc':
+        old_context = credential['@context']
+        new_context = ["https://www.w3.org/2018/credentials/v1", "https://w3id.org/security/suites/ed25519-2020/v1"]
+        for url in old_context:
+            if url not in  ["https://www.w3.org/2018/credentials/v1", "https://w3id.org/security/suites/ed25519-2020/v1"]:
+                remote_file = requests.get(url, timeout=10).json()
+                new_context.append(remote_file['@context'])
+        credential["@context"] = new_context
         try:
             didkit_options = {
                 'proofPurpose': 'assertionMethod',
                 'verificationMethod': issuer_vm,
             }
+            if issuer_vm == "did:web:app.altme.io:issuer#key-1":
+                didkit_options["type"] = "Ed25519Signature2020"
             credential_signed = await didkit.issue_credential(
                 json.dumps(credential),
                 didkit_options.__str__().replace("'", '"'),
                 issuer_key,
             )
+            credential_signed_json = json.loads(credential_signed)
+            credential_signed_json["@context"] = old_context
+            credential_signed = json.dumps(credential_signed_json)
         except Exception as e:
             logging.warning('Didkit exception = %s', str(e))
             logging.warning('incorrect json_ld = %s', json.dumps(credential))

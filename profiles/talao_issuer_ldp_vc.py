@@ -12,9 +12,47 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
         "credentials_types_supported": [
             "EmailPass",
             "PhoneProof",
-            "VerifiableId"
+            "VerifiableId",
+            "Mosip"
         ],
         "credential_configurations_supported": {
+            "Mosip": {
+                "format": "ldp_vc",
+                "scope": "Mosip_scope",
+                "credential_definition": {
+                    "@context":[
+                        "https://www.w3.org/2018/credentials/v1",
+                        "https://mosip.github.io/inji-config/collab/contexts/university.json",
+                        "https://w3id.org/security/suites/ed25519-2020/v1"
+                    ],
+                    "type": ["VerifiableCredential","UniversityCredential"],
+                },
+                "cryptographic_binding_methods_supported": ["did"],
+                "credential_signing_alg_values_supported": [
+                    "Ed25519Signature2020"
+                ],
+                "display": [
+                    {
+                        "name": "Mosip example",
+                        "description": "This credential is a proof of your certification.",
+                        "locale": "en-GB",
+                    }
+                ],
+                "credentialSubject": {
+                    "studentName": {
+                        "display": [{"name": "Name", "locale": "en-US"}]
+                    },
+                    "gender": {
+                        "display": [{"name": "Gender", "locale": "en-US"}]
+                    },
+                    "dateOfBirth": {
+                        "display": [{"name": "Birth Date", "locale": "en-US"}]
+                    },
+                    "courseName": {
+                        "display": [{"name": "Course", "locale": "en-US"}]
+                    }
+                }
+            },
             "VerifiableId": {
                 "format": "ldp_vc",
                 "scope": "VerifiableId_scope",
@@ -44,7 +82,7 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
                 },
                 "cryptographic_binding_methods_supported": ["did"],
                 "credential_signing_alg_values_supported": [
-                    "Ed25519Signature2018"
+                    "Ed25519Signature2020"
                 ],
                 "display": [
                     {
@@ -81,7 +119,7 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
                 "scope": "EmailPass_scope",
                 "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
-                    "Ed25519Signature2018"
+                    "Ed25519Signature2020"
                 ],
                 "display": [
                     {
@@ -150,7 +188,7 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
                 },
                 "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
-                    "Ed25519Signature2018"
+                    "Ed25519Signature2020"
                 ],
                 "display": [
                     {

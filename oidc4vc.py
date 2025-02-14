@@ -376,6 +376,8 @@ def resolve_did(vm) -> dict:
                 return jwk
     else:
         url = 'https://unires:test@unires.talao.co/1.0/identifiers/' + did
+        # https://unires:test@unires.talao.co/1.0/identifiers/did:ebsi:zchLNwnZcHbKHkLsCECjxh4#gRG72wm1Ys9BdLZ1ZGizp6-kjVfCawXw7DrDYxiH708
+        # https://api-conformance.ebsi.eu/did-registry/v5/identifiers/did:ebsi:zchLNwnZcHbKHkLsCECjxh4#gRG72wm1Ys9BdLZ1ZGizp6-kjVfCawXw7DrDYxiH708
         try:
             r = requests.get(url, timeout=5)
             logging.info('Access to Talao Universal Resolver')
