@@ -1601,7 +1601,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
                 'proofPurpose': 'assertionMethod',
                 'verificationMethod': issuer_vm,
             }
-            if issuer_vm == "did:web:app.altme.io:issuer#key-1":
+            if issuer_vm in ["did:web:app.altme.io:issuer#key-1",  "did:web:talao.co#key-4"]:
                 didkit_options["type"] = "Ed25519Signature2020"
             credential_signed = await didkit.issue_credential(
                 json.dumps(credential),

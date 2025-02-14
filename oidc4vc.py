@@ -344,6 +344,73 @@ def build_pre_authorized_code(key, wallet_did, issuer_did, issuer_vm, nonce):
     return token.serialize()
 
 
+def public_key_multibase_to_jwk(public_key_multibase: str):
+    """
+    Convert a publicKeyMultibase (Base58 encoded) into JWK format.
+    Supports only secp256k1 and Ed25519 keys (Base58-btc encoding).
+    """
+    if not public_key_multibase.startswith("z"):
+        raise ValueError("Only Base58-btc encoding (starting with 'z') is supported.")
+    # Decode Base58 (removing "z" prefix)
+    decoded_bytes = base58.b58decode(public_key_multibase[1:])
+    # Identify the key type based on prefix
+    if decoded_bytes[:2] == b'\x04\x88':  # secp256k1 key
+        key_data = decoded_bytes[2:]
+        curve = "secp256k1"
+    elif decoded_bytes[:2] == b'\xed\x01':  # Ed25519 key
+        key_data = decoded_bytes[2:]
+        curve = "Ed25519"
+    else:
+        raise ValueError("Unsupported key type.")
+    # Convert to JWK format
+    if curve == "secp256k1":
+        x, y = key_data[:32], key_data[32:]
+        jwk = {
+            "kty": "EC",
+            "crv": "secp256k1",
+            "x": base64.urlsafe_b64encode(x).decode().rstrip("="),
+            "y": base64.urlsafe_b64encode(y).decode().rstrip("=")
+        }
+    elif curve == "Ed25519":
+        jwk = {
+            "kty": "OKP",
+            "crv": "Ed25519",
+            "x": base64.urlsafe_b64encode(key_data).decode().rstrip("=")
+        }
+    return jwk
+
+
+def base58_to_jwk(base58_key: str):
+    key_bytes = base58.b58decode(base58_key)
+    x_b64url = base64.urlsafe_b64encode(key_bytes).decode().rstrip("=")
+    jwk = {
+        "kty": "OKP",  # Type de clé pour Ed25519
+        "crv": "Ed25519",
+        "x": x_b64url
+    }
+    return jwk
+
+
+def base58_to_jwk_secp256k1(base58_key: str):
+    key_bytes = base58.b58decode(base58_key)
+    if len(key_bytes) == 33 and key_bytes[0] in (2, 3):  # Format compressé
+        raise ValueError("Format compressé non supporté directement, il faut le décompresser.")
+    elif len(key_bytes) == 65 and key_bytes[0] == 4:  # Format non compressé
+        x_bytes = key_bytes[1:33]
+        y_bytes = key_bytes[33:65]
+    else:
+        raise ValueError("Format de clé non reconnu.")
+    x_b64url = base64.urlsafe_b64encode(x_bytes).decode().rstrip("=")
+    y_b64url = base64.urlsafe_b64encode(y_bytes).decode().rstrip("=")
+    jwk = {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": x_b64url,
+        "y": y_b64url
+    }
+    return jwk
+
+
 def resolve_did(vm) -> dict:
     logging.info('vm = %s', vm)
     if vm[:4] != "did:":
@@ -369,15 +436,8 @@ def resolve_did(vm) -> dict:
     elif did.split(':')[1] == "web":
         logging.info("did:web")
         did_document = resolve_did_web(did)
-        for verificationMethod in did_document:
-            if vm == verificationMethod['id'] or '#' + vm.split('#')[1] == verificationMethod['id']:
-                jwk = verificationMethod.get('publicKeyJwk')
-                logging.info('wallet jwk = %s', jwk)
-                return jwk
     else:
         url = 'https://unires:test@unires.talao.co/1.0/identifiers/' + did
-        # https://unires:test@unires.talao.co/1.0/identifiers/did:ebsi:zchLNwnZcHbKHkLsCECjxh4#gRG72wm1Ys9BdLZ1ZGizp6-kjVfCawXw7DrDYxiH708
-        # https://api-conformance.ebsi.eu/did-registry/v5/identifiers/did:ebsi:zchLNwnZcHbKHkLsCECjxh4#gRG72wm1Ys9BdLZ1ZGizp6-kjVfCawXw7DrDYxiH708
         try:
             r = requests.get(url, timeout=5)
             logging.info('Access to Talao Universal Resolver')
@@ -390,17 +450,25 @@ def resolve_did(vm) -> dict:
             except Exception:
                 logging.warning('fails to access to both universal resolver')
                 return
-        did_document = r.json()
-        for verificationMethod in did_document['didDocument']['verificationMethod']:
-            if vm == verificationMethod['id'] or '#' + vm.split('#')[1] == verificationMethod['id']:
-                jwk = verificationMethod.get('publicKeyJwk')
-                if not jwk:
-                    publicKeyBase58 = verificationMethod.get('publicKeyBase58')
-                    logging.info('wallet publiccKeyBase48 = %s', publicKeyBase58)
-                    return publicKeyBase58
+        did_document = r.json()['didDocument']['verificationMethod']
+    for verificationMethod in did_document:
+        if vm == verificationMethod['id'] or '#' + vm.split('#')[1] == verificationMethod['id']:
+            if verificationMethod.get('publicKeyJwk'):
+                jwk = verificationMethod['publicKeyJwk']
+                break
+            elif verificationMethod.get('publicKeyBase58'):
+                if verificationMethod["type"] in ["Ed25519VerificationKey2020","Ed25519VerificationKey2018"]:
+                    jwk = base58_to_jwk(verificationMethod['publicKeyBase58'])
+                    break
                 else:
-                    logging.info('wallet jwk = %s', jwk)
-                    return jwk
+                    jwk = base58_to_jwk_secp256k1(verificationMethod['publicKeyBase58'])
+                    break
+            elif verificationMethod.get("publicKeyMultibase"):
+                jwk = public_key_multibase_to_jwk(verificationMethod["publicKeyMultibase"])
+                break
+            else:
+                raise ValueError("Unsupported verification method.")
+    return jwk
 
 
 def verif_token(token, nonce, aud=None):

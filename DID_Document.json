@@ -40,9 +40,9 @@
         },
         {
             "id": "did:web:talao.co#key-4",
-            "type": "Ed25519VerificationKey2018",
+            "type": "Ed25519VerificationKey2020",
             "controller": "did:web:talao.co",
-            "publicKeyBase58": "2S73k5pn5umfnaW31qx6dXFndEn6SmWw7LpgSjNNC5BF"
+            "publicKeyMultibase": "z6MkftN6LL5DRTG8u5LjhQuwUconSp3wremHoMjcH1LP7Hxd"
         },
         {
             "id": "did:web:talao.co#key-5",

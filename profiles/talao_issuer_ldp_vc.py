@@ -46,16 +46,84 @@ TALAO_ISSUER = {   # draft 13 with ldp_vc
                 }],
                 "credentialSubject": {
                     "studentName": {
-                        "display": [{"name": "Name", "locale": "en-US"}]
+                        "display": [
+                            {
+                                "name": "Student Name",
+                                "locale": "en"
+                            }
+                        ]
                     },
-                    "gender": {
-                        "display": [{"name": "Gender", "locale": "en-US"}]
+                    "rollNumber": {
+                        "display": [
+                            {
+                                "name": "Roll Number",
+                                "locale": "en"
+                            }
+                        ]
                     },
                     "dateOfBirth": {
-                        "display": [{"name": "Birth Date", "locale": "en-US"}]
+                        "display": [
+                            {
+                                "name": "Date of Birth",
+                                "locale": "en"
+                            }
+                        ]
+                    },
+                    "gender": {
+                        "display": [
+                            {
+                                "name": "Gender",
+                                "locale": "en"
+                            }
+                        ]
                     },
                     "courseName": {
-                        "display": [{"name": "Course", "locale": "en-US"}]
+                        "display": [
+                            {
+                                "name": "Course Name",
+                                "locale": "en"
+                            }
+                        ]
+                    },
+                    "courseDivisionName": {
+                        "display": [
+                            {
+                                "name": "Course Division Name",
+                                "locale": "en"
+                            }
+                        ]
+                    },
+                    "courseDuration": {
+                        "display": [
+                            {
+                                "name": "Course Duration",
+                                "locale": "en"
+                            }
+                        ]
+                    },
+                    "result": {
+                            "display": [
+                            {
+                                "name": "Result",
+                                "locale": "en"
+                            }
+                        ]
+                    },
+                    "startDate": {
+                        "display": [
+                            {
+                                "name": "Start Date",
+                                "locale": "en"
+                            }
+                        ]
+                    },
+                    "completionDate": {
+                        "display": [
+                            {
+                                "name": "Completion Date",
+                                "locale": "en"
+                            }
+                        ]
                     },
                     "face": {
                             "value_type": "image/jpeg"
