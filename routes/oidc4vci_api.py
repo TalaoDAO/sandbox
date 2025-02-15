@@ -1258,7 +1258,7 @@ async def issuer_credential(issuer_id, red, mode):
         logging.warning('No proof available -> Bearer credential, wallet_did = client_id')
         wallet_jwk = None
         if vc_format == 'ldp_vc':
-            wallet_did = None
+            return Response(**manage_error('invalid_proof', 'No proof with ldp_vc format is not supported', red, mode, request=request, stream_id=stream_id))
         else:
             wallet_did = access_token_data['client_id']
         
