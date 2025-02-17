@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 
 
 OFFER = {
-    "credential_issuer": "https://injicertify-academic.collab.mosip.net/v1/certify/issuance",
+    "credential_issuer": "https://injicertify-academic.collab.mosip.net",
     "credential_configuration_ids": [
         "UniversityCredential"
     ],
