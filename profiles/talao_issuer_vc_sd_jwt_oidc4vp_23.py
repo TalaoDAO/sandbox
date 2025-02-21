@@ -136,7 +136,7 @@ TALAO_ISSUER = {
                             "display": [{"name": "Nationality", "locale": "en-US"},
                                         {"name": "Nationalité", "locale": "fr-FR"}],
                         },
-                        "gender": {
+                        "sex": {
                             "value_type": "number",
                             "display": [{"name": "Gender", "locale": "en-US"},
                                         {"name": "Sexe", "locale": "fr-FR"}],

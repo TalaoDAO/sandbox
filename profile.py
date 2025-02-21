@@ -1568,10 +1568,10 @@ profile = {
                 "order": [
                     "given_name",
                     "family_name",
-                    "birthdate",
+                    "birth_date",
                     "address",
-                    "gender",
-                    "place_of_birth",
+                    "sex",
+                    "birth_place",
                     "nationalities",
                     "age_equal_or_over", 
                     "issuing_country",
@@ -1590,13 +1590,13 @@ profile = {
                             "display": [{"name": "Family Name", "locale": "en-US"},
                                         {"name": "Nom", "locale": "fr-FR"}],
                         },
-                        "birthdate": {
+                        "birth_date": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Birth date", "locale": "en-US"},
                                         {"name": "Date de naissance", "locale": "fr-FR"}],
                         },
-                        "place_of_birth": {
+                        "birth_place": {
                             "locality": {
                                 "mandatory": True,
                                 "value_type": "string",
@@ -1626,7 +1626,7 @@ profile = {
                             "display": [{"name": "Nationalities", "locale": "en-US"},
                                         {"name": "Nationalités", "locale": "fr-FR"}],
                         },
-                        "gender": {},
+                        "sex": {},
                         "address": {
                             "formatted": {
                                 "mandatory": True,
@@ -1974,10 +1974,10 @@ profile = {
                 "order": [
                     "given_name",
                     "family_name",
-                    "birthdate",
+                    "birth_date",
                     "address",
-                    "gender",
-                    "place_of_birth",
+                    "sex",
+                    "birth_place",
                     "nationalities",
                     "age_equal_or_over", 
                     "issuing_country",
@@ -1996,13 +1996,13 @@ profile = {
                             "display": [{"name": "Family Name", "locale": "en-US"},
                                         {"name": "Nom", "locale": "fr-FR"}],
                         },
-                        "birthdate": {
+                        "birth_date": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Birth date", "locale": "en-US"},
                                         {"name": "Date de naissance", "locale": "fr-FR"}],
                         },
-                        "place_of_birth": {
+                        "birth_place": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Birth place", "locale": "en-US"},
@@ -2036,7 +2036,7 @@ profile = {
                             "display": [{"name": "Nationalities", "locale": "en-US"},
                                         {"name": "Nationalités", "locale": "fr-FR"}],
                         },
-                        "gender": {
+                        "sex": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Gender", "locale": "en-US"},
@@ -2638,10 +2638,10 @@ profile = {
                 "order": [
                     "given_name",
                     "family_name",
-                    "birthdate",
+                    "birth_date",
                     "address",
-                    "gender",
-                    "place_of_birth",
+                    "sex",
+                    "birth_place",
                     "nationalities",
                     "age_equal_or_over", 
                     "issuing_country",
@@ -2660,13 +2660,13 @@ profile = {
                             "display": [{"name": "Family Name", "locale": "en-US"},
                                         {"name": "Nom", "locale": "fr-FR"}],
                         },
-                        "birthdate": {
+                        "birth_date": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Birth date", "locale": "en-US"},
                                         {"name": "Date de naissance", "locale": "fr-FR"}],
                         },
-                        "place_of_birth": {
+                        "birth_place": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Birth place", "locale": "en-US"},
@@ -2700,7 +2700,7 @@ profile = {
                             "display": [{"name": "Nationalities", "locale": "en-US"},
                                         {"name": "Nationalités", "locale": "fr-FR"}],
                         },
-                        "gender": {
+                        "sex": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Gender", "locale": "en-US"},
@@ -2974,10 +2974,10 @@ profile = {
                 "order": [
                     "given_name",
                     "family_name",
-                    "birthdate",
+                    "birth_date",
                     "address",
-                    "gender",
-                    "place_of_birth",
+                    "sex",
+                    "birth_place",
                     "nationalities",
                     "age_equal_or_over", 
                     "issuing_country",
@@ -2996,13 +2996,13 @@ profile = {
                             "display": [{"name": "Family Name", "locale": "en-US"},
                                         {"name": "Nom", "locale": "fr-FR"}],
                         },
-                        "birthdate": {
+                        "birth_date": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Birth date", "locale": "en-US"},
                                         {"name": "Date de naissance", "locale": "fr-FR"}],
                         },
-                        "place_of_birth": {
+                        "birth_place": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Birth place", "locale": "en-US"},
@@ -3036,7 +3036,7 @@ profile = {
                             "display": [{"name": "Nationalities", "locale": "en-US"},
                                         {"name": "Nationalités", "locale": "fr-FR"}],
                         },
-                        "gender": {
+                        "sex": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Gender", "locale": "en-US"},
