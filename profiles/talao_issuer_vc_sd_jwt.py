@@ -236,7 +236,7 @@ TALAO_ISSUER = {
                     "EdDSA",
                     "RS256",
                 ],
-                "vct": "urn:eu.europa.ec.eudi:pid:1",
+                "vct": "eu.europa.ec.eudi.pid.1",
                 "display": [
                     {
                         "name": "Personal ID",

@@ -1732,7 +1732,7 @@ profile = {
                     "EdDSA",
                     "RS256",
                 ],
-                "vct": "urn:eu.europa.ec.eudi:pid:1",
+                "vct": "eu.europa.ec.eudi.pid.1",
                 "display": [
                     {
                         "name": "Personal ID",
@@ -2171,7 +2171,7 @@ profile = {
                     "EdDSA",
                     "RS256",
                 ],
-                "vct": "urn:eu.europa.ec.eudi:pid:1",
+                "vct": "eu.europa.ec.eudi.pid.1",
                 "display": [
                     {
                         "name": "Person ID",
@@ -2835,7 +2835,7 @@ profile = {
                     "EdDSA",
                     "RS256",
                 ],
-                "vct": "urn:eu.europa.ec.eudi:pid:1",
+                "vct": "eu.europa.ec.eudi.pid.1",
                 "display": [
                     {
                         "name": "Person ID",
@@ -3171,7 +3171,7 @@ profile = {
                     "EdDSA",
                     "RS256",
                 ],
-                "vct": "urn:eu.europa.ec.eudi:pid:1",
+                "vct": "eu.europa.ec.eudi.pid.1",
                 "display": [
                     {
                         "name": "Person ID",

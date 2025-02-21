@@ -207,7 +207,7 @@ TEST = {
                     "ES256",
                     "EdDSA",
                 ],
-                "vct": "urn:eu.europa.ec.eudi:pid:1",
+                "vct": "urn:eu.europa.ec.eudi.pid.1",
                 "display": [
                     {
                         "name": "Person ID",
