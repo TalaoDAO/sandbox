@@ -407,23 +407,21 @@ def standalone_issuer_authorize(issuer_id, red, mode):
     logging.info('user is logged')
     session['login'] = False
     test = request.args.get('test')
-    try:
-        """
-        issuer initiated authorization code flow with QR code
-        """
+    try:  # standard issuer initiated authorization code flow with QR code
         offer_data = json.loads(red.get(test).decode())
-    except Exception:
-        """ 
-        wallet initiated authorization code flow -> create offer_data from file as it is needed for web wallet tests
-        
-        """
+    except Exception: # wallet initiated authorization code flow -> create offer_data from file as it is needed for web wallet tests
         # fetch credential
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
         issuer_profile = profile[issuer_data['profile']]
         vc_list = issuer_profile["credential_configurations_supported"].keys()
+        vc_found = False
         for vc in vc_list:
             if issuer_profile["credential_configurations_supported"][vc]["scope"] == session['code_data']['scope']:
+                vc_found = True
                 break
+        if not vc_found:
+            logging.error("file not found")
+            return redirect(redirect_uri + '?' + authorization_error('invalid_request', 'VC not found', None, red, state))
         try:
             f = open("./verifiable_credentials/" + vc + ".jsonld", 'r')
         except Exception:
