@@ -6,7 +6,7 @@
                     "fields": [
                         {
                             "filter": {
-                                "const": "urn:eu.europa.ec.eudi:pid:1",
+                                "const": "urn:eu.europa.ec.eudi.pid.1",
                                 "type": "string"
                             },
                             "path": [
