@@ -1541,7 +1541,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
                 'uri': mode.server + 'issuer/statuslist/1'
             }
         }
-        if issuer_id in ['raamxepqex', 'tdiwmpyhzc']:
+        if issuer_id in ['raamxepqex', 'tdiwmpyhzc']:  # HAIP
             x5c = True
         else:
             x5c = False

@@ -531,7 +531,7 @@ def well_known_did():
     return Response(json.dumps(DID_Document), headers=headers)
 
 
-# .well-known for walllet as issuer
+# .well-known for walllet as authorization server
 @app.route('/wallet_issuer/.well-known/openid-configuration', methods=['GET'])
 @app.route('/wallet-issuer/.well-known/openid-configuration', methods=['GET'])
 def wallet_issuer_well_known_did():

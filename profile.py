@@ -1530,7 +1530,13 @@ profile = {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Organization", "locale": "en-US"},
-                                        {"name": "Organisation", "locale": "fr-FR"}]
+                                        {"name": "Organisation", "locale": "fr-FR"}],
+                            "name": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [{"name": "Role", "locale": "en-US"},
+                                            {"name": "Rôle", "locale": "fr-FR"}],
+                            }
                         },
                         "website": {
                             "mandatory": True,
@@ -2331,7 +2337,6 @@ profile = {
                         "name": "Identity Credential",
                         "locale": "en-US",
                         "background_color": "#12107c",
-                        "text_color": "#FFFFFF",
                     }
                 ],
                  "order": [
