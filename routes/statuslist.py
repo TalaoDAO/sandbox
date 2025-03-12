@@ -105,7 +105,7 @@ def issuer_bitstring_status_list(list_id):
         status_list_token = f.read()
         headers = {
             'Cache-Control': 'no-store',
-            'Content-Type': 'application/statuslist+jwt'
+            'Content-Type': 'application/json'
         }
         return Response(status_list_token, headers=headers)
     except Exception:

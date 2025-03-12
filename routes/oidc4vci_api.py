@@ -1566,13 +1566,13 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
     elif format in ['jwt_vc_json', 'jwt_vc']:     # jwt_vc format is used for ebsi V3 only with draft 10/11
         credential = clean_jwt_vc_json(credential)
         index = str(randint(0, 99999))
-        credential['credentialStatus'] = [{
+        credential['credentialStatus'] = {
             'id':  mode.server + 'sandbox/issuer/bitstringstatuslist/1#' + index,
             'type': 'BitstringStatusListEntry',
             'statusPurpose': 'revocation',
             'statusListIndex': index,
             'statusListCredential':  mode.server + 'sandbox/issuer/bitstringstatuslist/1'
-        }]
+        }
     else:
         logging.error('credential format not supported %s', format)
         return
