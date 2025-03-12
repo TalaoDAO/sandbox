@@ -1567,13 +1567,13 @@ profile = {
                 "vct": "urn:eu.europa.ec.eudi:employee_badge:1",
                 "display": [
                     {
-                        "name": "Company Badge",
+                        "name": "Employee Badge",
                         "locale": "en-US",
                         "background_color": "#ed7b76",
                         "text_color": "#FFFFFF",
                     },
                     {
-                        "name": "Badge Entreprise",
+                        "name": "Badge entreprise",
                         "locale": "fr-FR",
                         "background_color": "#ed7b76",
                         "text_color": "#FFFFFF",
