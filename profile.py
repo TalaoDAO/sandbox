@@ -1534,8 +1534,20 @@ profile = {
                             "name": {
                                 "mandatory": True,
                                 "value_type": "string",
-                                "display": [{"name": "Role", "locale": "en-US"},
-                                            {"name": "Rôle", "locale": "fr-FR"}],
+                                "display": [{"name": "Name", "locale": "en-US"},
+                                            {"name": "Name", "locale": "fr-FR"}],
+                            },
+                            "identifier": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [{"name": "Identifier", "locale": "en-US"},
+                                            {"name": "Identifiant", "locale": "fr-FR"}],
+                            },
+                            "country": {
+                                "mandatory": True,
+                                "value_type": "string",
+                                "display": [{"name": "Country", "locale": "en-US"},
+                                            {"name": "Pays", "locale": "fr-FR"}],
                             }
                         },
                         "website": {
