@@ -52,6 +52,7 @@ predefined_presentation_uri_list = {
     'presentation_definition/sicpa': 'Sicpa',
     'presentation_definition/two_sd_jwt': 'Present 2 sd_jwt',
     'presentation_definition/employee_badge': 'Employee Badge',
+    'presentation_definition/employee_badge_limited_disclosure': 'Employee Badge with limited disclosure',
     'presentation_definition/custom_employee': 'Employee Dentsu',
     'presentation_definition/pid_with_nested_claim': 'PID with nested claim ',
     'presentation_definition/mosip_ldp_vp': 'Mosip for university '

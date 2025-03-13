@@ -18,6 +18,7 @@
                 }
             },
             "constraints": {
+                "limit_disclosure": "required",
                 "fields": [
                         {
                             "path": [
@@ -27,6 +28,27 @@
                                 "type": "string",
                                 "const": "urn:eu.europa.ec.eudi:employee_badge:1"
                             }
+                        },
+                        {
+                            "path": [
+                                "$.family_name"
+                            ],
+                            "optional": true
+                        },
+                        {
+                            "path": [
+                                "$.given_name"
+                            ]
+                        },
+                        {
+                            "path": [
+                                "$.organization.name"
+                            ]
+                        },
+                        {
+                            "path": [
+                                "$.role"
+                            ]
                         }
                     ]
             }
