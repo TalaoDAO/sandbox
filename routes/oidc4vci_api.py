@@ -721,7 +721,7 @@ def issuer_authorize_login(issuer_id, red):
     if request.method == 'GET':
         session['login'] = False
         session['test'] = False
-        return render_template('issuer_oidc/authorize.html', url= '/issuer/' + issuer_id + '/authorize/login')
+        return render_template('issuer_oidc/authorize.html', url = '/issuer/' + issuer_id + '/authorize/login')
     if not red.get( request.form['test']):
         flash('Wrong test name', 'danger')
         #return redirect('/issuer/' + issuer_id + '/authorize/login') 
