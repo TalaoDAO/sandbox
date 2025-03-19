@@ -31,8 +31,8 @@ def alg(key):
         raise Exception("Key type not supported")
     
 
-def generate_selfsigned_cert(hostname, key=None):
-    """Generates self signed certificate for a hostname, and optional IP addresses.""" 
+def generate_cert(hostname, key=None):
+    """Generates (self) signed certificate for a hostname, and optional IP addresses.""" 
     if not key:
         keys = json.load(open('keys.json')) 
         rsa_jwk = keys['RSA_key']
@@ -42,22 +42,32 @@ def generate_selfsigned_cert(hostname, key=None):
         # Load PEM key
         key = serialization.load_pem_private_key(pem_key, password=None)
 
-    name = x509.Name([
+    issuer = x509.Name([
+        x509.NameAttribute(NameOID.COUNTRY_NAME, "FR"),
+        x509.NameAttribute(NameOID.LOCALITY_NAME, "Paris"),
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Web3 Digital Wallet"),
+        x509.NameAttribute(NameOID.COMMON_NAME, "talao.co")
+    ])
+    
+    subject = x509.Name([
+        x509.NameAttribute(NameOID.COUNTRY_NAME, "FR"),
+        x509.NameAttribute(NameOID.LOCALITY_NAME, "Paris"),
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Web3 Digital Wallet"),
         x509.NameAttribute(NameOID.COMMON_NAME, hostname)
     ])
- 
+
     # best practice seem to be to include the hostname in the SAN, which *SHOULD* mean COMMON_NAME is ignored.    
-    alt_names = [x509.DNSName(hostname)]
-    
-    san = x509.SubjectAlternativeName(alt_names)
+    san = x509.SubjectAlternativeName([
+        x509.DNSName(hostname)
+    ])
     
     # path_len=0 means this cert can only sign itself, not other certs.
     basic_contraints = x509.BasicConstraints(ca=True, path_length=0)
     now = datetime.now()
     cert = (
         x509.CertificateBuilder()
-        .subject_name(name)
-        .issuer_name(name)
+        .subject_name(subject)
+        .issuer_name(issuer)
         .public_key(key.public_key())
         .serial_number(1000)
         .not_valid_before(now)
@@ -70,7 +80,7 @@ def generate_selfsigned_cert(hostname, key=None):
 
 
 def build_x509_san_dns(hostname="talao.co"):
-    a = generate_selfsigned_cert(hostname)
+    a = generate_cert(hostname)
     return [base64.b64encode(a).decode()]
 
 
@@ -78,7 +88,7 @@ def build_verifier_attestation(client_id) -> str:
     """
     OIDC4VP
     """
-    keys = json.load(open('keys.json')) 
+    keys = json.load(open('keys.json'))
     rsa_jwk = keys['RSA_key']
     rsa_key = jwk.JWK(**rsa_jwk)
     public_key = rsa_key.export(private_key=False, as_dict=True)
@@ -100,4 +110,3 @@ def build_verifier_attestation(client_id) -> str:
     token = jwt.JWT(header=header, claims=payload, algs=[alg(rsa_key)])
     token.make_signed_token(rsa_key)
     return token.serialize()
-

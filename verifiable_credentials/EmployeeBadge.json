@@ -1,15 +1,16 @@
 {
     "vct": "urn:eu.europa.ec.eudi:employee_badge:1",
-    "given_name": "Patrick",
-    "family_name": "Doe",
-    "email": "contact@talao.io",
-    "organization": {
-        "name": "talao",
-        "identifier": "FR145654-34554",
-        "country": "FR"
+    "employee": {
+        "employeeName": "Dentsu Taro",
+        "employeeId": "12346",
+        "jobTitle": "Software Engineer",
+        "department": "Engineering",
+        "employmentStartDate": "2022-01-01",
+        "employer": {
+            "employerName": "TechCorp Ltd.",
+            "employerId": "did:web:techcorp.com"
+        }
     },
-    "role": "employee",
-    "website": "https://talao.io",
-    "disclosure": ["given_name", "family_name", "organization", "role", "website", "email"]
+    "disclosure": []
 }
 

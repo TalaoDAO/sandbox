@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- op_ebsi_verifier_qrcopde2-->
+<!-- verifier_qrcode_test.html-->
 <html  style="background-color: {{ page_background_color }} ">
   <head>
     <meta charset="utf-8">
@@ -39,13 +39,15 @@
               <br>
             <form action="/verifier/wallet?code={{code}}" method="POST">
               <div class="text-center">
-             <div class="form-group col-4 offset-4"><select class="custom-select form-select-lg mb-3" aria-label=".form-select-lg example" name="prefix"  >
+              <div class="form-group col-4 offset-4"><select class="custom-select form-select-lg mb-3" aria-label=".form-select-lg example" name="prefix"  >
               <option class="optionForm" value="altme-openid-vc://">altme-openid-vc://</option>
+              <option class="optionForm" value="https://app.altme.io/app/download/authorize">https://app.altme.io/app/download/authorize</option>
               <option class="optionForm" value="talao-openid-vc://">talao-openid-vc://</option>
-                <option value="openid-vc://">openid-vc://</option>
-                <option class="optionForm" value="openid4vp://">openid4vp://</option>
-                <option value="openid://">openid://</option>
-                <option value="siopv2://">siopv2://</option>
+              <option class="optionForm" value="https://app.talao.co/app/download/authorize">https://app.talao.co/app/download/authorize</option>
+              <option class="optionForm" value="openid-vc://">openid-vc://</option>
+              <option class="optionForm" value="openid4vp://">openid4vp://</option>
+              <option class="optionForm" value="openid://">openid://</option>
+              <option class="optionForm" value="siopv2://">siopv2://</option>
             </select></div>
             <div class="text-center">
 

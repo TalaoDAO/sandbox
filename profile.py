@@ -1500,63 +1500,97 @@ profile = {
             "EmployeeBadge": {
                 "format": "vc+sd-jwt",
                 "scope": "EmployeeBadge_scope",
-                "order": [
-                    "given_name",
-                    "family_name",
-                    "role",
-                    "organization",
-                    "website"
-                ],
                 "claims": {
-                        "given_name": {
-                            "mandatory": True,
-                            "value_type": "string",
-                            "display": [{"name": "First Name", "locale": "en-US"},
-                                        {"name": "Prénom", "locale": "fr-FR"}],
-                        },
-                        "family_name": {
-                            "mandatory": True,
-                            "value_type": "string",
-                            "display": [{"name": "Family Name", "locale": "en-US"},
-                                        {"name": "Nom", "locale": "fr-FR"}],
-                        },
-                        "role": {
-                            "mandatory": True,
-                            "value_type": "string",
-                            "display": [{"name": "Role", "locale": "en-US"},
-                                        {"name": "Rôle", "locale": "fr-FR"}],
-                        },
-                        "organization": {
-                            "mandatory": True,
-                            "value_type": "string",
-                            "display": [{"name": "Organization", "locale": "en-US"},
-                                        {"name": "Organisation", "locale": "fr-FR"}],
-                            "name": {
-                                "mandatory": True,
-                                "value_type": "string",
-                                "display": [{"name": "Name", "locale": "en-US"},
-                                            {"name": "Name", "locale": "fr-FR"}],
-                            },
-                            "identifier": {
-                                "mandatory": True,
-                                "value_type": "string",
-                                "display": [{"name": "Identifier", "locale": "en-US"},
-                                            {"name": "Identifiant", "locale": "fr-FR"}],
-                            },
-                            "country": {
-                                "mandatory": True,
-                                "value_type": "string",
-                                "display": [{"name": "Country", "locale": "en-US"},
-                                            {"name": "Pays", "locale": "fr-FR"}],
+                    "id": {
+                        "display": [
+                            {
+                                "name": "Employee DID",
+                                "locale": "en-US"
                             }
-                        },
-                        "website": {
-                            "mandatory": True,
-                            "value_type": "uri",
-                            "display": [{"name": "Website", "locale": "en-US"},
-                                        {"name": "Website", "locale": "fr-FR"}]
-                        }
+                        ]
                     },
+                    "employee": {
+                        "value_type": "object",
+                        "display": [
+                            {
+                                "name": "Employee Details",
+                                "locale": "en-US"
+                            }
+                        ],
+                        "employeeName": {
+                            "value_type:": "string",
+                            "display": [
+                                {
+                                    "name": "Employee Name",
+                                    "locale": "en-US"
+                                }
+                            ]
+                        },
+                        "employeeId": {
+                            "value_type:": "string",
+                            "display": [
+                                {
+                                    "name": "Employee ID",
+                                    "locale": "en-US"
+                                }
+                            ]
+                        },
+                        "jobTitle": {
+                            "value_type:": "string",
+                            "display": [
+                                {
+                                    "name": "Employee Job Title",
+                                    "locale": "en-US"
+                                }
+                            ]
+                        },
+                        "department": {
+                            "value_type:": "string",
+                            "display": [
+                                {
+                                    "name": "Employee Department",
+                                    "locale": "en-US"
+                                }
+                            ]
+                        },
+                        "employmentStartDate": {
+                            "value_type:": "string",
+                            "display": [
+                                {
+                                    "name": "Employee Start Date",
+                                    "locale": "en-US"
+                                }
+                            ]
+                        },
+                        "employer": {
+                            "value_type:": "object",
+                            "display": [
+                                {
+                                    "name": "Employeer Details",
+                                    "locale": "en-US"
+                                }
+                            ],
+                            "employerName": {
+                                "value_type:": "string",
+                                "display": [
+                                    {
+                                        "name": "Employer Name",
+                                        "locale": "en-US"
+                                    }
+                                ]
+                            },
+                            "employerId": {
+                                "value_type:": "string",
+                                "display": [
+                                    {
+                                        "name": "DID of Employer",
+                                        "locale": "en-US"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
                 "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
                     "ES256K",
@@ -2293,7 +2327,7 @@ profile = {
                             "display": [{"name": "Picture", "locale": "en-US"},
                                         {"name": "Portrait", "locale": "fr-FR"}],
                         },
-                         "age_birth_year": {
+                        "age_birth_year": {
                             "mandatory": True,
                             "value_type": "integer",
                             "display": [{"name": "Age birth year", "locale": "en-US"},
@@ -2317,7 +2351,7 @@ profile = {
                             "display": [{"name": "Issuing country", "locale": "en-US"},
                                         {"name": "Pays d'emission", "locale": "fr-FR"}],
                         },
-                         "issuing_authority": {
+                        "issuing_authority": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Issuing autority", "locale": "en-US"},
@@ -2351,7 +2385,7 @@ profile = {
                         "background_color": "#12107c",
                     }
                 ],
-                 "order": [
+                "order": [
                     "given_name",
                     "family_name",
                     "birth_date",
@@ -2387,7 +2421,7 @@ profile = {
                             {"name": "Email", "locale": "fr-FR"},
                         ],
                     },
-                     "phone_number": {
+                    "phone_number": {
                         "mandatory": True,
                         "display": [
                             {"name": "Phone number", "locale": "en-US"},
@@ -2414,7 +2448,7 @@ profile = {
                             "display": [{"name": "Issuing country", "locale": "en-US"},
                                         {"name": "Pays d'emission", "locale": "fr-FR"}],
                         },
-                     "dateIssued": {
+                    "dateIssued": {
                             "mandatory": True,
                             "value_type": "string",
                             "display": [{"name": "Issuance date", "locale": "en-US"},
@@ -2427,7 +2461,7 @@ profile = {
                             {"name": "Agé de plus de 65 ans", "locale": "fr-FR"},
                         ],
                     },
-                      "gender":  {
+                    "gender":  {
                         "mandatory": True,
                         "display": [
                             {"name": "Gender", "locale": "en-US"},
