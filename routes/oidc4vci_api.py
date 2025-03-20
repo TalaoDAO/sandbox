@@ -1624,6 +1624,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
 
 def clean_jwt_vc_json(credential):
     vc = copy.copy(credential)
+    print("vc avant ", vc)
     # vc['@context'] = ['https://www.w3.org/2018/credentials/v1']
     with contextlib.suppress(Exception):
         del vc['vc']['@context']
@@ -1637,4 +1638,5 @@ def clean_jwt_vc_json(credential):
         del vc['vc']['validUntil']
         #del vc['credentialStatus']
         #del vc['credentialSchema']
+    print("vc apres : ", vc)
     return vc
