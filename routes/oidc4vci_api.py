@@ -1626,17 +1626,15 @@ def clean_jwt_vc_json(credential):
     vc = copy.copy(credential)
     print("vc avant ", vc)
     # vc['@context'] = ['https://www.w3.org/2018/credentials/v1']
-    with contextlib.suppress(Exception):
-        del vc['@context']
-        del vc['issuer']
-        del vc['issued']
-        del vc['id']
-        del vc['issuanceDate']
-        del vc['credentialSubject']['id']
-        del vc['expirationDate']
-        del vc['validFrom']
-        del vc['validUntil']
-        #del vc['credentialStatus']
-        #del vc['credentialSchema']
+    #with contextlib.suppress(Exception):
+    del vc['@context']
+    del vc['issuer']
+    del vc['issued']
+    del vc['id']
+    del vc['issuanceDate']
+    del vc['credentialSubject']['id']
+    del vc['expirationDate']
+    #    del vc['validFrom']
+    #    del vc['validUntil']
     print("vc apres : ", vc)
     return vc
