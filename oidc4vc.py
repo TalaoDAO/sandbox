@@ -291,10 +291,8 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
     # update payload with selective disclosure
     payload.update(_payload)
     if not payload.get("_sd"):
-        print("no _sd")
-        del payload["_sd_alg"]
-    else:
-        print("_sd")
+        logging.info("no _sd present")
+        payload.pop("_sd_alg", None)
     logging.info("sd-jwt payload = %s", json.dumps(payload, indent=4))
     
     signer_key = jwk.JWK(**issuer_key)
@@ -309,11 +307,11 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
         header['x5c'] = x509_attestation.build_x509_san_dns(hostname=issuer)
     else:
         header['kid'] = kid
-    try:
-        del subject_key['use']
-        del subject_key['alg']
-    except Exception:
-        pass
+    
+    # clean subject key jwk
+    subject_key.pop('use', None)
+    subject_key.pop('alg', None)
+    
     if unsecured.get('status'): 
         payload['status'] = unsecured['status']
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])

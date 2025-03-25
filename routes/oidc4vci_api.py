@@ -1551,10 +1551,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
         if wallet_did:
             credential['credentialSubject']['id'] = wallet_did
         else:
-            try:
-                del credential['credentialSubject']['id']
-            except Exception:
-                pass
+            credential['credentialSubject'].pop('id', None)
         credential['id'] = jti
         try:
             credential['issuer']['id'] = issuer_did
@@ -1562,7 +1559,8 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
             credential['issuer'] = issuer_did
         credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + 'Z'
         credential['expirationDate'] = (datetime.now() + timedelta(days=duration)).isoformat() + 'Z'
-        
+        if issuer_id in ["cejjvswuep", "ooroomolyd"]:
+            credential['expirationDate'] = (datetime.now() + timedelta(minutes=1)).isoformat() + 'Z'
     elif format in ['jwt_vc_json', 'jwt_vc']:     # jwt_vc format is used for ebsi V3 only with draft 10/11
         credential = clean_jwt_vc_json(credential)
         index = str(randint(0, 99999))
@@ -1585,6 +1583,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
         else:
             credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm, issuer_key, c_nonce, issuer_did, jti, wallet_did)
     else:  # proof_format == 'ldp_vc':
+        # manage remote context
         old_context = credential['@context']
         new_context = ["https://www.w3.org/2018/credentials/v1", "https://w3id.org/security/suites/ed25519-2020/v1"]
         for url in old_context:
@@ -1609,6 +1608,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
                 issuer_key,
             )
             credential_signed_json = json.loads(credential_signed)
+            # re set original @context
             credential_signed_json["@context"] = old_context
             credential_signed = json.dumps(credential_signed_json)
         except Exception as e:
@@ -1624,7 +1624,6 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
 
 def clean_jwt_vc_json(credential):
     vc = copy.copy(credential)
-    print("vc avant ", vc)
     vc.pop('@context', None)
     vc.pop('issuer', None)
     vc.pop('issued', None)
@@ -1634,5 +1633,4 @@ def clean_jwt_vc_json(credential):
     vc.pop('expirationDate', None)
     vc.pop('validFrom', None)
     vc.pop('validUntil', None)
-    print("vc apres : ", vc)
     return vc
