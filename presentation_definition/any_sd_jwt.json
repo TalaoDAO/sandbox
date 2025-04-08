@@ -1,0 +1,31 @@
+{
+  "id": "Any",
+  "input_descriptors": [
+    {
+      "id": "pid_credential",
+      "format": {
+        "vc+sd-jwt": {
+          "sd-jwt_alg_values": [
+            "ES256",
+            "ES256K",
+            "EdDSA"
+          ],
+          "kb-jwt_alg_values": [
+            "ES256",
+            "ES256K",
+            "EdDSA"
+          ]
+        }
+      },
+      "constraints": {
+        "fields": [
+          {
+            "path": [
+              "$.vct"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

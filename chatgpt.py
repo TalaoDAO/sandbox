@@ -14,11 +14,12 @@ client = OpenAI(
 def analyze(vc):
     response = client.responses.create(
         model="gpt-4o",
-        instructions="You are a coding assistant that talks like an expert of https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-08.html",
-        input="Here is my VC in sd-jwt format  " + vc + \
-            "Can you give me \
-                1: a resume of the content of this VC in 5 lines maximum \
-                2: check that this VC respects the specifications of sd-jwt VC ? \
-                si il y a des erreurs il faut faire une liste des points qui ne sont pas respectés ?"
+        instructions="You are a serious coding assistant that talks like an expert of https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-08.html",
+        input="Here is the VC to analyze in sd-jwt format  " + vc + \
+            "Can you: \
+                1: provide the release of the sd-jwt VC specification used \
+                2: provide a resume of the content of this VC in 15 lines maximum \
+                3: check that this VC respects the specifications of sd-jwt VC  \
+                4: list all errors or problems if any"
     )
     return response.output_text
