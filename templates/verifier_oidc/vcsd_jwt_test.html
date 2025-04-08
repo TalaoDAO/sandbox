@@ -7,6 +7,7 @@
     <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='./img/3D.ico') }}"/>
     <title>{{application_name}}</title>
     <link rel = "stylesheet" type= "text/css" href= "{{ url_for('static', filename='bootstrap.min.css') }}">
+    <script type="module" src="https://md-block.verou.me/md-block.js"></script>
   </head>
   <body>
     <font color="{{page_text_color}}"> 
@@ -38,7 +39,8 @@
 
             <div class="text-center mt-5"> 
               <h2>Report from ChatGPT model="gpt-4o"</h2><br>
-                <textarea rows="40" data-provide="markdown" cols="150">{{ia_analyse}}</textarea>
+                <!-- <textarea rows="40" data-provide="markdown" cols="150">{{ia_analyse}}</textarea> -->
+                 <md-block>{{ia_analyse}}</md-block>
               </div><br>
 
 
