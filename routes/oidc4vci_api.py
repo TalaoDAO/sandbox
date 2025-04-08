@@ -1558,9 +1558,11 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
         except Exception:
             credential['issuer'] = issuer_did
         credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + 'Z'
-        credential['expirationDate'] = (datetime.now() + timedelta(days=duration)).isoformat() + 'Z'
-        if issuer_id in ["cejjvswuep", "ooroomolyd"]:
-            credential['expirationDate'] = (datetime.now() + timedelta(minutes=1)).isoformat() + 'Z'
+        credential['expirationDate'] = (datetime.now() + timedelta(days=duration)).replace(microsecond=0).isoformat() + 'Z'
+        
+        if issuer_id in ["cejjvswuep", "ooroomolyd"]:  # expiration date test 3 
+            credential['expirationDate'] = (datetime.now() + timedelta(minutes=1)).replace(microsecond=0).isoformat() + 'Z'
+    
     elif format in ['jwt_vc_json', 'jwt_vc']:     # jwt_vc format is used for ebsi V3 only with draft 10/11
         credential = clean_jwt_vc_json(credential)
         index = str(randint(0, 99999))

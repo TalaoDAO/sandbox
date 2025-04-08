@@ -3,6 +3,7 @@ import json
 import db_api
 import oidc4vc
 import base64
+from chatgpt import analyze
 
 def init_app(app,red, mode):
     app.add_url_rule('/sandbox/verifier/test_1',  view_func=verifier_test_1, methods=['GET'], defaults={'mode': mode})
@@ -328,6 +329,8 @@ def verifier_callback3():
         _disclosure += "=" * ((4 - len(vcsd[i]) % 4) % 4)    
         print(_disclosure)
         disclosure += "\r\n" + base64.urlsafe_b64decode(_disclosure.encode()).decode()
+    ia_analyze = analyze(token)
+    print(ia_analyze)
     return render_template(
         'verifier_oidc/vcsd_jwt_test.html',
         raw=token,
@@ -337,6 +340,7 @@ def verifier_callback3():
         disclosure=disclosure,
         kbjwt_header=json.dumps(kbjwt_header, indent=4),
         kbjwt_payload=json.dumps(kbjwt_payload, indent=4),
+        ia_analyse=ia_analyze
         )
 
 

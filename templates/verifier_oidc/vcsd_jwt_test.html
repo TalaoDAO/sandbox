@@ -35,6 +35,13 @@
           </div>
 
           <div class="text-center mt-5">
+
+            <div class="text-center mt-5"> 
+              <h2>Abstracts from ChatGPT model="gpt-4o"</h2><br>
+                <textarea rows="30" data-provide="markdown" cols="150">{{ia_analyse}}</textarea>
+              </div><br>
+
+
             <h2>RAW data</h2><br>
             <textarea rows="20" cols="150">{{raw}}</textarea>
             </div>
@@ -58,7 +65,7 @@
               <div class="text-center mt-5">
                 <h2>Disclosures</h2><br>
                 <textarea rows="5" cols="150">{{disclosure|safe}}</textarea>
-
+              </div>
                 
                 <div class="text-center mt-5">
                   <h2>Key Binding JWT header</h2><br>
@@ -69,7 +76,8 @@
                     <h2>Key Binding JWT payload</h2><br>
                     <textarea rows="7" cols="150">{{kbjwt_payload|safe}}</textarea>
                   </div>
-        
+
+                 
         
                 </div>
         <br>
