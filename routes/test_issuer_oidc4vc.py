@@ -1,4 +1,4 @@
-from flask import redirect, jsonify, request, render_template, send_file
+from flask import redirect, jsonify, request, render_template, send_file, render_template_string
 from datetime import datetime, timedelta
 import json
 import uuid
@@ -118,7 +118,20 @@ def issuer_oidc_test(mode):
 
 
 def issuer_callback():
-    return jsonify(f"Great ! request = {json.dumps(request.args)}")
+    stream_id = request.args.get('stream_id')
+    try:
+        with open(stream_id + "_log.txt", "r") as f:
+            report = f.read()
+    except:
+        report = "No report available"
+    result = json.dumps(request.args)
+    html_string = """<html><head><script type="module" src="https://md-block.verou.me/md-block.js"></script></head>  \
+                        <body><div>""" + result + \
+                        """</div>  \
+                            <md-block>""" + report + \
+                        """</md-block>
+                        </body></html>"""
+    return render_template_string(html_string)
 
 
 def test_1(mode):

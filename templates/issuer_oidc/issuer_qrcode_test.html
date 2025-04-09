@@ -35,7 +35,7 @@
               <div class="text-center border-radius: 20%">
                 
                 <div class="card shadow border-dark mt-2 " style="border-radius: 4%; background-color: {{qrcode_background_color}} ">
-                <img class="card-img-top p-3 " src="{{ qrcode(url) }}">
+                <img id="qrcode" class="card-img-top p-3 " src="{{ qrcode(url) }}">
                 </div>             
               </div>
             
@@ -149,7 +149,15 @@
             window.location.href = '/sandbox/ebsi/issuer_followup/{{stream_id}}?error=' + data.error + '&error_description=' + data.error_description;
           }
           else {
-            window.location.href='/sandbox/ebsi/issuer_followup/{{stream_id}}' ; 
+            if (data.followup == "wait"){
+              var x = document.getElementById("qrcode");
+              var v = x.getAttribute("src");
+              v = "/static/img/wait.jpeg";
+              x.setAttribute("src", v);	
+            }
+            else {
+              window.location.href='/sandbox/ebsi/issuer_followup/{{stream_id}}' ; 
+            }
           }
         };
       }

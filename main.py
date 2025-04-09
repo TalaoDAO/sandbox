@@ -20,6 +20,7 @@ import requests
 from device_detector import SoftwareDetector
 import hashlib
 import base64
+import chatgpt
 
 
 # Basic protocole
@@ -548,6 +549,36 @@ def wallet_issuer_well_known_did():
 def bnb():
     filename = 'binance_card.jpg'
     return send_file(filename, mimetype='image/jpg')
+
+
+
+# QRcode check
+@app.route('/qrcode', methods=['GET', 'POST'])
+def qrcode():
+    if  request.method == 'GET':
+        html_string = """<html><head></head> \
+                        <body><div>  \
+                            <form action="/qrcode" method="POST">
+                    <center><br><br>
+                    <h2>Copy your Issuer QR code</h2><br> \
+                    <textarea type="text" rows="20" cols="150" name="qrcode"></textarea> \
+            <br><br><button type="submit">Get a diagnostic</button> \
+                        </form></center> \
+                    </div></body></html>"""
+        return render_template_string(html_string)
+    else:
+        qrcode = request.form.get("qrcode")
+        if not qrcode:
+            return redirect('/qrcode')
+        report = chatgpt.analyze_issuer_qrcode(qrcode)
+        html_string = """<html><head><script type="module" src="https://md-block.verou.me/md-block.js"></script></head>  \
+                        <body>  \
+                            <h2>Report</h2><br> \
+                            <md-block>""" + report  + \
+                        """</md-block> \
+                        </body></html>"""
+        return render_template_string(html_string)
+
 
 
 # MAIN entry point for test
