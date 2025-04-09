@@ -69,15 +69,21 @@ def get_metadata(qrcode):
     result = parse_qs(parse_result.query)
     if result.get('credential_offer_uri') :
         credential_offer_uri = result['credential_offer_uri'][0]
-        r = requests.get(credential_offer_uri, timeout=10)
+        try:
+            r = requests.get(credential_offer_uri, timeout=10)
+        except Exception:
+            return None, None
         credential_offer = r.json()
         if r.status_code == 404:
-            return
+            return None, None
     else:
         credential_offer = json.loads(result['credential_offer'][0])
     issuer = credential_offer['credential_issuer']
     issuer_metadata_url = issuer + '/.well-known/openid-credential-issuer'
-    issuer_metadata = requests.get(issuer_metadata_url, timeout=10).json()
+    try:
+        issuer_metadata = requests.get(issuer_metadata_url, timeout=10).json()
+    except Exception:
+        return None, None
     if issuer_metadata.get("authorization_servers"):
         authorization_server = issuer_metadata.get("authorization_servers")[0]
     else:
