@@ -868,6 +868,11 @@ async def oidc4vc_response_endpoint(stream_id, red):
     qrcode_status = "Unknown"
     id_token = vp_token = None
     presentation_submission = None
+    
+    event_data = json.dumps({
+        "stream_id": stream_id,
+        "followup": "wait"})
+    red.publish('api_oidc4vc_verifier', event_data)
 
     try:
         qrcode_status = "ok"

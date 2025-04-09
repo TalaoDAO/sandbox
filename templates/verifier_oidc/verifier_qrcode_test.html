@@ -33,7 +33,7 @@
             <div class="col-3">
               <div class="text-center">
                   <div class="card shadow border-dark " style="border-radius: 4%; background-color: {{qrcode_background_color}} ">
-                    <img class="card-img-top p-4" src="{{ qrcode(url) }}">
+                    <img id="qrcode" class="card-img-top p-4" src="{{ qrcode(url) }}">
                   </div>
               </div>
               <br>
@@ -142,11 +142,11 @@
         </div>
 
 
-       
+    
     <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
- 
+
       <script>      
                 function goBack() {  window.history.back();}
       </script>
@@ -155,9 +155,16 @@
         source.onmessage = function (event) {
         const result = JSON.parse(event.data)
         if (result.stream_id == '{{stream_id}}' ){
+          if (result.followup == "wait"){
+            var x = document.getElementById("qrcode");
+            var v = x.getAttribute("src");
+            v = "/static/img/wait.jpeg";
+            x.setAttribute("src", v);	
+          }
+          else {
           window.location.href='/verifier/wallet/followup?stream_id=' + result.stream_id;
           }
-        };
+        }};
       </script>
       </font>
   </body>

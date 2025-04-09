@@ -18,8 +18,11 @@ def analyze(vc):
         input="Here is the VC to analyze in sd-jwt format  " + vc + \
             "Can you: \
                 1: provide the release of the sd-jwt VC specification used \
-                2: provide a resume of the content of this VC in 15 lines maximum \
-                3: check that this VC respects the specifications of sd-jwt VC  \
-                4: list all errors or problems if any"
+                2: verify that the type of VC is correct  \
+                3: provide a resume of the content of this VC  \
+                4: check that this VC respects the specifications of sd-jwt VC  \
+                5: verify that the type of the Key Binding is correct  \
+                6: list all errors or problems if any \
+                7: mention the ChatGPT model used for this report"
     )
     return response.output_text
