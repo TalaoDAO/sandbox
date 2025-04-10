@@ -5,6 +5,7 @@ from openai import OpenAI
 from urllib.parse import parse_qs, urlparse
 import requests
 from datetime import datetime
+import hashlib
 
 # Remplace par ta clé API
 api_key = json.load(open("keys.json", "r"))['openai']
@@ -44,6 +45,19 @@ def counter_update():
     return True
 
 
+def store_report(qrcode, report):
+    report_filename =  hashlib.sha256(report.encode('utf-8')).hexdigest() + '.json'
+    with open("report/" + report_filename, "w") as f:
+        f.write(json.dumps({
+            "date": datetime.now().replace(microsecond=0).isoformat() + 'Z',
+            "qrcode": qrcode,
+            "report": report
+        }))
+    f.close()
+    return True
+    
+    
+    
 def analyze_vp(vc):
     response = client.responses.create(
         model="gpt-4o",
@@ -171,6 +185,7 @@ def analyze_issuer_qrcode(qrcode):
     except openai.RateLimitError:
         result = "Rate limit exceeded. Retry later"
     counter_update()
+    store_report(qrcode, result)
     return result
 
 #qrcode = "openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%22%2C+%22credential_configuration_ids%22%3A+%5B%22Pid%22%5D%2C+%22grants%22%3A+%7B%22authorization_code%22%3A+%7B%22issuer_state%22%3A+%22test9%22%2C+%22authorization_server%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%2Fstandalone%22%7D%7D%7D"
