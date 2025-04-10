@@ -62,7 +62,7 @@ red = redis.Redis(host='localhost', port=6379, db=0)
 app = Flask(__name__,
             static_url_path='/static') 
 
-app.jinja_env.globals['Version'] = "0.5.2"
+app.jinja_env.globals['Version'] = "0.6.0"
 app.jinja_env.globals['Created'] = time.ctime(os.path.getctime('main.py'))
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_COOKIE_NAME'] = 'altme_talao'

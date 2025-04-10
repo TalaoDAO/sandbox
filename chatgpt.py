@@ -163,7 +163,8 @@ def analyze_issuer_qrcode(qrcode):
                     6: provide an abstract of the authorization server metadata " + authorization_server_metadata + " \
                     7: Authorization server metadata -> check that the authorization server metadata are correct, check the the required claims are not missing in using :" + issuer_metadata_specification +" \
                     8: provide a precise list of errors and warnings if any \
-                    9: provide advices for a deeper analysis" + mention
+                    9: provide advices for a deeper analysis" + mention + "\
+                    Answer should be a text file"
         )
         result = response.output_text
     except openai.APIConnectionError:
