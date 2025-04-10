@@ -1,5 +1,6 @@
 
 import json
+import openai
 from openai import OpenAI
 from urllib.parse import parse_qs, urlparse
 import requests
@@ -11,7 +12,8 @@ api_key = json.load(open("keys.json", "r"))['openai']
 
 client = OpenAI(
     # This is the default and can be omitted
-    api_key=api_key
+    api_key=api_key,
+    timeout=20.0
 )
 
 def analyze_vp(vc):
@@ -94,30 +96,50 @@ def get_metadata(qrcode):
 
 
 def analyze_issuer_qrcode(qrcode):
-    print("call API AI credential request")
-    date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
-    issuer_metadata, authorization_server_metadata = get_metadata(qrcode)
+    print("call API AI credential request for issuer QR code diagnostic")
     f = open("credential_offer_specification_13.md", "r")
     credential_offer_specification = f.read()
     f = open("issuer_metadata_specification_13.md", "r")
     issuer_metadata_specification = f.read()
-    response = client.responses.create(
-        model="gpt-4o",
-        instructions="You are an expert of the specifications : OIDC4VCI Draft 13",
-        input="Here is the credential offer QR code form " + qrcode + \
-            "Can you: \
-                1: Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer \
-                3: QRcode -> check format and content is correct, check that the required claims are not missing in using this specification :" + credential_offer_specification +  "\
-                4: provide an abstract of the issuer metadata " + issuer_metadata + " \
-                5: Issuer metadata -> check that the issuer metadata are correct, check that the required claims are not missing in using : " + issuer_metadata_specification +"\
-                6: provide an abstract of the authorization server metadata " + authorization_server_metadata + " \
-                7: Authorization server metadata -> check that the authorization server metadata are correct, check the the required claims are not missing in using :" + issuer_metadata_specification +" \
-                8: provide a list of errors or warnings if any \
-                9: provide advices for a deeper analysis \
-                10: mention the ChatGPT model is used with Web3 Digital Wallet tools for this report and it is based on the OIDC4VCI specifications. \
-                Do not forget to mention the release of the specifications and the date of the report :" + date + ". Give a precise answer without a question "\
-    )
-    return response.output_text
+    date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
+    issuer_metadata, authorization_server_metadata = get_metadata(qrcode)
+    if not issuer_metadata or not authorization_server_metadata:
+        response = client.responses.create(
+            model="gpt-4o",
+            instructions="You are an expert of the specifications : OIDC4VCI Draft 13",
+            input="Here is the credential offer QR code form " + qrcode + \
+                "Can you: \
+                    1: Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer \
+                    2: QRcode -> check format and content is correct, check that the required claims are not missing in using this specification :" + credential_offer_specification +  "\
+                    3: Explain as the issuer metadata or authorization server metadata ar not available, one cannot get a report on this issuer \
+                    4: Mention that 1) the ChatGPT model is used and Web3 Digital Wallet testing tools 2) report and is based on the OIDC4VCI specifications Draft 13. \
+                    Do not forget to mention the date of the report :" + date + ". Give a precise answer without a question "\
+        )
+        return response.output_text
+        
+    try:
+        response = client.responses.create(
+            model="gpt-4o",
+            instructions="You are an expert of the specifications : OIDC4VCI Draft 13",
+            input="Here is the credential offer QR code form " + qrcode + \
+                "Can you: \
+                    1: Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer \
+                    3: QRcode -> check format and content is correct, check that the required claims are not missing in using this specification :" + credential_offer_specification +  "\
+                    4: provide an abstract of the issuer metadata " + issuer_metadata + " \
+                    5: Issuer metadata -> check that the issuer metadata are correct, check that the required claims are not missing in using : " + issuer_metadata_specification +"\
+                    6: provide an abstract of the authorization server metadata " + authorization_server_metadata + " \
+                    7: Authorization server metadata -> check that the authorization server metadata are correct, check the the required claims are not missing in using :" + issuer_metadata_specification +" \
+                    8: provide a precise list of errors or warnings if any \
+                    9: provide advices for a deeper analysis \
+                    10: mention that 1) the ChatGPT model is used and Web3 Digital Wallet testing tools 2) report and is based on the OIDC4VCI specifications Draft 13. \
+                    Do not forget to mention the date of the report :" + date + ". Give a precise answer without a question "\
+        )
+        result = response.output_text
+    except openai.APIConnectionError:
+        result = "The server could not be reached"
+    except openai.RateLimitError:
+        result = "Rate limit exceeded. Retry later"
+    return result
 
 #qrcode = "openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%22%2C+%22credential_configuration_ids%22%3A+%5B%22Pid%22%5D%2C+%22grants%22%3A+%7B%22authorization_code%22%3A+%7B%22issuer_state%22%3A+%22test9%22%2C+%22authorization_server%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%2Fstandalone%22%7D%7D%7D"
 
