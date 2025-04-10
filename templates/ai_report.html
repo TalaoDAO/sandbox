@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!-- home.html
+last one-->
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/altmeIcon.png">
+    <title>Talao</title>
+    <link rel="stylesheet" href="/static/home.css">
+    <script type="module" src="https://md-block.verou.me/md-block.js"></script>
+</head>
+
+<body>
+
+    {% include 'header.html' %}
+
+
+
+    <div id="mainBox">
+        <div id="titles">
+            <p id="title">AI testing tools for issuers</p>
+        </div>
+        <div id="box2">
+            
+                <center><br>
+                        <div id="divCompliant"><img id="arrowDown" src="/static/img/arrow-down.png">
+                            <p id="compliant">Report</p>
+                        </div>
+
+                    <textarea type="text" rows="40" cols="150" name="qrcode"><md-block>{{report}}</md-block> \</textarea> 
+                </center>
+            
+        </div>
+    </div>
+
+
+    {% include 'footer.html' %}
+
+
+</body>
+
+</html>

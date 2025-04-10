@@ -564,14 +564,7 @@ def qrcode():
         if not qrcode:
             return redirect('/qrcode')
         report = chatgpt.analyze_issuer_qrcode(qrcode)
-        counter = json.load(open("openai_counter.json", "r"))
-        html_string = """<html><head><script type="module" src="https://md-block.verou.me/md-block.js"></script></head>  \
-                        <body>  \
-                            <h2>Report</h2><br> \
-                            <md-block>""" + report  + \
-                        """</md-block> \
-                        </body></html>""" 
-        return render_template_string(html_string)
+        return render_template("ai_report.html", report=report)
 
 
 
