@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!-- home.html
+last one-->
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/altmeIcon.png">
+    <title>Talao</title>
+    <link rel="stylesheet" href="/static/home.css">
+</head>
+
+<body>
+
+    {% include 'header.html' %}
+
+
+
+    <div id="mainBox">
+        <div id="titles">
+            <p id="title">AI testing tools for issuers</p>
+        </div>
+        <div id="box2">
+            
+            <form action="/qrcode" method="POST">
+                <center><br><br>
+                        <div id="divCompliant"><img id="arrowDown" src="/static/img/arrow-down.png">
+                            <p id="compliant">Copy your issuer QR code</p>
+                        </div>
+                    <textarea type="text" rows="20" cols="150" name="qrcode"></textarea> 
+                    <br><br><button  style="width: 200px; height: 50px;" type="submit"><h3>Get a diagnostic</h3></button> 
+                </center>
+            </form> 
+            <h3>Issuer tested : {{request_number}}</h3>
+            
+        </div>
+    </div>
+
+
+    {% include 'footer.html' %}
+
+
+</body>
+
+</html>

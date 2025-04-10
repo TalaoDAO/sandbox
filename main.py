@@ -558,18 +558,7 @@ def qrcode():
     if  request.method == 'GET':
         counter = json.load(open("openai_counter.json", "r"))
         request_number = str(counter["request_number"])
-        html_string = """<html><head></head> \
-                        <body><div>  \
-                            <form action="/qrcode" method="POST">
-                    <center><br><br>
-                    <h2>Copy your Issuer QR code</h2><br> \
-                    <textarea type="text" rows="20" cols="150" name="qrcode"></textarea> \
-            <br><br><button type="submit">Get a diagnostic</button> \
-                        </form></center> \
-                              <br><br>
-                            <h2>Request number: """ + request_number +"""</h2> \
-                    </div></body></html>"""
-        return render_template_string(html_string)
+        return render_template("ai_qrcode.html", request_number=request_number)
     else:
         qrcode = request.form.get("qrcode")
         if not qrcode:
