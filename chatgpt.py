@@ -137,7 +137,7 @@ def analyze_issuer_qrcode(qrcode):
     date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
     issuer_metadata, authorization_server_metadata = get_metadata(qrcode)
     mention = "Add final mention : 1) the ChatGPT model gpt-4o is used in addition to Web3 Digital Wallet testing tools 2) report is based on the OIDC4VCI specifications Draft 13. \
-                Do not forget to mention the date of the report :" + date + ". Give a precise answer without a question "
+                Do not forget to mention the date of the report :" + date + "and @copyright Web3 Digital Wallet 2025. Give a precise answer without a question "
     if not issuer_metadata or not authorization_server_metadata:
         response = client.responses.create(
             model="gpt-4o",
@@ -163,8 +163,7 @@ def analyze_issuer_qrcode(qrcode):
                     6: provide an abstract of the authorization server metadata " + authorization_server_metadata + " \
                     7: Authorization server metadata -> check that the authorization server metadata are correct, check the the required claims are not missing in using :" + issuer_metadata_specification +" \
                     8: provide a precise list of errors and warnings if any \
-                    9: provide advices for a deeper analysis" + mention + "\
-                    Answer should be a text file"
+                    9: provide advices for a deeper analysis" + mention \
         )
         result = response.output_text
     except openai.APIConnectionError:
