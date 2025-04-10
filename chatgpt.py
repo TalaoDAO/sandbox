@@ -16,6 +16,34 @@ client = OpenAI(
     timeout=15.0
 )
 
+
+
+def counter_update():
+    counter = json.load(open("openai_counter.json", "r"))
+    request_number = counter["request_number"]
+    request_number += 1
+    new_counter = { "request_number": request_number}
+    counter_file = open("openai_counter.json", "w")
+    counter_file.write(json.dumps(new_counter))
+    counter_file.close()
+    
+    # send data to slack
+    passwords = json.load(open("passwords.json", "r"))
+    url = passwords["slack_url"]
+    payload = {
+        "channel": "#issuer_counter",
+        "username": "issuer",
+        "text": "New AI request has been issued ",
+        "icon_emoji": ":ghost:"
+        }
+    data = {
+        'payload': json.dumps(payload)
+    }
+    r = requests.post(url, data=data, timeout=10)
+    
+    return True
+
+
 def analyze_vp(vc):
     response = client.responses.create(
         model="gpt-4o",
@@ -69,15 +97,6 @@ def analyze_credential_request(form):
     return response.output_text
 
 
-def counter_update():
-    counter = json.load(open("openai_counter.json", "r"))
-    request_number = counter["request_number"]
-    request_number += 1
-    new_counter = { "request_number": request_number}
-    counter_file = open("openai_counter.json", "w")
-    counter_file.write(json.dumps(new_counter))
-    counter_file.close()
-    return True
 
 
 def get_metadata(qrcode):
