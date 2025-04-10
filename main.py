@@ -563,7 +563,7 @@ def qrcode():
         qrcode = request.form.get("qrcode")
         if not qrcode:
             return redirect('/qrcode')
-        report = chatgpt.analyze_issuer_qrcode(qrcode)
+        report = chatgpt.analyze_qrcode(qrcode)
         return render_template("ai_report.html", report=report)
 
 

@@ -192,7 +192,7 @@ def sign_status_list_bitstring_credential(lst, list_id, mode):  # for sd-jwt
             ],
             "id": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id,
             "type": ["VerifiableCredential", "BitstringStatusListCredential"],
-            "issuer": mode.server + "/sandbox/issuer/statuslist",
+            "issuer": mode.server + "sandbox/issuer/statuslist",
             "validFrom":  datetime.now().replace(microsecond=0).isoformat() + "Z",
             "credentialSubject": {
                 "id": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id + "#list",

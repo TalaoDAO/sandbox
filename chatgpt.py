@@ -6,6 +6,7 @@ from urllib.parse import parse_qs, urlparse
 import requests
 from datetime import datetime
 import hashlib
+import base64
 
 # Remplace par ta clé API
 api_key = json.load(open("keys.json", "r"))['openai']
@@ -17,6 +18,11 @@ client = OpenAI(
     timeout=15.0
 )
 
+
+def get_payload_from_token(token) -> dict:
+    payload = token.split('.')[1]
+    payload += "=" * ((4 - len(payload) % 4) % 4)  # solve the padding issue of the base64 python lib
+    return json.loads(base64.urlsafe_b64decode(payload).decode())
 
 
 def counter_update():
@@ -45,10 +51,11 @@ def counter_update():
     return True
 
 
-def store_report(qrcode, report):
+def store_report(qrcode, report, type):
     report_filename =  hashlib.sha256(report.encode('utf-8')).hexdigest() + '.json'
     with open("report/" + report_filename, "w") as f:
         f.write(json.dumps({
+            "type": type,
             "date": datetime.now().replace(microsecond=0).isoformat() + 'Z',
             "qrcode": qrcode,
             "report": report
@@ -56,8 +63,8 @@ def store_report(qrcode, report):
     f.close()
     return True
     
-    
-    
+
+# OIDC4VP flow   
 def analyze_vp(vc):
     response = client.responses.create(
         model="gpt-4o",
@@ -76,6 +83,7 @@ def analyze_vp(vc):
     return response.output_text
 
 
+# OIDC4VCI flow
 def analyze_token_request(form):
     response = client.responses.create(
         model="gpt-4o",
@@ -93,7 +101,7 @@ def analyze_token_request(form):
     return response.output_text
 
 
-
+# OIDC4VCI flow
 def analyze_credential_request(form):
     print("call API AI credential request")
     response = client.responses.create(
@@ -111,11 +119,25 @@ def analyze_credential_request(form):
     return response.output_text
 
 
-
-
-def get_metadata(qrcode):
+# QR code for verifier
+def get_verifier_request(qrcode):
     parse_result = urlparse(qrcode)
     result = parse_qs(parse_result.query)
+    if request_uri := result.get('request_uri')[0]:
+        request_jwt = requests.get(request_uri, timeout=10).text
+    elif request := result.get("request")[0]:
+        request_jwt = request
+    else:
+        request_jwt = {}
+    data = get_payload_from_token(request_jwt)
+    print("request data = ", data)
+    return json.dumps(data)
+
+
+def get_issuer_data(qrcode):
+    parse_result = urlparse(qrcode)
+    result = parse_qs(parse_result.query)
+    print("result = ", result)
     if result.get('credential_offer_uri') :
         credential_offer_uri = result['credential_offer_uri'][0]
         try:
@@ -149,25 +171,24 @@ def analyze_issuer_qrcode(qrcode):
     f = open("issuer_metadata_specification_13.md", "r")
     issuer_metadata_specification = f.read()
     date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
-    issuer_metadata, authorization_server_metadata = get_metadata(qrcode)
-    mention = "Add final mention : 1) the ChatGPT model gpt-4o is used in addition to Web3 Digital Wallet testing tools 2) report is based on the OIDC4VCI specifications Draft 13. \
-                Do not forget to mention the date of the report :" + date + "and @copyright Web3 Digital Wallet 2025. Give a precise answer without a question "
+    issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode)  
+    mention = "\n\n The ChatGPT model gpt-4o is used in addition to Web3 Digital Wallet testing tools. This report is based on the OIDC4VCI ID1 specifications (Draft 13). Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
     if not issuer_metadata or not authorization_server_metadata:
         response = client.responses.create(
             model="gpt-4o",
-            instructions="You are an expert of the specifications : OIDC4VCI Draft 13",
+            instructions="You are an expert of the specifications : OIDC4VCI ID1 (Draft 13)",
             input="Here is the credential offer QR code form " + qrcode + \
                 "Can you: \
                     1: Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer \
                     2: QRcode -> check if format and content are correct, check that the required claims are not missing in using this specification :" + credential_offer_specification +  "\
-                    3: Explain as the issuer metadata or authorization server metadata are not available, one cannot provide a report about this issuer" + mention
+                    3: Explain as the issuer metadata or authorization server metadata are not available, one cannot provide a report about this issuer"
         )
-        return response.output_text
+        return response.output_text + mention
         
     try:
         response = client.responses.create(
             model="gpt-4o",
-            instructions="You are an expert of the specifications : OIDC4VCI Draft 13",
+            instructions="You are an expert of the specifications : OIDC4VCI ID1 (Draft 13)",
             input="Here is the credential offer QR code form " + qrcode + \
                 "Can you: \
                     1: Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer \
@@ -177,16 +198,68 @@ def analyze_issuer_qrcode(qrcode):
                     6: provide an abstract of the authorization server metadata " + authorization_server_metadata + " \
                     7: Authorization server metadata -> check that the authorization server metadata are correct, check the the required claims are not missing in using :" + issuer_metadata_specification +" \
                     8: provide a precise list of errors and warnings if any \
-                    9: provide advices for a deeper analysis" + mention \
+                    9: provide advices for a deeper analysis"
         )
-        result = response.output_text
+        result = response.output_text + mention
     except openai.APIConnectionError:
         result = "The server could not be reached"
     except openai.RateLimitError:
         result = "Rate limit exceeded. Retry later"
     counter_update()
-    store_report(qrcode, result)
+    store_report(qrcode, result, "issuer")
     return result
+
+
+def analyze_verifier_qrcode(qrcode):
+    print("call API AI credential request for QR code diagnostic")
+    f = open("oidc4vp_authorization_request.md", "r")
+    authorization_request_specification = f.read()
+    date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
+    verifier_request = get_verifier_request(qrcode)
+    mention = "\n\n The ChatGPT model gpt-4o is used in addition to Web3 Digital Wallet testing tools. This report is based on the OIDC4VP ID2 specifications (Draft 18). Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
+    if not verifier_request:
+        response = client.responses.create(
+            model="gpt-4o",
+            instructions="You are an expert of the specifications : OIDC4VP ID2 Draft 18",
+            input="Here is the credential request QR code " + qrcode + "and the credential request : " + verifier_request + "\
+                Can you: \
+                    1: Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer \
+                    2: QRcode -> check if format and content are correct, check that the required claims are not missing in using this specification :" + authorization_request_specification +  "\
+                    3: Explain as the issuer metadata or authorization server metadata are not available, one cannot provide a report about this issuer"
+        )
+        return response.output_text + mention
+        
+    try:
+        response = client.responses.create(
+            model="gpt-4o",
+            instructions="You are an expert of the specifications : OIDC4VP ID2 (Draft 18)",
+            input="Here is the credential request QR code form " + qrcode + \
+                "Can you: \
+                    1: QRcode -> check format and content is correct in using this specification :" + authorization_request_specification +  "\
+                    2: Check the verifier request :" + verifier_request + " respects the specifications \
+                    8: provide a precise list of errors and warnings if any \
+                    9: provide advices for a deeper analysis"
+        )
+        result = response.output_text + mention
+    except openai.APIConnectionError:
+        result = "The server could not be reached"
+    except openai.RateLimitError:
+        result = "Rate limit exceeded. Retry later"
+    counter_update()
+    store_report(qrcode, result, "verifier")
+    return result
+
+
+def analyze_qrcode(qrcode):
+    parse_result = urlparse(qrcode)
+    result = parse_qs(parse_result.query)
+    if result.get('credential_offer_uri') or result.get('credential_offer'):
+        return analyze_issuer_qrcode(qrcode)
+    elif result.get('request') or result.get('request_uri'):
+        return analyze_verifier_qrcode(qrcode)
+    else:
+        return "QR code not supported"
+    
 
 #qrcode = "openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%22%2C+%22credential_configuration_ids%22%3A+%5B%22Pid%22%5D%2C+%22grants%22%3A+%7B%22authorization_code%22%3A+%7B%22issuer_state%22%3A+%22test9%22%2C+%22authorization_server%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%2Fstandalone%22%7D%7D%7D"
 
