@@ -97,17 +97,21 @@ def analyze_issuer_qrcode(qrcode):
     print("call API AI credential request")
     date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
     issuer_metadata, authorization_server_metadata = get_metadata(qrcode)
+    f = open("credential_offer_specification_13.md", "r")
+    credential_offer_specification = f.read()
+    f = open("issuer_metadata_specification_13.md", "r")
+    issuer_metadata_specification = f.read()
     response = client.responses.create(
         model="gpt-4o",
-        instructions="You are an expert of the specifications https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0-ID1.html",
+        instructions="You are an expert of the specifications : OIDC4VCI Draft 13",
         input="Here is the credential offer QR code form " + qrcode + \
             "Can you: \
                 1: Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer \
-                3: verify that the QRcode format and content is correct and check that the required claims are not missing  \
-                4: check that the credential exist in the metadata " + issuer_metadata + " \
-                5: verify that the issuer metadata are correct compared to the specifications and in particular check that the required claims are not missing \
-                6: check that the authorization server exist " + authorization_server_metadata + " \
-                7: verify that the authorization server metadata are correct compared to the specifications and check that the required claims are not missing \
+                3: QRcode -> check format and content is correct, check that the required claims are not missing in using this specification :" + credential_offer_specification +  "\
+                4: provide an abstract of the issuer metadata " + issuer_metadata + " \
+                5: Issuer metadata -> check that the issuer metadata are correct, check that the required claims are not missing in using : " + issuer_metadata_specification +"\
+                6: provide an abstract of the authorization server metadata " + authorization_server_metadata + " \
+                7: Authorization server metadata -> check that the authorization server metadata are correct, check the the required claims are not missing in using :" + issuer_metadata_specification +" \
                 8: provide a list of errors or warnings if any \
                 9: provide advices for a deeper analysis \
                 10: mention the ChatGPT model is used with Web3 Digital Wallet tools for this report and it is based on the OIDC4VCI specifications. \

@@ -46,11 +46,10 @@
   "subject_syntax_types_supported": [
     "urn:ietf:params:oauth:jwk-thumbprint",
     "did:key",
-    "did:ebsi",
     "did:pkh",
     "did:ethr",
-    "did:web",
-    "did:jwk"
+    "did:jwk",
+    "did:key:jwk_jcs-pub"
   ],
   "subject_syntax_types_discriminations": [
     "did:key:jwk_jcs-pub",
