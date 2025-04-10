@@ -556,6 +556,8 @@ def bnb():
 @app.route('/qrcode', methods=['GET', 'POST'])
 def qrcode():
     if  request.method == 'GET':
+        counter = json.load(open("openai_counter.json", "r"))
+        request_number = str(counter["request_number"])
         html_string = """<html><head></head> \
                         <body><div>  \
                             <form action="/qrcode" method="POST">
@@ -564,6 +566,8 @@ def qrcode():
                     <textarea type="text" rows="20" cols="150" name="qrcode"></textarea> \
             <br><br><button type="submit">Get a diagnostic</button> \
                         </form></center> \
+                              <br><br>
+                            <h2>Request number: """ + request_number +"""</h2> \
                     </div></body></html>"""
         return render_template_string(html_string)
     else:
@@ -571,12 +575,13 @@ def qrcode():
         if not qrcode:
             return redirect('/qrcode')
         report = chatgpt.analyze_issuer_qrcode(qrcode)
+        counter = json.load(open("openai_counter.json", "r"))
         html_string = """<html><head><script type="module" src="https://md-block.verou.me/md-block.js"></script></head>  \
                         <body>  \
                             <h2>Report</h2><br> \
                             <md-block>""" + report  + \
                         """</md-block> \
-                        </body></html>"""
+                        </body></html>""" 
         return render_template_string(html_string)
 
 

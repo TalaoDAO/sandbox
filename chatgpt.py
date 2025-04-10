@@ -13,7 +13,7 @@ api_key = json.load(open("keys.json", "r"))['openai']
 client = OpenAI(
     # This is the default and can be omitted
     api_key=api_key,
-    timeout=20.0
+    timeout=15.0
 )
 
 def analyze_vp(vc):
@@ -30,6 +30,7 @@ def analyze_vp(vc):
                 6: list all errors or problems if any \
                 7: mention the ChatGPT model used for this report"
     )
+    counter_update()
     return response.output_text
 
 
@@ -46,6 +47,7 @@ def analyze_token_request(form):
                 5: list all errors or problems if any \
                 6: mention the ChatGPT model used for this report"
     )
+    counter_update()
     return response.output_text
 
 
@@ -63,7 +65,19 @@ def analyze_credential_request(form):
                 4: list all errors or problems if any \
                 5: mention the ChatGPT model used for this report"
     )
+    counter_update()
     return response.output_text
+
+
+def counter_update():
+    counter = json.load(open("openai_counter.json", "r"))
+    request_number = counter["request_number"]
+    request_number += 1
+    new_counter = { "request_number": request_number}
+    counter_file = open("openai_counter.json", "w")
+    counter_file.write(json.dumps(new_counter))
+    counter_file.close()
+    return True
 
 
 def get_metadata(qrcode):
@@ -103,6 +117,8 @@ def analyze_issuer_qrcode(qrcode):
     issuer_metadata_specification = f.read()
     date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
     issuer_metadata, authorization_server_metadata = get_metadata(qrcode)
+    mention = "Add final mention : 1) the ChatGPT model gpt-4o is used in addition to Web3 Digital Wallet testing tools 2) report is based on the OIDC4VCI specifications Draft 13. \
+                Do not forget to mention the date of the report :" + date + ". Give a precise answer without a question "
     if not issuer_metadata or not authorization_server_metadata:
         response = client.responses.create(
             model="gpt-4o",
@@ -110,10 +126,8 @@ def analyze_issuer_qrcode(qrcode):
             input="Here is the credential offer QR code form " + qrcode + \
                 "Can you: \
                     1: Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer \
-                    2: QRcode -> check format and content is correct, check that the required claims are not missing in using this specification :" + credential_offer_specification +  "\
-                    3: Explain as the issuer metadata or authorization server metadata ar not available, one cannot get a report on this issuer \
-                    4: Mention that 1) the ChatGPT model is used and Web3 Digital Wallet testing tools 2) report and is based on the OIDC4VCI specifications Draft 13. \
-                    Do not forget to mention the date of the report :" + date + ". Give a precise answer without a question "\
+                    2: QRcode -> check if format and content are correct, check that the required claims are not missing in using this specification :" + credential_offer_specification +  "\
+                    3: Explain as the issuer metadata or authorization server metadata are not available, one cannot provide a report about this issuer" + mention
         )
         return response.output_text
         
@@ -129,16 +143,15 @@ def analyze_issuer_qrcode(qrcode):
                     5: Issuer metadata -> check that the issuer metadata are correct, check that the required claims are not missing in using : " + issuer_metadata_specification +"\
                     6: provide an abstract of the authorization server metadata " + authorization_server_metadata + " \
                     7: Authorization server metadata -> check that the authorization server metadata are correct, check the the required claims are not missing in using :" + issuer_metadata_specification +" \
-                    8: provide a precise list of errors or warnings if any \
-                    9: provide advices for a deeper analysis \
-                    10: mention that 1) the ChatGPT model is used and Web3 Digital Wallet testing tools 2) report and is based on the OIDC4VCI specifications Draft 13. \
-                    Do not forget to mention the date of the report :" + date + ". Give a precise answer without a question "\
+                    8: provide a precise list of errors and warnings if any \
+                    9: provide advices for a deeper analysis" + mention
         )
         result = response.output_text
     except openai.APIConnectionError:
         result = "The server could not be reached"
     except openai.RateLimitError:
         result = "Rate limit exceeded. Retry later"
+    counter_update()
     return result
 
 #qrcode = "openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%22%2C+%22credential_configuration_ids%22%3A+%5B%22Pid%22%5D%2C+%22grants%22%3A+%7B%22authorization_code%22%3A+%7B%22issuer_state%22%3A+%22test9%22%2C+%22authorization_server%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%2Fstandalone%22%7D%7D%7D"
