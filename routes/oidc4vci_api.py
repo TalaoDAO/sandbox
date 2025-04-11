@@ -1568,7 +1568,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
     issuer_key = issuer_data['jwk']
     issuer_vm = issuer_data['verification_method']
     jti = 'urn:uuid:' + str(uuid.uuid1())
-    
+  
     if format == 'vc+sd-jwt':
         credential['status'] = {
             'status_list': {
