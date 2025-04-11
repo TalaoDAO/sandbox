@@ -194,7 +194,7 @@ def analyze_issuer_qrcode(qrcode):
         
     try:
         response = client.responses.create(
-            model="gpt-4o"
+            model=model,
             instructions="You are an expert of the specifications : OIDC4VCI ID1 (Draft 13)",
             input="Here is the credential offer QR code form " + qrcode + \
                 "Can you: \
@@ -247,7 +247,7 @@ def analyze_verifier_qrcode(qrcode):
         return completion.choices[0].message.content + mention
     try:
         completion = client.chat.completions.create(
-            model="gpt-4o"
+            model=model,
             messages=[
                 {
                     "role": "developer",
