@@ -9,12 +9,15 @@ import hashlib
 import base64
 
 # Remplace par ta clé API
-api_key = json.load(open("keys.json", "r"))['openai']
+openapi_key = json.load(open("keys.json", "r"))['openai']
 
+ENGINE = "gpt-3.5-turbo"
+ISSUER_MODEL = "ft:gpt-3.5-turbo-0125:personal:oidc4vci-draft13:BLBljnoM"
+VERIFIER_MODEL = "ft:gpt-3.5-turbo-0125:personal:oidc4vp-draft18:BLC032IA"
+ADVICE = "\n\nFor a deeper analysis, review the cryptographic binding methods, signing algorithms, and specific scopes supported by the issuer and authorization server. Test with a reference wallet as the Talao Wallet or Altme Wallet."
 
 client = OpenAI(
-    # This is the default and can be omitted
-    api_key=api_key,
+    api_key=openapi_key,
     timeout=15.0
 )
 
@@ -124,7 +127,6 @@ def get_verifier_request(qrcode):
     parse_result = urlparse(qrcode)
     result = parse_qs(parse_result.query)
     result = {k: v[0] for k, v in result.items()}
-    print("result = ", result)
     if request_uri := result.get('request_uri'):
         request_jwt = requests.get(request_uri, timeout=10).text
         request = get_payload_from_token(request_jwt)
@@ -134,17 +136,16 @@ def get_verifier_request(qrcode):
     elif result.get("response_mode"):
         request = result
     else:
-        request = {}
-    print("request data = ", request)
+        request = None
     return json.dumps(request)
 
 
 def get_issuer_data(qrcode):
     parse_result = urlparse(qrcode)
     result = parse_qs(parse_result.query)
-    print("result = ", result)
+    result = {k: v[0] for k, v in result.items()}
     if result.get('credential_offer_uri') :
-        credential_offer_uri = result['credential_offer_uri'][0]
+        credential_offer_uri = result['credential_offer_uri']
         try:
             r = requests.get(credential_offer_uri, timeout=10)
         except Exception:
@@ -153,7 +154,7 @@ def get_issuer_data(qrcode):
         if r.status_code == 404:
             return None, None
     else:
-        credential_offer = json.loads(result['credential_offer'][0])
+        credential_offer = json.loads(result['credential_offer'])
     issuer = credential_offer['credential_issuer']
     issuer_metadata_url = issuer + '/.well-known/openid-credential-issuer'
     try:
@@ -170,43 +171,53 @@ def get_issuer_data(qrcode):
 
 
 def analyze_issuer_qrcode(qrcode):
-    model="gpt-4o"
     print("call API AI credential request for issuer QR code diagnostic")
-    f = open("credential_offer_specification_13.md", "r")
-    credential_offer_specification = f.read()
-    f = open("issuer_metadata_specification_13.md", "r")
-    issuer_metadata_specification = f.read()
-    date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
+    date = datetime.now().replace(microsecond=0).isoformat()
     issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode)  
-    mention = "\n\n The OpenAI model " + model + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the OIDC4VP ID2 specifications (Draft 18). Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
+    mention = "\n\n The OpenAI model " + ENGINE + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the OIDC4VCI specifications (Draft 13). Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
     if not issuer_metadata or not authorization_server_metadata:
-        response = client.responses.create(
-            model=model,
-            instructions="You are an expert of the specifications : OIDC4VCI ID1 (Draft 13)",
-            input="Here is the credential offer QR code form " + qrcode + \
+        completion = client.chat.completions.create(
+            model=ISSUER_MODEL,
+            messages=[
+                {
+                    "role": "developer",
+                    "content": "You are an expert of the specifications OIDC4VCI draft 13"
+                },
+                {             
+                    "role": "user",
+                    "content": "Here is the credential offer QR code form " + qrcode + \
                 "Can you: \
                     1: Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer \
-                    2: QRcode -> check if format and content are correct, check that the required claims are not missing in using this specification :" + credential_offer_specification +  "\
+                    2: QRcode -> check if format and content are correct, check that the required claims are not missing in using thes specification.\
                     3: Explain as the issuer metadata or authorization server metadata are not available, one cannot provide a report about this issuer"
+                }
+            ]
         )
-        return response.output_text + mention
-        
+        return completion.choices[0].message.content + ADVICE + mention
     try:
-        response = client.responses.create(
-            model=model,
-            instructions="You are an expert of the specifications : OIDC4VCI ID1 (Draft 13)",
-            input="Here is the credential offer QR code form " + qrcode + \
-                "Can you: \
-                    1: Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer \
-                    3: QRcode -> check format and content is correct, check that the required claims are not missing in using this specification :" + credential_offer_specification +  "\
-                    4: provide an abstract of the issuer metadata " + issuer_metadata + " \
-                    5: Issuer metadata -> check that the issuer metadata are correct, check that the required claims are not missing in using : " + issuer_metadata_specification +"\
-                    6: provide an abstract of the authorization server metadata " + authorization_server_metadata + " \
-                    7: Authorization server metadata -> check that the authorization server metadata are correct, check the the required claims are not missing in using :" + issuer_metadata_specification +" \
-                    8: provide a precise list of errors and warnings if any \
-                    9: provide advices for a deeper analysis"
+        completion = client.chat.completions.create(
+            model=ISSUER_MODEL,
+            messages=[
+                {
+                    "role": "developer",
+                    "content": "You are an expert of the specifications OIDC4VCI Draft 13"
+                },
+                {             
+                    "role": "user",
+                    "content": "Here is the credential offer QR code form " + qrcode + \
+                    "Can you: \
+                        1: Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer with the name of the issuer and the list of the claims of the VC\
+                        2: Check that the required claims of the QR code are not missing\
+                        3: Provide the type of flow (authorization code flow or pre authorized code flow) and if there is a transaction code to enter\
+                        4: Provide an abstract of the issuer metadata " + issuer_metadata + "\
+                        5: Check that the issuer metadata are correct and that the required claims are not missing\
+                        6: Provide an abstract of the authorization server metadata " + authorization_server_metadata + "\
+                        7: Check that the authorization server metadata are correct and that the required claims are not missing\
+                        8: Provide the list of errors and warnings if any"
+                }
+            ]
         )
-        result = response.output_text + mention
+        result = completion.choices[0].message.content + ADVICE + mention
     except openai.APIConnectionError:
         result = "The server could not be reached"
     except openai.RateLimitError:
@@ -217,52 +228,51 @@ def analyze_issuer_qrcode(qrcode):
 
 
 def analyze_verifier_qrcode(qrcode):
-    model="text-davinci-003"
     print("call API AI credential request for QR code diagnostic")
-    f = open("oidc4vp_authorization_request.md", "r")
-    authorization_request_specification = f.read()
     date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
     verifier_request = get_verifier_request(qrcode)
-    mention = "\n\n The OpenAI model " + model + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the OIDC4VP ID2 specifications (Draft 18). Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
+    mention = "\n\n The OpenAI model " + ENGINE + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the OIDC4VP ID2 specifications (Draft 18). Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
     if not verifier_request:
         completion = client.chat.completions.create(
             #model="gpt-4o",
-            model=model,
+            model=VERIFIER_MODEL,
             messages=[
                 {
                     "role": "developer",
-                    "content": "You are an expert of the specifications : OIDC4VP ID2 Draft 18"
+                    "content": "You are an expert of the specifications OIDC4VP ID2 Draft 18"
                 },
                 {             
                     "role": "user",
                     "content": "Here is the credential request QR code " + qrcode + "and the credential request : " + verifier_request + "\
-                Can you: \
-                    1: Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer \
-                    2: QRcode -> check if format and content are correct, check that the required claims are not missing in using this specification :" + authorization_request_specification +  "\
-                    3: Explain as the issuer metadata or authorization server metadata are not available, one cannot provide a report about this issuer"
+                    Can you: \
+                        1: Provide in 50 words in good english the abstract of the content of the VC requested by this verifier \
+                        2: QRcode -> check if format and content are correct, check that the required claims are not missing in using the specifications\
+                        3: Explain as the issuer metadata or authorization server metadata are not available, one cannot provide a report about this issuer"
                 }
             ]
         )
-        return completion.choices[0].message.content + mention
+        return completion.choices[0].message.content + ADVICE + mention
     try:
         completion = client.chat.completions.create(
-            model=model,
+            model=VERIFIER_MODEL,
             messages=[
                 {
                     "role": "developer",
-                    "content": "You are an expert of the specifications : OIDC4VP ID2 Draft 18"
+                    "content": "You are an expert of the specifications OIDC4VP Draft 18"
                 },
                 {             
                     "role": "user",
                     "content": "Here is the credential request " + verifier_request + "\
-                Can you: \
-                    1: Credential request -> check format and content is correct in using this specification :" + authorization_request_specification +  "\
-                    2: Warnings and errors -> provide a precise list of errors and warnings if any \
-                    3: Provide advices for a deeper analysis"
+                    Can you: \
+                        1: Provide in 50 words in good english the abstract of the content of the VC requested by this verifier \
+                        2: Check the format and content of the credential request and if all the required claims are present\
+                        3: Check the client metadata and if they exist verify that the format is present\
+                        4: Check the presentation definition to verify that all required claims are present\
+                        5: Provide a precise list of errors and warnings if any"
                 }
             ]
         )
-        result = completion.choices[0].message.content + mention
+        result = completion.choices[0].message.content + ADVICE + mention
     except openai.APIConnectionError:
         result = "The server could not be reached"
     except openai.RateLimitError:
