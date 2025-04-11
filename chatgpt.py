@@ -179,7 +179,6 @@ def analyze_issuer_qrcode(qrcode):
     date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
     issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode)  
     mention = "\n\n The OpenAI model " + model + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the OIDC4VP ID2 specifications (Draft 18). Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
-    mention = "\n\n The ChatGPT model gpt-4o is used in addition to Web3 Digital Wallet testing tools. This report is based on the OIDC4VCI ID1 specifications (Draft 13). Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
     if not issuer_metadata or not authorization_server_metadata:
         response = client.responses.create(
             model=model,
