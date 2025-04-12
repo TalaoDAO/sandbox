@@ -553,6 +553,7 @@ def bnb():
 
 
 # OpenAI tools for website
+@app.route('/qrcode', methods=['GET', 'POST'])
 @app.route('/ai/qrcode', methods=['GET', 'POST'])
 def qrcode():
     if  request.method == 'GET':

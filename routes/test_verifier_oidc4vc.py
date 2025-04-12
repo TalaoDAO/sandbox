@@ -339,7 +339,7 @@ def verifier_callback3():
         disclosure=disclosure,
         kbjwt_header=json.dumps(kbjwt_header, indent=4),
         kbjwt_payload=json.dumps(kbjwt_payload, indent=4),
-        ia_analyse=ia_analyze
+        report=ia_analyze
         )
 
 
