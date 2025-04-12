@@ -187,9 +187,9 @@ def analyze_issuer_qrcode(qrcode):
                     "role": "user",
                     "content": "Here is the credential offer QR code form " + qrcode + \
                 "Can you: \
-                    1: Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer \
-                    2: QRcode -> check if format and content are correct, check that the required claims are not missing in using thes specification.\
-                    3: Explain as the issuer metadata or authorization server metadata are not available, one cannot provide a report about this issuer"
+                    1. Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer \
+                    2. QRcode -> check if format and content are correct, check that the required claims are not missing in using thes specification.\
+                    3. Explain as the issuer metadata or authorization server metadata are not available, one cannot provide a report about this issuer"
                 }
             ]
         )
@@ -206,14 +206,14 @@ def analyze_issuer_qrcode(qrcode):
                     "role": "user",
                     "content": "Here is the credential offer QR code form " + qrcode + \
                     "Can you: \
-                        1: Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer with the name of the issuer and the list of the claims of the VC\
-                        2: Check that the required claims of the QR code are not missing\
-                        3: Provide the type of flow (authorization code flow or pre authorized code flow) and if there is a transaction code to enter\
-                        4: Provide an abstract of the issuer metadata " + issuer_metadata + "\
-                        5: Check that the issuer metadata are correct and that the required claims are not missing\
-                        6: Provide an abstract of the authorization server metadata " + authorization_server_metadata + "\
-                        7: Check that the authorization server metadata are correct and that the required claims are not missing\
-                        8: Provide the list of errors and warnings if any"
+                        1. Provide in 5 lines in good english the abstract of the content of the VC offered by this issuer with the name of the issuer and the list of the claims of the VC.\
+                        2. Check that the required claims of the QR code are not missing.\
+                        3. Provide the type of flow (authorization code flow or pre authorized code flow) and if there is a transaction code to enter.\
+                        4. Provide an abstract of the issuer metadata " + issuer_metadata + ".\
+                        5. Check that the issuer metadata are correct and that the required claims are not missing.\
+                        6. Provide an abstract of the authorization server metadata " + authorization_server_metadata + ".\
+                        7. Check that the authorization server metadata are correct and that the required claims are not missing.\
+                        8. Provide the list of errors and warnings if any."
                 }
             ]
         )
@@ -245,9 +245,9 @@ def analyze_verifier_qrcode(qrcode):
                     "role": "user",
                     "content": "Here is the credential request QR code " + qrcode + "and the credential request : " + verifier_request + "\
                     Can you: \
-                        1: Provide in 50 words in good english the abstract of the content of the VC requested by this verifier \
-                        2: QRcode -> check if format and content are correct, check that the required claims are not missing in using the specifications\
-                        3: Explain as the issuer metadata or authorization server metadata are not available, one cannot provide a report about this issuer"
+                        1. Provide in 50 words in good english the abstract of the content of the VC requested by this verifier \
+                        2. QRcode -> check if format and content are correct, check that the required claims are not missing in using the specifications\
+                        3. Explain as the issuer metadata or authorization server metadata are not available, one cannot provide a report about this issuer"
                 }
             ]
         )
@@ -264,11 +264,11 @@ def analyze_verifier_qrcode(qrcode):
                     "role": "user",
                     "content": "Here is the credential request " + verifier_request + "\
                     Can you: \
-                        1: Provide in 50 words in good english the abstract of the content of the VC requested by this verifier \
-                        2: Check the format and content of the credential request and if all the required claims are present\
-                        3: Check the client metadata and if they exist verify that the format is present\
-                        4: Check the presentation definition to verify that all required claims are present\
-                        5: Provide a precise list of errors and warnings if any"
+                        1. Provide in 50 words in good english the abstract of the content of the VC requested by this verifier.\
+                        2. Check the format and content of the credential request and if all the required claims are present.\
+                        3. Check the client metadata and if they exist verify that the format is present.\
+                        4. Check the presentation definition to verify that all required claims are present.\
+                        5. Provide a precise list of errors and warnings if any."
                 }
             ]
         )
@@ -287,6 +287,8 @@ def analyze_qrcode(qrcode):
     result = parse_qs(parse_result.query)
     if result.get('credential_offer_uri') or result.get('credential_offer'):
         return analyze_issuer_qrcode(qrcode)
-    else:
+    elif result.get('response_type') or result.get('request') or result.get("request_uri"):
         return analyze_verifier_qrcode(qrcode)
+    else:
+        return "This protocol is not supported"
     

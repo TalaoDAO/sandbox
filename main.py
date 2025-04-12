@@ -553,7 +553,7 @@ def bnb():
 
 
 # OpenAI tools for website
-@app.route('/qrcode', methods=['GET', 'POST'])
+@app.route('/ai/qrcode', methods=['GET', 'POST'])
 def qrcode():
     if  request.method == 'GET':
         counter = json.load(open("openai_counter.json", "r"))
@@ -564,11 +564,12 @@ def qrcode():
         if not qrcode:
             return redirect('/qrcode')
         report = chatgpt.analyze_qrcode(qrcode)
-        return render_template("ai_report.html", report=report)
+        print(report)
+        return render_template("ai_report.html", report= "\n\n" + report)
 
 
 # OpenAI tools for wallet
-@app.route('/wallet/qrcode', methods=['GET', 'POST'])
+@app.route('/ai/wallet/qrcode', methods=['GET', 'POST'])
 def qrcode_wallet():
     qrcode_base64 = request.form("qrcode")
     qrcode_str = base64.b64decode(qrcode_base64.encode()).decode()
