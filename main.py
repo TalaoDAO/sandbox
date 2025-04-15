@@ -581,6 +581,9 @@ def qrcode_wallet():
     except:
         pass
     qrcode_base64 = request.form.get("qrcode")
+    print('qrcode = ', qrcode_base64)
+    if not qrcode_base64:
+        return "error"
     qrcode_str = base64.b64decode(qrcode_base64.encode()).decode()
     report = chatgpt.analyze_qrcode(qrcode_str)
     report_base64 = base64.b64encode(report.encode()).decode()

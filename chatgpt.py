@@ -8,7 +8,6 @@ from datetime import datetime
 import hashlib
 import base64
 
-# Remplace par ta clé API
 openapi_key = json.load(open("keys.json", "r"))['openai']
 
 ENGINE = "gpt-3.5-turbo"
