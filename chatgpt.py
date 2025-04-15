@@ -190,6 +190,8 @@ def get_verifier_request(qrcode):
             presentation_definition = "Error: The presentation definition is not available"
         request.pop("presentation_definition_uri")
         request['presentation_definition'] = presentation_definition
+    else:
+        presentation_definition = request['presentation_definition']
     return json.dumps(request), presentation_definition
 
 
