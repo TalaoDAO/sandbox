@@ -18,7 +18,6 @@ ADVICE = "\n\nFor a deeper analysis, review the cryptographic binding methods, s
 
 client = OpenAI(
     api_key=openapi_key,
-    timeout=25.0
 )
 
 
@@ -214,68 +213,110 @@ def get_issuer_data(qrcode):
     return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
 
 
+
 def analyze_issuer_qrcode(qrcode):
     print("call API AI credential request for issuer QR code diagnostic")
     date = datetime.now().replace(microsecond=0).isoformat()
     credential_offer, issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode)  
     mention = "\n\n The OpenAI model " + ENGINE + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the OIDC4VCI specifications (Draft 13). Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
+    messages = [
+        {
+        "role": "system",
+        "content": "You are a professional analyst and expert in OIDC4VCI Draft 13 and digital credential specifications. You write concise, structured reports for developers and product teams."
+        },
+        {
+        "role": "user",
+        "content": f"""Analyze the following credential offer and metadata and return a report in clear English using bullet points.
+
+        --- Credential Offer ---
+        {summarize_json(credential_offer)}
+
+        --- Issuer Metadata ---
+        {summarize_json(issuer_metadata)}
+
+        --- Authorization Server Metadata ---
+        {summarize_json(authorization_server_metadata)}
+
+        Please structure the report as follows:
+
+        1. 🔍 **VC Summary**: Abstract of the offered credential in max 50 words. Include the issuer name and list of claims.
+        2. ✅ **Required Claims Check**: Are any required claims missing in the offer?
+        3. 🔁 **Flow Type**: Identify the flow (authorization_code or pre-authorized_code), and whether a transaction code is required.
+        4. 🏢 **Issuer Metadata Summary**: Abstract of the issuer metadata.
+        5. 🔍 **Issuer Metadata Check**: Are all required claims and fields present?
+        6. 🔒 **Authorization Server Metadata Summary**: Abstract of the authorization server metadata.
+        7. 🔍 **Auth Server Metadata Check**: Are all required claims and fields present?
+        8. ⚠️ **Errors & Warnings**: List any issues, inconsistencies, or spec violations.
+
+        Use clear bullet points for each section.
+        """
+        }
+    ]
+    print(messages)
     try:
         completion = client.chat.completions.create(
             model=ISSUER_MODEL,
-            messages=[
-                {
-                    "role": "developer",
-                    "content": "You are an expert of the specifications OIDC4VCI Draft 13"
-                },
-                {             
-                    "role": "user",
-                    "content": "Here is the credential offer :" + credential_offer + \
-                    "Can you give me a report with one line by point :\
-                        1. Provide in 50 words maximum in good english the abstract of the content of the VC offered by this issuer with the name of the issuer and the list of the claims of the VC.\
-                        2. Check that the required claims of the credential offer are not missing.\
-                        3. Provide the type of flow (authorization code flow or pre authorized code flow) and if there is a transaction code to enter.\
-                        4. Provide an abstract of the issuer metadata " + issuer_metadata + ".\
-                        5. Check that the issuer metadata are correct and that the required claims are not missing.\
-                        6. Provide an abstract of the authorization server metadata " + authorization_server_metadata + ".\
-                        7. Check that the authorization server metadata are correct and that the required claims are not missing.\
-                        8. Provide the list of errors and warnings if any."
-                }
-            ]
+            temperature=0,
+            max_tokens=1024,
+            messages=messages
         )
         result = completion.choices[0].message.content + ADVICE + mention
     except openai.APIConnectionError:
         result = "The server could not be reached"
     except openai.RateLimitError:
         result = "Rate limit exceeded. Retry later"
+    except openai.BadRequestError:
+        result = "context length exceeded"
     counter_update()
     store_report(qrcode, result, "issuer")
     return result
 
+
+
+def summarize_json(raw_json: str, max_len=1000):
+    try:
+        data = json.loads(raw_json)
+        summary = json.dumps({k: v for k, v in list(data.items())[:10]}, indent=2)
+        return summary[:max_len]
+    except:
+        return raw_json[:max_len]
+    
 
 def analyze_verifier_qrcode(qrcode):
     print("call API AI credential request for QR code diagnostic")
     date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
     verifier_request = get_verifier_request(qrcode)
     mention = "\n\n The OpenAI model " + ENGINE + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the OIDC4VP ID2 specifications (Draft 18). Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
+    messages = [
+        {
+            "role": "system",
+            "content": "You are an expert in OIDC4VP Draft 18 and credential presentation specification. You produce short and clear technical reports for engineers."
+        },
+        {
+            "role": "user",
+            "content": f"""Here is a credential presentation request (verifier side):
+
+        {verifier_request}
+
+        Please analyze it and generate a structured report in English using one bullet point per item:
+
+        1. 📄 **Abstract**: In 50 words max, summarize the goal of this request and what type of credential is expected.
+        2. ✅ **Required Claims (request)**: Are the required claims clearly stated and properly structured?
+        3. ✅ **Required Claims (presentation_definition)**: Are they defined correctly and fully in the `presentation_definition`?
+        4. 🧾 **Client Metadata**: Does it contain expected fields (e.g. `vp_formats`)? Any issues?
+        5. ⚠️ **Errors & Warnings**: Precise list of spec issues, inconsistencies, or missing fields.
+
+        Write clearly and use bullet points.
+        """
+        }
+    ]
+    print(messages)
     try:
         completion = client.chat.completions.create(
             model=VERIFIER_MODEL,
-            messages=[
-                {
-                    "role": "developer",
-                    "content": "You are an expert of the specifications OIDC4VP Draft 18"
-                },
-                {             
-                    "role": "user",
-                    "content": "Here is the credential request " + verifier_request + " of a verifier\
-                    Can you give me a report with one line by point : \
-                        1. Provide in 50 words maximum and in good english the abstract of the content of the VC requested by this verifier.\
-                        2. Check that all the required claims of the credential request are present.\
-                        3. Check that all the required claims of the presentation_definition are present.\
-                        4. Check the client metadata claims and if they exist verify that the vp_format is present.\
-                        5. Provide a precise list of errors and warnings if any."
-                }
-            ]
+            temperature=0,
+            max_tokens=1024,
+            messages=messages
         )
         result = completion.choices[0].message.content + ADVICE + mention
     except openai.APIConnectionError:
