@@ -290,28 +290,40 @@ def analyze_verifier_qrcode(qrcode):
     messages = [
         {
             "role": "system",
-            "content": "You are an expert in OIDC4VP Draft 18 and credential presentation specification. You produce short and clear technical reports for engineers."
+            "content": "You are an expert in OIDC4VP Draft 18 and credential presentation specification. You generate short, clear, and complete technical reports for engineers. You never skip questions and always follow strict formats when instructed."
         },
         {
             "role": "user",
-            "content": f"""Here is a credential presentation request (verifier side):
-        
-        --- Request ---
+            "content": f"""Please analyze the following verifier credential request.
+
+        --- Credential Request ---
         {verifier_request}
 
-         --- Presentation definition ---
+        --- Presentation Definition ---
         {presentation_definition}
-        
-        
-        Please analyze it and generate a structured report in English using one bullet point per item:
 
-        1. **Abstract**: In 50 words max, summarize the goal of this request and what type of credential is expected.
-        2. **Required Claims in the request **: Are all required claims clearly stated and properly structured?
-        3. **Required Claims of the presentation definition**: Are all required claims present in the `presentation_definition`?
-        4. **Client Metadata**: Does it contain expected fields (e.g. `vp_formats`)?
-        5. **Errors & Warnings**: Precise list of spec issues, inconsistencies, or missing fields.
+        You **must** answer the **five points below**, **in the exact order**, and using the **exact same section titles**. Each section should be concise, technically accurate, and clearly separated.
 
-        Write clearly and use bullet points.
+        Do not write introductory text or say “Sure” or “Here’s the analysis”. Start directly with point 1.
+
+        🧱 Expected structure:
+
+        1. **Abstract**  
+        In 50 words max, summarize the purpose of the verifier's request and what type of credential or claims are expected.
+
+        2. **Required Claims in the Request**  
+        List the required claims explicitly stated in the request. Are they present and correctly defined?
+
+        3. **Required Claims in the Presentation Definition**  
+        Check if the presentation_definition includes all necessary inputs, constraints, and fields. Point out any missing or malformed items.
+
+        4. **Client Metadata**  
+        Does the request include `vp_formats` and other relevant metadata like `redirect_uri`? Are those values valid?
+
+        5. **Errors & Warnings**  
+        List all technical or specification issues, inconsistencies, or omissions. Be precise and use bullet points if needed.
+
+        ⚠️ Be strict: answer all five sections. Do not omit any part.
         """
         }
     ]
