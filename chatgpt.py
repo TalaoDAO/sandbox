@@ -239,14 +239,14 @@ def analyze_issuer_qrcode(qrcode):
 
         Please structure the report as follows:
 
-        1. 🔍 **VC Summary**: Abstract of the offered credential in max 50 words. Include the issuer name and list of claims.
-        2. ✅ **Required Claims Check**: Are any required claims missing in the offer?
-        3. 🔁 **Flow Type**: Identify the flow (authorization_code or pre-authorized_code), and whether a transaction code is required.
-        4. 🏢 **Issuer Metadata Summary**: Abstract of the issuer metadata.
-        5. 🔍 **Issuer Metadata Check**: Are all required claims and fields present?
-        6. 🔒 **Authorization Server Metadata Summary**: Abstract of the authorization server metadata.
-        7. 🔍 **Auth Server Metadata Check**: Are all required claims and fields present?
-        8. ⚠️ **Errors & Warnings**: List any issues, inconsistencies, or spec violations.
+        1. **VC Summary**: Abstract of the offered credential in max 50 words. Include the issuer name and list of claims.
+        2. **Required Claims Check**: Are any required claims missing in the offer?
+        3. **Flow Type**: Identify the flow (authorization_code or pre-authorized_code), and whether a transaction code is required.
+        4. **Issuer Metadata Summary**: Abstract of the issuer metadata.
+        5. **Issuer Metadata Check**: Are all required claims and fields present?
+        6. **Authorization Server Metadata Summary**: Abstract of the authorization server metadata.
+        7. **Auth Server Metadata Check**: Are all required claims and fields present?
+        8. **Errors & Warnings**: List any issues, inconsistencies, or spec violations.
 
         Use clear bullet points for each section.
         """
@@ -300,11 +300,11 @@ def analyze_verifier_qrcode(qrcode):
 
         Please analyze it and generate a structured report in English using one bullet point per item:
 
-        1. 📄 **Abstract**: In 50 words max, summarize the goal of this request and what type of credential is expected.
-        2. ✅ **Required Claims (request)**: Are the required claims clearly stated and properly structured?
-        3. ✅ **Required Claims (presentation_definition)**: Are they defined correctly and fully in the `presentation_definition`?
-        4. 🧾 **Client Metadata**: Does it contain expected fields (e.g. `vp_formats`)? Any issues?
-        5. ⚠️ **Errors & Warnings**: Precise list of spec issues, inconsistencies, or missing fields.
+        1. **Abstract**: In 50 words max, summarize the goal of this request and what type of credential is expected.
+        2. **Required Claims (request)**: Are the required claims clearly stated and properly structured?
+        3. **Required Claims (presentation_definition)**: Are they defined correctly and fully in the `presentation_definition`?
+        4. **Client Metadata**: Does it contain expected fields (e.g. `vp_formats`)? Any issues?
+        5. **Errors & Warnings**: Precise list of spec issues, inconsistencies, or missing fields.
 
         Write clearly and use bullet points.
         """
