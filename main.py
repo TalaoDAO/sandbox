@@ -109,7 +109,10 @@ def page_abort(e):
 
 @app.errorhandler(500)
 def error_500(e):
-    message.message("Error 500 on sandbox", 'thierry.thevenet@talao.io', str(e), mode)
+    try:
+        message.message("Error 500 on sandbox", 'thierry.thevenet@talao.io', str(e), mode)
+    except Exception:
+        pass
     return redirect(mode.server + '/sandbox')
 
 
