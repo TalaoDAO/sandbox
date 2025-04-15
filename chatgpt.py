@@ -32,6 +32,15 @@ def get_header_from_token(token) -> dict:
     return json.loads(base64.urlsafe_b64decode(payload).decode())
 
 
+def summarize_json(raw_json: str, max_len=1000):
+    try:
+        data = json.loads(raw_json)
+        summary = json.dumps({k: v for k, v in list(data.items())[:10]}, indent=2)
+        return summary[:max_len]
+    except:
+        return raw_json[:max_len]
+
+
 def counter_update():
     counter = json.load(open("openai_counter.json", "r"))
     request_number = counter["request_number"]
@@ -176,12 +185,12 @@ def get_verifier_request(qrcode):
         request = "Error: The response_mode is not present in the verifier request"
     if presentation_definition_uri := request.get("presentation_definition_uri"):
         try:
-            presentation_definition = requests.get(presentation_definition_uri, timeout=10).text
+            presentation_definition = json.loads(requests.get(presentation_definition_uri, timeout=10).text)
         except Exception:
             presentation_definition = "Error: The presentation definition is not available"
         request.pop("presentation_definition_uri")
         request['presentation_definition'] = presentation_definition
-    return json.dumps(request)
+    return json.dumps(request), presentation_definition
 
 
 def get_issuer_data(qrcode):
@@ -271,21 +280,12 @@ def analyze_issuer_qrcode(qrcode):
     store_report(qrcode, result, "issuer")
     return result
 
-
-
-def summarize_json(raw_json: str, max_len=1000):
-    try:
-        data = json.loads(raw_json)
-        summary = json.dumps({k: v for k, v in list(data.items())[:10]}, indent=2)
-        return summary[:max_len]
-    except:
-        return raw_json[:max_len]
     
 
 def analyze_verifier_qrcode(qrcode):
     print("call API AI credential request for QR code diagnostic")
     date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
-    verifier_request = get_verifier_request(qrcode)
+    verifier_request, presentation_definition = get_verifier_request(qrcode)
     mention = "\n\n The OpenAI model " + ENGINE + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the OIDC4VP ID2 specifications (Draft 18). Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
     messages = [
         {
@@ -295,15 +295,20 @@ def analyze_verifier_qrcode(qrcode):
         {
             "role": "user",
             "content": f"""Here is a credential presentation request (verifier side):
-
+        
+        --- Request ---
         {verifier_request}
 
+         --- Presentation definition ---
+        {presentation_definition}
+        
+        
         Please analyze it and generate a structured report in English using one bullet point per item:
 
         1. **Abstract**: In 50 words max, summarize the goal of this request and what type of credential is expected.
-        2. **Required Claims (request)**: Are the required claims clearly stated and properly structured?
-        3. **Required Claims (presentation_definition)**: Are they defined correctly and fully in the `presentation_definition`?
-        4. **Client Metadata**: Does it contain expected fields (e.g. `vp_formats`)? Any issues?
+        2. **Required Claims in the request **: Are all required claims clearly stated and properly structured?
+        3. **Required Claims of the presentation definition**: Are all required claims present in the `presentation_definition`?
+        4. **Client Metadata**: Does it contain expected fields (e.g. `vp_formats`)?
         5. **Errors & Warnings**: Precise list of spec issues, inconsistencies, or missing fields.
 
         Write clearly and use bullet points.
