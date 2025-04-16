@@ -99,8 +99,6 @@ qrcode = QRcode(app)
 Mobility(app)
 
 
-
-
 @app.errorhandler(403)
 def page_abort(e):
     logging.warning('abort 403')
@@ -575,13 +573,17 @@ def qrcode():
 # OpenAI tools for wallet
 @app.route('/ai/wallet/qrcode', methods=['GET', 'POST'])
 def qrcode_wallet():
+    try:
+        print(request.headers)
+        print(request.form)
+    except:
+        pass
     qrcode_base64 = request.form.get("qrcode")
-    print('qrcode = ', qrcode_base64)
     if not qrcode_base64:
         return "error"
     qrcode_str = base64.b64decode(qrcode_base64.encode()).decode()
     report = chatgpt.analyze_qrcode(qrcode_str)
-    print("report = ", report)
+    logging.info("report = %s", report)
     report_base64 = base64.b64encode(report.encode()).decode()
     return report_base64
 
