@@ -598,12 +598,15 @@ def oidc_issuer_qrcode_value(issuer_id, stream_id, red, mode):
 def issuer_web_wallet_redirect(issuer_id, red, mode):
     arg_for_web_wallet = request.form['arg_for_web_wallet']
     web_wallet_url = request.form['web_wallet_url']
-    wallet_config_url = web_wallet_url + '/.well-known/openid-configuration'
-    wallet_config = requests.get(wallet_config_url).json()
-    wallet_credential_offer_endpoint = wallet_config.get('credential_offer_endpoint')
-    if not wallet_credential_offer_endpoint:
-        logging.error('wallet credential offer endpoint not found')
-        return jsonify('wallet credential offer endpoint not found'), 400
+    try:
+        wallet_config_url = web_wallet_url + '/.well-known/openid-configuration'
+        wallet_config = requests.get(wallet_config_url).json()
+        wallet_credential_offer_endpoint = wallet_config.get('credential_offer_endpoint')
+        if not wallet_credential_offer_endpoint:
+            logging.error('wallet credential offer endpoint not found')
+            return jsonify('wallet credential offer endpoint not found'), 400
+    except:
+        wallet_credential_offer_endpoint =  web_wallet_url
     redirect_uri = wallet_credential_offer_endpoint + arg_for_web_wallet
     return redirect(redirect_uri)
 
