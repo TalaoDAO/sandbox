@@ -298,7 +298,7 @@ def analyze_verifier_qrcode(qrcode):
             "role": "user",
             "content": f"""Please analyze the following verifier credential request.
 
-        --- Credential Request ---
+        --- Authorization Request ---
         {verifier_request}
 
         --- Presentation Definition ---
@@ -313,7 +313,7 @@ def analyze_verifier_qrcode(qrcode):
         1. **Abstract**  
         In 50 words max, summarize the purpose of the verifier's request and what type of credential or claims are expected.
 
-        2. **Required Claims in the Request**  
+        2. **Required Claims in the Authorization Request**  
         List the required claims explicitly stated in the request. Are they present and correctly defined?
 
         3. **Required Claims in the Presentation Definition**  
@@ -332,7 +332,7 @@ def analyze_verifier_qrcode(qrcode):
     print(messages)
     try:
         completion = client.chat.completions.create(
-            model=VERIFIER_MODEL,
+            model= ENGINE,
             temperature=0,
             max_tokens=1024,
             messages=messages
