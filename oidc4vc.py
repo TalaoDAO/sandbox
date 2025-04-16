@@ -450,7 +450,7 @@ def resolve_did(vm) -> dict:
                 return
         did_document = r.json()['didDocument']['verificationMethod']
     for verificationMethod in did_document:
-        if vm == verificationMethod['id'] or '#' + vm.split('#')[1] == verificationMethod['id']:
+        if vm == verificationMethod['id'] or (('#' + vm.split('#')[1]) == verificationMethod['id']) :
             if verificationMethod.get('publicKeyJwk'):
                 jwk = verificationMethod['publicKeyJwk']
                 break
