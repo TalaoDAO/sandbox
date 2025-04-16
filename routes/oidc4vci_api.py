@@ -1272,9 +1272,10 @@ async def issuer_credential(issuer_id, red, mode):
                 wallet_jwk = oidc4vc.resolve_did(proof_header.get('kid'))
                 wallet_did = proof_header.get('kid').split("#")[0]
 
-            if wallet_did and proof_payload.get('iss') and wallet_did != proof_payload.get('iss'):
-                logging.warning('iss %s of proof of key is different from client_id %s', wallet_did ,access_token_data['client_id'] )
-                return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
+            if access_token_data['client_id'] and proof_payload.get("iss"):
+                if proof_payload.get("iss") != access_token_data['client_id']:
+                    logging.error('iss %s of proof of key is different from client_id %s', proof_payload.get("iss") ,access_token_data['client_id'] )
+                    return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
         
         elif proof_type == 'ldp_vp':
             wallet_identifier = 'did'

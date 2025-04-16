@@ -449,7 +449,6 @@ def resolve_did(vm) -> dict:
                 logging.warning('fails to access to both universal resolver')
                 return
         did_document = r.json()['didDocument']
-    print("DID Document = ", did_document)
     for verificationMethod in did_document['verificationMethod']:
         if verificationMethod['id'] == vm: # or (('#' + vm.split('#')[1]) == verificationMethod['id']) :
             if verificationMethod.get('publicKeyJwk'):
