@@ -261,6 +261,8 @@ def sd(data):
         contents = json.dumps([salt(), "decoy", "decoy"])
         disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
         payload['_sd'].append(hash(disclosure))
+    else:
+        payload.pop("_sd", None)
     _disclosure = _disclosure.replace("~~", "~")
     return payload, _disclosure
 
