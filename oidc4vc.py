@@ -205,8 +205,8 @@ def sd(data):
         if claim == "disclosure":
             pass
         # for undisclosed attribute
-        elif isinstance(unsecured[claim], (str, bool, int)):
-            if claim in disclosure_list or claim in disclosed_claims:
+        elif isinstance(unsecured[claim], (str, bool, int)) or claim in ["status", "status_list"]:
+            if claim in disclosure_list or claim in disclosed_claims :
                 payload[claim] = unsecured[claim]
             else:
                 contents = json.dumps([salt(), claim, unsecured[claim]])
