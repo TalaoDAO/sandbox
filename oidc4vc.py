@@ -448,9 +448,9 @@ def resolve_did(vm) -> dict:
             except Exception:
                 logging.warning('fails to access to both universal resolver')
                 return
-        did_document = r.json()['didDocument']['verificationMethod']
-    for verificationMethod in did_document:
-        if vm == verificationMethod['id'] or (('#' + vm.split('#')[1]) == verificationMethod['id']) :
+        did_document_vm = r.json()['didDocument']['verificationMethod']
+    for verificationMethod in did_document_vm:
+        if verificationMethod['id'] == vm: # or (('#' + vm.split('#')[1]) == verificationMethod['id']) :
             if verificationMethod.get('publicKeyJwk'):
                 jwk = verificationMethod['publicKeyJwk']
                 break
