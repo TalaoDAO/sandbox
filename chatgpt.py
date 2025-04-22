@@ -8,8 +8,10 @@ from datetime import datetime
 import hashlib
 import base64
 
-openapi_key = json.load(open("keys.json", "r"))['openai']
-
+with open("keys.json", "r") as f:
+    openai_key = json.load(f)["openai"]
+    
+    
 ENGINE2 = "gpt-4-turbo"
 ENGINE = "gpt-3.5-turbo"
 ISSUER_MODEL = "ft:gpt-3.5-turbo-0125:personal:oidc4vci-draft13:BLBljnoM"
@@ -18,7 +20,7 @@ SDJWTVC_MODEL = "ft:gpt-3.5-turbo-0125:personal:sdjwtvc-draft10-1000:BLWSefAq"
 ADVICE = "\n\nFor a deeper analysis, review the cryptographic binding methods, signing algorithms, and specific scopes supported by the issuer and authorization server."
 
 client = OpenAI(
-    api_key=openapi_key,
+    api_key=openai_key,
 )
 
 

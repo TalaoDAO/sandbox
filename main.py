@@ -46,6 +46,9 @@ API_LIFE = 5000
 GRANT_LIFE = 5000
 ACCEPTANCE_TOKEN_LIFE = 28 * 24 * 60 * 60
 
+with open("keys.json", "r") as f:
+    ai_api_keys = json.load(f)["ai_api"]
+
 logging.basicConfig(level=logging.INFO)
 
 # Environment variables set in gunicornconf.py  and transfered to environment.py
@@ -558,7 +561,8 @@ def bnb():
 @app.route('/ai/qrcode', methods=['GET', 'POST'])
 def qrcode():
     if  request.method == 'GET':
-        counter = json.load(open("openai_counter.json", "r"))
+        with open("openai_counter.json", "r") as f:
+            counter = json.load(f)
         request_number = str(counter["request_number"])
         return render_template("ai_qrcode.html", request_number=request_number)
     else:
@@ -566,7 +570,6 @@ def qrcode():
         if not qrcode:
             return redirect('/qrcode')
         report = chatgpt.analyze_qrcode(qrcode)
-        print(report)
         return render_template("ai_report.html", report= "\n\n" + report)
 
 
@@ -578,6 +581,9 @@ def qrcode_wallet():
         print(request.form)
     except:
         pass
+    api_key = request.headers.get("Api-Key")
+    if api_key not in ai_api_keys:
+        return "access denied"
     qrcode_base64 = request.form.get("qrcode")
     if not qrcode_base64:
         return "error"
