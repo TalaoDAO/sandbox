@@ -10,6 +10,7 @@ import base64
 
 openapi_key = json.load(open("keys.json", "r"))['openai']
 
+ENGINE2 = "gpt-4-turbo"
 ENGINE = "gpt-3.5-turbo"
 ISSUER_MODEL = "ft:gpt-3.5-turbo-0125:personal:oidc4vci-draft13:BLBljnoM"
 VERIFIER_MODEL = "ft:gpt-3.5-turbo-0125:personal:oidc4vp-draft18:BLC032IA"
@@ -20,6 +21,7 @@ client = OpenAI(
     api_key=openapi_key,
 )
 
+OIDC4VCI_DRAFT13 = open("dataset/openid-4-verifiable-credential-issuance-1_0.md", 'r').read()
 
 def get_payload_from_token(token) -> dict:
     payload = token.split('.')[1]
@@ -239,6 +241,7 @@ def analyze_issuer_qrcode(qrcode):
         "role": "user",
         "content": f"""Analyze the following credential offer and metadata and return a report in clear English using bullet points.
 
+    
         --- Credential Offer ---
         {summarize_json(credential_offer)}
 
@@ -275,9 +278,9 @@ def analyze_issuer_qrcode(qrcode):
     except openai.APIConnectionError:
         result = "The server could not be reached"
     except openai.RateLimitError:
-        result = "Rate limit exceeded. Retry later"
+        result = "The agent is busy right now, retry later!"
     except openai.BadRequestError:
-        result = "context length exceeded"
+        result = "Too much data, context length exceeded"
     counter_update()
     store_report(qrcode, result, "issuer")
     return result
@@ -292,7 +295,7 @@ def analyze_verifier_qrcode(qrcode):
     messages = [
         {
             "role": "system",
-            "content": "You are an expert in OIDC4VP Draft 18 and credential presentation specification. You generate short, clear, and complete technical reports for engineers. You never skip questions and always follow strict formats when instructed."
+            "content": "You are an expert in OIDC4VP Draft 18. You generate short, clear, and complete technical reports for engineers. You never skip questions and always follow strict formats when instructed."
         },
         {
             "role": "user",
@@ -329,7 +332,6 @@ def analyze_verifier_qrcode(qrcode):
         """
         }
     ]
-    print(messages)
     try:
         completion = client.chat.completions.create(
             model= ENGINE,
@@ -341,7 +343,9 @@ def analyze_verifier_qrcode(qrcode):
     except openai.APIConnectionError:
         result = "The server could not be reached"
     except openai.RateLimitError:
-        result = "Rate limit exceeded. Retry later"
+        result = "The agent is busy right now, retry later!"
+    except openai.BadRequestError:
+        result = "Too much data, context length exceeded"
     counter_update()
     store_report(qrcode, result, "verifier")
     return result
