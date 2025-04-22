@@ -569,26 +569,30 @@ def qrcode():
         qrcode = request.form.get("qrcode")
         if not qrcode:
             return redirect('/qrcode')
-        report = chatgpt.analyze_qrcode(qrcode)
+        report = chatgpt.analyze_qrcode(qrcode, "13", "18")
         return render_template("ai_report.html", report= "\n\n" + report)
 
 
 # OpenAI tools for wallet
 @app.route('/ai/wallet/qrcode', methods=['GET', 'POST'])
 def qrcode_wallet():
-    try:
-        print(request.headers)
-        print(request.form)
-    except:
-        pass
     api_key = request.headers.get("Api-Key")
     if api_key not in ai_api_keys:
-        return "access denied"
+        return jsonify({"error": "access denied"}), 403
     qrcode_base64 = request.form.get("qrcode")
     if not qrcode_base64:
-        return "error"
-    qrcode_str = base64.b64decode(qrcode_base64.encode()).decode()
-    report = chatgpt.analyze_qrcode(qrcode_str)
+        return jsonify({"error": "missing qrcode"}), 400
+    oidc4vciDraft = request.form.get('oidc4vciDraft')
+    oidc4vpDraft = request.form.get('oidc4vpDraft')
+    try:
+        qrcode_str = base64.b64decode(qrcode_base64.encode()).decode()
+    except:
+        return jsonify({"error": "invalid base64 format"}), 400
+    try:
+        report = chatgpt.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft )
+    except Exception as e:
+        logging.error("Error in chatgpt.analyze_qrcode: %s", e)
+        return jsonify({"error": "internal processing error"}), 500
     logging.info("report = %s", report)
     report_base64 = base64.b64encode(report.encode()).decode()
     return report_base64

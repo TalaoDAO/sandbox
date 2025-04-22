@@ -228,15 +228,17 @@ def get_issuer_data(qrcode):
 
 
 
-def analyze_issuer_qrcode(qrcode):
+def analyze_issuer_qrcode(qrcode, draft):
+    if not draft:
+        draft = "13"
     print("call API AI credential request for issuer QR code diagnostic")
     date = datetime.now().replace(microsecond=0).isoformat()
     credential_offer, issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode)  
-    mention = "\n\n The OpenAI model " + ENGINE + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the OIDC4VCI specifications (Draft 13). Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
+    mention = "\n\n The OpenAI model " + ENGINE + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the OIDC4VCI specifications Draft " + draft +". Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
     messages = [
         {
         "role": "system",
-        "content": "You are a professional analyst and expert in OIDC4VCI Draft 13 and digital credential specifications. You write concise, structured reports for developers and product teams."
+        "content": "You are a professional analyst and expert in OIDC4VCI Draft " + draft + " and digital credential specifications. You write concise, structured reports for developers and product teams."
         },
         {
         "role": "user",
@@ -252,7 +254,10 @@ def analyze_issuer_qrcode(qrcode):
         --- Authorization Server Metadata ---
         {summarize_json(authorization_server_metadata)}
 
-        Please structure the report as follows:
+        
+        You **must** answer the **8 points below**, **in the exact order**, and using the **exact same section titles**. Each section should be concise, technically accurate, and clearly separated.
+
+        Do not write introductory text or say “Sure” or “Here’s the analysis”. Start directly with point 1.
 
         1. **VC Summary**: Abstract of the offered credential in max 50 words. Include the issuer name and list of claims.
         2. **Required Claims Check**: Are any required claims missing in the offer?
@@ -264,6 +269,7 @@ def analyze_issuer_qrcode(qrcode):
         8. **Errors & Warnings**: List any issues, inconsistencies, or spec violations.
 
         Use clear bullet points for each section.
+             ⚠️ Be strict: answer all five sections. Do not omit any part.
         """
         }
     ]
@@ -288,15 +294,17 @@ def analyze_issuer_qrcode(qrcode):
 
     
 
-def analyze_verifier_qrcode(qrcode):
+def analyze_verifier_qrcode(qrcode, draft):
+    if not draft:
+        draft = "18"
     print("call API AI credential request for QR code diagnostic")
     date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
     verifier_request, presentation_definition = get_verifier_request(qrcode)
-    mention = "\n\n The OpenAI model " + ENGINE + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the OIDC4VP ID2 specifications (Draft 18). Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
+    mention = "\n\n The OpenAI model " + ENGINE + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the OIDC4VP ID2 specifications Draft " + draft + ". Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
     messages = [
         {
             "role": "system",
-            "content": "You are an expert in OIDC4VP Draft 18. You generate short, clear, and complete technical reports for engineers. You never skip questions and always follow strict formats when instructed."
+            "content": "You are an expert in OIDC4VP Draft " + draft +". You generate short, clear, and complete technical reports for engineers. You never skip questions and always follow strict formats when instructed."
         },
         {
             "role": "user",
@@ -352,13 +360,13 @@ def analyze_verifier_qrcode(qrcode):
     return result
 
 
-def analyze_qrcode(qrcode):
+def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft):
     parse_result = urlparse(qrcode)
     result = parse_qs(parse_result.query)
     if result.get('credential_offer_uri') or result.get('credential_offer'):
-        return analyze_issuer_qrcode(qrcode)
+        return analyze_issuer_qrcode(qrcode, oidc4vciDraft)
     elif result.get('response_type') or result.get('request') or result.get("request_uri"):
-        return analyze_verifier_qrcode(qrcode)
+        return analyze_verifier_qrcode(qrcode, oidc4vpDraft)
     else:
         return "This protocol is not supported"
     
