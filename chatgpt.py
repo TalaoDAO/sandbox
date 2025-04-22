@@ -7,6 +7,9 @@ import requests
 from datetime import datetime
 import hashlib
 import base64
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 with open("keys.json", "r") as f:
     openai_key = json.load(f)["openai"]
@@ -260,12 +263,19 @@ def analyze_issuer_qrcode(qrcode, draft):
         Do not write introductory text or say “Sure” or “Here’s the analysis”. Start directly with point 1.
 
         1. **VC Summary**: Abstract of the offered credential in max 50 words. Include the issuer name and list of claims.
+        
         2. **Required Claims Check**: Are any required claims missing in the offer?
+        
         3. **Flow Type**: Identify the flow (authorization_code or pre-authorized_code), and whether a transaction code is required.
+        
         4. **Issuer Metadata Summary**: Abstract of the issuer metadata.
+        
         5. **Issuer Metadata Check**: Are all required claims and fields present?
+        
         6. **Authorization Server Metadata Summary**: Abstract of the authorization server metadata.
+        
         7. **Auth Server Metadata Check**: Are all required claims and fields present?
+        
         8. **Errors & Warnings**: List any issues, inconsistencies, or spec violations.
 
         Use clear bullet points for each section.
@@ -308,7 +318,7 @@ def analyze_verifier_qrcode(qrcode, draft):
         },
         {
             "role": "user",
-            "content": f"""Please analyze the following verifier credential request.
+            "content": f"""Analyze the following verifier credential request.
 
         --- Authorization Request ---
         {verifier_request}
