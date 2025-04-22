@@ -21,7 +21,6 @@ client = OpenAI(
     api_key=openapi_key,
 )
 
-OIDC4VCI_DRAFT13 = open("dataset/openid-4-verifiable-credential-issuance-1_0.md", 'r').read()
 
 def get_payload_from_token(token) -> dict:
     payload = token.split('.')[1]
