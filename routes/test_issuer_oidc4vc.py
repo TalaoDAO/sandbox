@@ -643,7 +643,9 @@ def test_16(mode):
     issuer_id = issuer_test(16, mode)
     client_secret = issuer_test(16, mode, secret = True)
    
-    offer = ["IBANLegalPerson", "BankAccountBalance"]
+    #offer = ["IBANLegalPerson", "BankAccountBalance"]
+    offer = ["IBANLegalPerson"]
+
     with open('./verifiable_credentials/IBANLegalPerson.jsonld', 'r') as f:
         credential_1 = json.loads(f.read())
     with open('./verifiable_credentials/BankAccountBalance.jsonld', 'r') as f:
@@ -656,7 +658,7 @@ def test_16(mode):
         "issuer_id": issuer_id,
         "vc": {
             "IBANLegalPerson": credential_1,
-            "BankAccountBalance": credential_2
+            #"BankAccountBalance": credential_2
         },
         "issuer_state": "test7",
         "credential_type": offer,

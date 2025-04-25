@@ -119,8 +119,8 @@ GOUV = {
                 "name": "LPID attestation",
                 "locale": "en-GB",
                 "logo": {
-                    "uri": "https://identity-provider.gov/cover.jpeg",
-                    "alt_text": "Government Identity Provider"
+                    "uri": "https://talao.co/static/img/talao.png",
+                    "alt_text": "Talao logo"
                 },
                 "background_color": "#12107c",
                 "text_color": "#FFFFFF"
