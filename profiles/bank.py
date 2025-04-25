@@ -116,11 +116,11 @@ BANK = {
                         "text_color": "#FBFBFB",
                         "logo": {
                             "uri": "",
-                            "alt_text": "CCF logo"
+                            "alt_text": "logo"
                         },
                         "background_image": {
-                            "uri": "https://talao.co/static/img/ccf_card.jpeg",
-                            "alt_text": "CCF Account Balance"
+                            "uri": "https://talao.co/static/img/horizon_bank.jpeg",
+                            "alt_text": "Horizon Account Balance"
                         }
                     },
                     {
@@ -130,11 +130,11 @@ BANK = {
                         "text_color": "#FBFBFB",
                         "logo": {
                             "uri": "",
-                            "alt_text": "CCF logo"
+                            "alt_text": "logo"
                         },
                         "background_image": {
-                            "uri": "https://talao.co/static/img/ccf_card.jpeg",
-                            "alt_text": "CCF Account Balance"
+                            "uri": "https://talao.co/static/img/horizon_bank.jpeg",
+                            "alt_text": "Horizon Account Balance"
                         }
                     }
                 ],
