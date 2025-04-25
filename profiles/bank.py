@@ -21,12 +21,12 @@ BANK = {
                         "description": "IBAN",
                         "text_color": "#FBFBFB",
                         "logo": {
-                            "uri": "https://i.ibb.co/ZdVm5Bg/abn-logo.png",
-                            "alt_text": "ABN Amro logo"
+                            "uri": "",
+                            "alt_text": "CCF logo"
                         },
                         "background_image": {
-                            "uri": "https://i.ibb.co/kcb9XQ4/abncard-iban-lp.png",
-                            "alt_text": "ABN Amro Card"
+                            "uri": "https://talao.co/static/img/ccf_card.jpeg",
+                            "alt_text": "CCF Card"
                         }
                     }
                 ],
