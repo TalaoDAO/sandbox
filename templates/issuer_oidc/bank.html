@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Banque Horizon</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+      color: #333;
+    }
+
+    header {
+      background-color: #003366;
+      padding: 20px;
+      color: white;
+      text-align: center;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      background-color: #0055a5;
+      padding: 10px 0;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 15px;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    .hero input[type="url"] {
+        height: 40px; /* ← définit une hauteur fixe */
+        font-size: 16px; /* ← pour que le texte soit proportionné */
+        width: 300px;
+    }
+
+    .hero {
+      padding: 120px 20px;
+      text-align: center;
+      background: url('https://images.adsttc.com/media/images/5d44/14fa/284d/d1fd/3a00/003d/large_jpg/eiffel-tower-in-paris-151-medium.jpg?1564742900') no-repeat center bottom/cover;
+      color: white;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      font-size: 20px;
+      margin-bottom: 30px;
+    }
+
+    .hero button {
+      padding: 12px 25px;
+      font-size: 16px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background-color: #007acc;
+      color: white;
+    }
+
+    .btn-secondary {
+      background-color: white;
+      color: #007acc;
+    }
+
+    .services {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 40px 20px;
+      background-color: #fff;
+    }
+
+    .service {
+      background: #f0f4f7;
+      margin: 15px;
+      padding: 20px;
+      border-radius: 10px;
+      width: 250px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .service h3 {
+      margin-top: 0;
+    }
+
+    footer {
+      background-color: #003366;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Banque Horizon</h1>
+    <p>Votre avenir financier commence ici</p>
+  </header>
+
+  <nav>
+    <a href="#">Accueil</a>
+    <a href="#">Nos services</a>
+    <a href="#">À propos</a>
+    <a href="#">Contact</a>
+    <a href="#">Espace client</a>
+  </nav>
+
+  <form action="/issuer/{{issuer_id}}/redirect" method="post">
+    <input hidden type="text" name="arg_for_web_wallet" value= "{{arg_for_web_wallet}}">
+  <section class="hero">
+    <h1>Connectez votre wallet entreprise</h1>
+    <input type="url" name="web_wallet_url" placeholder="https://monwallet.entreprise.com" />
+    <br>
+    <button>Se connecter</button>
+  </section>
+ </form>
+
+  <section class="services">
+    <div class="service">
+      <h3>Comptes bancaires</h3>
+      <p>Gérez vos comptes courants, épargnes et bien plus encore.</p>
+    </div>
+    <div class="service">
+      <h3>Cartes & Paiements</h3>
+      <p>Des cartes de crédit et débit adaptées à votre style de vie.</p>
+    </div>
+    <div class="service">
+      <h3>Prêts & Financements</h3>
+      <p>Crédit immobilier, prêt auto, financement personnel rapide.</p>
+    </div>
+  </section>
+
+  <footer>
+    &copy; 2025 Banque Horizon. Tous droits réservés.
+  </footer>
+
+</body>
+</html>
