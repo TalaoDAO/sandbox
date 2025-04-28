@@ -47,7 +47,7 @@ def summarize_json(raw_json: str, max_len=1000):
         return raw_json[:max_len]
 
 
-def counter_update():
+def counter_update(place):
     counter = json.load(open("openai_counter.json", "r"))
     request_number = counter["request_number"]
     request_number += 1
@@ -58,11 +58,11 @@ def counter_update():
     
     # send data to slack
     passwords = json.load(open("passwords.json", "r"))
-    url = passwords["slack_url"]
+    url = passwords["slack_ai_url"]
     payload = {
-        "channel": "#issuer_counter",
-        "username": "issuer",
-        "text": "New AI request has been issued ",
+        "channel": "#	issuer-and-ai",
+        "username": "AI Agent",
+        "text": "New AI request has been issued from " + place,
         "icon_emoji": ":ghost:"
         }
     data = {
@@ -130,7 +130,7 @@ def analyze_vp(token):
                 }
         ]
     )
-    counter_update()
+    counter_update("sandbox")
     print("response = ", completion.choices[0].message.content)
     return completion.choices[0].message.content + ADVICE + mention
 
@@ -149,7 +149,7 @@ def analyze_token_request(form):
                 5: list all errors or problems if any \
                 6: mention the ChatGPT model used for this report"
     )
-    counter_update()
+    counter_update("sanbdox")
     return response.output_text
 
 
@@ -167,7 +167,7 @@ def analyze_credential_request(form):
                 4: list all errors or problems if any \
                 5: mention the ChatGPT model used for this report"
     )
-    counter_update()
+    counter_update("sandbox")
     return response.output_text
 
 
@@ -298,7 +298,7 @@ def analyze_issuer_qrcode(qrcode, draft):
         result = "The agent is busy right now, retry later!"
     except openai.BadRequestError:
         result = "Too much data, context length exceeded"
-    counter_update()
+    counter_update("wallet")
     store_report(qrcode, result, "issuer")
     return result
 
@@ -365,7 +365,7 @@ def analyze_verifier_qrcode(qrcode, draft):
         result = "The agent is busy right now, retry later!"
     except openai.BadRequestError:
         result = "Too much data, context length exceeded"
-    counter_update()
+    counter_update("wallet")
     store_report(qrcode, result, "verifier")
     return result
 
