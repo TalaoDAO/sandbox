@@ -7,6 +7,37 @@
     <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='./img/3D.ico') }}"/>
     <title>{{application_name}}</title>
     <link rel = "stylesheet" type= "text/css" href= "{{ url_for('static', filename='bootstrap.min.css') }}">
+    <style>
+      /* Style pour l'overlay d'attente */
+      #wait-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        display: none; /* caché par défaut */
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        z-index: 9999;
+      }
+      
+      #wait-overlay .spinner {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      </style>
   </head>
   <body>
     <font color="{{page_text_color}}"> 
@@ -35,6 +66,10 @@
                   <div class="card shadow border-dark " style="border-radius: 4%; background-color: {{qrcode_background_color}} ">
                     <img id="qrcode" class="card-img-top p-4" src="{{ qrcode(url) }}">
                   </div>
+              </div>
+              <div id="wait-overlay">
+                <div class="spinner"></div>
+                <div><strong>Please wait...</strong></div>
               </div>
               <br>
             <form action="/verifier/wallet?code={{code}}" method="POST">
@@ -150,22 +185,27 @@
       <script>      
                 function goBack() {  window.history.back();}
       </script>
+   
       <script>
         var source = new EventSource('/verifier/wallet/stream');
         source.onmessage = function (event) {
-        const result = JSON.parse(event.data)
-        if (result.stream_id == '{{stream_id}}' ){
-          if (result.followup == "wait"){
-            var x = document.getElementById("qrcode");
-            var v = x.getAttribute("src");
-            v = "/static/img/wait.jpeg";
-            x.setAttribute("src", v);	
+          const result = JSON.parse(event.data);
+          if (result.stream_id == '{{stream_id}}') {
+            if (result.followup == "wait") {
+              // Afficher l'overlay d'attente
+              document.getElementById('wait-overlay').style.display = 'flex';
+        
+              var x = document.getElementById("qrcode");
+              if (x) {
+                x.setAttribute("src", "/static/img/wait.jpeg");
+              }
+            } else {
+              // Rediriger si prêt
+              window.location.href = '/verifier/wallet/followup?stream_id=' + result.stream_id;
+            }
           }
-          else {
-          window.location.href='/verifier/wallet/followup?stream_id=' + result.stream_id;
-          }
-        }};
-      </script>
+        };
+        </script>
       </font>
   </body>
 </html>
