@@ -23,7 +23,6 @@ import requests
 from flask import (Response, flash, jsonify, redirect,  # type: ignore
                 render_template, request, session)
 from jwcrypto import jwk # type: ignore
-from chatgpt import analyze_token_request, analyze_credential_request
 import didkit
 
 logging.basicConfig(level=logging.INFO)
@@ -34,7 +33,6 @@ GRANT_LIFE = 5000
 C_NONCE_LIFE = 5000
 ACCEPTANCE_TOKEN_LIFE = 28 * 24 * 60 * 60
 STATUSLIST_ISSUER_KEY = json.dumps(json.load(open('keys.json', 'r'))['talao_Ed25519_private_key'])
-AI = False
 
 def init_app(app, red, mode):
     # endpoint for application if redirect to local page (test)
@@ -1070,26 +1068,6 @@ def issuer_token(issuer_id, red, mode):
     
     # get stream id
     stream_id = data['stream_id']
-    
-    # display wait
-    if AI:
-        event_data = json.dumps({
-            "stream_id": stream_id,
-            "followup": "wait"})
-        red.publish('issuer_oidc', event_data)
-    
-        # Call to chatGPT
-        report_filename = stream_id + "_log.txt" 
-        try:
-            os.remove(report_filename)
-        except:
-            pass
-        analyze = analyze_token_request(json.dumps(request.form, indent=4))
-        with open(report_filename, "w") as f:
-            f.write("----------------- TOKEN REQUEST --------------------\n\n")
-            f.write(analyze + "\n")
-            f.close()
-        logging.info(analyze)
         
     # check PKCE
     if grant_type == 'authorization_code' and int(issuer_profile['oidc4vciDraft']) >= 10:
@@ -1187,16 +1165,6 @@ async def issuer_credential(issuer_id, red, mode):
 
     # to manage followup screen
     stream_id = access_token_data.get('stream_id')
-    
-    # Call to chatGPT
-    if AI:
-        analyze = analyze_credential_request(json.dumps(request.json, indent=4))
-        with open(stream_id + "_log.txt", "a") as f:
-            f.write("\n\n")
-            f.write("----------------- CREDENTIAL REQUEST --------------------\n\n")
-            f.write(analyze + "\n")
-            f.close()
-        logging.info(analyze)
     
     # issuer profile
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))

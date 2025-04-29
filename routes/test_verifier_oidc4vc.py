@@ -3,7 +3,7 @@ import json
 import db_api
 import oidc4vc
 import base64
-from chatgpt import analyze_vp
+from AI_Agent import analyze_vp
 
 def init_app(app,red, mode):
     app.add_url_rule('/sandbox/verifier/test_1',  view_func=verifier_test_1, methods=['GET'], defaults={'mode': mode})

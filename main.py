@@ -20,7 +20,7 @@ import requests
 from device_detector import SoftwareDetector
 import hashlib
 import base64
-import chatgpt
+import AI_Agent
 
 
 # Basic protocole
@@ -569,7 +569,7 @@ def qrcode():
         qrcode = request.form.get("qrcode")
         if not qrcode:
             return redirect('/qrcode')
-        report = chatgpt.analyze_qrcode(qrcode, "13", "18")
+        report = AI_Agent.analyze_qrcode(qrcode, "13", "18", 'sandbox')
         return render_template("ai_report.html", report= "\n\n" + report)
 
 
@@ -589,9 +589,9 @@ def qrcode_wallet():
     except:
         return jsonify({"error": "invalid base64 format"}), 400
     try:
-        report = chatgpt.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft )
+        report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft, 'wallet' )
     except Exception as e:
-        logging.error("Error in chatgpt.analyze_qrcode: %s", e)
+        logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
     logging.info("report = %s", report)
     report_base64 = base64.b64encode(report.encode()).decode()
