@@ -660,9 +660,9 @@ def test_16(mode):
             "IBANLegalPerson": credential_1,
             #"BankAccountBalance": credential_2
         },
-        "issuer_state": "test7",
+        "issuer_state": "bank",
         "credential_type": offer,
-        "pre-authorized_code": True,
+        "pre-authorized_code": False,
         "callback": mode.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json=data)
