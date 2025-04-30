@@ -226,31 +226,31 @@ def analyze_issuer_qrcode(qrcode, draft, device):
         {
             "role": "user",
             "content": f"""
-Analyze the following credential offer and metadata and return a report in clear English using bullet points.
+        Analyze the following credential offer and metadata and return a report in clear English using bullet points.
 
---- Credential Offer ---
-{credential_offer}
+        --- Credential Offer ---
+        {credential_offer}
 
---- Issuer Metadata ---
-{issuer_metadata}
+        --- Issuer Metadata ---
+        {issuer_metadata}
 
---- Authorization Server Metadata ---
-{authorization_server_metadata}
+        --- Authorization Server Metadata ---
+        {authorization_server_metadata}
 
-You **must** answer the **8 points below**, **in the exact order**, and using the **exact same section titles**.
-Each section should be concise, technically accurate, and clearly separated.
+        You **must** answer the **8 points below**, **in the exact order**, and using the **exact same section titles**.
+        Each section should be concise, technically accurate, and clearly separated.
 
-Do not write introductory text. Start directly with point 1.
+        Do not write introductory text. Start directly with point 1.
 
-1. **VC Summary**
-2. **Required Claims Check**
-3. **Flow Type**
-4. **Issuer Metadata Summary**
-5. **Issuer Metadata Check**
-6. **Authorization Server Metadata Summary**
-7. **Auth Server Metadata Check**
-8. **Errors & Warnings**
-"""
+        1. **VC Summary**
+        2. **Required Claims Check**
+        3. **Flow Type**
+        4. **Issuer Metadata Summary**
+        5. **Issuer Metadata Check**
+        6. **Authorization Server Metadata Summary**
+        7. **Auth Server Metadata Check**
+        8. **Errors & Warnings**
+        """
         }
     ]
 
@@ -298,25 +298,25 @@ def analyze_verifier_qrcode(qrcode, draft, device):
         {
             "role": "user",
             "content": f"""
-Analyze the following verifier credential request.
+        Analyze the following verifier authorization request and presentation definition.
 
---- Authorization Request ---
-{verifier_request}
+        --- Authorization Request ---
+        {verifier_request}
 
---- Presentation Definition ---
-{presentation_definition}
+        --- Presentation Definition ---
+        {presentation_definition}
 
-You **must** answer the **five points below**, **in the exact order**, and using the **exact same section titles**.
-Each section should be concise, technically accurate, and clearly separated.
+        You **must** answer the **five points below**, **in the exact order**, and using the **exact same section titles**.
+        Each section should be concise, technically accurate, and clearly separated.
 
-Do not write introductory text. Start directly with point 1.
+        Do not write introductory text. Start directly with point 1.
 
-1. **Abstract**
-2. **Required Claims in the Authorization Request**, check that all required claims of OIDC4VP are in the request
-3. **Required Claims in the Presentation Definition**, check that the presentation_definition is correct
-4. **Client Metadata**, check that the metadata are correct
-5. **Errors & Warnings**
-"""
+        1. **Abstract**
+        2. **Authorization Request**, check that all required claims of OIDC4VP are in the request
+        3. **Presentation Definition**, check that the presentation_definition is correct
+        4. **Client Metadata**, check that the metadata are correct
+        5. **Errors & Warnings**
+        """
         }
     ]
 
