@@ -15,6 +15,7 @@ import base64
 import logging
 import time
 import re
+import tiktoken
 #from load_vectorstore import load_vectorstore
 
 # Configure logging
@@ -38,6 +39,7 @@ ADVICE = "\n\nFor a deeper analysis, review the cryptographic binding methods, s
 MAX_RETRIES = 3
 DELAY_SECONDS = 2
 
+enc = tiktoken.encoding_for_model("gpt-4")  # or "gpt-3.5-turbo"
 
 #vectorstore = load_vectorstore()
 
@@ -57,10 +59,14 @@ def get_header_from_token(token):
 
 
 def clean_md(content):
+    tokens = enc.encode(content)
+    print("🔢 Token count:", len(tokens))
     # Patterns to remove specific top-level sections
     for section in ["Introduction", "Terminology", "Document History", "Notices", "Acknowledgements", "Use Cases", "IANA Considerations", ]:
         pattern = rf"(?m)^# {section}[\s\S]*?(?=^\# |\Z)"
         content = re.sub(pattern, "", content)
+    tokens = enc.encode(content)
+    print("🔢 Token count after:", len(tokens))
     return content
 
 
