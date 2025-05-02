@@ -9,7 +9,7 @@ last one-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/img/altmeIcon.png">
     <title>Talao</title>
-    <link rel="stylesheet" href="/static/home.css">
+    <link rel="stylesheet" href="/static/ai_qrcode.css">
 </head>
 
 <body>
@@ -29,7 +29,24 @@ last one-->
                         <div id="divCompliant"><img id="arrowDown" src="/static/img/arrow-down.png">
                             <p id="compliant">Copy the QR code below</p>
                         </div>
-                    <textarea type="text" rows="20" cols="150" name="qrcode"></textarea> 
+                    
+<div style="margin-bottom: 20px;">
+    <label for="oidc4vp_version"><strong>OIDC4VP Draft:</strong></label>
+    <select id="oidc4vp_version" name="oidc4vp_draft" style="margin-right: 30px;">
+        {% for i in range(18, 26) %}
+        <option value="{{ i }}" {% if i == 18 %}selected{% endif %}>Draft {{ i }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="oidc4vci_version"><strong>OIDC4VCI Draft:</strong></label>
+    <select id="oidc4vci_version" name="oidc4vci_draft">
+        {% for i in range(10, 18) %}
+        <option value="{{ i }}" {% if i == 13 %}selected{% endif %}>Draft {{ i }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<textarea type="text" rows="20" cols="150" name="qrcode"></textarea> 
                     <br><br><button  style="width: 200px; height: 50px;" type="submit"><h3>And get a diagnostic</h3></button> 
                 </center>
             </form> 

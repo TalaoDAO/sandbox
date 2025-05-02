@@ -13,6 +13,8 @@ from datetime import datetime
 import hashlib
 import base64
 import logging
+import time
+import re
 #from load_vectorstore import load_vectorstore
 
 # Configure logging
@@ -22,6 +24,9 @@ logging.basicConfig(level=logging.INFO)
 with open("keys.json", "r") as f:
     openai_key = json.load(f)["openai"]
 
+# Initialize OpenAI client
+client = OpenAI(api_key=openai_key)
+    
 # Define models and constants
 ENGINE2 = "gpt-4-turbo"
 ENGINE = "gpt-3.5-turbo"
@@ -29,9 +34,10 @@ ISSUER_MODEL = "ft:gpt-3.5-turbo-0125:personal:oidc4vci-draft13:BLBljnoM"
 VERIFIER_MODEL = "ft:gpt-3.5-turbo-0125:personal:oidc4vp-draft18:BLC032IA"
 SDJWTVC_MODEL = "ft:gpt-3.5-turbo-0125:personal:sdjwtvc-draft10-1000:BLWSefAq"
 ADVICE = "\n\nFor a deeper analysis, review the cryptographic binding methods, signing algorithms, and specific scopes supported by the issuer and authorization server."
+ 
+MAX_RETRIES = 3
+DELAY_SECONDS = 2
 
-# Initialize OpenAI client
-client = OpenAI(api_key=openai_key)
 
 #vectorstore = load_vectorstore()
 
@@ -48,6 +54,15 @@ def get_header_from_token(token):
     # Extract header section from JWT
     header = token.split('.')[0]
     return json.loads(base64url_decode(header).decode())
+
+
+def clean_md(content):
+    # Patterns to remove specific top-level sections
+    for section in ["Introduction", "Terminology", "Document History", "Notices", "Acknowledgements", "Use Cases", "IANA Considerations", ]:
+        pattern = rf"(?m)^# {section}[\s\S]*?(?=^\# |\Z)"
+        content = re.sub(pattern, "", content)
+    return content
+
 
 def counter_update(place):
     # Update local request count and notify Slack channel
@@ -214,8 +229,19 @@ def analyze_issuer_qrcode(qrcode, draft, device):
 
     date = datetime.now().replace(microsecond=0).isoformat()
     credential_offer, issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode)
+    
+    try:
+        f = open("./dataset/oidc4vp/" + draft + ".md", "r")
+        context = f.read()
+        f.close()
+    except:
+        f = open("./dataset/oidc4vp/18.md", "r")
+        context = f.read()
+        f.close
+    
+    context = clean_md(context) 
     mention = (
-        f"\n\n The OpenAI model {ENGINE} is used in addition to a Web3 Digital Wallet dataset."
+        f"\n\n The OpenAI model {ENGINE2} is used in addition to a Web3 Digital Wallet dataset."
         f" This report is based on the OIDC4VCI specifications Draft {draft}."
         f" Date of issuance: {date}. © Web3 Digital Wallet 2025."
     )
@@ -230,6 +256,9 @@ def analyze_issuer_qrcode(qrcode, draft, device):
             "role": "user",
             "content": f"""
         Analyze the following credential offer and metadata and return a report in clear English using bullet points.
+        
+        ---Context ---
+        {context}
 
         --- Credential Offer ---
         {credential_offer}
@@ -240,7 +269,7 @@ def analyze_issuer_qrcode(qrcode, draft, device):
         --- Authorization Server Metadata ---
         {authorization_server_metadata}
 
-        You **must** answer the **8 points below**, **in the exact order**, and using the **exact same section titles**.
+        You **must** answer the **9 points below**, **in the exact order**, and using the **exact same section titles**.
         Each section should be concise, technically accurate, and clearly separated.
 
         Do not write introductory text. Start directly with point 1.
@@ -253,24 +282,37 @@ def analyze_issuer_qrcode(qrcode, draft, device):
         6. **Authorization Server Metadata Summary**
         7. **Auth Server Metadata Check**
         8. **Errors & Warnings**
+        9. **Improvements**: propose improvements or advice for the developer
         """
         }
     ]
 
-    try:
-        completion = client.chat.completions.create(
-            model=ISSUER_MODEL,
-            temperature=0,
-            max_tokens=1024,
-            messages=messages
-        )
-        result = completion.choices[0].message.content + ADVICE + mention
-    except openai.APIConnectionError:
-        result = "The server could not be reached"
-    except openai.RateLimitError:
-        result = "The agent is busy right now, retry later!"
-    except openai.BadRequestError:
-        result = "Too much data, context length exceeded"
+  
+
+    for attempt in range(MAX_RETRIES):
+        try:
+            completion = client.chat.completions.create(
+                model=ENGINE2,
+                temperature=0,
+                max_tokens=1024,
+                messages=messages
+            )
+            result = completion.choices[0].message.content + ADVICE + mention
+            break  # success, exit the retry loop
+
+        except openai.APIConnectionError:
+            result = "The server could not be reached"
+            break
+        except openai.RateLimitError as e:
+            print(f"Rate limit error: {e}")
+            if attempt < MAX_RETRIES - 1:
+                time.sleep(DELAY_SECONDS)
+                continue
+            result = "The agent is busy right now, retry later!"
+
+        except openai.BadRequestError:
+            result = "Too much data, context length exceeded"
+            break
 
     counter_update(device)
     store_report(qrcode, result, "issuer")
@@ -292,10 +334,17 @@ def analyze_verifier_qrcode(qrcode, draft, device):
     #for doc in relevant_docs:
     #    print(f"{doc.metadata['section']} - {doc.metadata['title']}")
     #context = "\n\n".join([doc.page_content for doc in relevant_docs])
-    with open("./dataset/oidc4vp/18.md", "r") as f:
+    
+    try:
+        f = open("./dataset/oidc4vp/" + draft + ".md", "r")
         context = f.read()
-        
-    print("context = ", context)
+        f.close()
+    except:
+        f = open("./dataset/oidc4vp/18.md", "r")
+        context = f.read()
+        f.close
+    
+    context = clean_md(context) 
     
     mention = (
         f"\n\n The OpenAI model {ENGINE2} is used in addition to a Web3 Digital Wallet dataset."

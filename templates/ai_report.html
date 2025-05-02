@@ -30,7 +30,11 @@ last one-->
                             <p id="compliant">Report</p>
                         </div>
 
-                    <textarea id="myTextArea" type="text" rows="30" cols="150">{{report}}</textarea> 
+                    <md-block style="text-align: left; max-width: 1000px; margin: auto; font-size: 16px;">
+                            {{ report | safe }}
+                        </md-block>
+
+                        <textarea id="myTextArea" rows="10" cols="150" style="display:none;">{{ report }}</textarea>
                         <br><br>
                     <button value='download' style="width: 200px; height: 50px;" type='button' onclick='doDL(document.getElementById("myTextArea").value)'><h3>Download</h3></button>
                     <a href="./qrcode"><button style="width: 200px; height: 50px;" ><h3>Back</h3></button></a>
