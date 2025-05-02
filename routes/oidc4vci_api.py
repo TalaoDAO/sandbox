@@ -1204,6 +1204,7 @@ async def issuer_credential(issuer_id, red, mode):
         return Response(**manage_error('unsupported_credential_format', 'Invalid VC format, types is missing', red, mode, request=request, stream_id=stream_id))
 
     # check proof if it exists depending on type of proof
+    wallet_identifier = 'did'
     if proof := result.get('proof'):
         proof_type = result['proof']['proof_type']
         if proof_type == 'jwt':
