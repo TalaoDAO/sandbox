@@ -1,22 +1,28 @@
 """
-Code...
+QR Code Analyzer for OIDC4VCI and OIDC4VP using OpenAI models
+This module processes QR code data, validates VC/VP tokens, interacts with OpenAI to generate reports,
+and stores results with Slack notifications and file logging.
 """
+
 import json
-import openai
 from openai import OpenAI
+import openai
 from urllib.parse import parse_qs, urlparse
 import requests
 from datetime import datetime
 import hashlib
 import base64
 import logging
+#from load_vectorstore import load_vectorstore
 
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 
+# Load API key
 with open("keys.json", "r") as f:
     openai_key = json.load(f)["openai"]
-    
-    
+
+# Define models and constants
 ENGINE2 = "gpt-4-turbo"
 ENGINE = "gpt-3.5-turbo"
 ISSUER_MODEL = "ft:gpt-3.5-turbo-0125:personal:oidc4vci-draft13:BLBljnoM"
@@ -24,266 +30,233 @@ VERIFIER_MODEL = "ft:gpt-3.5-turbo-0125:personal:oidc4vp-draft18:BLC032IA"
 SDJWTVC_MODEL = "ft:gpt-3.5-turbo-0125:personal:sdjwtvc-draft10-1000:BLWSefAq"
 ADVICE = "\n\nFor a deeper analysis, review the cryptographic binding methods, signing algorithms, and specific scopes supported by the issuer and authorization server."
 
-client = OpenAI(
-    api_key=openai_key,
-)
+# Initialize OpenAI client
+client = OpenAI(api_key=openai_key)
 
+#vectorstore = load_vectorstore()
 
-def get_payload_from_token(token) -> dict:
+def base64url_decode(input_str):
+    padding = '=' * ((4 - len(input_str) % 4) % 4)
+    return base64.urlsafe_b64decode(input_str + padding)
+
+def get_payload_from_token(token):
+    # Extract payload section from JWT
     payload = token.split('.')[1]
-    payload += "=" * ((4 - len(payload) % 4) % 4)  # solve the padding issue of the base64 python lib
-    return json.loads(base64.urlsafe_b64decode(payload).decode())
+    return json.loads(base64url_decode(payload).decode())
 
-def get_header_from_token(token) -> dict:
-    payload = token.split('.')[0]
-    payload += "=" * ((4 - len(payload) % 4) % 4)  # solve the padding issue of the base64 python lib
-    return json.loads(base64.urlsafe_b64decode(payload).decode())
+def get_header_from_token(token):
+    # Extract header section from JWT
+    header = token.split('.')[0]
+    return json.loads(base64url_decode(header).decode())
 
-def summarize_json(raw_json: str, max_len=1000):
-    try:
-        data = json.loads(raw_json)
-        summary = json.dumps({k: v for k, v in list(data.items())[:10]}, indent=2)
-        return summary[:max_len]
-    except:
-        return raw_json[:max_len]
-
-# store request number and send event to slack
 def counter_update(place):
-    counter = json.load(open("openai_counter.json", "r"))
-    request_number = counter["request_number"]
-    request_number += 1
-    new_counter = { "request_number": request_number}
-    counter_file = open("openai_counter.json", "w")
-    counter_file.write(json.dumps(new_counter))
-    counter_file.close()
-    # send data to slack
-    passwords = json.load(open("passwords.json", "r"))
-    url = passwords["slack_ai_url"]
+    # Update local request count and notify Slack channel
+    with open("openai_counter.json", "r") as f:
+        counter = json.load(f)
+    counter["request_number"] += 1
+    with open("openai_counter.json", "w") as f:
+        json.dump(counter, f)
+
+    with open("passwords.json", "r") as f:
+        slack_url = json.load(f)["slack_ai_url"]
+
     payload = {
-        "channel": "#	issuer-and-ai",
+        "channel": "# issuer-and-ai",
         "username": "AI Agent",
-        "text": "New AI request has been issued from " + place,
+        "text": f"New AI request has been issued from {place}",
         "icon_emoji": ":ghost:"
-        }
-    data = {
-        'payload': json.dumps(payload)
     }
-    r = requests.post(url, data=data, timeout=10)
-    
+    requests.post(slack_url, data={"payload": json.dumps(payload)}, timeout=10)
+    return True
+
+def store_report(qrcode, report, report_type):
+    # Save report to file using SHA256 hash as filename
+    filename = hashlib.sha256(report.encode('utf-8')).hexdigest() + '.json'
+    report_data = {
+        "type": report_type,
+        "date": datetime.now().replace(microsecond=0).isoformat() + 'Z',
+        "qrcode": qrcode,
+        "report": report
+    }
+    with open(f"report/{filename}", "w") as f:
+        json.dump(report_data, f)
     return True
 
 
-def store_report(qrcode, report, type):
-    report_filename =  hashlib.sha256(report.encode('utf-8')).hexdigest() + '.json'
-    with open("report/" + report_filename, "w") as f:
-        f.write(json.dumps({
-            "type": type,
-            "date": datetime.now().replace(microsecond=0).isoformat() + 'Z',
-            "qrcode": qrcode,
-            "report": report
-        }))
-    f.close()
-    return True
-    
-
-# OIDC4VP flow for wallet inspector
-def analyze_vp(token):
-    vcsd = token.split("~")
-    vcsd_jwt_payload = get_payload_from_token(vcsd[0])
-    vcsd_jwt_header = get_header_from_token(vcsd[0])
-    disclosure = ""
-    if not vcsd[-1]:
-        len_vcsd = len(vcsd)
-        kbjwt_header = kbjwt_payload = "No KB"
-    else:
-        len_vcsd = len(vcsd)-1
-        kbjwt_header = get_header_from_token(vcsd[-1])
-        kbjwt_payload = get_payload_from_token(vcsd[-1])
-    for i in range(1, len_vcsd):
-        _disclosure = vcsd[i]
-        _disclosure += "=" * ((4 - len(vcsd[i]) % 4) % 4)    
-        disclosure += "\r\n" + base64.urlsafe_b64decode(_disclosure.encode()).decode()
-    date = datetime.now().replace(microsecond=0).isoformat()
-    mention = "\n\n The OpenAI model " + ENGINE + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the IETF SD-JWT VC specifications (Draft 10). Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
-    completion = client.chat.completions.create(
-        model=SDJWTVC_MODEL,
-        messages=[
-                {
-                    "role": "developer",
-                    "content": "You are an expert of the specifications SD-JWT VC"
-                },
-                {             
-                    "role": "user",
-                    "content": "Here is the VC for validation purpose :\
-                        the header of the VC :" + json.dumps(vcsd_jwt_header) + "\
-                        the payload of the VC : "+ json.dumps(vcsd_jwt_payload) + "\
-                        the disclosures : " + disclosure + "\
-                        the KB header :" + json.dumps(kbjwt_header) + "\
-                        the KB payload :" + json.dumps(kbjwt_payload) + "\
-                        Give me a response with one line by point :\
-                            1. Provide the identifier of the holder (cnf) and the identifier the issuer. \
-                            2. Display the claims disclosed.\
-                            3. check that all claims required in the header of the VC are not missing.\
-                            3. check that all claims required in the payload of the VC are not missing.\
-                            4. verify that the Key Binding jwt header and payload is correct.\
-                            5. list all errors or problems if any."
-                }
-        ]
-    )
-    counter_update("sandbox")
-    print("response = ", completion.choices[0].message.content)
-    return completion.choices[0].message.content + ADVICE + mention
-
-
-# OIDC4VCI flow fot wallet inspector
-def analyze_token_request(form):
-    response = client.responses.create(
-        model="gpt-4o",
-        instructions="You are a serious coding assistant that talks like an expert of https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0-ID1.html#name-token-endpoint",
-        input="Here is the token request form " + form + \
-            "Can you: \
-                1: provide the release of the OIDC4VCI specification used \
-                2: verify that the claims of the request are correct and if the nonce is provided  \
-                3: provide a resume of the content of this request  \
-                4: check that this VC respects the specifications of OIDC4VCI token request  \
-                5: list all errors or problems if any \
-                6: mention the GPT model used for this report"
-    )
-    counter_update("sanbdox")
-    return response.output_text
-
-
-# OIDC4VCI flow fot wallet inspector
-def analyze_credential_request(form):
-    print("call API AI credential request")
-    response = client.responses.create(
-        model="gpt-4o",
-        instructions="You are a serious coding assistant that talks like an expert of https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0-ID1.html#name-credential-endpoint",
-        input="Here is the credential request form " + form + \
-            "Can you: \
-                1: verify that the claims of the request are correct  \
-                2: provide a resume of the content of this request  \
-                3: check that this request respects the specifications of OIDC4VCI credential request  \
-                4: list all errors or problems if any \
-                5: mention the GPT model used for this report"
-    )
-    counter_update("sandbox")
-    return response.output_text
-
-
-# QIDC4VP flow wallet inspector
-def get_verifier_request(qrcode):
+def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, device):
+    # Analyze a QR code and delegate based on protocol type
     parse_result = urlparse(qrcode)
     result = parse_qs(parse_result.query)
-    result = {k: v[0] for k, v in result.items()}
+    if result.get('credential_offer_uri') or result.get('credential_offer'):
+        return analyze_issuer_qrcode(qrcode, oidc4vciDraft, device)
+    else:
+        request, presentation_definition, error_description = get_verifier_request(qrcode, oidc4vpDraft)
+        if not request or not presentation_definition:
+            return "This QR code is not supported : " + error_description
+        else:
+            return analyze_verifier_qrcode(qrcode, oidc4vpDraft, device)
+    
+
+def get_verifier_request(qrcode, draft):
+    # Parse verifier's QR code request
+    parse_result = urlparse(qrcode)
+    result = {k: v[0] for k, v in parse_qs(parse_result.query).items()}
     if request_uri := result.get('request_uri'):
         try:
             request_jwt = requests.get(request_uri, timeout=10).text
+            request = get_payload_from_token(request_jwt)
         except Exception:
-            request_jwt = "Error: The request jwt is not available"
-        request = get_payload_from_token(request_jwt)
+            return None, None, "Error: The request jwt is not available"
     elif request := result.get("request"):
         request_jwt = request
         request = get_payload_from_token(request_jwt)
     elif result.get("response_mode"):
         request = result
     else:
-        request = "Error: The response_mode is not present in the verifier request"
+        return None, None, "Error: The request is not available"
+
     if presentation_definition_uri := request.get("presentation_definition_uri"):
         try:
             presentation_definition = json.loads(requests.get(presentation_definition_uri, timeout=10).text)
         except Exception:
-            presentation_definition = "Error: The presentation definition is not available"
+            return request, None,  "Error: The presentation definition is not available"
         request.pop("presentation_definition_uri")
         request['presentation_definition'] = presentation_definition
     else:
-        presentation_definition = request['presentation_definition']
-    return json.dumps(request), presentation_definition
+        presentation_definition = request.get('presentation_definition')
+    return request, presentation_definition, ""
 
+def analyze_vp(token):
+    # Analyze a VP token in SD-JWT format and generate a compliance report
+    vcsd = token.split("~")
+    jwt_header = get_header_from_token(vcsd[0])
+    jwt_payload = get_payload_from_token(vcsd[0])
 
-# extract data for QR code issuer
+    # Handle disclosures
+    disclosures = "\r\n".join(
+        base64url_decode(vcsd[i]).decode() for i in range(1, len(vcsd) - 1 if vcsd[-1] else len(vcsd))
+    )
+
+    # Handle Key Binding JWT (if available)
+    if vcsd[-1]:
+        kb_header = get_header_from_token(vcsd[-1])
+        kb_payload = get_payload_from_token(vcsd[-1])
+    else:
+        kb_header = kb_payload = "No KB"
+
+    date = datetime.now().replace(microsecond=0).isoformat()
+    mention = (
+        f"\n\n The OpenAI model {ENGINE} is used in addition to a Web3 Digital Wallet dataset."
+        f" This report is based on the IETF SD-JWT VC specifications (Draft 10)."
+        f" Date of issuance: {date}. \u00a9 Web3 Digital Wallet 2025."
+    )
+
+    prompt = (
+        "Here is the VC for validation purpose: "
+        f"the header of the VC: {json.dumps(jwt_header)} "
+        f"the payload of the VC: {json.dumps(jwt_payload)} "
+        f"the disclosures: {disclosures} "
+        f"the KB header: {json.dumps(kb_header)} "
+        f"the KB payload: {json.dumps(kb_payload)} "
+        "Give me a response with one line per point:\n"
+        "1. Provide the identifier of the holder (cnf) and the identifier the issuer.\n"
+        "2. Display the claims disclosed.\n"
+        "3. Check that all claims required in the header of the VC are not missing.\n"
+        "4. Check that all claims required in the payload of the VC are not missing.\n"
+        "5. Verify that the Key Binding JWT header and payload is correct.\n"
+        "6. List all errors or problems if any."
+    )
+
+    completion = client.chat.completions.create(
+        model=SDJWTVC_MODEL,
+        messages=[
+            {"role": "developer", "content": "You are an expert of the specifications SD-JWT VC"},
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    counter_update("sandbox")
+    return completion.choices[0].message.content + ADVICE + mention
+
 def get_issuer_data(qrcode):
+    # Retrieve issuer, metadata and authorization server data from a credential offer QR code
     parse_result = urlparse(qrcode)
-    result = parse_qs(parse_result.query)
-    result = {k: v[0] for k, v in result.items()}
-    if credential_offer_uri := result.get('credential_offer_uri') :
+    result = {k: v[0] for k, v in parse_qs(parse_result.query).items()}
+
+    if credential_offer_uri := result.get('credential_offer_uri'):
         try:
             credential_offer = requests.get(credential_offer_uri, timeout=10).json()
         except Exception:
             credential_offer = "Error: The credential offer is not available"
     else:
-        credential_offer = json.loads(result['credential_offer'])
-    issuer = credential_offer['credential_issuer']
-    issuer_metadata_url = issuer + '/.well-known/openid-credential-issuer'
+        credential_offer = json.loads(result.get('credential_offer', '{}'))
+
+    issuer = credential_offer.get('credential_issuer')
+    issuer_metadata_url = f"{issuer}/.well-known/openid-credential-issuer"
     try:
         issuer_metadata = requests.get(issuer_metadata_url, timeout=10).json()
     except Exception:
         issuer_metadata = "Error: Issuer metadata are not available"
-    if issuer_metadata.get("authorization_servers"):
-        authorization_server = issuer_metadata.get("authorization_servers")[0]
-    else:
-        authorization_server = issuer
-    authorization_server_url = authorization_server + '/.well-known/oauth-authorization-server'
+
+    authorization_server = issuer_metadata.get("authorization_servers", [issuer])[0]
+    authorization_server_url = f"{authorization_server}/.well-known/oauth-authorization-server"
     try:
         authorization_server_metadata = requests.get(authorization_server_url, timeout=10).json()
     except Exception:
         authorization_server_metadata = "Error: The authorization server metadata are not available"
+
     return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
 
-
-# QRcode for issuer inspector
-def analyze_issuer_qrcode(qrcode, draft):
+def analyze_issuer_qrcode(qrcode, draft, device):
+    # Analyze issuer QR code and generate a structured report using OpenAI
     if not draft:
         draft = "13"
-    print("call API AI credential request for issuer QR code diagnostic")
+
     date = datetime.now().replace(microsecond=0).isoformat()
-    credential_offer, issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode)  
-    mention = "\n\n The OpenAI model " + ENGINE + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the OIDC4VCI specifications Draft " + draft +". Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
+    credential_offer, issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode)
+    mention = (
+        f"\n\n The OpenAI model {ENGINE} is used in addition to a Web3 Digital Wallet dataset."
+        f" This report is based on the OIDC4VCI specifications Draft {draft}."
+        f" Date of issuance: {date}. © Web3 Digital Wallet 2025."
+    )
+
     messages = [
         {
-        "role": "system",
-        "content": "You are a professional analyst and expert in OIDC4VCI Draft " + draft + " and digital credential specifications. You write concise, structured reports for developers and product teams."
+            "role": "system",
+            "content": f"You are a professional analyst and expert in OIDC4VCI Draft {draft} and digital credential specifications."
+                       f" You write concise, structured reports for developers and product teams."
         },
         {
-        "role": "user",
-        "content": f"""Analyze the following credential offer and metadata and return a report in clear English using bullet points.
+            "role": "user",
+            "content": f"""
+        Analyze the following credential offer and metadata and return a report in clear English using bullet points.
 
-    
         --- Credential Offer ---
-        {summarize_json(credential_offer)}
+        {credential_offer}
 
         --- Issuer Metadata ---
-        {summarize_json(issuer_metadata)}
+        {issuer_metadata}
 
         --- Authorization Server Metadata ---
-        {summarize_json(authorization_server_metadata)}
+        {authorization_server_metadata}
 
-        
-        You **must** answer the **8 points below**, **in the exact order**, and using the **exact same section titles**. Each section should be concise, technically accurate, and clearly separated.
+        You **must** answer the **8 points below**, **in the exact order**, and using the **exact same section titles**.
+        Each section should be concise, technically accurate, and clearly separated.
 
-        Do not write introductory text or say “Sure” or “Here’s the analysis”. Start directly with point 1.
+        Do not write introductory text. Start directly with point 1.
 
-        1. **VC Summary**: Abstract of the offered credential in max 50 words. Include the issuer name and list of claims.
-        
-        2. **Required Claims Check**: Are any required claims missing in the offer?
-        
-        3. **Flow Type**: Identify the flow (authorization_code or pre-authorized_code), and whether a transaction code is required.
-        
-        4. **Issuer Metadata Summary**: Abstract of the issuer metadata.
-        
-        5. **Issuer Metadata Check**: Are all required claims and fields present?
-        
-        6. **Authorization Server Metadata Summary**: Abstract of the authorization server metadata.
-        
-        7. **Auth Server Metadata Check**: Are all required claims and fields present?
-        
-        8. **Errors & Warnings**: List any issues, inconsistencies, or spec violations.
-
-        Use clear bullet points for each section.
-             ⚠️ Be strict: answer all five sections. Do not omit any part.
+        1. **VC Summary**
+        2. **Required Claims Check**
+        3. **Flow Type**
+        4. **Issuer Metadata Summary**
+        5. **Issuer Metadata Check**
+        6. **Authorization Server Metadata Summary**
+        7. **Auth Server Metadata Check**
+        8. **Errors & Warnings**
         """
         }
     ]
+
     try:
         completion = client.chat.completions.create(
             model=ISSUER_MODEL,
@@ -298,62 +271,73 @@ def analyze_issuer_qrcode(qrcode, draft):
         result = "The agent is busy right now, retry later!"
     except openai.BadRequestError:
         result = "Too much data, context length exceeded"
-    counter_update("wallet")
+
+    counter_update(device)
     store_report(qrcode, result, "issuer")
     return result
 
-    
-# QR code for verifier inspector
-def analyze_verifier_qrcode(qrcode, draft):
+
+def analyze_verifier_qrcode(qrcode, draft, device):   
+    # Analyze verifier QR code and generate a structured report using OpenAI
     if not draft:
         draft = "18"
-    print("call API AI credential request for QR code diagnostic")
+
     date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
-    verifier_request, presentation_definition = get_verifier_request(qrcode)
-    mention = "\n\n The OpenAI model " + ENGINE + " is used in addition to a Web3 Digital Wallet dataset. This report is based on the OIDC4VP ID2 specifications Draft " + draft + ". Date of issuance :" + date + ". @copyright Web3 Digital Wallet 2025."
+    verifier_request, presentation_definition, error_description = get_verifier_request(qrcode, draft)
+    if not verifier_request or not presentation_definition:
+        return error_description
+    #search_kwargs={"k": 10, "filter": {"spec": "oidc4vp", "version": draft}}
+    #retriever = vectorstore.as_retriever(search_kwargs=search_kwargs)
+    #relevant_docs = retriever.invoke("presentation_definition client_metadata authorization request")
+    #for doc in relevant_docs:
+    #    print(f"{doc.metadata['section']} - {doc.metadata['title']}")
+    #context = "\n\n".join([doc.page_content for doc in relevant_docs])
+    context =""
+    print("context = ", "OIDC4VP draft 18")
+    
+    mention = (
+        f"\n\n The OpenAI model {ENGINE2} is used in addition to a Web3 Digital Wallet dataset."
+        f" This report is based on the OIDC4VP ID2 specifications Draft {draft}."
+        f" Date of issuance: {date}. © Web3 Digital Wallet 2025."
+    )
+
     messages = [
         {
             "role": "system",
-            "content": "You are an expert in OIDC4VP Draft " + draft +". You generate short, clear, and complete technical reports for engineers. You never skip questions and always follow strict formats when instructed."
+            "content": f"You are an expert in OIDC4VP Draft {draft}. You generate short, clear, and complete technical reports for engineers."
         },
         {
             "role": "user",
-            "content": f"""Analyze the following verifier credential request.
+            "content": f"""
+        Analyze the following verifier authorization request and presentation definition.
+        
+        ---Context ---
+        {context}
 
         --- Authorization Request ---
-        {verifier_request}
+        {json.dumps(verifier_request, indent=2)}
 
         --- Presentation Definition ---
-        {presentation_definition}
+        {json.dumps(presentation_definition, indent=2)}
 
-        You **must** answer the **five points below**, **in the exact order**, and using the **exact same section titles**. Each section should be concise, technically accurate, and clearly separated.
+        You **must** answer the **five points below**, **in the exact order**, and using the **exact same section titles**.
+        Each section should be concise, technically accurate, and clearly separated.
 
-        Do not write introductory text or say “Sure” or “Here’s the analysis”. Start directly with point 1.
+        Do not write introductory text. Start directly with point 1.
 
-        🧱 Expected structure:
-
-        1. **Abstract**  
-        In 50 words max, summarize the purpose of the verifier's request and what type of credential or claims are expected.
-
-        2. **Required Claims in the Authorization Request**  
-        List the required claims explicitly stated in the request. Are they present and correctly defined?
-
-        3. **Required Claims in the Presentation Definition**  
-        Check if the presentation_definition includes all necessary inputs, constraints, and fields. Point out any missing or malformed items.
-
-        4. **Client Metadata**  
-        Does the request include `vp_formats` and other relevant metadata like `redirect_uri`? Are those values valid?
-
-        5. **Errors & Warnings**  
-        List all technical or specification issues, inconsistencies, or omissions. Be precise and use bullet points if needed.
-
-        ⚠️ Be strict: answer all five sections. Do not omit any part.
+        1. **Abstract**
+        2. **Authorization Request**, check that all required claims of OIDC4VP are in the request
+        3. **Presentation Definition**, check that the presentation_definition is correct
+        4. **Client Metadata**, check that the metadata are correct
+        5. **Errors & Warnings**
+        6. **Improvements**: propose improvements or advice for the developer
         """
         }
     ]
+
     try:
         completion = client.chat.completions.create(
-            model= ENGINE,
+            model=ENGINE2,
             temperature=0,
             max_tokens=1024,
             messages=messages
@@ -365,19 +349,7 @@ def analyze_verifier_qrcode(qrcode, draft):
         result = "The agent is busy right now, retry later!"
     except openai.BadRequestError:
         result = "Too much data, context length exceeded"
-    counter_update("wallet")
+
+    counter_update(device)
     store_report(qrcode, result, "verifier")
     return result
-
-
-# route call for QR code
-def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft):
-    parse_result = urlparse(qrcode)
-    result = parse_qs(parse_result.query)
-    if result.get('credential_offer_uri') or result.get('credential_offer'):
-        return analyze_issuer_qrcode(qrcode, oidc4vciDraft)
-    elif result.get('response_type') or result.get('request') or result.get("request_uri"):
-        return analyze_verifier_qrcode(qrcode, oidc4vpDraft)
-    else:
-        return "This protocol is not supported"
-    
