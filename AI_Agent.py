@@ -292,8 +292,10 @@ def analyze_verifier_qrcode(qrcode, draft, device):
     #for doc in relevant_docs:
     #    print(f"{doc.metadata['section']} - {doc.metadata['title']}")
     #context = "\n\n".join([doc.page_content for doc in relevant_docs])
-    context =""
-    print("context = ", "OIDC4VP draft 18")
+    with open("./dataset/oidc4vp/18.md", "r") as f:
+        context = f.read()
+        
+    print("context = ", context)
     
     mention = (
         f"\n\n The OpenAI model {ENGINE2} is used in addition to a Web3 Digital Wallet dataset."
