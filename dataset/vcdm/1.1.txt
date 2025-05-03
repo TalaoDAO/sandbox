@@ -1,0 +1,496 @@
+ Basic Concepts
+This section introduces some basic concepts for the specification, in preparation for Section 5. Advanced Concepts later in the document.
+
+4.1 Contexts
+When two software systems need to exchange data, they need to use terminology that both systems understand. As an analogy, consider how two people communicate. Both people must use the same language and the words they use must mean the same thing to each other. This might be referred to as the context of a conversation.
+
+Verifiable credentials and verifiable presentations have many attributes and values that are identified by URIs [RFC3986]. However, those URIs can be long and not very human-friendly. In such cases, short-form human-friendly aliases can be more helpful. This specification uses the @context property to map such short-form aliases to the URIs required by specific verifiable credentials and verifiable presentations.
+
+Note
+In JSON-LD, the @context property can also be used to communicate other details, such as datatype information, language information, transformation rules, and so on, which are beyond the needs of this specification, but might be useful in the future or to related work. For more information, see Section 3.1: The Context of the [JSON-LD] specification.
+
+Verifiable credentials and verifiable presentations MUST include a @context property.
+
+@context
+The value of the @context property MUST be an ordered set where the first item is a URI with the value https://www.w3.org/2018/credentials/v1. For reference, a copy of the base context is provided in Appendix B.1 Base Context. Subsequent items in the array MUST express context information and be composed of any combination of URIs or objects. It is RECOMMENDED that each URI in the @context be one which, if dereferenced, results in a document containing machine-readable information about the @context.
+Note
+Though this specification requires that a @context property be present, it is not required that the value of the @context property be processed using JSON-LD. This is to support processing using plain JSON libraries, such as those that might be used when the verifiable credential is encoded as a JWT. All libraries or processors MUST ensure that the order of the values in the @context property is what is expected for the specific application. Libraries or processors that support JSON-LD can process the @context property using full JSON-LD processing as expected.
+
+
+The data available at https://www.w3.org/2018/credentials/v1 is a static document that is never updated and SHOULD be downloaded and cached. The associated human-readable vocabulary document for the Verifiable Credentials Data Model is available at https://www.w3.org/2018/credentials/. This concept is further expanded on in Section 5.3 Extensibility.
+
+4.2 Identifiers
+When expressing statements about a specific thing, such as a person, product, or organization, it is often useful to use some kind of identifier so that others can express statements about the same thing. This specification defines the optional id property for such identifiers. The id property is intended to unambiguously refer to an object, such as a person, product, or organization. Using the id property allows for the expression of statements about specific things in the verifiable credential.
+
+If the id property is present:
+
+The id property MUST express an identifier that others are expected to use when expressing statements about a specific thing identified by that identifier.
+The id property MUST NOT have more than one value.
+The value of the id property MUST be a URI.
+Note
+Developers should remember that identifiers might be harmful in scenarios where pseudonymity is required. Developers are encouraged to read Section 7.3 Identifier-Based Correlation carefully when considering such scenarios. There are also other types of correlation mechanisms documented in Section 7. Privacy Considerations that create privacy concerns. Where privacy is a strong consideration, the id property MAY be omitted.
+
+id
+The value of the id property MUST be a single URI. It is RECOMMENDED that the URI in the id be one which, if dereferenced, results in a document containing machine-readable information about the id.
+
+
+Note
+As of this publication, DIDs are a new type of identifier that are not necessary for verifiable credentials to be useful. Specifically, verifiable credentials do not depend on DIDs and DIDs do not depend on verifiable credentials. However, it is expected that many verifiable credentials will use DIDs and that software libraries implementing this specification will probably need to resolve DIDs. DID-based URLs are used for expressing identifiers associated with subjects, issuers, holders, credential status lists, cryptographic keys, and other machine-readable information associated with a verifiable credential.
+
+4.3 Types
+Software systems that process the kinds of objects specified in this document use type information to determine whether or not a provided verifiable credential or verifiable presentation is appropriate. This specification defines a type property for the expression of type information.
+
+Verifiable credentials and verifiable presentations MUST have a type property. That is, any credential or presentation that does not have type property is not verifiable, so is neither a verifiable credential nor a verifiable presentation.
+
+type
+The value of the type property MUST be, or map to (through interpretation of the @context property), one or more URIs. If more than one URI is provided, the URIs MUST be interpreted as an unordered set. Syntactic conveniences SHOULD be used to ease developer usage. Such conveniences might include JSON-LD terms. It is RECOMMENDED that each URI in the type be one which, if dereferenced, results in a document containing machine-readable information about the type.
+
+With respect to this specification, the following table lists the objects that MUST have a type specified.
+
+Object	Type
+Verifiable credential object
+(a subclass of a credential object)	VerifiableCredential and, optionally, a more specific verifiable credential type. For example,
+"type": ["VerifiableCredential", "UniversityDegreeCredential"]
+Credential object	VerifiableCredential and, optionally, a more specific verifiable credential type. For example,
+"type": ["VerifiableCredential", "UniversityDegreeCredential"]
+Verifiable presentation object
+(a subclass of a presentation object)	VerifiablePresentation and, optionally, a more specific verifiable presentation type. For example,
+"type": ["VerifiablePresentation", "CredentialManagerPresentation"]
+Presentation object	VerifiablePresentation and, optionally, a more specific verifiable presentation type. For example,
+"type": ["VerifiablePresentation", "CredentialManagerPresentation"]
+Proof object	A valid proof type. For example,
+"type": "RsaSignature2018"
+credentialStatus object	A valid credential status type. For example,
+"type": "CredentialStatusList2017"
+termsOfUse object	A valid terms of use type. For example,
+"type": "OdrlPolicy2017")
+evidence object	A valid evidence type. For example,
+"type": "DocumentVerification2018"
+Note
+The type system for the Verifiable Credentials Data Model is the same as for [JSON-LD] and is detailed in Section 5.4: Specifying the Type and Section 8: JSON-LD Grammar. When using a JSON-LD context (see Section 5.3 Extensibility), this specification aliases the @type keyword to type to make the JSON-LD documents more easily understood. While application developers and document authors do not need to understand the specifics of the JSON-LD type system, implementers of this specification who want to support interoperable extensibility, do.
+
+All credentials, presentations, and encapsulated objects MUST specify, or be associated with, additional more narrow types (like UniversityDegreeCredential, for example) so software systems can process this additional information.
+
+When processing encapsulated objects defined in this specification, (for example, objects associated with the credentialSubject object or deeply nested therein), software systems SHOULD use the type information specified in encapsulating objects higher in the hierarchy. Specifically, an encapsulating object, such as a credential, SHOULD convey the associated object types so that verifiers can quickly determine the contents of an associated object based on the encapsulating object type.
+
+For example, a credential object with the type of UniversityDegreeCredential, signals to a verifier that the object associated with the credentialSubject property contains the identifier for the:
+
+Subject in the id property.
+Type of degree in the type property.
+Title of the degree in the name property.
+This enables implementers to rely on values associated with the type property for verification purposes. The expectation of types and their associated properties should be documented in at least a human-readable specification, and preferably, in an additional machine-readable representation.
+
+Note
+The type system used in the data model described in this specification allows for multiple ways to associate types with data. Implementers and authors are urged to read the section on typing in the Verifiable Credentials Implementation Guidelines [VC-IMP-GUIDE].
+
+4.4 Credential Subject
+A verifiable credential contains claims about one or more subjects. This specification defines a credentialSubject property for the expression of claims about one or more subjects.
+
+A verifiable credential MUST have a credentialSubject property.
+
+credentialSubject
+The value of the credentialSubject property is defined as a set of objects that contain one or more properties that are each related to a subject of the verifiable credential. Each object MAY contain an id, as described in Section 4.2 Identifiers.
+
+It is possible to express information related to multiple subjects in a verifiable credential. The example below specifies two subjects who are spouses. Note the use of array notation to associate multiple subjects with the credentialSubject property.
+
+
+4.5 Issuer
+This specification defines a property for expressing the issuer of a verifiable credential.
+
+A verifiable credential MUST have an issuer property.
+
+issuer
+The value of the issuer property MUST be either a URI or an object containing an id property. It is RECOMMENDED that the URI in the issuer or its id be one which, if dereferenced, results in a document containing machine-readable information about the issuer that can be used to verify the information expressed in the credential.
+Example 8: Usage of issuer property
+CredentialVerifiable Credential (with proof)Verifiable Credential (as JWT)
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://www.w3.org/2018/credentials/examples/v1"
+  ],
+  "id": "http://example.edu/credentials/3732",
+  "type": ["VerifiableCredential", "UniversityDegreeCredential"],
+  "issuer": "https://example.edu/issuers/14",
+  "issuanceDate": "2010-01-01T19:23:24Z",
+  "credentialSubject": {
+    "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
+    "degree": {
+      "type": "BachelorDegree",
+      "name": "Bachelor of Science and Arts"
+    }
+  }
+}
+It is also possible to express additional information about the issuer by associating an object with the issuer property:
+
+
+
+4.6 Issuance Date
+This specification defines the issuanceDate property for expressing the date and time when a credential becomes valid.
+
+issuanceDate
+A credential MUST have an issuanceDate property. The value of the issuanceDate property MUST be a string value of an [XMLSCHEMA11-2] combined date-time string representing the date and time the credential becomes valid, which could be a date and time in the future. Note that this value represents the earliest point in time at which the information associated with the credentialSubject property becomes valid.
+
+
+4.7 Proofs (Signatures)
+At least one proof mechanism, and the details necessary to evaluate that proof, MUST be expressed for a credential or presentation to be a verifiable credential or verifiable presentation; that is, to be verifiable.
+
+This specification identifies two classes of proof mechanisms: external proofs and embedded proofs. An external proof is one that wraps an expression of this data model, such as a JSON Web Token, which is elaborated on in Section 6.3.1 JSON Web Token. An embedded proof is a mechanism where the proof is included in the data, such as a Linked Data Signature, which is elaborated upon in Section 6.3.2 Data Integrity Proofs.
+
+When embedding a proof, the proof property MUST be used.
+
+proof
+One or more cryptographic proofs that can be used to detect tampering and verify the authorship of a credential or presentation. The specific method used for an embedded proof MUST be included using the type property.
+Because the method used for a mathematical proof varies by representation language and the technology used, the set of name-value pairs that is expected as the value of the proof property will vary accordingly. For example, if digital signatures are used for the proof mechanism, the proof property is expected to have name-value pairs that include a signature, a reference to the signing entity, and a representation of the signing date. The example below uses RSA digital signatures.
+
+
+4.8 Expiration
+This specification defines the expirationDate property for the expression of credential expiration information.
+
+expirationDate
+If present, the value of the expirationDate property MUST be a string value of an [XMLSCHEMA11-2] date-time representing the date and time the credential ceases to be valid.
+
+
+4.9 Status
+This specification defines the following credentialStatus property for the discovery of information about the current status of a verifiable credential, such as whether it is suspended or revoked.
+
+credentialStatus
+If present, the value of the credentialStatus property MUST include the following:
+id property, which MUST be a URI.
+type property, which expresses the credential status type (also referred to as the credential status method). It is expected that the value will provide enough information to determine the current status of the credential and that machine readable information needs to be retrievable from the URI. For example, the object could contain a link to an external document noting whether or not the credential is suspended or revoked.
+The precise contents of the credential status information is determined by the specific credentialStatus type definition, and varies depending on factors such as whether it is simple to implement or if it is privacy-enhancing.
+
+4.10 Presentations
+Presentations MAY be used to combine and present credentials. They can be packaged in such a way that the authorship of the data is verifiable. The data in a presentation is often all about the same subject, but there is no limit to the number of subjects or issuers in the data. The aggregation of information from multiple verifiable credentials is a typical use of verifiable presentations.
+
+A verifiable presentation is typically composed of the following properties:
+
+id
+The id property is optional and MAY be used to provide a unique identifier for the presentation. For details related to the use of this property, see Section 4.2 Identifiers.
+type
+The type property is required and expresses the type of presentation, such as VerifiablePresentation. For details related to the use of this property, see Section 4.3 Types.
+verifiableCredential
+If present, the value of the verifiableCredential property MUST be constructed from one or more verifiable credentials, or of data derived from verifiable credentials in a cryptographically verifiable format.
+holder
+If present, the value of the holder property is expected to be a URI for the entity that is generating the presentation.
+proof
+If present, the value of the proof property ensures that the presentation is verifiable. For details related to the use of this property, see Section 4.7 Proofs (Signatures).
+The example below shows a verifiable presentation that embeds verifiable credentials.
+
+
+4.10.1 Presentations Using Derived Credentials
+Some zero-knowledge cryptography schemes might enable holders to indirectly prove they hold claims from a verifiable credential without revealing the verifiable credential itself. In these schemes, a claim from a verifiable credential might be used to derive a presented value, which is cryptographically asserted such that a verifier can trust the value if they trust the issuer.
+
+For example, a verifiable credential containing the claim date of birth might be used to derive the presented value over the age of 15 in a manner that is cryptographically verifiable. That is, a verifier can still trust the derived value if they trust the issuer.
+
+Note
+For an example of a ZKP-style verifiable presentation containing derived data instead of directly embedded verifiable credentials, see Section 5.8 Zero-Knowledge Proofs.
+
+Selective disclosure schemes using zero-knowledge proofs can use claims expressed in this model to prove additional statements about those claims. For example, a claim specifying a subject's date of birth can be used as a predicate to prove the subject's age is within a given range, and therefore prove the subject qualifies for age-related discounts, without actually revealing the subject's birthdate. The holder has the flexibility to use the claim in any way that is applicable to the desired verifiable presentation.
+
+Pat has a property
+                 dateOfBirth whose value is 2010-01-01
+Figure 9 A basic claim expressing that Pat's date of birth is January 1, 2010. Date encoding would be determined by the schema.
+5. Advanced Concepts
+Building on the concepts introduced in Section 4. Basic Concepts, this section explores more complex topics about verifiable credentials.
+
+5.1 Lifecycle Details
+This section is non-normative.
+
+Section 1.2 Ecosystem Overview provided an overview of the verifiable credential ecosystem. This section provides more detail about how the ecosystem is envisaged to operate.
+
+diagram showing how
+         credentials flow from issuer to holder, and optionally
+         from one holder to another; and how
+         presentations flow from holder to verifier, where
+         all parties can use information from a logical
+         verifiable data registry
+Figure 10 The roles and information flows for this specification.
+The roles and information flows in the verifiable credential ecosystem are as follows:
+
+An issuer issues a verifiable credential to a holder. Issuance always occurs before any other actions involving a credential.
+A holder might transfer one or more of its verifiable credentials to another holder.
+A holder presents one or more of its verifiable credentials to a verifier, optionally inside a verifiable presentation.
+A verifier verifies the authenticity of the presented verifiable presentation and verifiable credentials. This should include checking the credential status for revocation of the verifiable credentials.
+An issuer might revoke a verifiable credential.
+A holder might delete a verifiable credential.
+Note
+The order of the actions above is not fixed, and some actions might be taken more than once. Such action-recurrence might be immediate or at any later point.
+
+The most common sequence of actions is envisioned to be:
+
+An issuer issues to a holder.
+The holder presents to a verifier.
+The verifier verifies.
+This specification does not define any protocol for transferring verifiable credentials or verifiable presentations, but assuming other specifications do specify how they are transferred between entities, then this Verifiable Credential Data Model is directly applicable.
+
+This specification also does not define an authorization framework nor the decisions that a verifier might make after verifying a verifiable credential or verifiable presentation, taking into account the holder, the issuers of the verifiable credentials, the contents of the verifiable credentials, and its own policies.
+
+In particular, Sections 5.6 Terms of Use and C. Subject-Holder Relationships specify how a verifier can determine:
+
+Whether the holder is a subject of a verifiable credential.
+The relationship between the subject and the holder.
+Whether the original holder passed a verifiable credential to a subsequent holder.
+Any restrictions using the verifiable credentials by the holder or verifier.
+5.2 Trust Model
+This section is non-normative.
+
+The verifiable credentials trust model is as follows:
+
+The verifier trusts the issuer to issue the credential that it received. To establish this trust, a credential is expected to either:
+Include a proof establishing that the issuer generated the credential (that is, it is a verifiable credential), or
+Have been transmitted in a way clearly establishing that the issuer generated the verifiable credential and that the verifiable credential was not tampered with in transit or storage. This trust could be weakened depending on the risk assessment of the verifier.
+All entities trust the verifiable data registry to be tamper-evident and to be a correct record of which data is controlled by which entities.
+The holder and verifier trust the issuer to issue true (that is, not false) credentials about the subject, and to revoke them quickly when appropriate.
+The holder trusts the repository to store credentials securely, to not release them to anyone other than the holder, and to not corrupt or lose them while they are in its care.
+This trust model differentiates itself from other trust models by ensuring the:
+
+Issuer and the verifier do not need to trust the repository
+Issuer does not need to know or trust the verifier.
+By decoupling the trust between the identity provider and the relying party a more flexible and dynamic trust model is created such that market competition and customer choice is increased.
+
+For more information about how this trust model interacts with various threat models studied by the Working Group, see the Verifiable Credentials Use Cases document [VC-USE-CASES].
+
+Note
+The data model detailed in this specification does not imply a transitive trust model, such as that provided by more traditional Certificate Authority trust models. In the Verifiable Credentials Data Model, a verifier either directly trusts or does not trust an issuer. While it is possible to build transitive trust models using the Verifiable Credentials Data Model, implementers are urged to learn about the security weaknesses introduced by broadly delegating trust in the manner adopted by Certificate Authority systems.
+
+5.3 Extensibility
+One of the goals of the Verifiable Credentials Data Model is to enable permissionless innovation. To achieve this, the data model needs to be extensible in a number of different ways. The data model is required to:
+
+Model complex multi-entity relationships through the use of a graph-based data model.
+Extend the machine-readable vocabularies used to describe information in the data model, without the use of a centralized system for doing so, through the use of [LINKED-DATA].
+Support multiple types of cryptographic proof formats through the use of Data Integrity Proofs [DATA-INTEGRITY] and a variety of signature suites listed in the Linked Data Cryptographic Suites Registry [LDP-REGISTRY]
+Provide all of the extensibility mechanisms outlined above in a data format that is popular with software developers and web page authors, and is enabled through the use of [JSON-LD].
+This approach to data modeling is often called an open world assumption, meaning that any entity can say anything about any other entity. While this approach seems to conflict with building simple and predictable software systems, balancing extensibility with program correctness is always more challenging with an open world assumption than with closed software systems.
+
+The rest of this section describes, through a series of examples, how both extensibility and program correctness are achieved.
+
+Let us assume we start with the verifiable credential shown below.
+
+This verifiable credential states that the entity associated with did:example:abcdef1234567 has a name with a value of Jane Doe.
+
+Now let us assume a developer wants to extend the verifiable credential to store two additional pieces of information: an internal corporate reference number, and Jane's favorite food.
+
+The first thing to do is to create a JSON-LD context containing two new terms, as shown below.
+
+A dynamic extensibility model such as this does increase the implementation burden. Software written for such a system has to determine whether verifiable credentials with extensions are acceptable based on the risk profile of the application. Some applications might accept only certain extensions while highly secure environments might not accept any extensions. These decisions are up to the developers of these applications and are specifically not the domain of this specification.
+
+Developers are urged to ensure that extension JSON-LD contexts are highly available. Implementations that cannot fetch a context will produce an error. Strategies for ensuring that extension JSON-LD contexts are always available include using content-addressed URLs for contexts, bundling context documents with implementations, or enabling aggressive caching of contexts.
+
+Implementers are advised to pay close attention to the extension points in this specification, such as in Sections 4.7 Proofs (Signatures), 4.9 Status, 5.4 Data Schemas,5.5 Refreshing, 5.6 Terms of Use, and 5.7 Evidence. While this specification does not define concrete implementations for those extension points, the Verifiable Credentials Extension Registry [VC-EXTENSION-REGISTRY] provides an unofficial, curated list of extensions that developers can use from these extension points.
+
+5.3.1 Semantic Interoperability
+This specification ensures that "plain" JSON and JSON-LD syntaxes are semantically compatible without requiring JSON implementations to use a JSON-LD processor. To achieve this, the specification imposes the following additional requirements on both syntaxes:
+
+JSON-based processors MUST process the @context key, ensuring the expected values exist in the expected order for the credential type being processed. The order is important because keys used in a credential, which are defined using the values associated with @context, are defined using a "first defined wins" mechanism and changing the order might result in a different key definition "winning".
+JSON-LD-based processors MUST produce an error when a JSON-LD context redefines any term in the active context. The only way to change the definition of existing terms is to introduce a new term that clears the active context within the scope of that new term. Authors that are interested in this feature should read about the @protected feature in the JSON-LD 1.1 specification.
+A human-readable document describing the expected order of values for the @context property is expected to be published by any implementer seeking interoperability. A machine-readable description (that is, a normal JSON-LD Context document) is expected to be published at the URL specified in the @context property by JSON-LD implementers seeking interoperability.
+
+The requirements above guarantee semantic interoperability between JSON and JSON-LD for terms defined by the @context mechanism. While JSON-LD processors will use the specific mechanism provided and can verify that all terms are correctly specified, JSON-based processors implicitly accept the same set of terms without testing that they are correct. In other words, the context in which the data exchange happens is explicitly stated for both JSON and JSON-LD by using the same mechanism. With respect to JSON-based processors, this is achieved in a lightweight manner, without having to use JSON-LD processing libraries.
+
+5.4 Data Schemas
+Data schemas are useful when enforcing a specific structure on a given collection of data. There are at least two types of data schemas that this specification considers:
+
+Data verification schemas, which are used to verify that the structure and contents of a credential or verifiable credential conform to a published schema.
+Data encoding schemas, which are used to map the contents of a verifiable credential to an alternative representation format, such as a binary format used in a zero-knowledge proof.
+It is important to understand that data schemas serve a different purpose from the @context property, which neither enforces data structure or data syntax, nor enables the definition of arbitrary encodings to alternate representation formats.
+
+This specification defines the following property for the expression of a data schema, which can be included by an issuer in the verifiable credentials that it issues:
+
+credentialSchema
+The value of the credentialSchema property MUST be one or more data schemas that provide verifiers with enough information to determine if the provided data conforms to the provided schema. Each credentialSchema MUST specify its type (for example, JsonSchemaValidator2018), and an id property that MUST be a URI identifying the schema file. The precise contents of each data schema is determined by the specific type definition.
+Note
+The credentialSchema property provides an opportunity to annotate type definitions or lock them to specific versions of the vocabulary. Authors of verifiable credentials can include a static version of their vocabulary using credentialSchema that is locked to some content integrity protection mechanism. The credentialSchema property also makes it possible to perform syntactic checking on the credential and to use verification mechanisms such as JSON Schema [JSON-SCHEMA-2018] validation.
+
+
+Note
+For information about linkages to JSON Schema [JSON-SCHEMA-2018] or other optional verification mechanisms, see the Verifiable Credentials Implementation Guidelines [VC-IMP-GUIDE] document.
+
+Data schemas can also be used to specify mappings to other binary formats, such as those used to perform zero-knowledge proofs. For more information on using the credentialSchema property with zero-knowledge proofs, see Section 5.8 Zero-Knowledge Proofs.
+
+
+
+5.5 Refreshing
+It is useful for systems to enable the manual or automatic refresh of an expired verifiable credential. For more information about expired verifiable credentials, see Section 4.8 Expiration. This specification defines a refreshService property, which enables an issuer to include a link to a refresh service.
+
+The issuer can include the refresh service as an element inside the verifiable credential if it is intended for either the verifier or the holder (or both), or inside the verifiable presentation if it is intended for the holder only. In the latter case, this enables the holder to refresh the verifiable credential before creating a verifiable presentation to share with a verifier. In the former case, including the refresh service inside the verifiable credential enables either the holder or the verifier to perform future updates of the credential.
+
+The refresh service is only expected to be used when either the credential has expired or the issuer does not publish credential status information. Issuers are advised not to put the refreshService property in a verifiable credential that does not contain public information or whose refresh service is not protected in some way.
+
+Note
+Placing a refreshService property in a verifiable credential so that it is available to verifiers can remove control and consent from the holder and allow the verifiable credential to be issued directly to the verifier, thereby bypassing the holder.
+
+refreshService
+The value of the refreshService property MUST be one or more refresh services that provides enough information to the recipient's software such that the recipient can refresh the verifiable credential. Each refreshService value MUST specify its type (for example, ManualRefreshService2018) and its id, which is the URI of the service. There is an expectation that machine readable information needs to be retrievable from the URI. The precise content of each refresh service is determined by the specific refreshService type definition.
+
+
+5.6 Terms of Use
+Terms of use can be utilized by an issuer or a holder to communicate the terms under which a verifiable credential or verifiable presentation was issued. The issuer places their terms of use inside the verifiable credential. The holder places their terms of use inside a verifiable presentation. This specification defines a termsOfUse property for expressing terms of use information.
+
+The value of the termsOfUse property tells the verifier what actions it is required to perform (an obligation), not allowed to perform (a prohibition), or allowed to perform (a permission) if it is to accept the verifiable credential or verifiable presentation.
+
+Note
+Further study is required to determine how a subject who is not a holder places terms of use on their verifiable credentials. One way could be for the subject to request the issuer to place the terms of use inside the issued verifiable credentials. Another way could be for the subject to delegate a verifiable credential to a holder and place terms of use restrictions on the delegated verifiable credential.
+
+termsOfUse
+The value of the termsOfUse property MUST specify one or more terms of use policies under which the creator issued the credential or presentation. If the recipient (a holder or verifier) is not willing to adhere to the specified terms of use, then they do so on their own responsibility and might incur legal liability if they violate the stated terms of use. Each termsOfUse value MUST specify its type, for example, IssuerPolicy, and MAY specify its instance id. The precise contents of each term of use is determined by the specific termsOfUse type definition.
+
+
+This feature is also expected to be used by government-issued verifiable credentials to instruct digital wallets to limit their use to similar government organizations in an attempt to protect citizens from unexpected usage of sensitive data. Similarly, some verifiable credentials issued by private industry are expected to limit usage to within departments inside the organization, or during business hours. Implementers are urged to read more about this rapidly evolving feature in the appropriate section of the Verifiable Credentials Implementation Guidelines [VC-IMP-GUIDE] document.
+
+5.7 Evidence
+Evidence can be included by an issuer to provide the verifier with additional supporting information in a verifiable credential. This could be used by the verifier to establish the confidence with which it relies on the claims in the verifiable credential.
+
+For example, an issuer could check physical documentation provided by the subject or perform a set of background checks before issuing the credential. In certain scenarios, this information is useful to the verifier when determining the risk associated with relying on a given credential.
+
+This specification defines the evidence property for expressing evidence information.
+
+evidence
+The value of the evidence property MUST be one or more evidence schemes providing enough information for a verifier to determine whether the evidence gathered by the issuer meets its confidence requirements for relying on the credential. Each evidence scheme is identified by its type. The id property is optional, but if present, SHOULD contain a URL that points to where more information about this instance of evidence can be found. The precise content of each evidence scheme is determined by the specific evidence type definition.
+Note
+For information about how attachments and references to credentials and non-credential data might be supported by the specification, see the Verifiable Credentials Implementation Guidelines [VC-IMP-GUIDE] document.
+
+Note
+The evidence property provides different and complementary information to the proof property. The evidence property is used to express supporting information, such as documentary evidence, related to the integrity of the verifiable credential. In contrast, the proof property is used to express machine-verifiable mathematical proofs related to the authenticity of the issuer and integrity of the verifiable credential. For more information about the proof property, see Section 4.7 Proofs (Signatures).
+
+5.8 Zero-Knowledge Proofs
+A zero-knowledge proof is a cryptographic method where an entity can prove to another entity that they know a certain value without disclosing the actual value. A real-world example is proving that an accredited university has granted a degree to you without revealing your identity or any other personally identifiable information contained on the degree.
+
+The key capabilities introduced by zero-knowledge proof mechanisms are the ability of a holder to:
+
+Combine multiple verifiable credentials from multiple issuers into a single verifiable presentation without revealing verifiable credential or subject identifiers to the verifier. This makes it more difficult for the verifier to collude with any of the issuers regarding the issued verifiable credentials.
+Selectively disclose the claims in a verifiable credential to a verifier without requiring the issuance of multiple atomic verifiable credentials. This allows a holder to provide a verifier with precisely the information they need and nothing more.
+Produce a derived verifiable credential that is formatted according to the verifier's data schema instead of the issuer's, without needing to involve the issuer after verifiable credential issuance. This provides a great deal of flexibility for holders to use their issued verifiable credentials.
+This specification describes a data model that supports selective disclosure with the use of zero-knowledge proof mechanisms. The examples below highlight how the data model can be used to issue, present, and verify zero-knowledge verifiable credentials.
+
+For a holder to use a zero-knowledge verifiable presentation, they need an issuer to have issued a verifiable credential in a manner that enables the holder to derive a proof from the originally issued verifiable credential, so that the holder can present the information to a verifier in a privacy-enhancing manner. This implies that the holder can prove the validity of the issuer's signature without revealing the values that were signed, or when only revealing certain selected values. The standard practice is to do so by proving knowledge of the signature, without revealing the signature itself. There are two requirements for verifiable credentials when they are to be used in zero-knowledge proof systems.
+
+The verifiable credential MUST contain a Proof, using the proof property, so that the holder can derive a verifiable presentation that reveals only the information than the holder intends to reveal.
+If a credential definition is being used, the credential definition MUST be defined in the credentialSchema property, so that it can be used by all parties to perform various cryptographic operations in zero-knowledge.
+The following example shows one method of using verifiable credentials in zero-knowledge. It makes use of a Camenisch-Lysyanskaya Signature [CL-SIGNATURES], which allows the presentation of the verifiable credential in a way that supports the privacy of the holder and subject through the use of selective disclosure of the verifiable credential values. Some other cryptographic systems which rely upon zero-knowledge proofs to selectively disclose attributes can be found in the [LDP-REGISTRY] as well.
+
+
+5.9 Disputes
+There are at least two different cases to consider for an entity wanting to dispute a credential issued by an issuer:
+
+A subject disputes a claim made by the issuer. For example, the address property is incorrect or out of date.
+An entity disputes a potentially false claim made by the issuer about a different subject. For example, an imposter claims the social security number for an entity.
+The mechanism for issuing a DisputeCredential is the same as for a regular credential except that the credentialSubject identifier in the DisputeCredential property is the identifier of the disputed credential.
+
+For example, if a credential with an identifier of https://example.org/credentials/245 is disputed, the subject can issue the credential shown below and present it to the verifier along with the disputed credential.
+
+Note
+This area of study is rapidly evolving and developers that are interested in publishing credentials that dispute the veracity of other credentials are urged to read the section related to disputes in the Verifiable Credentials Implementation Guidelines [VC-IMP-GUIDE] document.
+
+5.10 Authorization
+This section is non-normative.
+
+Verifiable credentials are intended as a means of reliably identifying subjects. While it is recognized that Role Based Access Controls (RBACs) and Attribute Based Access Controls (ABACs) rely on this identification as a means of authorizing subjects to access resources, this specification does not provide a complete solution for RBAC or ABAC. Authorization is not an appropriate use for this specification without an accompanying authorization framework.
+
+The Working Group did consider authorization use cases during the creation of this specification and is pursuing that work as an architectural layer built on top of this specification.
+
+6. Syntaxes
+The data model as described in Sections 3. Core Data Model, 4. Basic Concepts, and 5. Advanced Concepts is the canonical structural representation of a verifiable credential or verifiable presentation. All serializations are representations of that data model in a specific format. This section specifies how the data model is realized in JSON-LD and plain JSON. Although syntactic mappings are provided for only these two syntaxes, applications and services can use any other data representation syntax (such as XML, YAML, or CBOR) that is capable of expressing the data model. As the verification and validation requirements are defined in terms of the data model, all serialization syntaxes have to be deterministically translated to the data model for processing, validation, or comparison. This specification makes no requirements for support of any specific serialization format.
+
+The expected arity of the property values in this specification, and the resulting datatype which holds those values, can vary depending on the property. If present, the following properties are represented as a single value:
+
+id property
+issuer property
+issuanceDate property
+expirationDate property.
+All other properties, if present, are represented as either a single value or an array of values.
+
+6.1 JSON
+The data model, as described in Section 3. Core Data Model, can be encoded in JavaScript Object Notation (JSON) [RFC8259] by mapping property values to JSON types as follows:
+
+Numeric values representable as IEEE754 SHOULD be represented as a Number type.
+Boolean values SHOULD be represented as a Boolean type.
+Sequence value SHOULD be represented as an Array type.
+Unordered sets of values SHOULD be represented as an Array type.
+Sets of properties SHOULD be represented as an Object type.
+Empty values SHOULD be represented as a null value.
+Other values MUST be represented as a String type.
+Note
+As the transformations listed herein have potentially incompatible interpretations, additional profiling of the JSON format is required to provide a deterministic transformation to the data model.
+
+6.2 JSON-LD
+[JSON-LD] is a JSON-based format used to serialize Linked Data. The syntax is designed to easily integrate into deployed systems already using JSON, and provides a smooth upgrade path from JSON to [JSON-LD]. It is primarily intended to be a way to use Linked Data in Web-based programming environments, to build interoperable Web services, and to store Linked Data in JSON-based storage engines.
+
+[JSON-LD] is useful when extending the data model described in this specification. Instances of the data model are encoded in [JSON-LD] in the same way they are encoded in JSON (Section 6.1 JSON), with the addition of the @context property. The JSON-LD context is described in detail in the [JSON-LD] specification and its use is elaborated on in Section 5.3 Extensibility.
+
+Multiple contexts MAY be used or combined to express any arbitrary information about verifiable credentials in idiomatic JSON. The JSON-LD context, available at https://www.w3.org/2018/credentials/v1, is a static document that is never updated and can therefore be downloaded and cached client side. The associated vocabulary document for the Verifiable Credentials Data Model is available at https://www.w3.org/2018/credentials.
+
+6.2.1 Syntactic Sugar
+In general, the data model and syntaxes described in this document are designed such that developers can copy and paste examples to incorporate verifiable credentials into their software systems. The design goal of this approach is to provide a low barrier to entry while still ensuring global interoperability between a heterogeneous set of software systems. This section describes some of these approaches, which will likely go unnoticed by most developers, but whose details will be of interest to implementers. The most noteworthy syntactic sugars provided by [JSON-LD] are:
+
+The @id and @type keywords are aliased to id and type respectively, enabling developers to use this specification as idiomatic JSON.
+Data types, such as integers, dates, units of measure, and URLs, are automatically typed to provide stronger type guarantees for use cases that require them.
+The verifiableCredential and proof properties are treated as graph containers. That is, mechanisms used to isolate sets of data asserted by different entities. This ensures, for example, proper cryptographic separation between the data graph provided by each issuer and the one provided by the holder presenting the verifiable credential to ensure the provenance of the information for each graph is preserved.
+The @protected properties feature of [JSON-LD] 1.1 is used to ensure that terms defined by this specification cannot be overridden. This means that as long as the same @context declaration is made at the top of a verifiable credential or verifiable presentation, interoperability is guaranteed for all terms understood by users of the data model whether or not they use a [JSON-LD] processor.
+6.3 Proof Formats
+The data model described in this specification is designed to be proof format agnostic. This specification does not normatively require any particular digital proof or signature format. While the data model is the canonical representation of a credential or presentation, the proofing mechanisms for these are often tied to the syntax used in the transmission of the document between parties. As such, each proofing mechanism has to specify whether the verification of the proof is calculated against the state of the document as transmitted, against the possibly transformed data model, or against another form. At the time of publication, at least two proof formats are being actively utilized by implementers and the Working Group felt that documenting what these proof formats are and how they are being used would be beneficial to implementers. The sections detailing the current proof formats being actively utilized to issue verifiable credentials are:
+
+Section 6.3.1 JSON Web Token, and
+Section 6.3.2 Data Integrity Proofs.
+6.3.1 JSON Web Token
+JSON Web Token (JWT) [RFC7519] is still a widely used means to express claims to be transferred between two parties. Providing a representation of the Verifiable Credentials Data Model for JWT allows existing systems and libraries to participate in the ecosystem described in Section 1.2 Ecosystem Overview. A JWT encodes a set of claims as a JSON object that is contained in a JSON Web Signature (JWS) [RFC7515] or JWE [RFC7516]. For this specification, the use of JWE is out of scope.
+
+Relation to the Verifiable Credentials Data Model
+This specification defines encoding rules of the Verifiable Credential Data Model onto JWT and JWS. It further defines processing rules how and when to make use of specific JWT-registered claim names and specific JWS-registered header parameter names to allow systems based on JWT to comply with this specification. If these specific claim names and header parameters are present, their respective counterpart in the standard verifiable credential and verifiable presentation MAY be omitted to avoid duplication.
+
+JSON Web Token Extensions
+This specification introduces two new registered claim names, which contain those parts of the standard verifiable credentials and verifiable presentations where no explicit encoding rules for JWT exist. These objects are enclosed in the JWT payload as follows:
+
+vc: JSON object, which MUST be present in a JWT verifiable credential. The object contains the credential according to this specification.
+vp: JSON object, which MUST be present in a JWT verifiable presentation. The object contains the presentation according to this specification.
+JWT and JWS Considerations
+JWT Encoding
+To encode a verifiable credential as a JWT, specific properties introduced by this specification MUST be either:
+
+Encoded as standard JOSE header parameters, or
+Encoded as registered JWT claim names, or
+Contained in the JWS signature part.
+If no explicit rule is specified, properties are encoded in the same way as with a standard credential, and are added to the vc claim of the JWT. As with all JWTs, the JWS-based signature of a verifiable credential represented in the JWT syntax is calculated against the literal JWT string value as presented across the wire, before any decoding or transformation rules are applied. The following paragraphs describe these encoding rules.
+
+If a JWS is present, the digital signature refers either to the issuer of the verifiable credential, or in the case of a verifiable presentation, to the holder of the verifiable credential. The JWS proves that the iss of the JWT signed the contained JWT payload and therefore, the proof property can be omitted.
+
+If no JWS is present, a proof property MUST be provided. The proof property can be used to represent a more complex proof, as may be necessary if the creator is different from the issuer, or a proof not based on digital signatures, such as Proof of Work. The issuer MAY include both a JWS and a proof property. For backward compatibility reasons, the issuer MUST use JWS to represent proofs based on a digital signature.
+
+The following rules apply to JOSE headers in the context of this specification:
+
+alg MUST be set for digital signatures. If only the proof property is needed for the chosen signature method (that is, if there is no choice of algorithm within that method), the alg header MUST be set to none.
+kid MAY be used if there are multiple keys associated with the issuer of the JWT. The key discovery is out of the scope of this specification. For example, the kid can refer to a key in a DID document, or can be the identifier of a key inside a JWKS.
+typ, if present, MUST be set to JWT.
+For backward compatibility with JWT processors, the following registered JWT claim names MUST be used, instead of or in addition to, their respective standard verifiable credential counterparts:
+
+exp MUST represent the expirationDate property, encoded as a UNIX timestamp (NumericDate).
+iss MUST represent the issuer property of a verifiable credential or the holder property of a verifiable presentation.
+nbf MUST represent issuanceDate, encoded as a UNIX timestamp (NumericDate).
+jti MUST represent the id property of the verifiable credential or verifiable presentation.
+sub MUST represent the id property contained in the credentialSubject.
+Note
+In bearer credentials and presentations, sub will not be present.
+
+aud MUST represent (i.e., identify) the intended audience of the verifiable presentation (i.e., the verifier intended by the presenting holder to receive and verify the verifiable presentation).
+Other JOSE header parameters and JWT claim names not specified herein can be used if their use is not explicitly discouraged. Additional verifiable credential claims MUST be added to the credentialSubject property of the JWT.
+
+Note
+For more information about using JOSE header parameters and/or JWT claim names not specified herein, see the Verifiable Credentials Implementation Guidelines [VC-IMP-GUIDE] document.
+
+This version of the specification defines no JWT-specific encoding rules for the concepts outlined in Section Advanced Concepts (for example, refreshService, termsOfUse, and evidence). These concepts can be encoded as they are without any transformation, and can be added to the vc JWT claim.
+
+Note
+Implementers are warned that JWTs are not capable of encoding multiple subjects and are thus not capable of encoding a verifiable credential with more than one subject. JWTs might support multiple subjects in the future and implementers are advised to refer to the JSON Web Token Claim Registry for multi-subject JWT claim names or the Nested JSON Web Token specification.
+
+JWT Decoding
+To decode a JWT to a standard credential or presentation, the following transformation MUST be performed:
+
+Create a JSON object.
+Add the content from the vc or vp claim to the new JSON object.
+Transform the remaining JWT specific headers and claims, and add the results to the new credential or presentation JSON object.
+To transform the JWT specific headers and claims, the following MUST be done:
+
+If exp is present, the UNIX timestamp MUST be converted to an [XMLSCHEMA11-2] date-time, and MUST be used to set the value of the expirationDate property of credentialSubject of the new JSON object.
+If iss is present, the value MUST be used to set the issuer property of the new credential JSON object or the holder property of the new presentation JSON object.
+If nbf is present, the UNIX timestamp MUST be converted to an [XMLSCHEMA11-2] date-time, and MUST be used to set the value of the issuanceDate property of the new JSON object.
+If sub is present, the value MUST be used to set the value of the id property of credentialSubject of the new credential JSON object.
+If jti is present, the value MUST be used to set the value of the id property of the new JSON object.
