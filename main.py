@@ -572,8 +572,27 @@ def qrcode():
         if not qrcode:
             return redirect('/qrcode')
         report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, 'sandbox')
-        return render_template("ai_report.html", report= "\n\n" + report)
+        return render_template("ai_report.html", back="/ai/qrcode", report= "\n\n" + report)
 
+
+
+# OpenAI tools for sandbox
+@app.route('/ai/vc', methods=['GET', 'POST'])
+def vc():
+    if  request.method == 'GET':
+        with open("openai_counter.json", "r") as f:
+            counter = json.load(f)
+        request_number = str(counter["request_number"])
+        return render_template("ai_vc.html", request_number=request_number)
+    else:
+        vc = request.form.get("vc")
+        sdjwtvc_draft = request.form.get("sdjwtvc_draft")
+        vcdm_draft = request.form.get("vcdm_draft")
+        if not qrcode:
+            return redirect('/ai/vc')
+        report = AI_Agent.process_vc_format(vc, sdjwtvc_draft, vcdm_draft)
+        return render_template("ai_report.html", back="/ai/vc", report= "\n\n" + report)
+    
 
 # OpenAI tools for wallet
 @app.route('/ai/wallet/qrcode', methods=['GET', 'POST'])
@@ -669,6 +688,51 @@ def analyze_wallet_qrcode():
     # Return as base64
     report_base64 = base64.b64encode(report.encode()).decode()
     return jsonify({"report_base64": report_base64})
+
+
+@app.route('/api/analyze-vc', methods=['POST'])
+def api_analyze_vc():
+    """
+    Analyze a Verifiable Credential (VC) based on its format (SD-JWT VC, JWT VC, JSON-LD VC).
+
+    Input:
+    - Content-Type: application/json
+    - Required: "vc" (base64-encoded string)
+    - Optional: "sdjwtvc_draft", "vcdm_draft"
+
+    Returns:
+    - JSON object with "report_base64" containing the base64-encoded markdown analysis.
+    """
+
+    api_key = request.headers.get("Api-Key")
+    if api_key not in ai_api_keys:
+        return jsonify({"error": "Access denied"}), 403
+
+    try:
+        data = request.get_json(force=True)
+        vc_b64 = data.get("vc")
+        sdjwtvc_draft = data.get("sdjwtvc_draft")
+        vcdm_draft = data.get("vcdm_draft")
+    except Exception:
+        return jsonify({"error": "Invalid JSON body"}), 400
+
+    if not vc_b64:
+        return jsonify({"error": "Missing 'vc' field"}), 400
+
+    try:
+        vc_str = base64.b64decode(vc_b64.encode()).decode()
+    except Exception:
+        return jsonify({"error": "Invalid base64 encoding for VC"}), 400
+
+    try:
+        report = AI_Agent.process_vc_format(vc_str, sdjwtvc_draft, vcdm_draft)
+    except Exception as e:
+        logging.error(f"VC analysis failed: {e}")
+        return jsonify({"error": "Internal processing error"}), 500
+
+    report_b64 = base64.b64encode(report.encode()).decode()
+    return jsonify({"report_base64": report_b64})
+
 
 
 # MAIN entry point for test

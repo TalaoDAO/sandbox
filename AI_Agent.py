@@ -16,6 +16,8 @@ import logging
 import time
 import re
 import tiktoken
+from bs4 import BeautifulSoup
+
 #from load_vectorstore import load_vectorstore
 
 # Configure logging
@@ -31,9 +33,6 @@ client = OpenAI(api_key=openai_key)
 # Define models and constants
 ENGINE2 = "gpt-4-turbo"
 ENGINE = "gpt-3.5-turbo"
-ISSUER_MODEL = "ft:gpt-3.5-turbo-0125:personal:oidc4vci-draft13:BLBljnoM"
-VERIFIER_MODEL = "ft:gpt-3.5-turbo-0125:personal:oidc4vp-draft18:BLC032IA"
-SDJWTVC_MODEL = "ft:gpt-3.5-turbo-0125:personal:sdjwtvc-draft10-1000:BLWSefAq"
 ADVICE = "\n\nFor a deeper analysis, review the cryptographic binding methods, signing algorithms, and specific scopes supported by the issuer and authorization server."
  
 MAX_RETRIES = 3
@@ -70,6 +69,30 @@ def clean_md(content):
     return content
 
 
+def clean_html(html: str, max_chars: int = 5000) -> str:
+    """
+    Converts raw HTML string into clean text for LLM prompt use.
+
+    Args:
+        html (str): HTML content as a string.
+        max_chars (int): Max characters to return for prompt input.
+
+    Returns:
+        str: Cleaned plain text for prompting.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Remove noise
+    for tag in soup(["script", "style", "meta", "link", "title"]):
+        tag.decompose()
+
+    # Extract clean text
+    clean_text = soup.get_text(separator="\n")
+    clean_text = "\n".join(line.strip() for line in clean_text.splitlines() if line.strip())
+
+    return clean_text[:max_chars] + ("\n... (truncated)" if len(clean_text) > max_chars else "")
+
+
 def counter_update(place):
     # Update local request count and notify Slack channel
     with open("openai_counter.json", "r") as f:
@@ -102,6 +125,34 @@ def store_report(qrcode, report, report_type):
     with open(f"report/{filename}", "w") as f:
         json.dump(report_data, f)
     return True
+
+
+def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str):
+    """
+    Detect the format of a Verifiable Credential (VC) and route to the correct analysis function.
+    Args:
+        vc (str): VC input as a string.
+    Returns:
+        str: Result of analysis or error message.
+    """
+
+    # 1. SD-JWT: starts with base64 segment and uses '~' delimiter
+    if "~" in vc and "." in vc.split("~")[0]:
+        return analyze_sd_jwt_vc(vc, sdjwtvc_draft)
+
+    # 2. JWT VC (compact JWT): 3 base64 parts separated by dots
+    if vc.count(".") == 2 and all(len(part.strip()) > 0 for part in vc.split(".")):
+        return analyze_jwt_vc(vc, vcdm_draft)
+
+    # 3. JSON-LD: must be valid JSON with @context
+    try:
+        vc_json = json.loads(vc)
+        if "@context" in vc_json and "type" in vc_json:
+            return analyze_jsonld_vc(vc_json, vcdm_draft)
+    except json.JSONDecodeError:
+        return "Invalid JSON. Cannot parse input."
+
+    return "Unknown VC format. Supported formats: SD-JWT VC, JWT VC (compact), JSON-LD VC."
 
 
 def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, device):
@@ -147,57 +198,169 @@ def get_verifier_request(qrcode, draft):
         presentation_definition = request.get('presentation_definition')
     return request, presentation_definition, ""
 
-def analyze_vp(token):
-    # Analyze a VP token in SD-JWT format and generate a compliance report
-    vcsd = token.split("~")
-    jwt_header = get_header_from_token(vcsd[0])
-    jwt_payload = get_payload_from_token(vcsd[0])
 
-    # Handle disclosures
+def analyze_sd_jwt_vc(token: str, draft: str) -> str:
+    """
+    Analyze a Verifiable Presentation (VP) in SD-JWT format and return a structured report.
+    
+    Args:
+        token (str): The full SD-JWT token, formatted as base64url sections separated by `~`
+        draft (str): Draft version number to load the appropriate spec documentation
+
+    Returns:
+        str: A markdown-formatted compliance report generated using OpenAI
+    """
+    # Split token into components: header~payload~disclosures...~key_binding_jwt (optional)
+    vcsd = token.split("~")
+    sd_jwt = vcsd[0]
+    
+    # Decode SD-JWT header and payload
+    jwt_header = get_header_from_token(sd_jwt)
+    jwt_payload = get_payload_from_token(sd_jwt)
+
+    # Determine whether the last part is a Key Binding JWT (assumed to be a JWT if it contains 2 dots)
+    is_kb_jwt = vcsd[-1].count('.') == 2
+
+    # Disclosures are everything between vcsd[1] and vcsd[-2] if KB is present, otherwise vcsd[1:]
+    disclosure_parts = vcsd[1:-1] if is_kb_jwt else vcsd[1:]
+
+    # Decode disclosures
     disclosures = "\r\n".join(
-        base64url_decode(vcsd[i]).decode() for i in range(1, len(vcsd) - 1 if vcsd[-1] else len(vcsd))
+        base64url_decode(part).decode() for part in disclosure_parts
     )
 
-    # Handle Key Binding JWT (if available)
-    if vcsd[-1]:
+    # Decode Key Binding JWT (KB-JWT) if present
+    if is_kb_jwt:
         kb_header = get_header_from_token(vcsd[-1])
         kb_payload = get_payload_from_token(vcsd[-1])
     else:
-        kb_header = kb_payload = "No KB"
+        kb_header = kb_payload = "No Key Binding JWT"
 
+    # Load the appropriate specification content based on draft
+    try:
+        with open(f"./dataset/sdjwtvc/{draft}.txt", "r") as f:
+            content = f.read()
+    except FileNotFoundError:
+        with open("./dataset/sdjwtvc/8.txt", "r") as fallback:
+            content = fallback.read()
+
+    # Token count logging for diagnostics
+    tokens = enc.encode(content)
+    print("🔢 Token count:", len(tokens))
+
+    # Timestamp and attribution
     date = datetime.now().replace(microsecond=0).isoformat()
     mention = (
-        f"\n\n The OpenAI model {ENGINE} is used in addition to a Web3 Digital Wallet dataset."
-        f" This report is based on the IETF SD-JWT VC specifications (Draft 10)."
-        f" Date of issuance: {date}. \u00a9 Web3 Digital Wallet 2025."
+        f"\n\nThe OpenAI model {ENGINE2} is used in conjunction with the Web3 Digital Wallet dataset.\n"
+        f"This report is based on the IETF SD-JWT VC Draft {draft} specification.\n"
+        f"Date of issuance: {date}. ©Web3 Digital Wallet 2025."
     )
 
-    prompt = (
-        "Here is the VC for validation purpose: "
-        f"the header of the VC: {json.dumps(jwt_header)} "
-        f"the payload of the VC: {json.dumps(jwt_payload)} "
-        f"the disclosures: {disclosures} "
-        f"the KB header: {json.dumps(kb_header)} "
-        f"the KB payload: {json.dumps(kb_payload)} "
-        "Give me a response with one line per point:\n"
-        "1. Provide the identifier of the holder (cnf) and the identifier the issuer.\n"
-        "2. Display the claims disclosed.\n"
-        "3. Check that all claims required in the header of the VC are not missing.\n"
-        "4. Check that all claims required in the payload of the VC are not missing.\n"
-        "5. Verify that the Key Binding JWT header and payload is correct.\n"
-        "6. List all errors or problems if any."
-    )
+    # Prompt for OpenAI model
+    prompt = f"""
+    --- Specifications ---
+    {content}
 
+    --- VC Data for Analysis ---
+    VC Header: {json.dumps(jwt_header, indent=2)}
+    VC Payload: {json.dumps(jwt_payload, indent=2)}
+    Disclosures:
+    {disclosures}
+    Key Binding JWT Header: {json.dumps(kb_header, indent=2)}
+    Key Binding JWT Payload: {json.dumps(kb_payload, indent=2)}
+
+    --- Instructions ---
+    Analyze the content above and provide answers to the following points, one per line:
+
+    1. Provide the holder's identifier (cnf) and the issuer identifier.
+    2. Display all disclosed claims.
+    3. Check that no required claims are missing from the header.
+    4. Check that no required claims are missing from the payload.
+    5. Validate that the Key Binding JWT (if present) is structurally correct.
+    6. List any errors, inconsistencies, or anomalies and propose improvements
+    """
+
+    # Call the OpenAI API
     completion = client.chat.completions.create(
-        model=SDJWTVC_MODEL,
+        model=ENGINE2,
         messages=[
-            {"role": "developer", "content": "You are an expert of the specifications SD-JWT VC"},
+            {"role": "system", "content": "You are an expert in SD-JWT VC specification compliance."},
             {"role": "user", "content": prompt}
         ]
     )
 
+    # Update usage stats and return response
     counter_update("sandbox")
     return completion.choices[0].message.content + ADVICE + mention
+
+def analyze_jwt_vc(vc, draft):
+    return analyze_jsonld_vc(vc, draft)
+     
+    
+def analyze_jsonld_vc(vc: str, draft: str) -> str:
+    """
+    Analyze a Verifiable Presentation (VP) in JSON-LD format and return a structured report.
+    
+    Args:
+        vc (str): The full VC, 
+        draft (str): Draft version number to load the appropriate spec documentation
+
+    Returns:
+        str: A markdown-formatted compliance report generated using OpenAI
+    """
+
+    # Load the appropriate specification content based on draft
+    try:
+        with open(f"./dataset/vcdm/{draft}.html", "r", encoding="utf-8") as f:
+            content = f.read()
+    except FileNotFoundError:
+        with open("./dataset/vcdm/1.1.html", "r", encoding="utf-8") as fallback:
+            content = fallback.read()
+            
+    content = clean_html(content)
+
+    # Token count logging for diagnostics
+    tokens = enc.encode(content)
+    print("🔢 Token count:", len(tokens))
+
+    # Timestamp and attribution
+    date = datetime.now().replace(microsecond=0).isoformat()
+    mention = (
+        f"\n\nThe OpenAI model {ENGINE2} is used in conjunction with the Web3 Digital Wallet dataset.\n"
+        f"This report is based on the W3C VC DM {draft} specification.\n"
+        f"Date of issuance: {date}. ©Web3 Digital Wallet 2025."
+    )
+
+    # Prompt for OpenAI model
+    prompt = f"""
+    --- Specifications ---
+    {content}
+
+    --- VC Data for Analysis ---
+    JSON-LD VC : {json.dumps(vc, indent=2)}
+
+    --- Instructions ---
+    Analyze the content above and provide answers to the following points, one per line:
+
+    1. Provide the holder's identifier and the issuer identifier.
+    2. Display all claims.
+    3. Check that no required claims are missing from the VC.
+    4. List any errors, inconsistencies, or anomalies and propose improvements
+    """
+
+    # Call the OpenAI API
+    completion = client.chat.completions.create(
+        model=ENGINE2,
+        messages=[
+            {"role": "system", "content": "You are an expert in VC DM specification compliance."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    # Update usage stats and return response
+    counter_update("sandbox")
+    return completion.choices[0].message.content + ADVICE + mention
+
 
 def get_issuer_data(qrcode):
     # Retrieve issuer, metadata and authorization server data from a credential offer QR code

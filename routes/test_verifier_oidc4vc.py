@@ -3,7 +3,7 @@ import json
 import db_api
 import oidc4vc
 import base64
-from AI_Agent import analyze_vp
+from AI_Agent import process_vc_format
 
 def init_app(app,red, mode):
     app.add_url_rule('/sandbox/verifier/test_1',  view_func=verifier_test_1, methods=['GET'], defaults={'mode': mode})
@@ -329,7 +329,7 @@ def verifier_callback3():
         _disclosure += "=" * ((4 - len(vcsd[i]) % 4) % 4)    
         print(_disclosure)
         disclosure += "\r\n" + base64.urlsafe_b64decode(_disclosure.encode()).decode()
-    ia_analyze = analyze_vp(token)
+    ia_analyze = process_vc_format(token, "8", "1.1")
     return render_template(
         'verifier_oidc/vcsd_jwt_test.html',
         raw=token,
