@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<!-- home.html
+last one-->
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/img/altmeIcon.png">
+    <title>Talao</title>
+    <link rel="stylesheet" href="/static/ai_vc.css">
+</head>
+
+<body>
+
+    {% include 'header.html' %}
+
+    
+<div id="mainBox" style="max-width: 900px; margin: auto; padding: 30px; font-family: 'Roboto', sans-serif;">
+
+    <h1 style="text-align: center; margin-bottom: 30px;">Check your VC</h1>
+
+    <form action="/ai/vc" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <div style="display: flex; gap: 30px; justify-content: center; align-items: center;">
+            <label for="sdjwtvc_version"><strong>SD-JWT-VC Draft:</strong></label>
+            <select id="sdjwtvc_version" name="sdjwtvc_draft">
+                {% for i in range(1, 9) %}
+                    <option value="{{ i }}" {% if i == 8 %}selected{% endif %}>Draft {{ i }}</option>
+                {% endfor %}
+            </select>
+            <label for="vcdm_version"><strong>VCDM:</strong></label>
+            <select id="vcdm_version" name="vcdm_draft">
+                {% for i in ["1.1", "2.0"] %}
+                    <option value="{{ i }}" {% if i == 1.1 %}selected{% endif %}>{{ i }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <textarea name="vc"
+          style="
+            display: block;
+            width: 600px;
+            height: 600px;
+            min-height: 600px;
+            padding: 24px;
+            font-size: 18px;
+            font-family: monospace;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            resize: vertical;
+            box-sizing: border-box !important;
+            overflow: auto !important;">
+        </textarea>
+
+
+
+
+        <button type="submit" style="align-self: center; padding: 12px 30px; font-size: 16px; background-color: #0057FF; color: white; border: none; border-radius: 6px; cursor: pointer;">
+            Run Diagnostic
+        </button>
+    </form>
+
+    <p style="margin-top: 30px; text-align: center;">
+        VC tested: <strong>{{request_number}}</strong>
+    </p>
+
+    <p style="font-size: 14px; color: #555; text-align: center; margin-top: 40px;">
+        An OpenAI model is used in addition to Web3 Digital Wallet testing tools and datasets. Do not use personal data.
+    </p>
+</div>
+
+        
+        
+   
+
+    {% include 'footer.html' %}
+
+
+</body>
+
+</html>
