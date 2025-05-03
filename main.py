@@ -704,9 +704,9 @@ def api_analyze_vc():
     - JSON object with "report_base64" containing the base64-encoded markdown analysis.
     """
 
-    api_key = request.headers.get("Api-Key")
-    if api_key not in ai_api_keys:
-        return jsonify({"error": "Access denied"}), 403
+    #api_key = request.headers.get("Api-Key")
+    #if api_key not in ai_api_keys:
+    #    return jsonify({"error": "Access denied"}), 403
 
     try:
         data = request.get_json(force=True)
