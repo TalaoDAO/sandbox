@@ -18,48 +18,48 @@ last one-->
 
 
 
-    <div id="mainBox">
-        <div id="titles">
-            <p id="title">Test your OIDC4VC issuers or verifiers</p>
+    
+<div id="mainBox" style="max-width: 900px; margin: auto; padding: 30px; font-family: 'Roboto', sans-serif;">
 
-            <div id="divCompliant"><img id="arrowDown" src="/static/img/arrow-down.png">
-                <p id="compliant">Copy the QR code below</p>
-            </div>
-        </div>
+    <h1 style="text-align: center; margin-bottom: 30px;">Test your OIDC4VC Issuers or Verifiers QRcode</h1>
+
+    <form action="/ai/qrcode" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
         
-        <div id="box2">
-            
-            <form action="/ai/qrcode" method="POST">
-                <center><br><br>
-                       
-                    
-<div style="margin-bottom: 20px;">
-    <label for="oidc4vp_version"><strong>OIDC4VP Draft:</strong></label>
-    <select id="oidc4vp_version" name="oidc4vp_draft" style="margin-right: 30px;">
-        {% for i in range(18, 26) %}
-        <option value="{{ i }}" {% if i == 18 %}selected{% endif %}>Draft {{ i }}</option>
-        {% endfor %}
-    </select>
+        <div style="display: flex; gap: 30px; justify-content: center; align-items: center;">
+            <label for="oidc4vp_version"><strong>OIDC4VP Draft:</strong></label>
+            <select id="oidc4vp_version" name="oidc4vp_draft">
+                {% for i in range(18, 26) %}
+                    <option value="{{ i }}" {% if i == 18 %}selected{% endif %}>Draft {{ i }}</option>
+                {% endfor %}
+            </select>
 
-    <label for="oidc4vci_version"><strong>OIDC4VCI Draft:</strong></label>
-    <select id="oidc4vci_version" name="oidc4vci_draft">
-        {% for i in range(10, 18) %}
-        <option value="{{ i }}" {% if i == 13 %}selected{% endif %}>Draft {{ i }}</option>
-        {% endfor %}
-    </select>
+            <label for="oidc4vci_version"><strong>OIDC4VCI Draft:</strong></label>
+            <select id="oidc4vci_version" name="oidc4vci_draft">
+                {% for i in range(10, 18) %}
+                    <option value="{{ i }}" {% if i == 13 %}selected{% endif %}>Draft {{ i }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <textarea name="qrcode" rows="10" placeholder="Paste your QR code content or deeplink here" style="width: 100%; padding: 15px; font-family: monospace; font-size: 14px;"></textarea>
+
+        <button type="submit" style="align-self: center; padding: 12px 30px; font-size: 16px; background-color: #0057FF; color: white; border: none; border-radius: 6px; cursor: pointer;">
+            Run Diagnostic
+        </button>
+    </form>
+
+    <p style="margin-top: 30px; text-align: center;">
+        Issuer and verifier QR codes tested: <strong>{{request_number}}</strong>
+    </p>
+
+    <p style="font-size: 14px; color: #555; text-align: center; margin-top: 40px;">
+        An OpenAI model is used in addition to Web3 Digital Wallet testing tools and datasets. Do not use personal data.
+    </p>
 </div>
 
-<textarea type="text" rows="20" cols="150" name="qrcode"></textarea> 
-                    <br><br><button  style="width: 200px; height: 50px;" type="submit"><h3>And get a diagnostic</h3></button> 
-                </center>
-            </form> 
-            <h3>Issuer and verifier QR code tested : {{request_number}}</h3>
-            
-        </div>
-
-    </div>
-    <p>An OpenAI model is used in addition to Web3 Digital Wallet testing tools and dataset. Do not use personal data.</p>
-
+        
+        
+   
 
     {% include 'footer.html' %}
 

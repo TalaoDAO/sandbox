@@ -798,3 +798,20 @@ p {
     font-style: normal;
     /* 133.333% */
 }
+
+select {
+    padding: 6px 10px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+textarea {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    resize: vertical;
+}
+
+button:hover {
+    background-color: #003fcc;
+}

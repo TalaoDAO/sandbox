@@ -19,7 +19,7 @@ last one-->
 
 
 
-    <div id="mainBox">
+    <div id="mainBox" style="max-width: 900px; margin: auto; padding: 30px; font-family: 'Roboto', sans-serif;">
         <div id="titles">
             <p id="title">Testing tools for OIDC4VC issuers and verifiers</p>
         </div>
@@ -30,14 +30,14 @@ last one-->
                             <p id="compliant">Report</p>
                         </div>
 
-                    <md-block style="text-align: left; max-width: 1000px; margin: auto; font-size: 16px;">
+                    <md-block style="text-align: left; max-width: 1000px; margin: auto; font-size: 16px; background-color: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;" style="text-align: left; max-width: 1000px; margin: auto; font-size: 16px;">
                             {{ report | safe }}
                         </md-block>
 
                         <textarea id="myTextArea" rows="10" cols="150" style="display:none;">{{ report }}</textarea>
                         <br><br>
-                    <button value='download' style="width: 200px; height: 50px;" type='button' onclick='doDL(document.getElementById("myTextArea").value)'><h3>Download</h3></button>
-                    <a href="./qrcode"><button style="width: 200px; height: 50px;" ><h3>Back</h3></button></a>
+                    <button value='download' style="padding: 12px 30px; font-size: 16px; background-color: #0057FF; color: white; border: none; border-radius: 6px; cursor: pointer;" type='button' onclick='doDL(document.getElementById("myTextArea").value)'><h3>Download</h3></button>
+                    <a href="./qrcode"><button style="padding: 12px 30px; font-size: 16px; background-color: #0057FF; color: white; border: none; border-radius: 6px; cursor: pointer;" ><h3>Back</h3></button></a>
 
                 </center>
             

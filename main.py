@@ -556,7 +556,7 @@ def bnb():
 
 
 
-# OpenAI tools for website
+# OpenAI tools for sandbox
 @app.route('/qrcode', methods=['GET', 'POST'])
 @app.route('/ai/qrcode', methods=['GET', 'POST'])
 def qrcode():
@@ -598,6 +598,77 @@ def qrcode_wallet():
     logging.info("report = %s", report)
     report_base64 = base64.b64encode(report.encode()).decode()
     return report_base64
+
+
+# OpenAI tools for public API
+@app.route('/api/analyze-qrcode', methods=['POST'])
+def analyze_wallet_qrcode():
+    """
+    Analyze a wallet QR code using OpenAI and return a report.
+
+    --- API Endpoint ---
+    POST /api/analyze-qrcode
+
+    --- Request Headers ---
+    Api-Key: your-api-key
+
+    --- JSON Payload ---
+    {
+        "qrcode": "<base64-encoded QR code string>",
+        "oidc4vciDraft": "15",  # optional
+        "oidc4vpDraft": "22"    # optional
+    }
+
+    --- Successful Response ---
+    {
+        "report_base64": "<base64-encoded markdown report>"
+    }
+
+    --- Error Response Example ---
+    {
+        "error": "invalid base64 format"
+    }
+
+    --- Example cURL ---
+    curl -X POST http://localhost:5000/api/analyze-qrcode \
+      -H "Content-Type: application/json" \
+      -H "Api-Key: your-api-key" \
+      -d '{
+            "qrcode": "c29tZS1hc3NpZ24tdGV4dA==",
+            "oidc4vciDraft": "15",
+            "oidc4vpDraft": "22"
+          }'
+    """
+    #api_key = request.headers.get("Api-Key")
+    #if api_key not in ai_api_keys:
+    #    return jsonify({"error": "access denied"}), 403
+
+    data = request.get_json()
+    if not data or 'qrcode' not in data:
+        return jsonify({"error": "missing qrcode"}), 400
+
+    qrcode_base64 = data['qrcode']
+    oidc4vci_draft = data.get('oidc4vciDraft')
+    oidc4vp_draft = data.get('oidc4vpDraft')
+
+    # Decode base64 QR content
+    try:
+        qrcode_str = base64.b64decode(qrcode_base64.encode()).decode()
+    except Exception:
+        return jsonify({"error": "invalid base64 format"}), 400
+
+    # Run the OpenAI agent
+    try:
+        report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vci_draft, oidc4vp_draft, 'public API')
+    except Exception as e:
+        logging.error("Error in analyze_qrcode: %s", e)
+        return jsonify({"error": "internal processing error"}), 500
+
+    logging.info("report = %s", report)
+
+    # Return as base64
+    report_base64 = base64.b64encode(report.encode()).decode()
+    return jsonify({"report_base64": report_base64})
 
 
 # MAIN entry point for test
