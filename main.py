@@ -590,12 +590,12 @@ def vc():
         vcdm_draft = request.form.get("vcdm_draft")
         if not qrcode:
             return redirect('/ai/vc')
-        report = AI_Agent.process_vc_format(vc, sdjwtvc_draft, vcdm_draft)
+        report = AI_Agent.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "sandbox")
         return render_template("ai_report.html", back="/ai/vc", report= "\n\n" + report)
     
 
 # OpenAI tools for wallet
-@app.route('/ai/wallet/qrcode', methods=['GET', 'POST'])
+@app.route('/ai/wallet/qrcode', methods=['POST'])
 def qrcode_wallet():
     api_key = request.headers.get("Api-Key")
     if api_key not in ai_api_keys:
@@ -611,6 +611,29 @@ def qrcode_wallet():
         return jsonify({"error": "invalid base64 format"}), 400
     try:
         report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft, 'wallet' )
+    except Exception as e:
+        logging.error("Error in analyze_qrcode: %s", e)
+        return jsonify({"error": "internal processing error"}), 500
+    logging.info("report = %s", report)
+    report_base64 = base64.b64encode(report.encode()).decode()
+    return report_base64
+
+
+# OpenAI tools for wallet
+@app.route('/ai/wallet/vc', methods=['POST'])
+def vc_wallet():
+    api_key = request.headers.get("Api-Key")
+    if api_key not in ai_api_keys:
+        return jsonify({"error": "access denied"}), 403
+    vc_base64 = request.form.get("vc")
+    if not vc_base64:
+        return jsonify({"error": "missing qrcode"}), 400
+    try:
+        vc_str = base64.b64decode(vc_base64.encode()).decode()
+    except:
+        return jsonify({"error": "invalid base64 format"}), 400
+    try:
+        report = AI_Agent.process_vc_format(vc_str, "8", "1.1", "wallet")
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
