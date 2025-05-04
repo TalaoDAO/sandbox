@@ -725,6 +725,14 @@ def api_analyze_vc():
 
     Returns:
     - JSON object with "report_base64" containing the base64-encoded markdown analysis.
+    
+    --- Example cURL ---
+    curl -X POST http://localhost:5000/api/analyze-vc \
+      -H "Content-Type: application/json" \
+      -H "Api-Key: your-api-key" \
+      -d '{
+            "vc": "eyc29tZS1hc3NpZ24tdGV4dA..."
+          }'
     """
 
     #api_key = request.headers.get("Api-Key")
