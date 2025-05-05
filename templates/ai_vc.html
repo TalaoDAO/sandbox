@@ -19,7 +19,7 @@ last one-->
     
 <div id="mainBox" style="max-width: 900px; margin: auto; padding: 30px; font-family: 'Roboto', sans-serif;">
 
-    <h1 style="text-align: center; margin-bottom: 30px;">Check your VC</h1>
+    <h1 style="text-align: center; margin-bottom: 30px;">Check your VC/VP (json-ld, sd-jwt vc, jwt vc)</h1>
 
     <form action="/ai/vc" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
         
@@ -32,7 +32,7 @@ last one-->
             </select>
             <label for="vcdm_version"><strong>VCDM:</strong></label>
             <select id="vcdm_version" name="vcdm_draft">
-                {% for i in ["1.1", "2.0"] %}
+                {% for i in ["1.1", "1.1"] %}
                     <option value="{{ i }}" {% if i == 1.1 %}selected{% endif %}>{{ i }}</option>
                 {% endfor %}
             </select>
