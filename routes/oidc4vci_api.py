@@ -1277,7 +1277,11 @@ async def issuer_credential(issuer_id, red, mode):
                     credential_type = vc
                     break
         else:
-            vc_type = result['credential_definition'].get('type')
+            try:
+                vc_type = result['credential_definition'].get('type')
+            except:
+                logging.error("credential definition does not exist, wrong request format")
+                return Response(**manage_error('invalid_request', 'credential definition not found', red, mode, request=request, stream_id=stream_id))
             vc_type.sort()
             for vc in credentials_supported:
                 issuer_profile['credential_configurations_supported'][vc]['credential_definition']['type'].sort()
