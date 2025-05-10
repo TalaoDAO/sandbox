@@ -329,7 +329,8 @@ def verifier_callback3():
         _disclosure += "=" * ((4 - len(vcsd[i]) % 4) % 4)    
         print(_disclosure)
         disclosure += "\r\n" + base64.urlsafe_b64decode(_disclosure.encode()).decode()
-    ia_analyze = process_vc_format(token, "8", "1.1", "sandbox verifier test")
+    #ia_analyze = process_vc_format(token, "8", "1.1", "sandbox verifier test")
+    ia_analyze = "IA Agent is inactive"
     return render_template(
         'verifier_oidc/vcsd_jwt_test.html',
         raw=token,
