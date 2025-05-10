@@ -5,15 +5,6 @@
                 "constraints": {
                     "fields": [
                         {
-                            "filter": {
-                                "const": "eu.europa.ec.eudi.pid.1",
-                                "type": "string"
-                            },
-                            "path": [
-                                "$.vct"
-                            ]
-                        },
-                        {
                             "path": [
                                 "$.family_name"
                             ]
