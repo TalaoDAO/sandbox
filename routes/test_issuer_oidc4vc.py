@@ -16,6 +16,9 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/issuer/test_6_1',  view_func=test_6_1, methods=['GET', 'POST'], defaults={'mode': mode, 'red': 'red'})
     app.add_url_rule('/sandbox/issuer/test_6_2',  view_func=test_6_2, methods=['GET', 'POST'], defaults={'mode': mode, 'red': 'red'})
     app.add_url_rule('/sandbox/issuer/test_7',  view_func=test_7, methods=['GET'], defaults={'mode': mode}) 
+    
+    app.add_url_rule('/sandbox/malta/demo',  view_func=test_8, methods=['GET'], defaults={'mode': mode})
+
     app.add_url_rule('/sandbox/issuer/test_8',  view_func=test_8, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_9',  view_func=test_9, methods=['GET'], defaults={'mode': mode})
     app.add_url_rule('/sandbox/issuer/test_10',  view_func=test_10, methods=['GET'], defaults={'mode': mode})

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TechCorp Portal - Employee Badge</title>
+  <title>TechCorp Ltd. Portal - Employee Badge</title>
   <style>
     body {
       margin: 0;
@@ -94,6 +94,7 @@
     <p>
       Please scan the QR code below using your digital wallet to share your PID.
     </p>
+   
     <div class="qr-code">
       <img src="{{ qrcode(url) }}" alt="QR Code for PID Scan" />
     </div>
@@ -104,5 +105,46 @@
     &copy; 2025 TechCorp. All rights reserved.
   </footer>
 
+
+  <script>
+    var source = new EventSource('/sandbox/ebsi/issuer_stream');
+    source.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+      if (data.stream_id == '{{stream_id}}') {
+        if (data.error) {
+          window.location.href = '/sandbox/ebsi/issuer_followup/{{stream_id}}?error=' + data.error + '&error_description=' + data.error_description;
+        } else {
+          if (data.followup === "wait") {
+            var x = document.getElementById("qrcode");
+            if (x) {
+              x.setAttribute("src", "/static/img/wait.jpeg");
+            }
+          } else {
+            // Success: show success message instead of redirecting
+            const container = document.querySelector(".portal-container");
+  
+            // Remove QR code and old messages
+            const qr = document.querySelector(".qr-code");
+            if (qr) qr.remove();
+  
+            const message = document.createElement("div");
+            message.style.marginTop = "20px";
+            message.style.padding = "15px";
+            message.style.backgroundColor = "#28a745";
+            message.style.color = "#fff";
+            message.style.borderRadius = "8px";
+            message.style.boxShadow = "0 0 10px rgba(0,0,0,0.3)";
+            message.textContent = "✅ Your PID has been successfully submitted. You will receive your employee badge shortly.";
+  
+            container.appendChild(message);
+  
+            // Optionally stop listening to events
+            source.close();
+          }
+        }
+      }
+    };
+  </script>
+  
 </body>
 </html>
