@@ -423,7 +423,7 @@ def test_9(mode): #
         "issuer_state": "test9",
         "pre-authorized_code": False,
         "credential_type": ['Pid'],
-        "callback": mode.server + 'sandbox/issuer/callback',
+        "callback": mo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de.server + 'sandbox/issuer/callback',
         }
     resp = requests.post(api_endpoint, headers=headers, json=data)
     try:

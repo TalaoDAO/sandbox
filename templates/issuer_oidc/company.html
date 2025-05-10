@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TechCorp Portal - Employee Badge</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      width: 100%;
+      padding: 20px 0;
+      background-color: rgba(0, 0, 0, 0.3);
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .logo {
+      font-size: 2rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .portal-container {
+      margin-top: 50px;
+      background-color: #ffffff10;
+      padding: 40px 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      text-align: center;
+      max-width: 450px;
+      width: 90%;
+      backdrop-filter: blur(10px);
+    }
+
+    .portal-container h2 {
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .portal-container p {
+      color: #d1d1d1;
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+
+    .qr-code img {
+      border: 6px solid white;
+      border-radius: 10px;
+      width: 200px;
+      height: 200px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.3);
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 30px;
+      text-align: center;
+      color: #aaa;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 480px) {
+      .portal-container {
+        padding: 30px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">TechCorp Portal</div>
+  </header>
+
+  <div class="portal-container">
+    <h2>Scan to Receive Your Employee Badge</h2>
+    <p>
+      To issue your personalized employee badge, we require your Personal Identifier (PID) through a secure wallet scan.
+    </p>
+    <p>
+      This process ensures that only verified employees receive access credentials and badge rights within TechCorp's internal systems.
+      Your data is securely processed and will only be used for employee identification purposes.
+    </p>
+    <p>
+      Please scan the QR code below using your digital wallet to share your PID.
+    </p>
+    <div class="qr-code">
+      <img src="{{ qrcode(url) }}" alt="QR Code for PID Scan" />
+    </div>
+    <p style="margin-top: 20px;">Waiting for PID submission...</p>
+  </div>
+
+  <footer>
+    &copy; 2025 TechCorp. All rights reserved.
+  </footer>
+
+</body>
+</html>

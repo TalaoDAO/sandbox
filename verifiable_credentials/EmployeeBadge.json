@@ -1,7 +1,6 @@
 {
     "vct": "urn:eu.europa.ec.eudi:employee_badge:1",
     "employee": {
-        "employeeName": "Dentsu Taro",
         "employeeId": "12346",
         "jobTitle": "Software Engineer",
         "department": "Engineering",

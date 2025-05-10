@@ -1504,7 +1504,7 @@ profile = {
                     "id": {
                         "display": [
                             {
-                                "name": "Employee DID",
+                                "name": "Employee ID",
                                 "locale": "en-US"
                             }
                         ]
@@ -1517,15 +1517,6 @@ profile = {
                                 "locale": "en-US"
                             }
                         ],
-                        "employeeName": {
-                            "value_type:": "string",
-                            "display": [
-                                {
-                                    "name": "Employee Name",
-                                    "locale": "en-US"
-                                }
-                            ]
-                        },
                         "employeeId": {
                             "value_type:": "string",
                             "display": [
@@ -1603,13 +1594,13 @@ profile = {
                     {
                         "name": "Employee Badge",
                         "locale": "en-US",
-                        "background_color": "#ed7b76",
+                        "background_color": "#2c5364",
                         "text_color": "#FFFFFF",
                     },
                     {
                         "name": "Badge entreprise",
                         "locale": "fr-FR",
-                        "background_color": "#ed7b76",
+                        "background_color": "#2c5364",
                         "text_color": "#FFFFFF",
                     }
                 ],
