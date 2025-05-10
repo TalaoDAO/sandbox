@@ -110,6 +110,7 @@
     var source = new EventSource('/sandbox/ebsi/issuer_stream');
     source.onmessage = function (event) {
       const data = JSON.parse(event.data);
+      console.log("data = ", data)
       if (data.stream_id == '{{stream_id}}') {
         if (data.error) {
           window.location.href = '/sandbox/ebsi/issuer_followup/{{stream_id}}?error=' + data.error + '&error_description=' + data.error_description;
