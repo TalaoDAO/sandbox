@@ -571,7 +571,7 @@ def qrcode():
         oidc4vp_draft = request.form.get("oidc4vp_draft")
         if not qrcode:
             return redirect('/qrcode')
-        report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, 'sandbox')
+        report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, 'sandbox QR code')
         return render_template("ai_report.html", back="/ai/qrcode", report= "\n\n" + report)
 
 
@@ -590,7 +590,7 @@ def vc():
         vcdm_draft = request.form.get("vcdm_draft")
         if not qrcode:
             return redirect('/ai/vc')
-        report = AI_Agent.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "sandbox")
+        report = AI_Agent.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "sandbox VC")
         return render_template("ai_report.html", back="/ai/vc", report= "\n\n" + report)
     
 
@@ -610,7 +610,7 @@ def qrcode_wallet():
     except:
         return jsonify({"error": "invalid base64 format"}), 400
     try:
-        report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft, 'wallet' )
+        report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft, 'wallet QR code' )
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
@@ -633,7 +633,7 @@ def vc_wallet():
     except:
         return jsonify({"error": "invalid base64 format"}), 400
     try:
-        report = AI_Agent.process_vc_format(vc_str, "8", "1.1", "wallet")
+        report = AI_Agent.process_vc_format(vc_str, "8", "1.1", "wallet VC")
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
@@ -701,7 +701,7 @@ def analyze_wallet_qrcode():
 
     # Run the OpenAI agent
     try:
-        report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vci_draft, oidc4vp_draft, 'public API')
+        report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vci_draft, oidc4vp_draft, 'QR code public API')
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
@@ -756,7 +756,7 @@ def api_analyze_vc():
         return jsonify({"error": "Invalid base64 encoding for VC"}), 400
 
     try:
-        report = AI_Agent.process_vc_format(vc_str, sdjwtvc_draft, vcdm_draft)
+        report = AI_Agent.process_vc_format(vc_str, sdjwtvc_draft, vcdm_draft, "analyze VC API")
     except Exception as e:
         logging.error(f"VC analysis failed: {e}")
         return jsonify({"error": "Internal processing error"}), 500
