@@ -440,14 +440,14 @@ def analyze_issuer_qrcode(qrcode, draft, device):
     credential_offer, issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode)
     
     try:
-        f = open("./dataset/oidc4vp/" + draft + ".md", "r")
+        f = open("./dataset/oidc4vci/" + draft + ".md", "r")
         context = f.read()
         f.close()
     except:
-        f = open("./dataset/oidc4vp/18.md", "r")
+        f = open("./dataset/oidc4vci/13.md", "r")
         context = f.read()
         f.close
-        draft = "18"
+        draft = "13"
     
     context = clean_md(context) 
     mention = (
