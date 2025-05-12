@@ -569,6 +569,7 @@ def qrcode():
         qrcode = request.form.get("qrcode")
         oidc4vci_draft = request.form.get("oidc4vci_draft")
         oidc4vp_draft = request.form.get("oidc4vp_draft")
+        print("qrcode = ", qrcode)
         if not qrcode:
             return redirect('/qrcode')
         report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, 'sandbox QR code')
