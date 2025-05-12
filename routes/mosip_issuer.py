@@ -18,6 +18,24 @@ OFFER = {
     }
 }
 
+OFFER2 = {
+    "credential_issuer": "https://injicertify-landregistry.qa-inji1.mosip.net",
+    "credential_configuration_ids": [
+        "LandStatementCredential"
+    ],
+    "grants": {
+        "authorization_code": {
+            "authorization_server": "https://esignet-mock.released.mosip.net"
+        }
+    }
+}
+
+
+
+
+
+
+
 """
 openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%22%2C+%22credential_configuration_ids%22%3A+%5B%22Pid%22%5D%2C+%22grants%22%3A+%7B%22authorization_code%22%3A+%7B%22issuer_state%22%3A+%22test9%22%2C+%22authorization_server%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%2Fstandalone%22%7D%7D%7D
 
@@ -26,6 +44,8 @@ openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A+%22htt
 
 def init_app(app, red, mode):
     app.add_url_rule('/sandbox/issuer/mosip',  view_func=mosip, methods=['GET'])
+    app.add_url_rule('/sandbox/issuer/mosip2',  view_func=mosip2, methods=['GET'])
+
     return
 
 
@@ -41,3 +61,15 @@ def mosip():
                        
     return render_template_string(html_string)
 
+
+def mosip2():
+    code = "openid-credential-offer://?" + urlencode({"credential_offer": json.dumps(OFFER2)})
+    code_deeplink = "talao-" + code
+    print(code_deeplink)
+    button = '<a href ="' + code + '"><button><h1>Wallet deeplink for same device mode</h1></button></a>'
+    html_string = """<html><head></head>
+                        <body><div><div>  <center>   
+                        <img src="{{ qrcode('""" + code + """') }}"> 
+                        <br><br>""" + button + """</center></div></div></body></html>"""
+                       
+    return render_template_string(html_string)

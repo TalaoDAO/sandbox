@@ -422,7 +422,12 @@ def get_issuer_data(qrcode):
     except Exception:
         issuer_metadata = "Error: Issuer metadata are not available"
 
-    authorization_server = issuer_metadata.get("authorization_servers", [issuer])[0]
+    try:
+        authorization_server = issuer_metadata.get("authorization_servers", [issuer])[0]
+    except Exception:
+        authorization_server_metadata = "Error: The authorization server is not found not"
+        return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
+        
     authorization_server_url = f"{authorization_server}/.well-known/oauth-authorization-server"
     try:
         authorization_server_metadata = requests.get(authorization_server_url, timeout=10).json()
@@ -430,6 +435,7 @@ def get_issuer_data(qrcode):
         authorization_server_metadata = "Error: The authorization server metadata are not available"
 
     return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
+
 
 def analyze_issuer_qrcode(qrcode, draft, device):
     # Analyze issuer QR code and generate a structured report using OpenAI
