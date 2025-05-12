@@ -425,9 +425,13 @@ def get_issuer_data(qrcode):
     try:
         authorization_server = issuer_metadata.get("authorization_servers", [issuer])[0]
     except Exception:
-        authorization_server_metadata = "Error: The authorization server is not found not"
-        return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
+        try:
+            authorization_server = credential_offer["grants"]["authorization_code"]["authorization_server"]
+        except:
+            authorization_server_metadata = "Error: The authorization server is not found not"
+            return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
         
+    print("authorization server = ", authorization_server)
     authorization_server_url = f"{authorization_server}/.well-known/oauth-authorization-server"
     try:
         authorization_server_metadata = requests.get(authorization_server_url, timeout=10).json()
