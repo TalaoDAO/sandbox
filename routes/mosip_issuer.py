@@ -56,10 +56,11 @@ def mosip():
     button = '<a href ="' + code + '"><button><h1>Wallet deeplink for same device mode</h1></button></a>'
     html_string = """<html><head></head>
                         <body><div><div>  <center>   
-                        <img src="{{ qrcode('""" + code + """') }}"> 
+                        <img src="{{ qrcode('""" + code + """') }}"> <br>
+                          <p>{{code}}</p>
                         <br><br>""" + button + """</center></div></div></body></html>"""
                        
-    return render_template_string(html_string)
+    return render_template_string(html_string, code=code)
 
 
 def mosip2():
@@ -69,7 +70,8 @@ def mosip2():
     button = '<a href ="' + code + '"><button><h1>Wallet deeplink for same device mode</h1></button></a>'
     html_string = """<html><head></head>
                         <body><div><div>  <center>   
-                        <img src="{{ qrcode('""" + code + """') }}"> 
+                        <img src="{{ qrcode('""" + code + """') }}"> <br>
+                        <p>{{code}}</p>
                         <br><br>""" + button + """</center></div></div></body></html>"""
                        
-    return render_template_string(html_string)
+    return render_template_string(html_string, code=code)
