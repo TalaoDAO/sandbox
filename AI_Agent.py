@@ -557,7 +557,7 @@ def analyze_verifier_qrcode(qrcode, draft, device):
     
     mention = (
         f"\n\n The OpenAI model {ENGINE2} is used in addition to a Web3 Digital Wallet dataset."
-        f" This report is based on the OIDC4VP ID2 specifications Draft {draft}."
+        f" This report is based on the OIDC4VP specifications Draft {draft}."
         f" Date of issuance: {date}. © Web3 Digital Wallet 2025."
     )
 
