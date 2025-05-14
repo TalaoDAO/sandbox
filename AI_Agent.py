@@ -402,7 +402,7 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str) -> str:
     return completion.choices[0].message.content + ADVICE + mention
 
 
-def get_issuer_data(qrcode):
+def get_issuer_data(qrcode, draft):
     # Retrieve issuer, metadata and authorization server data from a credential offer QR code
     parse_result = urlparse(qrcode)
     result = {k: v[0] for k, v in parse_qs(parse_result.query).items()}
@@ -430,24 +430,30 @@ def get_issuer_data(qrcode):
         except:
             authorization_server_metadata = "Error: The authorization server is not found not"
             return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
-        
-    print("authorization server = ", authorization_server)
-    authorization_server_url = f"{authorization_server}/.well-known/oauth-authorization-server"
+    
+    logging.info("authorization server = %s", authorization_server)
+
+    if int(draft) <= 11:
+        authorization_server_url = f"{authorization_server}/.well-known/openid-configuration"
+    else:
+        authorization_server_url = f"{authorization_server}/.well-known/oauth-authorization-server"
+    
     try:
         authorization_server_metadata = requests.get(authorization_server_url, timeout=10).json()
     except Exception:
-        authorization_server_metadata = "Error: The authorization server metadata are not available"
-
+        authorization_server_metadata = "Error: The authorization server metadata are not available or the draft " + draft + " is not correct ? "
+    print("authorization server metadata = ", authorization_server_metadata)
     return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
 
 
 def analyze_issuer_qrcode(qrcode, draft, device):
+    print("draft = ", draft)
     # Analyze issuer QR code and generate a structured report using OpenAI
     if not draft:
         draft = "13"
 
     date = datetime.now().replace(microsecond=0).isoformat()
-    credential_offer, issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode)
+    credential_offer, issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode, draft)
     
     try:
         f = open("./dataset/oidc4vci/" + draft + ".md", "r")
@@ -460,6 +466,8 @@ def analyze_issuer_qrcode(qrcode, draft, device):
         draft = "13"
     
     context = clean_md(context) 
+    if int(draft) <= 11:
+        context += "\n If EBSI tell to the user to add did:key:jwk_jcs-pub as subject_syntax_type_supported in the authorization server metadata"
     mention = (
         f"\n\n The OpenAI model {ENGINE2} is used in addition to a Web3 Digital Wallet dataset."
         f" This report is based on the OIDC4VCI specifications Draft {draft}."
