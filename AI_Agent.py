@@ -447,7 +447,7 @@ def get_issuer_data(qrcode, draft):
 
 
 def analyze_issuer_qrcode(qrcode, draft, device):
-    print("draft = ", draft)
+    logging.info("draft = %s", draft)
     # Analyze issuer QR code and generate a structured report using OpenAI
     if not draft:
         draft = "13"
