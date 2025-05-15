@@ -554,7 +554,10 @@ def bnb():
     filename = 'binance_card.jpg'
     return send_file(filename, mimetype='image/jpg')
 
-
+# html page server
+@app.route('/sandbox/oidc-ai')
+def oidc_ai():
+    return render_template('oidc_oidc4vc_ai.html')
 
 # OpenAI tools for sandbox
 @app.route('/qrcode', methods=['GET', 'POST'])
