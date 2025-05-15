@@ -1,16 +1,17 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Talao - Digital Identity with AI</title>
+  <title>Digital Identity with AI</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
       font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      color: #ffffff;
+      background-color: #0e0e0e;
+      color: #f0f0f0;
       overflow-x: hidden;
     }
     header {
@@ -30,41 +31,45 @@
       color: #80eaff;
       text-decoration: none;
       font-weight: bold;
-      transition: color 0.3s;
+      border-bottom: 2px solid transparent;
+      transition: border-bottom 0.3s;
     }
     nav a:hover {
-      color: #00ffe0;
+      border-bottom: 2px solid #00ffe0;
     }
     .hero {
       text-align: center;
       padding: 6rem 2rem;
     }
-    .hero h1 {
-      font-size: 3rem;
+    .main-title {
+      font-size: 3.5rem;
       color: #00ffe0;
       margin-bottom: 1rem;
     }
-    .hero p {
-      font-size: 1.2rem;
+    .description {
+      font-size: 1.25rem;
       max-width: 700px;
       margin: auto;
-      color: #d0d0d0;
+      color: #cccccc;
     }
     .cta {
       margin-top: 2rem;
     }
-    .cta a {
-      background: #00ffe0;
-      color: #000;
+    .glow-button, .outline-button {
       padding: 0.75rem 2rem;
-      border-radius: 10px;
+      margin: 1rem 0.5rem;
+      border-radius: 8px;
+      font-weight: 600;
       text-decoration: none;
-      font-weight: bold;
-      margin: 0 0.5rem;
-      transition: background 0.3s;
     }
-    .cta a:hover {
-      background: #0ff;
+    .glow-button {
+      background-color: #00ffe0;
+      color: #000;
+    }
+    .outline-button {
+      border: 2px solid #00ffe0;
+      color: #00ffe0;
+      background: transparent;
     }
     .section {
       max-width: 1200px;
@@ -83,17 +88,16 @@
       gap: 2rem;
     }
     .card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
+      background: #151515;
+      border: 1px solid #2e2e2e;
+      border-radius: 16px;
       padding: 2rem;
       text-align: center;
-      backdrop-filter: blur(12px);
       transition: transform 0.3s, box-shadow 0.3s;
     }
     .card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 0 20px #00ffe0;
+      box-shadow: 0 0 12px rgba(0, 255, 224, 0.3);
     }
     .card h3 {
       color: #ffffff;
@@ -126,10 +130,10 @@
   </header>
 
   <section class="hero">
-    <h1>Digital Identity, Reinvented</h1>
-    <p>Wallets, Issuers,  Verifiers and AI agents — ready for EBSI and EUDIW, powered by Web3 Digital Wallet.</p>
+    <h1>Digital Identity, now intelligent by design</h1>
+    <p lass="description">Wallets, Issuers,  Verifiers and AI agents — ready for EBSI and EUDIW, powered by Web3 Digital Wallet.</p>
     <div class="cta">
-      <a href="https://qhf0siml406.typeform.com/to/PdULRDIV">Let's talk together !</a>
+      <a href="https://qhf0siml406.typeform.com/to/PdULRDIV" class="glow-button">Talk to Us</a>
     </div>
   </section>
 
@@ -156,30 +160,30 @@
       </div>
     </div>
   </section>
+
   <section id="oidc-apis" class="section">
     <h2>APIs boosted by AI</h2>
     <div class="features">  
-    <div class="card">
+      <div class="card">
         <a href="sandbox/oidc-ai">
           <h3>OIDC4VC APIs</h3>
           <p>Next generation of APIs with generative AI for a better user experience.</p>
         </a>
-    </div>
+      </div>
       <div class="card">
         <a href="https://doc.wallet-provider.io/api/#post-apianalyze-vc">
           <h3>APIs for VC testing</h3>
           <p>Provide VC testing for sd-jwt, jwt-vc and json-ld formats.</p>
         </a>
-    </div>
+      </div>
       <div class="card">
         <a href="https://doc.wallet-provider.io/api/#post-apianalyze-qrcode">
           <h3>APIs for Issuer and Verifier testing</h3>
           <p>Provide Issuers and Verifiers metadata scoring.</p>
         </a>
-    </div>
+      </div>
     </div>
   </section>
-
 
   <section id="developers" class="section">
     <h2>Developer Hub</h2>
@@ -202,7 +206,6 @@
           <p>Test real-time credential verification workflows.</p>
         </a>
       </div>
-      
       <div class="card">
         <a href="/ai/vc" target="_blank">
           <h3>VC Testing Tool</h3>
@@ -215,7 +218,6 @@
           <p>Scan Issuers and Verifiers via QR codes with AI-powered tooling.</p>
         </a>
       </div>
-    
       <div class="card">
         <a href="/sandbox/issuer/statuslist" target="_blank">
           <h3>VC Status List Manager</h3>
@@ -228,7 +230,6 @@
           <p>Local test for issuing credentials with bitstring-based status tracking.</p>
         </a>
       </div>
-
     </div>
   </section>
 
