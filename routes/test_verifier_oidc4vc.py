@@ -4,6 +4,7 @@ import db_api
 import oidc4vc
 import base64
 from AI_Agent import process_vc_format
+import urllib.parse
 
 def init_app(app,red, mode):
     app.add_url_rule('/sandbox/verifier/test_1',  view_func=verifier_test_1, methods=['GET'], defaults={'mode': mode})
@@ -299,38 +300,73 @@ def verifier_callback():
     return jsonify(request.args)
 
 
-# for sd-jwt
 def verifier_callback3():
+    # Check for error in request
     if request.args.get("error"):
         return jsonify(request.args)
+
+    # Extract tokens
     token = request.args.get("id_token")
     presentation_submission = request.args.get("presentation_submission")
+
+    # Fallback for wallet-specific token
     if presentation_submission == "null":
-        token =  request.args.get("wallet_id_token")
-        return jsonify(
-            {
-                "header": oidc4vc.get_header_from_token(token),
-                "payload": oidc4vc.get_payload_from_token(token)
-            })
-    #vcsd = oidc4vc.get_payload_from_token(token)['vc+sd-jwt'].split("~")
-    vcsd = token.split("~")
-    vcsd_jwt_payload = oidc4vc.get_payload_from_token(vcsd[0])
-    vcsd_jwt_header = oidc4vc.get_header_from_token(vcsd[0])
+        token = request.args.get("wallet_id_token")
+        return jsonify({
+            "header": oidc4vc.get_header_from_token(token),
+            "payload": oidc4vc.get_payload_from_token(token)
+        })
+
+    # Step 1: URL-decode the token
+    decoded_str = urllib.parse.unquote(token)
+
+    # Step 2: Handle either a single token or a list of tokens
+    try:
+        data = json.loads(decoded_str)
+        vp_tokens = data if isinstance(data, list) else [data]
+    except json.JSONDecodeError:
+        vp_tokens = [decoded_str]
+
     disclosure = ""
-    if not vcsd[-1]:
-        len_vcsd = len(vcsd)
-        kbjwt_header = kbjwt_payload = "No KB"
-    else:
-        len_vcsd = len(vcsd)-1
-        kbjwt_header = oidc4vc.get_header_from_token(vcsd[-1])
-        kbjwt_payload = oidc4vc.get_payload_from_token(vcsd[-1])
-    for i in range(1, len_vcsd):
-        _disclosure = vcsd[i]
-        _disclosure += "=" * ((4 - len(vcsd[i]) % 4) % 4)    
-        print(_disclosure)
-        disclosure += "\r\n" + base64.urlsafe_b64decode(_disclosure.encode()).decode()
+    # Initialize final values to fallback in case parsing fails
+    vcsd_jwt_header = {}
+    vcsd_jwt_payload = {}
+    kbjwt_header = "No KB"
+    kbjwt_payload = "No KB"
+
+    # Process each vp_token
+    for token in vp_tokens:
+        vcsd = token.split("~")
+
+        # Extract vcsd_jwt
+        vcsd_jwt = vcsd[0]
+        vcsd_jwt_header = oidc4vc.get_header_from_token(vcsd_jwt)
+        vcsd_jwt_payload = oidc4vc.get_payload_from_token(vcsd_jwt)
+
+        # Extract kb-jwt if it exists
+        if vcsd[-1]:
+            kb_jwt = vcsd[-1]
+            kbjwt_header = oidc4vc.get_header_from_token(kb_jwt)
+            kbjwt_payload = oidc4vc.get_payload_from_token(kb_jwt)
+            len_vcsd = len(vcsd) - 1
+        else:
+            len_vcsd = len(vcsd)
+
+        # Decode disclosures
+        for i in range(1, len_vcsd):
+            _disclosure = vcsd[i]
+            _disclosure += "=" * ((4 - len(_disclosure) % 4) % 4)  # Fix base64 padding
+            try:
+                decoded = base64.urlsafe_b64decode(_disclosure.encode()).decode()
+                disclosure += "\r\n" + decoded
+            except Exception as e:
+                disclosure += f"\r\n[Error decoding disclosure: {str(e)}]"
+
+    # Placeholder analysis report
     #ia_analyze = process_vc_format(token, "8", "1.1", "sandbox verifier test")
     ia_analyze = "IA Agent is inactive"
+
+    # Render final report
     return render_template(
         'verifier_oidc/vcsd_jwt_test.html',
         raw=token,
@@ -341,8 +377,7 @@ def verifier_callback3():
         kbjwt_header=json.dumps(kbjwt_header, indent=4),
         kbjwt_payload=json.dumps(kbjwt_payload, indent=4),
         report=ia_analyze
-        )
-
+    )
 
 def verifier_callback2(mode):
     return redirect('/sandbox/verifier/app/logout' + '?post_logout_redirect_uri=' + mode.server + "sandbox/verifier/callback2_1")
