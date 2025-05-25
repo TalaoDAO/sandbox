@@ -173,12 +173,10 @@ def oidc4vc_authorize(red, mode):
         code = request.args['code']
         try:
             code_data = json.loads(red.get(code).decode())
-        except Exception:
-            logging.error("code expired")
-            resp = {'error': "access_denied"}
-            redirect_uri = code_data['redirect_uri']
+        except Exception as e:
+            logging.error("code expired  = %s", str(e))
             session.clear()
-            return redirect(redirect_uri + sep + urlencode(resp)) 
+            return jsonify({'error': "access_denied"}), 400
 
         # authorization code flow -> redirect with code
         if code_data['response_type'] == 'code':
@@ -261,13 +259,13 @@ def oidc4vc_authorize(red, mode):
             "expires": datetime.timestamp(datetime.now()) + CODE_LIFE,
             'response_mode': request.args.get('response_mode')
         }
-    except Exception:
-        logging.warning('invalid request received in authorization server')
+    except Exception as e:
+        logging.warning('invalid request received in authorization server: %s', str(e))
         try:
             return manage_error_request("invalid_request_object")
         except Exception:
             session.clear()
-            return jsonify('request malformed'), 400
+            return jsonify({'error': 'request malformed'}), 400
 
     if not read_oidc4vc_verifier(request.args['client_id']):
         logging.warning('client_id not found in client data base')
@@ -436,7 +434,10 @@ def oidc4vc_userinfo(red):
     
     except Exception:
         logging.warning("access token expired")
-        headers = {'WWW-Authenticate': 'Bearer realm="userinfo", error="invalid_token", error_description = "The access token expired"'}
+        headers = {
+            'WWW-Authenticate': 'Bearer realm="userinfo", error="invalid_token", error_description = "The access token expired"',
+            "Content-Type": "application/json"
+        }
         return Response(status=401,headers=headers)
 
     
@@ -498,8 +499,8 @@ def wallet_metadata_uri(verifier_id, red):
 def build_verifier_metadata(client_id, redirect_uri) -> dict:
     try:
         verifier_data = json.loads(read_oidc4vc_verifier(client_id))
-    except Exception:
-        logging.warning("wallet metadata failed to build")
+    except Exception as e:
+        logging.warning("wallet metadata failed to build = %s", str(e))
         return {}
     verifier_metadata = json.load(open('verifier_metadata.json', 'r'))        
     verifier_metadata['request_uri_parameter_supported'] = bool(verifier_data.get('request_uri_parameter_supported'))
@@ -807,7 +808,8 @@ def oidc4vc_login_qrcode(red, mode):
     try:
         request_uri_header = json.dumps(oidc4vc.get_header_from_token(request_uri_jwt), indent=4)
         request_uri_payload = json.dumps(oidc4vc.get_payload_from_token(request_uri_jwt), indent=4)
-    except Exception:
+    except Exception as e:
+        logging.warning ("token decryption problem = %s", str(e))
         request_uri_header = ""
         request_uri_payload = ""
         
@@ -1185,8 +1187,8 @@ def oidc4vc_login_followup(red):
         return jsonify("Forbidden"), 403
     try:
         stream_id_wallet_data = json.loads(red.get(stream_id + '_wallet_data').decode())
-    except Exception:
-        logging.error("code expired in follow up")
+    except Exception as e:
+        logging.error("code expired in follow up = %d", str(e))
         resp = {
             'code': code,
             'error': "access_denied",
