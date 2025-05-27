@@ -417,6 +417,7 @@ def get_issuer_data(qrcode, draft):
 
     issuer = credential_offer.get('credential_issuer')
     issuer_metadata_url = f"{issuer}/.well-known/openid-credential-issuer"
+    logging.info("AI Agent call for QR code diagnostic. issuer = %s", issuer)
     try:
         issuer_metadata = requests.get(issuer_metadata_url, timeout=10).json()
     except Exception:
@@ -442,7 +443,6 @@ def get_issuer_data(qrcode, draft):
         authorization_server_metadata = requests.get(authorization_server_url, timeout=10).json()
     except Exception:
         authorization_server_metadata = "Error: The authorization server metadata are not available or the draft " + draft + " is not correct ? "
-    print("authorization server metadata = ", authorization_server_metadata)
     return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
 
 
