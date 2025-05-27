@@ -451,7 +451,12 @@ def resolve_did(vm) -> dict:
                 logging.warning('fails to access to both universal resolver')
                 return
         did_document = r.json()['didDocument']
-    for verificationMethod in did_document['verificationMethod']:
+    try:
+        vm_list = did_document['verificationMethod']
+    except Exception:
+        logging.warning("No DID Document or verification method")
+        return
+    for verificationMethod in vm_list:
         if verificationMethod['id'] == vm: # or (('#' + vm.split('#')[1]) == verificationMethod['id']) :
             if verificationMethod.get('publicKeyJwk'):
                 jwk = verificationMethod['publicKeyJwk']
@@ -467,7 +472,8 @@ def resolve_did(vm) -> dict:
                 jwk = public_key_multibase_to_jwk(verificationMethod["publicKeyMultibase"])
                 break
             else:
-                raise ValueError("Unsupported verification method.")
+                logging.warning("Unsupported verification method.")
+                return
     return jwk
 
 
