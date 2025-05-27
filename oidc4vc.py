@@ -432,7 +432,11 @@ def resolve_did(vm) -> dict:
     elif did.split(':')[1] == "jwk":
         key = did.split(':')[2]
         key += "=" * ((4 - len(key) % 4) % 4)
-        return json.loads(base64.urlsafe_b64decode(key))
+        try:
+            return json.loads(base64.urlsafe_b64decode(key))
+        except Exception:
+            logging.warning("did:jwk is not formated correctly")
+            return
     elif did.split(':')[1] == "web":
         logging.info("did:web")
         did_document = resolve_did_web(did)
