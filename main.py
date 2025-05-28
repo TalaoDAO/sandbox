@@ -574,25 +574,11 @@ def qrcode():
         oidc4vci_draft = request.form.get("oidc4vci_draft")
         oidc4vp_draft = request.form.get("oidc4vp_draft")
         ecosystem = request.form.get("ecosystem")
-        if ecosystem == "EBSI":
-            oidc4vci_draft = "11"
-            oidc4vp_draft = "18"
-        elif ecosystem == "DIIP_V3":
-            oidc4vci_draft = "13"
-            oidc4vp_draft = "18"
-        elif ecosystem == "DIIP_V4":
-            oidc4vci_draft = "15"
-            oidc4vp_draft = "28"
-        elif ecosystem == "INJI":
-            oidc4vci_draft = "13"
-            oidc4vp_draft = "18"
-        elif ecosystem == "EWV":
-            oidc4vci_draft = "13"
-            oidc4vp_draft = "18"
-        print("qrcode = ", qrcode)
+        
+        logging.info("qrcode = %s", qrcode)
         if not qrcode:
             return redirect('/qrcode')
-        report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, 'sandbox QR code')
+        report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, ecosystem, 'sandbox QR code')
         return render_template("ai_report.html", back="/ai/qrcode", report= "\n\n" + report)
 
 
@@ -626,12 +612,13 @@ def qrcode_wallet():
         return jsonify({"error": "missing qrcode"}), 400
     oidc4vciDraft = request.form.get('oidc4vciDraft')
     oidc4vpDraft = request.form.get('oidc4vpDraft')
+    ecosystem = request.form.get('ecosystem', 'custom')
     try:
         qrcode_str = base64.b64decode(qrcode_base64.encode()).decode()
     except:
         return jsonify({"error": "invalid base64 format"}), 400
     try:
-        report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft, 'wallet QR code' )
+        report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft, ecosystem, 'wallet QR code' )
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
@@ -713,6 +700,7 @@ def analyze_wallet_qrcode():
     qrcode_base64 = data['qrcode']
     oidc4vci_draft = data.get('oidc4vciDraft')
     oidc4vp_draft = data.get('oidc4vpDraft')
+    ecosystem = data.get('ecosystem', 'custom')
 
     # Decode base64 QR content
     try:
@@ -722,7 +710,7 @@ def analyze_wallet_qrcode():
 
     # Run the OpenAI agent
     try:
-        report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vci_draft, oidc4vp_draft, 'QR code public API')
+        report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vci_draft, oidc4vp_draft, ecosystem, 'QR code public API')
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500

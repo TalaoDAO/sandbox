@@ -128,9 +128,25 @@ def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str)
     return "Unknown VC format. Supported formats: SD-JWT VC, JWT VC (compact), JSON-LD VC."
 
 
-def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, device):
+def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, ecosystem, device):
     # Analyze a QR code and delegate based on protocol type
+    if ecosystem == "EBSI":
+            oidc4vciDraft = "11"
+            oidc4vpDraft = "18"
+    elif ecosystem == "DIIP_V3":
+        oidc4vciDraft = "13"
+        oidc4vpDraft = "18"
+    elif ecosystem == "DIIP_V4":
+        oidc4vciDraft = "15"
+        oidc4vpDraft = "28"
+    elif ecosystem == "INJI":
+        oidc4vciDraft = "13"
+        oidc4vpDraft = "18"
+    elif ecosystem == "EWV":
+        oidc4vciDraft = "13"
+        oidc4vpDraft = "18"
     parse_result = urlparse(qrcode)
+    logging.info('ecosystem = %s, oidc4vci draft = %s, oidc4vp draft = %s', ecosystem, oidc4vciDraft, oidc4vpDraft)
     result = parse_qs(parse_result.query)
     if result.get('credential_offer_uri') or result.get('credential_offer'):
         return analyze_issuer_qrcode(qrcode, oidc4vciDraft, device)
