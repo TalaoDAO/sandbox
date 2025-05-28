@@ -32,7 +32,7 @@ client = OpenAI(api_key=openai_key)
 # Define models and constants
 ENGINE2 = "gpt-4-turbo"
 ENGINE = "gpt-3.5-turbo"
-ADVICE = "\n\nFor a deeper analysis, review the cryptographic binding methods, signing algorithms, and specific scopes supported by the issuer and authorization server."
+ADVICE = "\n\nLLM can make mistakes. Check important info. For a deeper analysis, review the cryptographic binding methods, signing algorithms, and specific scopes supported by the issuer and authorization server."
  
 MAX_RETRIES = 3
 DELAY_SECONDS = 2
@@ -130,32 +130,38 @@ def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str)
 
 def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, ecosystem, device):
     # Analyze a QR code and delegate based on protocol type
+    profile = ""
     if ecosystem == "EBSI":
-            oidc4vciDraft = "11"
-            oidc4vpDraft = "18"
+        oidc4vciDraft = "11"
+        oidc4vpDraft = "18"
+        profile = "Use only jwt_vc format. Use only did:key and did:ebsi as identifier"
     elif ecosystem == "DIIP_V3":
         oidc4vciDraft = "13"
         oidc4vpDraft = "18"
+        profile = "Use only sd-jwt vc, jwt_vc_json and ldp_vc (JSON-LD) format. Use only ES256 as keys. Use only did:jwk and did:web as identifier"
     elif ecosystem == "DIIP_V4":
         oidc4vciDraft = "15"
         oidc4vpDraft = "28"
+        profile = "Use only sd-jwt vc, jwt_vc_json and ldp_vc (JSON-LD) format. Use only ES256 as keys. Use only did:jwk and did:web as identifier"
     elif ecosystem == "INJI":
         oidc4vciDraft = "13"
         oidc4vpDraft = "18"
-    elif ecosystem == "EWV":
+        profile = "Use only ldp_vc (JSON-LD) format"
+    elif ecosystem == "EWC":
         oidc4vciDraft = "13"
         oidc4vpDraft = "18"
+        profile = "Use only sd-jwt vc format and mdoc format"
     parse_result = urlparse(qrcode)
     logging.info('ecosystem = %s, oidc4vci draft = %s, oidc4vp draft = %s', ecosystem, oidc4vciDraft, oidc4vpDraft)
     result = parse_qs(parse_result.query)
     if result.get('credential_offer_uri') or result.get('credential_offer'):
-        return analyze_issuer_qrcode(qrcode, oidc4vciDraft, device)
+        return analyze_issuer_qrcode(qrcode, oidc4vciDraft, profile, device)
     else:
         request, presentation_definition, error_description = get_verifier_request(qrcode, oidc4vpDraft)
         if not request or not presentation_definition:
             return "This QR code is not supported : " + error_description
         else:
-            return analyze_verifier_qrcode(qrcode, oidc4vpDraft, device)
+            return analyze_verifier_qrcode(qrcode, oidc4vpDraft, profile, device)
     
 
 def get_verifier_request(qrcode, draft):
@@ -462,7 +468,7 @@ def get_issuer_data(qrcode, draft):
     return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
 
 
-def analyze_issuer_qrcode(qrcode, draft, device):
+def analyze_issuer_qrcode(qrcode, draft, profile, device):
     logging.info("draft = %s", draft)
     # Analyze issuer QR code and generate a structured report using OpenAI
     if not draft:
@@ -504,6 +510,9 @@ def analyze_issuer_qrcode(qrcode, draft, device):
         ---Context ---
         {context}
 
+        ---Check if the Profile is respected---
+        {profile}
+        
         --- Credential Offer ---
         {credential_offer}
 
@@ -561,7 +570,7 @@ def analyze_issuer_qrcode(qrcode, draft, device):
     return result
 
 
-def analyze_verifier_qrcode(qrcode, draft, device):   
+def analyze_verifier_qrcode(qrcode, draft, profile, device):   
     # Analyze verifier QR code and generate a structured report using OpenAI
     if not draft:
         draft = "18"
@@ -607,6 +616,9 @@ def analyze_verifier_qrcode(qrcode, draft, device):
         
         ---Context ---
         {context}
+        
+        ---Check if the profile is respected---
+        {profile}
 
         --- Authorization Request ---
         {json.dumps(verifier_request, indent=2)}

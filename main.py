@@ -686,7 +686,8 @@ def analyze_wallet_qrcode():
       -d '{
             "qrcode": "c29tZS1hc3NpZ24tdGV4dA==",
             "oidc4vciDraft": "15",
-            "oidc4vpDraft": "22"
+            "oidc4vpDraft": "22",
+            "ecosystem": "EBSI
           }'
     """
     #api_key = request.headers.get("Api-Key")
