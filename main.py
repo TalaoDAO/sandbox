@@ -559,6 +559,7 @@ def bnb():
 def oidc_ai():
     return render_template('oidc_oidc4vc_ai.html')
 
+
 # OpenAI tools for sandbox
 @app.route('/qrcode', methods=['GET', 'POST'])
 @app.route('/ai/qrcode', methods=['GET', 'POST'])
@@ -572,6 +573,22 @@ def qrcode():
         qrcode = request.form.get("qrcode")
         oidc4vci_draft = request.form.get("oidc4vci_draft")
         oidc4vp_draft = request.form.get("oidc4vp_draft")
+        ecosystem = request.form.get("ecosystem")
+        if ecosystem == "EBSI":
+            oidc4vci_draft = "11"
+            oidc4vp_draft = "18"
+        elif ecosystem == "DIIP_V3":
+            oidc4vci_draft = "13"
+            oidc4vp_draft = "18"
+        elif ecosystem == "DIIP_V4":
+            oidc4vci_draft = "15"
+            oidc4vp_draft = "28"
+        elif ecosystem == "INJI":
+            oidc4vci_draft = "13"
+            oidc4vp_draft = "18"
+        elif ecosystem == "EWV":
+            oidc4vci_draft = "13"
+            oidc4vp_draft = "18"
         print("qrcode = ", qrcode)
         if not qrcode:
             return redirect('/qrcode')

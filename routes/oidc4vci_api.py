@@ -1206,17 +1206,17 @@ async def issuer_credential(issuer_id, red, mode):
     # check proof if it exists depending on type of proof
     wallet_identifier = 'did'
     if proof := result.get('proof'):
-        proof_type = result['proof']['proof_type']
+        proof_type = proof['proof_type']
         if proof_type == 'jwt':
-            proof = result['proof']['jwt']
-            proof_header = oidc4vc.get_header_from_token(proof)
-            proof_payload = oidc4vc.get_payload_from_token(proof)
+            jwt_proof = proof.get('jwt')
+            proof_header = oidc4vc.get_header_from_token(jwt_proof)
+            proof_payload = oidc4vc.get_payload_from_token(jwt_proof)
             logging.info('Proof header = %s', json.dumps(proof_header, indent=4))
             logging.info('Proof payload = %s', json.dumps(proof_payload, indent=4))
             if not proof_payload.get('nonce'):
                 return Response(**manage_error('invalid_proof', 'c_nonce is missing', red, mode, request=request, stream_id=stream_id, status=403))
             try:
-                oidc4vc.verif_token(proof, 'nonce')
+                oidc4vc.verif_token(jwt_proof, 'nonce')
                 logging.info('proof is validated')
             except Exception:
                 logging.error('proof is not validated')
