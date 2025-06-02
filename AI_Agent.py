@@ -129,31 +129,31 @@ def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str)
 
 
 
-def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, ecosystem, device):
+def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device):
     # Analyze a QR code and delegate based on protocol type
     profile = ""
-    if ecosystem == "EBSI":
+    if profil == "EBSI":
         oidc4vciDraft = "11"
         oidc4vpDraft = "18"
         profile = "Use only jwt_vc format. Use only did:key and did:ebsi as identifier"
-    elif ecosystem == "DIIP_V3":
+    elif profil == "DIIP_V3":
         oidc4vciDraft = "13"
         oidc4vpDraft = "18"
         profile = "Use only sd-jwt vc, jwt_vc_json and ldp_vc (JSON-LD) format. Use only ES256 as key. Use only did:jwk and did:web as identifier"
-    elif ecosystem == "DIIP_V4":
+    elif profil == "DIIP_V4":
         oidc4vciDraft = "15"
         oidc4vpDraft = "28"
         profile = "Use only sd-jwt vc, jwt_vc_json and ldp_vc (JSON-LD) format. Use only ES256 as key. Use only did:jwk and did:web as identifier"
-    elif ecosystem == "INJI":
+    elif profil == "INJI":
         oidc4vciDraft = "13"
         oidc4vpDraft = "21"
         profile = "Use only ldp_vc (JSON-LD) format"
-    elif ecosystem == "EWC":
+    elif profil == "EWC":
         oidc4vciDraft = "13"
         oidc4vpDraft = "18"
         profile = "Use only sd-jwt vc format and mdoc format"
     parse_result = urlparse(qrcode)
-    logging.info('ecosystem = %s, oidc4vci draft = %s, oidc4vp draft = %s', ecosystem, oidc4vciDraft, oidc4vpDraft)
+    logging.info('profil = %s, oidc4vci draft = %s, oidc4vp draft = %s', profil, oidc4vciDraft, oidc4vpDraft)
     result = parse_qs(parse_result.query)
     if result.get('credential_offer_uri') or result.get('credential_offer'):
         return analyze_issuer_qrcode(qrcode, oidc4vciDraft, profile, device)

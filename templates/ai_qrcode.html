@@ -27,8 +27,8 @@ last one-->
         
         
     <div style="display: flex; gap: 30px; justify-content: center; align-items: center;">
-        <label for="ecosystem"><strong>Ecosystem:</strong></label>
-        <select id="ecosystem" name="ecosystem" onchange="toggleDraftSelectors()">
+        <label for="profil"><strong>Profil:</strong></label>
+        <select id="profil" name="profil" onchange="toggleDraftSelectors()">
             <option value="EBSI">EBSI V 3.X</option>
             <option value="DIIP_V3">DIIP V3</option>
             <option value="DIIP_V4">DIIP V4</option>
@@ -81,9 +81,9 @@ last one-->
 
 <script>
     function toggleDraftSelectors() {
-        const ecosystem = document.getElementById('ecosystem').value;
+        const profil = document.getElementById('profil').value;
         const draftSection = document.getElementById('draftSelectors');
-        draftSection.style.display = (ecosystem === 'custom') ? 'flex' : 'none';
+        draftSection.style.display = (profil === 'custom') ? 'flex' : 'none';
     }
      window.onload = toggleDraftSelectors;
 </script>
