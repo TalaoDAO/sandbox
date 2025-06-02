@@ -666,7 +666,8 @@ def analyze_wallet_qrcode():
     {
         "qrcode": "<base64-encoded QR code string>",
         "oidc4vciDraft": "15",  # optional
-        "oidc4vpDraft": "22"    # optional
+        "oidc4vpDraft": "22",    # optional
+        "ecosystem": "EBSI"      # optional
     }
 
     --- Successful Response ---
@@ -680,14 +681,14 @@ def analyze_wallet_qrcode():
     }
 
     --- Example cURL ---
-    curl -X POST http://localhost:5000/api/analyze-qrcode \
+    curl -X POST http://talao.co/api/analyze-qrcode \
       -H "Content-Type: application/json" \
       -H "Api-Key: your-api-key" \
       -d '{
             "qrcode": "c29tZS1hc3NpZ24tdGV4dA==",
-            "oidc4vciDraft": "15",
-            "oidc4vpDraft": "22",
-            "ecosystem": "EBSI
+            "oidc4vciDraft": "13",
+            "oidc4vpDraft": "18",
+            "ecosystem": "INJI"
           }'
     """
     #api_key = request.headers.get("Api-Key")
