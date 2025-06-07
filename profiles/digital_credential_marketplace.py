@@ -80,7 +80,7 @@ TALAO_ISSUER = {
                     "EdDSA",
                     "RS256",
                 ],
-                "vct": "address.1",
+                "vct": "urn:address.1",
                 "display": [
                     {
                         "name": "Proof of Address",
