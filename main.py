@@ -777,6 +777,12 @@ def api_analyze_vc():
 
 
 
+
+@app.route('/marketplace', methods=['GET'])
+def marketplace():
+    return render_template("marketplace.html")
+
+
 # MAIN entry point for test
 if __name__ == '__main__':
     # info release

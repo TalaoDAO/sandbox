@@ -4,8 +4,7 @@ https://issuer.walt.id/issuer-api/default/oidc
 EBSI V2 https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html
 support Authorization code flow and pre-authorized code flow of OIDC4VCI
 """
-import contextlib
-import os
+
 import copy
 import json
 import logging
