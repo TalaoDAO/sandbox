@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EUDI Wallet Credential Marketplace</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at top left, #eef2ff, #e0e7ff);
+      color: #2c3e50;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(to right, #6366f1, #3b82f6);
+      color: white;
+      padding: 2rem;
+      font-size: 2rem;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .section {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem 1rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      color: #4338ca;
+      margin-bottom: 1.5rem;
+    }
+
+    #qrcode {
+      width: 300px;
+      height: 300px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+    }
+
+    footer {
+      padding: 1rem;
+      background-color: #e0e7ff;
+      font-size: 0.95rem;
+    }
+
+    footer a {
+      color: #3b82f6;
+      margin: 0 1rem;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <header>Digital Credential Marketplace</header>
+
+  <div class="section">
+    <h2>Scan the QR Code</h2>
+    <img id="qrcode" src="{{ qrcode(url) }}" alt="QR Code">
+  </div>
+
+  <footer>
+    <a href="https://www.talao.io/privacy/" target="_blank">Privacy Policy</a>
+    <a href="https://www.talao.io/cgu/" target="_blank">Terms of Use</a>
+    <a href="https://www.talao.io/talao-wallet/" target="_blank">Download Talao Wallet</a>
+  </footer>
+
+  <script>
+    var source = new EventSource('/sandbox/ebsi/issuer_stream');
+    source.onmessage = function (event) {
+      const data = JSON.parse(event.data)
+      if (data.stream_id == 'e17c3009-43b9-11f0-950e-0a1628958560') {
+        if (data.error) {
+          window.location.href = '/sandbox/ebsi/issuer_followup/e17c3009-43b9-11f0-950e-0a1628958560?error=' +
+            data.error + '&error_description=' + data.error_description;
+        } else {
+          if (data.followup == "wait") {
+            var x = document.getElementById("qrcode");
+            x.setAttribute("src", "/static/img/wait.jpeg");
+          } else {
+            window.location.href = '/sandbox/ebsi/issuer_followup/e17c3009-43b9-11f0-950e-0a1628958560';
+          }
+        }
+      }
+    };
+  </script>
+
+</body>
+</html>

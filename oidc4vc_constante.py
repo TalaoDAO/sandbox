@@ -128,7 +128,9 @@ landing_page_style_list = {
     "./issuer_oidc/issuer_qrcode_emailpass.html": "Emailpass",
     "./issuer_oidc/issuer_qrcode_web_test.html": "Test pour web wallet",
     "./issuer_oidc/bank.html": "Banque pour web wallet (fr)",
-     "./issuer_oidc/company.html": "Company for employee badge"
+    "./issuer_oidc/company.html": "Company for employee badge",
+    "./issuer_oidc/marketplace_qrcode.html": "Marketplace"
+
 }
 
 # issuer qrcode page for guest

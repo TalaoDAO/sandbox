@@ -18,10 +18,10 @@ TALAO_ISSUER = {
                 "scope": "address_scope",
                 "order": [
                     "resident_address",
-                    "resident_state",
                     "resident_street",
-                     "resident_city",
                     "resident_postal_code",
+                    "resident_city",
+                    "resident_state",
                     "resident_country",
                 ],
                 "claims": {
