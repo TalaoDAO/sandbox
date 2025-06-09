@@ -91,10 +91,13 @@
         <div id="cardBox">
             <img id="qrcodeIssuer" src="{{ qrcode(url) }}">
             <div id="smartphone_button">
-                <a id="buttonDeepLink" href="https://app.altme.io/app/download?uri={{url}}">With Altme wallet</a>
+                <a id="buttonDeepLink" href="{{deeplink_altme}}">Altme wallet</a>
             </div>
             <div id="smartphone_button">
-                <a id="buttonDeepLink" href="https://app.talao.co/app/download?uri={{url}}">With Talao wallet</a>
+                <a id="buttonDeepLink" href="{{deeplink_talao}}" >Talao wallet</a>
+            </div>
+              <div id="smartphone_button">
+                <a id="buttonDeepLink" href="{{deeplink_standard}}" >Other wallets</a>
             </div>
         <!-- <img id="arrow" src="/static/img/arrow_right.png">
             <img id="card" src="/static/img/VerifiableId.png"> -->
