@@ -520,14 +520,14 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     #    "raamxepqex", # test local
     #    "tdiwmpyhzc" # test aws
     #]:
-    #    deeplink_talao = 'talao-openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
-    #    deeplink_altme = 'altme-openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
+    deeplink_talao = 'talao-openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
+    deeplink_altme = 'altme-openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
     #else:
-    #    deeplink_altme = mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display})
-    #    deeplink_talao = mode.deeplink_talao + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display})
+    #deeplink_altme = mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display})
+    #deeplink_talao = mode.deeplink_talao + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display})
     
-    deeplink_talao = 'openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
-    deeplink_altme = 'openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
+    deeplink_standard = 'openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
+    #deeplink_altme = 'openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
      
     qrcode_page = issuer_data.get('issuer_landing_page')
     logging.info('QR code page file = %s', qrcode_page)
@@ -541,6 +541,7 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
         url=url_to_display,
         deeplink_altme=deeplink_altme,
         deeplink_talao=deeplink_talao,
+        deeplink_standard=deeplink_standard,
         stream_id=stream_id,
         issuer_id=issuer_id,
         page_title=issuer_data['page_title'],

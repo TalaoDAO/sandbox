@@ -94,6 +94,54 @@ TALAO_ISSUER = {
                         "text_color": "#FFFFFF",
                     }
                 ]
+            },
+            "Rib": {
+                "format": "vc+sd-jwt",
+                "scope": "rib_scope",
+                "order": [
+                    "account_id",
+                    "bic",
+                    "iban"
+                ],
+                "claims": {
+                    "account_id": {
+                        "value_type": "string",
+                        "display": [{"name": "Account Id", "locale": "en-US"},
+                                    {"name": "Numéro de compte", "locale": "fr-FR"}],
+                    },
+                    "bic": {
+                        "value_type": "string",
+                        "display": [{"name": "RIB", "locale": "en-US"},
+                                    {"name": "RIB", "locale": "fr-FR"}],
+                    },
+                    "iban": {
+                        "value_type": "string",
+                        "display": [{"name": "IBAN", "locale": "en-US"},
+                                    {"name": "IBAN", "locale": "fr-FR"}],
+                    }
+                },
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "EdDSA",
+                    "RS256",
+                ],
+                "vct": "urn:rib.1",
+                "display": [
+                    {
+                        "name": "Bank account proof",
+                        "locale": "en-US",
+                        "background_color": "#f16d39",
+                        "text_color": "#FFFFFF",
+                    },
+                    {
+                        "name": "Preuve de compte bancaire",
+                        "locale": "fr-FR",
+                        "background_color": "#f16d39",
+                        "text_color": "#FFFFFF",
+                    }
+                ]
             }
         },
         "grant_types_supported": [
