@@ -125,7 +125,7 @@ landing_page_style_list = {
     "./issuer_oidc/issuer_qrcode_test.html": "Test",
     "./issuer_oidc/issuer_qrcode_id360.html": "Id360",
     "./issuer_oidc/wallet_link_issuer_qrcode.html": "Wallet link",
-    "./issuer_oidc/issuer_qrcode_emailpass.html": "Emailpass",
+    "./issuer_oidc/issuer_qrcode_emailpass.html": "Emailpass and Phoneproof",
     "./issuer_oidc/issuer_qrcode_web_test.html": "Test pour web wallet",
     "./issuer_oidc/bank.html": "Banque pour web wallet (fr)",
     "./issuer_oidc/company.html": "Company for employee badge",

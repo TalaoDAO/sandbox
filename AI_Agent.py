@@ -31,7 +31,6 @@ client = OpenAI(api_key=openai_key)
     
 # Define models and constants
 ENGINE2 = "gpt-4-turbo"
-ENGINE = "gpt-3.5-turbo"
 ADVICE = "\n\nLLM can make mistakes. Check important info. For a deeper analysis, review the cryptographic binding methods, signing algorithms, and specific scopes supported by the issuer and authorization server."
  
 MAX_RETRIES = 3
@@ -57,12 +56,10 @@ def get_header_from_token(token):
 
 
 def clean_md(content):
-    tokens = enc.encode(content)
     # Patterns to remove specific top-level sections
     for section in ["Introduction", "Terminology", "Document History", "Notices", "Acknowledgements", "Use Cases", "IANA Considerations", ]:
         pattern = rf"(?m)^# {section}[\s\S]*?(?=^\# |\Z)"
         content = re.sub(pattern, "", content)
-    tokens = enc.encode(content)
     return content
 
 
@@ -85,6 +82,7 @@ def counter_update(place):
     }
     requests.post(slack_url, data={"payload": json.dumps(payload)}, timeout=10)
     return True
+
 
 def store_report(qrcode, report, report_type):
     # Save report to file using SHA256 hash as filename
@@ -166,20 +164,26 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device):
     
 
 def get_verifier_request(qrcode, draft):
+    warning = ""
     # Parse verifier's QR code request
     parse_result = urlparse(qrcode)
     result = {k: v[0] for k, v in parse_qs(parse_result.query).items()}
     if request_uri := result.get('request_uri'):
         try:
-            request_jwt = requests.get(request_uri, timeout=10).text
+            response = requests.get(request_uri, timeout=10)
+            request_jwt = response.text
             request = get_payload_from_token(request_jwt)
         except Exception:
             return None, None, "Error: The request jwt is not available"
+        content_type = response.headers.get("Content-Type")
+        if content_type != "application/oauth-authz-req+jwt":
+             return None, None, "Error: The request_uri response Content-Type must be application/oauth-authz-req+jwt"
     elif request := result.get("request"):
         request_jwt = request
         request = get_payload_from_token(request_jwt)
     elif result.get("response_mode"):
         request = result
+        warning = "Passing OIDC request parameters via the request or request_uri parameter using a signed JWT is more secure than passing them as plain query parameters."
     else:
         return None, None, "Error: The request is not available"
 
@@ -192,7 +196,10 @@ def get_verifier_request(qrcode, draft):
         request['presentation_definition'] = presentation_definition
     else:
         presentation_definition = request.get('presentation_definition')
-    return request, presentation_definition, ""
+    
+    if warning:
+        warning = "Warning: " + warning
+    return request, presentation_definition, warning
 
 
 def analyze_sd_jwt_vc(token: str, draft: str, device:str) -> str:
@@ -577,9 +584,9 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device):
         draft = "18"
 
     date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
-    verifier_request, presentation_definition, error_description = get_verifier_request(qrcode, draft)
+    verifier_request, presentation_definition, error_warning = get_verifier_request(qrcode, draft)
     if not verifier_request or not presentation_definition:
-        return error_description
+        return error_warning
     #search_kwargs={"k": 10, "filter": {"spec": "oidc4vp", "version": draft}}
     #retriever = vectorstore.as_retriever(search_kwargs=search_kwargs)
     #relevant_docs = retriever.invoke("presentation_definition client_metadata authorization request")
@@ -620,6 +627,9 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device):
         
         ---Check if the profile is respected---
         {profile}
+        
+        ---Warning---
+        {error_warning}
 
         --- Authorization Request ---
         {json.dumps(verifier_request, indent=2)}
