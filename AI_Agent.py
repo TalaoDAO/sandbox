@@ -31,6 +31,7 @@ client = OpenAI(api_key=openai_key)
     
 # Define models and constants
 ENGINE2 = "gpt-4-turbo"
+ENGINE2 = "gpt-4o"
 ADVICE = "\n\nLLM can make mistakes. Check important info. For a deeper analysis, review the cryptographic binding methods, signing algorithms, and specific scopes supported by the issuer and authorization server."
  
 MAX_RETRIES = 3
@@ -489,7 +490,7 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device):
         f = open("./dataset/oidc4vci/" + draft + ".md", "r")
         context = f.read()
         f.close()
-    except:
+    except Exception:
         f = open("./dataset/oidc4vci/13.md", "r")
         context = f.read()
         f.close
@@ -507,46 +508,52 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device):
     messages = [
         {
             "role": "system",
-            "content": f"You are a professional analyst and expert in OIDC4VCI Draft {draft} and digital credential specifications."
-                       f" You write concise, structured reports for developers and product teams."
+            "content": f"""You are a compliance analyst specializing in OIDC4VCI Draft {draft}.
+    You write precise, technical markdown reports for developers and product teams.
+    Keep your answers structured, concise, and free of unnecessary commentary."""
         },
         {
             "role": "user",
             "content": f"""
-        Analyze the following credential offer and metadata and return a report in clear English using bullet points.
-        
-        ---Context ---
-        {context}
+    Analyze the following OIDC4VCI credential offer and related metadata.
 
-        ---Check if the Profile is respected---
-        {profile}
-        
-        --- Credential Offer ---
-        {credential_offer}
+    --- Context (OIDC4VCI Draft {draft}) ---
+    {context}
 
-        --- Issuer Metadata ---
-        {issuer_metadata}
+    --- Profile Constraints ---
+    {profile}
 
-        --- Authorization Server Metadata ---
-        {authorization_server_metadata}
+    --- Credential Offer ---
+    {credential_offer}
 
-        You **must** answer the **9 points below**, **in the exact order**, and using the **exact same section titles**.
-        Each section should be concise, technically accurate, and clearly separated.
+    --- Issuer Metadata ---
+    {issuer_metadata}
 
-        Do not write introductory text. Start directly with point 1.
+    --- Authorization Server Metadata ---
+    {authorization_server_metadata}
 
-        1. **VC Summary**
-        2. **Required Claims Check**
-        3. **Flow Type**
-        4. **Issuer Metadata Summary**
-        5. **Issuer Metadata Check**
-        6. **Authorization Server Metadata Summary**
-        7. **Auth Server Metadata Check**
-        8. **Errors & Warnings**
-        9. **Improvements**: propose improvements or advice for the developer
-        """
+    ### Instructions:
+    - Follow the 9 report sections listed below, in **exact order and with exact titles**.
+    - Use markdown formatting with **bold** section titles and bullet points if needed.
+    - Keep answers short, accurate, and technical.
+    - **Do not include any introduction or summary. Start directly with point 1.**
+
+    ### Report Sections:
+
+    1. **VC Summary**  
+    2. **Required Claims Check**  
+    3. **Flow Type**  
+    4. **Issuer Metadata Summary**  
+    5. **Issuer Metadata Check**  
+    6. **Authorization Server Metadata Summary**  
+    7. **Auth Server Metadata Check**  
+    8. **Errors & Warnings**  
+    9. **Improvements** – Suggest developer-focused enhancements  
+    """
         }
     ]
+
+
 
     for attempt in range(MAX_RETRIES):
         try:
@@ -615,40 +622,45 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device):
     messages = [
         {
             "role": "system",
-            "content": f"You are an expert in OIDC4VP Draft {draft}. You generate short, clear, and complete technical reports for engineers."
+            "content": f"""You are a compliance analyst specializing in OIDC4VP Draft {draft}.
+    You write precise, technical markdown reports for engineers.
+    Keep your answers structured, concise, and free of unnecessary commentary."""
         },
         {
             "role": "user",
             "content": f"""
-        Analyze the following verifier authorization request and presentation definition.
-        
-        ---Context ---
-        {context}
-        
-        ---Check if the profile is respected---
-        {profile}
-        
-        ---Warning---
-        {error_warning}
+    Analyze the following OIDC4VP authorization request and presentation definition.
 
-        --- Authorization Request ---
-        {json.dumps(verifier_request, indent=2)}
+    --- Context (OIDC4VP Draft {draft}) ---
+    {context}
 
-        --- Presentation Definition ---
-        {json.dumps(presentation_definition, indent=2)}
+    --- Profile Constraints ---
+    {profile}
 
-        You **must** answer the **five points below**, **in the exact order**, and using the **exact same section titles**.
-        Each section should be concise, technically accurate, and clearly separated.
+    --- Warning ---
+    {error_warning}
 
-        Do not write introductory text. Start directly with point 1.
+    --- Authorization Request ---
+    {json.dumps(verifier_request, indent=2)}
 
-        1. **Abstract**
-        2. **Authorization Request**, check that all required claims of OIDC4VP are in the request
-        3. **Presentation Definition**, check that the presentation_definition is correct
-        4. **Client Metadata**, check that the metadata are correct
-        5. **Errors & Warnings**
-        6. **Improvements**: propose improvements or advice for the developer
-        """
+    --- Presentation Definition ---
+    {json.dumps(presentation_definition, indent=2)}
+
+    ### Instructions:
+    - Follow the 6 report sections listed below, in **exact order and with exact titles**.
+    - Use markdown formatting with **bold** section titles and bullet points if needed.
+    - Keep answers short, accurate, and technical.
+    - **Do not include any introduction or summary. Start directly with point 1.**
+
+    ### Report Sections:
+
+    1. **Abstract**  
+    2. **Authorization Request** – Check required OIDC4VP claims  
+    3. **Presentation Definition** – Verify format and structure  
+    4. **Client Metadata** – Validate content (if present)  
+    5. **Errors & Warnings**  
+    6. **Improvements** – Suggest developer-focused enhancements  
+    """
         }
     ]
 
