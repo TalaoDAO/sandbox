@@ -5,41 +5,65 @@ and stores results with Slack notifications and file logging.
 """
 
 import json
-from openai import OpenAI
-import openai
 from urllib.parse import parse_qs, urlparse
 import requests
 from datetime import datetime
 import hashlib
 import base64
 import logging
-import time
 import re
 import tiktoken
 
-#from load_vectorstore import load_vectorstore
+
+from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+provider = "openai"
+#provider = "gemini"
+
+
+# Load API keys
+with open("keys.json", "r") as f:
+    keys = json.load(f)
+
+openai_model = ChatOpenAI(
+    api_key=keys["openai"],
+    model="gpt-4o",
+    temperature=0,
+)
+
+gemini_model = ChatGoogleGenerativeAI(
+    google_api_key=keys["gemini"],
+    model="gemini-1.5-pro-latest",
+    temperature=0,
+)
+
+def get_llm_client():
+    if provider.lower() == "openai":
+        return openai_model
+    elif provider.lower() == "gemini":
+        return gemini_model
+    else:
+        raise ValueError(f"Unsupported provider: {provider}")
+
+def engine():
+    if provider.lower() == "openai":
+        return "gpt-4-turbo"
+    elif provider.lower() == "gemini":
+        return "gemini-2.5-flash-preview-05-20"
+    else:
+        raise ValueError(f"Unsupported provider: {provider}")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-
-# Load API key
-with open("keys.json", "r") as f:
-    openai_key = json.load(f)["openai"]
-
-# Initialize OpenAI client
-client = OpenAI(api_key=openai_key)
     
 # Define models and constants
-ENGINE2 = "gpt-4-turbo"
-ENGINE2 = "gpt-4o"
 ADVICE = "\n\nLLM can make mistakes. Check important info. For a deeper analysis, review the cryptographic binding methods, signing algorithms, and specific scopes supported by the issuer and authorization server."
- 
 MAX_RETRIES = 3
 DELAY_SECONDS = 2
 
 enc = tiktoken.encoding_for_model("gpt-4")  # or "gpt-3.5-turbo"
 
-#vectorstore = load_vectorstore()
 
 def base64url_decode(input_str):
     padding = '=' * ((4 - len(input_str) % 4) % 4)
@@ -127,8 +151,7 @@ def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str)
     return "Unknown VC format. Supported formats: SD-JWT VC, JWT VC (compact), JSON-LD VC."
 
 
-
-def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device):
+def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device):    
     # Analyze a QR code and delegate based on protocol type
     profile = ""
     if profil == "EBSI":
@@ -178,7 +201,7 @@ def get_verifier_request(qrcode, draft):
             return None, None, "Error: The request jwt is not available"
         content_type = response.headers.get("Content-Type")
         if content_type != "application/oauth-authz-req+jwt":
-             return None, None, "Error: The request_uri response Content-Type must be application/oauth-authz-req+jwt"
+            return None, None, "Error: The request_uri response Content-Type must be application/oauth-authz-req+jwt"
     elif request := result.get("request"):
         request_jwt = request
         request = get_payload_from_token(request_jwt)
@@ -203,7 +226,7 @@ def get_verifier_request(qrcode, draft):
     return request, presentation_definition, warning
 
 
-def analyze_sd_jwt_vc(token: str, draft: str, device:str) -> str:
+def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     """
     Analyze a Verifiable Presentation (VP) in SD-JWT format and return a structured report.
     
@@ -256,7 +279,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device:str) -> str:
     # Timestamp and attribution
     date = datetime.now().replace(microsecond=0).isoformat()
     mention = (
-        f"\n\nThe OpenAI model {ENGINE2} is used in conjunction with the Web3 Digital Wallet dataset.\n"
+        f"\n\nThe model {engine()} is used in conjunction with the Web3 Digital Wallet dataset.\n"
         f"This report is based on the IETF SD-JWT VC Draft {draft} specification.\n"
         f"Date of issuance: {date}. ©Web3 Digital Wallet 2025."
     )
@@ -286,17 +309,15 @@ def analyze_sd_jwt_vc(token: str, draft: str, device:str) -> str:
     """
 
     # Call the OpenAI API
-    completion = client.chat.completions.create(
-        model=ENGINE2,
-        messages=[
-            {"role": "system", "content": "You are an expert in SD-JWT VC specification compliance."},
-            {"role": "user", "content": prompt}
-        ]
-    )
+    llm = get_llm_client()  # Add 'provider' param to function
+    response = llm.invoke([
+        {"role": "system", "content": "You are an expert in SD-JWT VC specifications compliance."},
+        {"role": "user", "content": prompt}
+        ]).content
 
     # Update usage stats and return response
     counter_update(device)
-    return completion.choices[0].message.content + ADVICE + mention
+    return response + ADVICE + mention
 
 
 def analyze_jwt_vc(token, draft, device):
@@ -311,6 +332,8 @@ def analyze_jwt_vc(token, draft, device):
         str: A markdown-formatted compliance report generated using OpenAI
     """
     
+    llm = get_llm_client()
+
     # Decode SD-JWT header and payload
     jwt_header = get_header_from_token(token)
     jwt_payload = get_payload_from_token(token)
@@ -331,7 +354,7 @@ def analyze_jwt_vc(token, draft, device):
     # Timestamp and attribution
     date = datetime.now().replace(microsecond=0).isoformat()
     mention = (
-        f"\n\nThe OpenAI model {ENGINE2} is used in conjunction with the Web3 Digital Wallet dataset.\n"
+        f"\n\nThe model {engine()} is used in conjunction with the Web3 Digital Wallet dataset.\n"
         f"This report is based on the W3C VCDM {draft} specification.\n"
         f"Date of issuance: {date}. ©Web3 Digital Wallet 2025."
     )
@@ -355,19 +378,17 @@ def analyze_jwt_vc(token, draft, device):
     5. List any errors, inconsistencies, or anomalies and propose improvements
     """
 
-    # Call the OpenAI API
-    completion = client.chat.completions.create(
-        model=ENGINE2,
-        messages=[
-            {"role": "system", "content": "You are an expert in SD-JWT VC specification compliance."},
-            {"role": "user", "content": prompt}
-        ]
-    )
+    # Call the LLM API
+    llm = get_llm_client()  # Add 'provider' param to function
+    response = llm.invoke([
+        {"role": "system", "content": "You are an expert in JWT VC specifications compliance."},
+        {"role": "user", "content": prompt}
+    ]).content
 
     # Update usage stats and return response
     counter_update(device)
-    return completion.choices[0].message.content + ADVICE + mention
-     
+    return response + ADVICE + mention
+
     
 def analyze_jsonld_vc(vc: str, draft: str, device: str) -> str:
     """
@@ -397,7 +418,7 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str) -> str:
     # Timestamp and attribution
     date = datetime.now().replace(microsecond=0).isoformat()
     mention = (
-        f"\n\nThe OpenAI model {ENGINE2} is used in conjunction with the Web3 Digital Wallet dataset.\n"
+        f"\n\nThe model {engine()} is used in conjunction with the Web3 Digital Wallet dataset.\n"
         f"This report is based on the W3C VC DM {draft} specification.\n"
         f"Date of issuance: {date}. ©Web3 Digital Wallet 2025."
     )
@@ -420,17 +441,15 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str) -> str:
     """
     
     # Call the OpenAI API
-    completion = client.chat.completions.create(
-        model=ENGINE2,
-        messages=[
-            {"role": "system", "content": "You are an expert in VC DM specification compliance."},
-            {"role": "user", "content": prompt}
-        ]
-    )
+    llm = get_llm_client()  # Add 'provider' param to function
+    response = llm.invoke([
+        {"role": "system", "content": "You are an expert in VC DM specifications compliance."},
+        {"role": "user", "content": prompt}
+    ]).content
 
     # Update usage stats and return response
     counter_update(device)
-    return completion.choices[0].message.content + ADVICE + mention
+    return response + ADVICE + mention
 
 
 def get_issuer_data(qrcode, draft):
@@ -459,7 +478,7 @@ def get_issuer_data(qrcode, draft):
     except Exception:
         try:
             authorization_server = credential_offer["grants"]["authorization_code"]["authorization_server"]
-        except:
+        except Exception:
             authorization_server_metadata = "Error: The authorization server is not found not"
             return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
     
@@ -477,7 +496,7 @@ def get_issuer_data(qrcode, draft):
     return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
 
 
-def analyze_issuer_qrcode(qrcode, draft, profile, device):
+def analyze_issuer_qrcode(qrcode, draft, profile, device):    
     logging.info("draft = %s", draft)
     # Analyze issuer QR code and generate a structured report using OpenAI
     if not draft:
@@ -496,11 +515,15 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device):
         f.close
         draft = "13"
     
+    # Token count logging for diagnostics
+    tokens = enc.encode(context)
+    logging.info("Token count: %s", len(tokens))
+    
     context = clean_md(context) 
     if int(draft) <= 11:
         context += "\n If EBSI tell to the user to add did:key:jwk_jcs-pub as subject_syntax_type_supported in the authorization server metadata"
     mention = (
-        f"\n\n The OpenAI model {ENGINE2} is used in addition to a Web3 Digital Wallet dataset."
+        f"\n\n The model {engine()} is used in addition to a Web3 Digital Wallet dataset."
         f" This report is based on the OIDC4VCI specifications Draft {draft}."
         f" Date of issuance: {date}. © Web3 Digital Wallet 2025."
     )
@@ -552,40 +575,18 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device):
     """
         }
     ]
+    
+    llm = get_llm_client()  
+    response = llm.invoke(messages).content
 
-
-
-    for attempt in range(MAX_RETRIES):
-        try:
-            completion = client.chat.completions.create(
-                model=ENGINE2,
-                temperature=0,
-                max_tokens=1024,
-                messages=messages
-            )
-            result = completion.choices[0].message.content + ADVICE + mention
-            break  # success, exit the retry loop
-
-        except openai.APIConnectionError:
-            result = "The server could not be reached"
-            break
-        except openai.RateLimitError as e:
-            print(f"Rate limit error: {e}")
-            if attempt < MAX_RETRIES - 1:
-                time.sleep(DELAY_SECONDS)
-                continue
-            result = "The agent is busy right now, retry later!"
-
-        except openai.BadRequestError:
-            result = "Too much data, context length exceeded"
-            break
-
+    result = response + ADVICE + mention
     counter_update(device)
     store_report(qrcode, result, "issuer")
     return result
 
 
 def analyze_verifier_qrcode(qrcode, draft, profile, device):   
+    
     # Analyze verifier QR code and generate a structured report using OpenAI
     if not draft:
         draft = "18"
@@ -594,18 +595,12 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device):
     verifier_request, presentation_definition, error_warning = get_verifier_request(qrcode, draft)
     if not verifier_request or not presentation_definition:
         return error_warning
-    #search_kwargs={"k": 10, "filter": {"spec": "oidc4vp", "version": draft}}
-    #retriever = vectorstore.as_retriever(search_kwargs=search_kwargs)
-    #relevant_docs = retriever.invoke("presentation_definition client_metadata authorization request")
-    #for doc in relevant_docs:
-    #    print(f"{doc.metadata['section']} - {doc.metadata['title']}")
-    #context = "\n\n".join([doc.page_content for doc in relevant_docs])
     
     try:
         f = open("./dataset/oidc4vp/" + draft + ".md", "r")
         context = f.read()
         f.close()
-    except:
+    except Exception:
         f = open("./dataset/oidc4vp/18.md", "r")
         context = f.read()
         f.close
@@ -613,8 +608,12 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device):
     
     context = clean_md(context) 
     
+    # Token count logging for diagnostics
+    tokens = enc.encode(context)
+    logging.info("Token count: %s", len(tokens))
+    
     mention = (
-        f"\n\n The OpenAI model {ENGINE2} is used in addition to a Web3 Digital Wallet dataset."
+        f"\n\n The model {engine()} is used in addition to a Web3 Digital Wallet dataset."
         f" This report is based on the OIDC4VP specifications Draft {draft}."
         f" Date of issuance: {date}. © Web3 Digital Wallet 2025."
     )
@@ -664,21 +663,10 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device):
         }
     ]
 
-    try:
-        completion = client.chat.completions.create(
-            model=ENGINE2,
-            temperature=0,
-            max_tokens=1024,
-            messages=messages
-        )
-        result = completion.choices[0].message.content + ADVICE + mention
-    except openai.APIConnectionError:
-        result = "The server could not be reached"
-    except openai.RateLimitError:
-        result = "The agent is busy right now, retry later!"
-    except openai.BadRequestError:
-        result = "Too much data, context length exceeded"
+    llm = get_llm_client()  # Add 'provider' param to function
+    response = llm.invoke(messages).content
 
+    result = response + ADVICE + mention
     counter_update(device)
     store_report(qrcode, result, "verifier")
     return result
