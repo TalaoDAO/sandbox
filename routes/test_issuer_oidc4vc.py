@@ -513,20 +513,18 @@ def test_12(mode):
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
     }
-    with open('./verifiable_credentials/IdentityCredential.json', 'r') as f:
-        credential1 = json.loads(f.read())
-    with open('./verifiable_credentials/Pid.json', 'r') as f:
-        credential2 = json.loads(f.read())
     
+    with open('./verifiable_credentials/Pid.json', 'r') as f:
+        credential = json.loads(f.read())
+   
     data = { 
         "issuer_id": issuer_id,
         "vc": {
-            "IdentityCredential" : credential1,
-            "Pid": credential2
+            "Pid": credential
         }, 
         "issuer_state": "test12",
-        "pre-authorized_code": False,
-        "credential_type": ['IdentityCredential', 'Pid'],
+        "pre-authorized_code": True,
+        "credential_type": ['Pid'],
         "callback": mode.server + 'sandbox/issuer/callback',
     }
     resp = requests.post(api_endpoint, headers=headers, json=data)

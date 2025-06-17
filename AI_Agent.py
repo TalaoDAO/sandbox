@@ -69,10 +69,12 @@ def base64url_decode(input_str):
     padding = '=' * ((4 - len(input_str) % 4) % 4)
     return base64.urlsafe_b64decode(input_str + padding)
 
+
 def get_payload_from_token(token):
     # Extract payload section from JWT
     payload = token.split('.')[1]
     return json.loads(base64url_decode(payload).decode())
+
 
 def get_header_from_token(token):
     # Extract header section from JWT

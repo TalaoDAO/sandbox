@@ -81,7 +81,8 @@ oidc4vc_profile_list = {
     "TALAO_ISSUER_SD_JWT_VC": "Official Talao Issuer in sd-jwt",
     "TALAO_ISSUER_LDP_VC": "Official Talao Issuer in ldp_vc",
     "TALAO_ISSUER_SD_JWT_VC_OIDC4VP_23": "Official Talao Issuer in sd-jwt with OIDC4VP_23",
-    "TALAO_MARKETPLACE": "Digital Credential Marketplace"
+    "TALAO_MARKETPLACE": "Digital Credential Marketplace",
+    "TALAO_ISSUER_SD_JWT_VC_OIDC4VCI_15": "OIDC4VCI Draft 15"
 }
 
 #OIDC4VC Verifier for admin

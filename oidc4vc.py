@@ -267,7 +267,7 @@ def sd(data):
     return payload, _disclosure
 
 
-def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_identifier, duration=365*24*60*60, x5c=False):
+def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_identifier, duration=365*24*60*60, x5c=False, draft=13):
     """
     https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-01.html
     GAIN POC https://gist.github.com/javereec/48007399d9876d71f523145da307a7a3
@@ -305,6 +305,8 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
         'typ': "vc+sd-jwt",
         'alg': alg(issuer_key)
     }
+    if draft >= 15:
+        header['typ'] = "dc+sd-jwt"
     if x5c:
         header['x5c'] = x509_attestation.build_x509_san_dns(hostname=issuer)
     else:

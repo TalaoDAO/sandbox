@@ -1375,7 +1375,8 @@ async def issuer_credential(issuer_id, red, mode):
         mode.server + 'issuer/' + issuer_id,  # issuer
         mode,
         wallet_jwk=wallet_jwk,
-        wallet_identifier=wallet_identifier # 'did' or 
+        wallet_identifier=wallet_identifier,
+        draft=int(issuer_profile['oidc4vciDraft']) 
     )
     logging.info('credential signed sent to wallet = %s', credential_signed)
     if not credential_signed:
@@ -1386,11 +1387,20 @@ async def issuer_credential(issuer_id, red, mode):
 
     # Transfer VC
     c_nonce = str(uuid.uuid1())
-    payload = {
-        'credential': credential_signed,  # string or json depending on the format
-        'c_nonce': c_nonce,
-        'c_nonce_expires_in': C_NONCE_LIFE,
-    }
+    if int(issuer_profile['oidc4vciDraft']) >= 15:
+        payload = {
+            "credentials": [
+                {
+                    "credential":  credential_signed
+                }
+            ]
+        }
+    else:
+        payload = {
+            'credential': credential_signed,  # string or json depending on the format
+            'c_nonce': c_nonce,
+            'c_nonce_expires_in': C_NONCE_LIFE,
+        }
     
     if int(issuer_profile['oidc4vciDraft']) < 13:
         payload.update({'format': vc_format})
@@ -1533,7 +1543,7 @@ def oidc_issuer_stream(red):
     return Response(event_stream(red), headers=headers)
 
 
-async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, issuer, mode, duration=365, wallet_jwk=None, wallet_identifier=None):
+async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, issuer, mode, duration=365, wallet_jwk=None, wallet_identifier=None, draft=13):
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_did = issuer_data['did']
     issuer_key = issuer_data['jwk']
@@ -1547,11 +1557,11 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
                 'uri': mode.server + 'issuer/statuslist/1'
             }
         }
-        if issuer_id in ['raamxepqex', 'tdiwmpyhzc']:  # HAIP
+        if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
             x5c = True
         else:
             x5c = False
-        return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk, wallet_did, wallet_identifier, x5c=x5c)
+        return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk, wallet_did, wallet_identifier, x5c=x5c, draft=draft)
     elif format in ['ldp_vc', 'jwt_vc_json-ld']:
         logging.info('wallet did = %s', wallet_did)
         if wallet_did:
