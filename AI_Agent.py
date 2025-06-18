@@ -48,7 +48,7 @@ def get_llm_client():
 
 def engine():
     if provider.lower() == "openai":
-        return "gpt-4-turbo"
+        return "gpt-4o"
     elif provider.lower() == "gemini":
         return "gemini-2.5-flash-preview-05-20"
     else:

@@ -18,6 +18,18 @@ OFFER = {
     }
 }
 
+OFFER_NEW = {
+    "credential_issuer": "https://injicertify-academic.dev-int-inji.mosip.net",
+    "credential_configuration_ids": [
+        "UniversityCredential"
+    ],
+    "grants": {
+        "authorization_code": {
+            "authorization_server": "https://keycloak-26.collab.mosip.net/auth/realms/inji"
+        }
+    }
+}
+
 OFFER2 = {
     "credential_issuer": "https://injicertify-landregistry.qa-inji1.mosip.net",
     "credential_configuration_ids": [
@@ -50,7 +62,7 @@ def init_app(app, red, mode):
 
 
 def mosip():
-    code = "openid-credential-offer://?" + urlencode({"credential_offer": json.dumps(OFFER)})
+    code = "openid-credential-offer://?" + urlencode({"credential_offer": json.dumps(OFFER_NEW)})
     code_deeplink = "talao-" + code
     print(code_deeplink)
     button = '<a href ="' + code + '"><button><h1>Wallet deeplink for same device mode</h1></button></a>'
