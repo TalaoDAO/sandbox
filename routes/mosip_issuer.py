@@ -18,10 +18,13 @@ OFFER = {
     }
 }
 
+
+
 OFFER_NEW = {
     "credential_issuer": "https://injicertify-academic.dev-int-inji.mosip.net",
     "credential_configuration_ids": [
-        "UniversityCredential"
+        "UniversityCredential",
+        "University_Credential_SD_JWT"
     ],
     "grants": {
         "authorization_code": {
