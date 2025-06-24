@@ -71,6 +71,7 @@ def mosip():
     button = '<a href ="' + code + '"><button><h1>Wallet deeplink for same device mode</h1></button></a>'
     html_string = """<html><head></head>
                         <body><div><div>  <center>   
+                        <h1>""" + OFFER["credential_configuration_ids"][0] + """</h1><br>
                         <img src="{{ qrcode('""" + code + """') }}"> <br>
                           <p>{{code}}</p>
                         <br><br>""" + button + """</center></div></div></body></html>"""
@@ -85,6 +86,7 @@ def mosip1():
     button = '<a href ="' + code + '"><button><h1>Wallet deeplink for same device mode</h1></button></a>'
     html_string = """<html><head></head>
                         <body><div><div>  <center>   
+                        <h1>""" + OFFER_1["credential_configuration_ids"][0] + """</h1><br>
                         <img src="{{ qrcode('""" + code + """') }}"> <br>
                           <p>{{code}}</p>
                         <br><br>""" + button + """</center></div></div></body></html>"""
@@ -99,6 +101,7 @@ def mosip2():
     button = '<a href ="' + code + '"><button><h1>Wallet deeplink for same device mode</h1></button></a>'
     html_string = """<html><head></head>
                         <body><div><div>  <center>   
+                        <h1>""" + OFFER_2["credential_configuration_ids"][0] + """</h1><br>
                         <img src="{{ qrcode('""" + code + """') }}"> <br>
                         <p>{{code}}</p>
                         <br><br>""" + button + """</center></div></div></body></html>"""
