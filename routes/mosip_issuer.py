@@ -6,19 +6,24 @@ from urllib.parse import urlencode
 #  https://injicertify-academic.dev2.mosip.net/.well-known/openid-credential-issuer
 # https://keycloak-26.dev2.mosip.net/auth/realms/inji-dev
 
+
+
+
+
+
 OFFER = {
-    "credential_issuer": "https://injicertify-academic.dev2.mosip.net",
+    "credential_issuer": "https://injicertify-academic.dev-int-inji.mosip.net",
     "credential_configuration_ids": [
-        "UniversityCredential"
+        "UniversityCredential",
+        "University_Credential_SD_JWT"
+
     ],
     "grants": {
         "authorization_code": {
-            "authorization_server": "https://keycloak-26.dev2.mosip.net/auth/realms/inji-dev"
+            "authorization_server": "https://keycloak-26.collab.mosip.net/auth/realms/inji"
         }
     }
 }
-
-
 
 OFFER_1 = {
     "credential_issuer": "https://injicertify-academic.dev-int-inji.mosip.net",
