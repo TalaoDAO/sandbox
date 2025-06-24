@@ -107,3 +107,11 @@ def mosip2():
                         <br><br>""" + button + """</center></div></div></body></html>"""
                        
     return render_template_string(html_string, code=code)
+
+
+
+
+
+
+
+# openid4vp://?client_id=injiverify.dev-int-inji.mosip.net&response_type=vp_token&response_mode=direct_post&nonce=MTc1MDc2OTcxMDU2MQ%3D%3D&state=req_e8ec2d33-3092-44c8-9f39-a49673f953a8&response_uri=https%3A%2F%2Finjiverify.dev-int-inji.mosip.net%2Fv1%2Fverify%2Fvp-submission%2Fdirect-post&presentation_definition=%7B%22id%22%3A%22c4822b58-7fb4-454e-b827-f8758fe27f9a%22%2C%22purpose%22%3A%22Relying+party+is+requesting+your+digital+ID+for+the+purpose+of+Self-Authentication%22%2C%22format%22%3A%7B%22ldp_vc%22%3A%7B%22proof_type%22%3A%5B%22Ed25519Signature2020%22%5D%7D%7D%2C%22input_descriptors%22%3A%5B%7B%22id%22%3A%22id+card+credential%22%2C%22format%22%3A%7B%22ldp_vc%22%3A%7B%22proof_type%22%3A%5B%22RsaSignature2018%22%5D%7D%7D%2C%22constraints%22%3A%7B%22fields%22%3A%5B%7B%22path%22%3A%5B%22%24.type%22%5D%2C%22filter%22%3A%7B%22type%22%3A%22object%22%2C%22pattern%22%3A%22MOSIPVerifiableCredential%22%7D%7D%5D%7D%7D%5D%7D&client_metadata=%7B%22client_name%22%3A%22injiverify.dev-int-inji.mosip.net%22%2C%22vp_formats%22%3A%7B%22ldp_vp%22%3A%7B%22proof_type%22%3A%5B%22Ed25519Signature2018%22%2C%22Ed25519Signature2020%22%2C%22RsaSignature2018%22%5D%7D%7D%7D

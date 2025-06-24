@@ -554,6 +554,13 @@ def bnb():
     filename = 'binance_card.jpg'
     return send_file(filename, mimetype='image/jpg')
 
+
+@app.route('/image/inji', methods=['GET'])
+def inji():
+    filename = 'inji.png'
+    return send_file(filename, mimetype='image/png')
+
+
 # html page server
 @app.route('/sandbox/oidc-ai')
 def oidc_ai():
