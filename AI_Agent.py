@@ -147,8 +147,8 @@ def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str)
         vc_json = json.loads(vc)
         if "@context" in vc_json and "type" in vc_json:
             return analyze_jsonld_vc(vc_json, vcdm_draft, device)
-    except json.JSONDecodeError:
-        return "Invalid JSON. Cannot parse input."
+    except Exception as e:
+        return "Invalid JSON. Cannot parse input. " + str(e)
 
     return "Unknown VC format. Supported formats: SD-JWT VC, JWT VC (compact), JSON-LD VC."
 

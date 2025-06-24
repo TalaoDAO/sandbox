@@ -20,11 +20,10 @@ OFFER = {
 
 
 
-OFFER_NEW = {
+OFFER_1 = {
     "credential_issuer": "https://injicertify-academic.dev-int-inji.mosip.net",
     "credential_configuration_ids": [
         "UniversityCredential",
-        "University_Credential_SD_JWT"
     ],
     "grants": {
         "authorization_code": {
@@ -33,20 +32,19 @@ OFFER_NEW = {
     }
 }
 
-OFFER2 = {
-    "credential_issuer": "https://injicertify-landregistry.qa-inji1.mosip.net",
+
+
+OFFER_2 = {
+    "credential_issuer": "https://injicertify-academic.dev-int-inji.mosip.net",
     "credential_configuration_ids": [
-        "LandStatementCredential"
+        "University_Credential_SD_JWT"
     ],
     "grants": {
         "authorization_code": {
-            "authorization_server": "https://esignet-mock.released.mosip.net"
+            "authorization_server": "https://keycloak-26.collab.mosip.net/auth/realms/inji"
         }
     }
 }
-
-
-
 
 
 
@@ -59,13 +57,29 @@ openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A+%22htt
 
 def init_app(app, red, mode):
     app.add_url_rule('/sandbox/issuer/mosip',  view_func=mosip, methods=['GET'])
+    app.add_url_rule('/sandbox/issuer/mosip1',  view_func=mosip1, methods=['GET'])
     app.add_url_rule('/sandbox/issuer/mosip2',  view_func=mosip2, methods=['GET'])
 
     return
 
 
+
 def mosip():
-    code = "openid-credential-offer://?" + urlencode({"credential_offer": json.dumps(OFFER_NEW)})
+    code = "openid-credential-offer://?" + urlencode({"credential_offer": json.dumps(OFFER)})
+    code_deeplink = "talao-" + code
+    print(code_deeplink)
+    button = '<a href ="' + code + '"><button><h1>Wallet deeplink for same device mode</h1></button></a>'
+    html_string = """<html><head></head>
+                        <body><div><div>  <center>   
+                        <img src="{{ qrcode('""" + code + """') }}"> <br>
+                          <p>{{code}}</p>
+                        <br><br>""" + button + """</center></div></div></body></html>"""
+                       
+    return render_template_string(html_string, code=code)
+
+
+def mosip1():
+    code = "openid-credential-offer://?" + urlencode({"credential_offer": json.dumps(OFFER_1)})
     code_deeplink = "talao-" + code
     print(code_deeplink)
     button = '<a href ="' + code + '"><button><h1>Wallet deeplink for same device mode</h1></button></a>'
@@ -79,7 +93,7 @@ def mosip():
 
 
 def mosip2():
-    code = "openid-credential-offer://?" + urlencode({"credential_offer": json.dumps(OFFER2)})
+    code = "openid-credential-offer://?" + urlencode({"credential_offer": json.dumps(OFFER_2)})
     code_deeplink = "talao-" + code
     print(code_deeplink)
     button = '<a href ="' + code + '"><button><h1>Wallet deeplink for same device mode</h1></button></a>'

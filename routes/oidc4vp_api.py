@@ -525,8 +525,13 @@ def oidc4vc_login_qrcode(red, mode):
         logging.error("session expired in login_qrcode")
         return render_template("verifier_oidc/verifier_session_problem.html", message='Session expired')
     
-    verifier_id = json.loads(code_data)['client_id']
-    nonce = json.loads(code_data).get('nonce')   
+    try:
+        verifier_id = json.loads(code_data)['client_id']
+        nonce = json.loads(code_data).get('nonce')   
+    except Exception:
+        logging.error("client id or nonce missing")
+        return render_template("verifier_oidc/verifier_session_problem.html", message='Server error ')
+    
     verifier_data = json.loads(read_oidc4vc_verifier(verifier_id))
     verifier_profile = profile[verifier_data['profile']]
         

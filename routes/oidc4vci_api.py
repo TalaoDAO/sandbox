@@ -173,7 +173,7 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         issuer_profile = profile[issuer_data['profile']]
     except Exception:
         logging.warning('issuer_id not found for %s', issuer_id)
-        return
+        return {"error": "server_error"}
 
     # general section
     credential_issuer_openid_configuration = {
@@ -458,13 +458,12 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     session['stream_id'] = stream_id
     try:
         session_data = json.loads(red.get(stream_id).decode())
-    except Exception:
-        logging.warning('session expired')
+        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    except Exception as e:
+        logging.error('session expired ' + str(e))
         return jsonify('Session expired'), 404
-    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = issuer_data['profile']
     profile_data = profile[issuer_profile]
-    
     credential_type = session_data['credential_type']
     pre_authorized_code = session_data['pre-authorized_code']
     user_pin_required = session_data['user_pin_required']
@@ -776,7 +775,6 @@ def issuer_authorize(issuer_id, red, mode):
             client_id = request_uri_data.get('client_id')
             issuer_state = request_uri_data.get('issuer_state')
             redirect_uri = request_uri_data.get('redirect_uri')
-            issuer_state = request_uri_data.get('client_id')
             response_type = request_uri_data.get('response_type')
             scope = request_uri_data.get('scope')
             nonce = request_uri_data.get('nonce')
