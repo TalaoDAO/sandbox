@@ -278,7 +278,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
         with open('keys.json') as f:
             keys = json.load(f)
         issuer_key = keys['issuer_key']
-        issuer = "talao.co" 
+        issuer = "https://talao.co" 
 
     subject_key = json.loads(subject_key) if isinstance(subject_key, str) else subject_key
     payload = {

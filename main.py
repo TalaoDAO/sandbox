@@ -784,11 +784,11 @@ def api_analyze_vc():
     return jsonify({"report_base64": report_b64})
 
 
-
-
 @app.route('/marketplace', methods=['GET'])
 def marketplace():
     return render_template("marketplace.html")
+
+
 
 @app.route('/trusted-list', methods=['GET'])
 def trusted_list_api():

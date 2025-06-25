@@ -253,6 +253,7 @@ def verifier_test_10(mode):
     else:
         client_id = "ifdpawlhsw"
     url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
+    print(url)
     return redirect(url)
 
 
