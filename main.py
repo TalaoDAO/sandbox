@@ -22,6 +22,7 @@ import hashlib
 import base64
 import AI_Agent
 
+from trusted_list import trusted_list
 
 # Basic protocole
 from routes import saas4ssi
@@ -788,6 +789,10 @@ def api_analyze_vc():
 @app.route('/marketplace', methods=['GET'])
 def marketplace():
     return render_template("marketplace.html")
+
+@app.route('/trusted-list', methods=['GET'])
+def trusted_list_api():
+    return jsonify(trusted_list)
 
 
 # MAIN entry point for test
