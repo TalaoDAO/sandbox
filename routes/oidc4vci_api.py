@@ -643,7 +643,7 @@ def issuer_authorize_par(issuer_id, red, mode):
         return
     if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
         if not request.form.get('client_assertion_type') and not request.headers.get('Oauth-Client-Attestation'):
-            return Response(**manage_error('invalid_request', 'HAIP and POTENTIAL request client assertion authentication', red, mode, request=request))
+            logging.warning('HAIP and POTENTIAL request client assertion authentication')
     
     # test if a standalone AS is used
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
@@ -1039,7 +1039,7 @@ def issuer_token(issuer_id, red, mode):
     
     elif issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
         if not request.form.get('client_assertion_type') and not request.headers.get('Oauth-Client-Attestation'):
-            return Response(**manage_error('invalid_request', 'HAIP requests client assertion authentication', red, mode, request=request))
+            logging.warning('HAIP requests client assertion authentication')
     else:
         pass
     
@@ -1549,12 +1549,12 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
     jti = 'urn:uuid:' + str(uuid.uuid1())
   
     if format == 'vc+sd-jwt':
-        credential['status'] = {
-            'status_list': {
-                'idx': randint(0, 99999),
-                'uri': mode.server + 'issuer/statuslist/1'
-            }
-        }
+        #credential['status'] = {
+        #    'status_list': {
+        #        'idx': randint(0, 99999),
+        #        'uri': mode.server + 'issuer/statuslist/1'
+        #    }
+        #}
         if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
             x5c = True
         else:

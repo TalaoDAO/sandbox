@@ -274,6 +274,12 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
     HAIP : https://openid.net/specs/openid4vc-high-assurance-interoperability-profile-sd-jwt-vc-1_0-00.html
     """
     issuer_key = json.loads(issuer_key) if isinstance(issuer_key, str) else issuer_key
+    if x5c:
+        with open('keys.json') as f:
+            keys = json.load(f)
+        issuer_key = keys['issuer_key']
+        issuer = "talao.co" 
+
     subject_key = json.loads(subject_key) if isinstance(subject_key, str) else subject_key
     payload = {
         'iss': issuer,
@@ -308,7 +314,8 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
     if draft >= 15:
         header['typ'] = "dc+sd-jwt"
     if x5c:
-        header['x5c'] = x509_attestation.build_x509_san_dns(hostname=issuer)
+        logging.info("x509 certificates are added")
+        header['x5c'] = x509_attestation.build_x509_san_dns()
     else:
         header['kid'] = kid
     

@@ -8,9 +8,6 @@ from urllib.parse import urlencode
 
 
 
-
-
-
 OFFER = {
     "credential_issuer": "https://injicertify-academic.dev-int-inji.mosip.net",
     "credential_configuration_ids": [
@@ -53,11 +50,6 @@ OFFER_2 = {
 
 
 
-
-"""
-openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%22%2C+%22credential_configuration_ids%22%3A+%5B%22Pid%22%5D%2C+%22grants%22%3A+%7B%22authorization_code%22%3A+%7B%22issuer_state%22%3A+%22test9%22%2C+%22authorization_server%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%2Fstandalone%22%7D%7D%7D
-
-"""
 
 
 def init_app(app, red, mode):

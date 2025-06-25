@@ -1,112 +1,143 @@
 from datetime import datetime, timedelta
 import json
-from jwcrypto import jwk, jwt
 import base64
+from typing import Tuple, List, Union, Dict
+
+from jwcrypto import jwk, jwt
 from cryptography import x509
 from cryptography.x509.oid import NameOID
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
 
 
-def alg(key):
+# Load keys from a JSON file
+with open('keys.json') as f:
+    keys = json.load(f)
+
+TRUST_ANCHOR_KEY: Dict = keys['issuer_key']  # Root CA
+SIGNER_KEY: Dict = keys['RSA_key']  # Leaf signer
+
+
+def alg(key: Union[str, Dict]) -> str:
+    """Determine JWT algorithm based on key type."""
     key = json.loads(key) if isinstance(key, str) else key
-    if key['kty'] == 'EC':
-        if key['crv'] in ['secp256k1', 'P-256K']:
-            key['crv'] = 'secp256k1'
-            return 'ES256K' 
-        elif key['crv'] == 'P-256':
+    kty = key.get('kty')
+    crv = key.get('crv', '')
+
+    if kty == 'EC':
+        if crv in ['secp256k1', 'P-256K']:
+            return 'ES256K'
+        elif crv == 'P-256':
             return 'ES256'
-        elif key['crv'] == 'P-384':
+        elif crv == 'P-384':
             return 'ES384'
-        elif key['crv'] == 'P-521':
+        elif crv == 'P-521':
             return 'ES512'
-        else:
-            raise Exception("Curve not supported")
-    elif key['kty'] == 'RSA':
+        raise ValueError("Unsupported EC curve")
+    elif kty == 'RSA':
         return 'RS256'
-    elif key['kty'] == 'OKP':
+    elif kty == 'OKP':
         return 'EdDSA'
     else:
-        raise Exception("Key type not supported")
-    
+        raise ValueError("Unsupported key type")
 
-def generate_cert(hostname, key=None):
-    """Generates (self) signed certificate for a hostname, and optional IP addresses.""" 
-    if not key:
-        keys = json.load(open('keys.json')) 
-        rsa_jwk = keys['RSA_key']
-        rsa_key = jwk.JWK(**rsa_jwk)
-        # export in PEM format
-        pem_key = rsa_key.export_to_pem(private_key=True, password=None)
-        # Load PEM key
-        key = serialization.load_pem_private_key(pem_key, password=None)
 
-    issuer = x509.Name([
-        x509.NameAttribute(NameOID.COUNTRY_NAME, "FR"),
-        x509.NameAttribute(NameOID.LOCALITY_NAME, "Paris"),
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Web3 Digital Wallet"),
-        x509.NameAttribute(NameOID.COMMON_NAME, "talao.co")
-    ])
-    
-    subject = x509.Name([
-        x509.NameAttribute(NameOID.COUNTRY_NAME, "FR"),
-        x509.NameAttribute(NameOID.LOCALITY_NAME, "Paris"),
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Web3 Digital Wallet"),
-        x509.NameAttribute(NameOID.COMMON_NAME, hostname)
-    ])
+def convert_jwk_to_pem(key: Dict) -> bytes:
+    """Convert JWK to PEM format."""
+    return jwk.JWK(**key).export_to_pem(private_key=True, password=None)
 
-    # best practice seem to be to include the hostname in the SAN, which *SHOULD* mean COMMON_NAME is ignored.    
-    san = x509.SubjectAlternativeName([
-        x509.DNSName(hostname)
-    ])
-    
-    # path_len=0 means this cert can only sign itself, not other certs.
-    basic_contraints = x509.BasicConstraints(ca=True, path_length=0)
+
+def generate_certificates(trust_anchor_key: Dict, signer_key: Dict) -> Tuple[bytes, bytes]:
+    """
+    Generate X.509 certificates for the trust anchor and signer.
+    Returns:
+        Tuple of DER-encoded (signer_cert, trust_anchor_cert)
+    """
+    # Load private keys from PEM
+    trust_anchor_pem = convert_jwk_to_pem(trust_anchor_key)
+    signer_pem = convert_jwk_to_pem(signer_key)
+    trust_anchor = serialization.load_pem_private_key(trust_anchor_pem, password=None)
+    signer = serialization.load_pem_private_key(signer_pem, password=None)
+
     now = datetime.now()
-    cert = (
+
+    # Trust anchor certificate (self-signed)
+    trust_subject = x509.Name([
+        x509.NameAttribute(NameOID.COUNTRY_NAME, "FR"),
+        x509.NameAttribute(NameOID.LOCALITY_NAME, "Paris"),
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Web3 Digital Wallet Trust Anchor"),
+        x509.NameAttribute(NameOID.COMMON_NAME, "talao.io"),
+    ])
+    san = x509.SubjectAlternativeName([x509.DNSName("talao.io")])
+    trust_cert = (
         x509.CertificateBuilder()
-        .subject_name(subject)
-        .issuer_name(issuer)
-        .public_key(key.public_key())
-        .serial_number(1000)
+        .subject_name(trust_subject)
+        .issuer_name(trust_subject)
+        .public_key(trust_anchor.public_key())
+        .serial_number(x509.random_serial_number())
         .not_valid_before(now)
-        .not_valid_after(now + timedelta(days=10*365))
-        .add_extension(basic_contraints, False)
+        .not_valid_after(now + timedelta(days=3650))
+        .add_extension(x509.BasicConstraints(ca=True, path_length=0), False)
         .add_extension(san, False)
-        .sign(key, hashes.SHA256(), default_backend())
+        .sign(trust_anchor, hashes.SHA256(), default_backend())
     )
-    return cert.public_bytes(encoding=serialization.Encoding.DER)
+
+    # Signer certificate (issued by trust anchor)
+    signer_subject = x509.Name([
+        x509.NameAttribute(NameOID.COUNTRY_NAME, "FR"),
+        x509.NameAttribute(NameOID.LOCALITY_NAME, "Paris"),
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Web3 Digital Wallet"),
+        x509.NameAttribute(NameOID.COMMON_NAME, "talao.co"),
+    ])
+    san = x509.SubjectAlternativeName([x509.DNSName("talao.co")])
+    signer_cert = (
+        x509.CertificateBuilder()
+        .subject_name(signer_subject)
+        .issuer_name(trust_subject)
+        .public_key(signer.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(now)
+        .not_valid_after(now + timedelta(days=3650))
+        .add_extension(x509.BasicConstraints(ca=False, path_length=None), False)
+        .add_extension(san, False)
+        .sign(trust_anchor, hashes.SHA256(), default_backend())
+    )
+
+    return signer_cert.public_bytes(serialization.Encoding.DER), trust_cert.public_bytes(serialization.Encoding.DER)
 
 
-def build_x509_san_dns(hostname="talao.co"):
-    a = generate_cert(hostname)
-    return [base64.b64encode(a).decode()]
+def generate_x509_san_dns(hostname: str = "talao.co") -> List[str]:
+    """Generate base64-encoded DER certificates for use in x5c header."""
+    signer_der, trust_anchor_der = generate_certificates(TRUST_ANCHOR_KEY, SIGNER_KEY)
+    return [base64.b64encode(signer_der).decode(), base64.b64encode(trust_anchor_der).decode()]
 
 
-def build_verifier_attestation(client_id) -> str:
-    """
-    OIDC4VP
-    """
-    keys = json.load(open('keys.json'))
-    rsa_jwk = keys['RSA_key']
-    rsa_key = jwk.JWK(**rsa_jwk)
+def build_x509_san_dns():
+    """this function is called by oidc4vc.py"""
+    return ['MIICmDCCAj6gAwIBAgIUf+KM/LkcpMGdOarMfRwxJ1Pf5kowCgYIKoZIzj0EAwIwWzELMAkGA1UEBhMCRlIxDjAMBgNVBAcMBVBhcmlzMSkwJwYDVQQKDCBXZWIzIERpZ2l0YWwgV2FsbGV0IFRydXN0IEFuY2hvcjERMA8GA1UEAwwIdGFsYW8uaW8wHhcNMjUwNjI1MTMzNjE0WhcNMzUwNjIzMTMzNjE0WjBOMQswCQYDVQQGEwJGUjEOMAwGA1UEBwwFUGFyaXMxHDAaBgNVBAoME1dlYjMgRGlnaXRhbCBXYWxsZXQxETAPBgNVBAMMCHRhbGFvLmNvMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApPocyKreTAn3YrmGyPYXHklYqUiSSQirGACwJSYYs+ksfw4brtA3SZCmA2sdAO8a2DXfqADwFgVSxJFtJ3GkHLV2ZvOIOnZCX6MF6NIWHB9c64ydrYNJbEy72oyG/+v+sE6rb0x+D+uJe9DFYIURzisyBlNA7imsiZPQniOjPLv0BUgED0vdO5HijFe7XbpVhoU+2oTkHHQ4CadmBZhelCczACkXpOU7mwcImGj9h1//PsyT5VBLi/92+93NimZjechPaaTYEU2u0rfnfVW5eGDYNAynO4Q2bhpFPRTXWZ5Lhnhnq7M76T6DGA3GeAu/MOzB0l4dxpFMJ6wHnekdkQIDAQABoyIwIDAJBgNVHRMEAjAAMBMGA1UdEQQMMAqCCHRhbGFvLmNvMAoGCCqGSM49BAMCA0gAMEUCIHRQri9WsD/xM+GA8v6TclShZ5f3WkUfba9ppSFFFr7XAiEArrRImJ4eyjGjqlEwMSOMl/eE8Qbc2JUvC0Ihc+zDre8=', 'MIIB3zCCAYagAwIBAgIUeveL4pgEIDADwIlgC9P8efQ0ODYwCgYIKoZIzj0EAwIwWzELMAkGA1UEBhMCRlIxDjAMBgNVBAcMBVBhcmlzMSkwJwYDVQQKDCBXZWIzIERpZ2l0YWwgV2FsbGV0IFRydXN0IEFuY2hvcjERMA8GA1UEAwwIdGFsYW8uaW8wHhcNMjUwNjI1MTMzNjE0WhcNMzUwNjIzMTMzNjE0WjBbMQswCQYDVQQGEwJGUjEOMAwGA1UEBwwFUGFyaXMxKTAnBgNVBAoMIFdlYjMgRGlnaXRhbCBXYWxsZXQgVHJ1c3QgQW5jaG9yMREwDwYDVQQDDAh0YWxhby5pbzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABDQdcpTL3lePzz2LcfSmBI6EtVlgPKjd90iWr/aKVk2jUtOG2jR3NHadMMJ7wdYEq5/nHJHVfcy7QPt/OBHhBrGjKDAmMA8GA1UdEwQIMAYBAf8CAQAwEwYDVR0RBAwwCoIIdGFsYW8uaW8wCgYIKoZIzj0EAwIDRwAwRAIgeZQTDfkiaiN6BpHjPCQKeprhnhqxv1Ptc8q3ZbYOt50CIEJDbzwhKeNgcUbxUhN+FmYdHPm1iwaj1PC+d9VJ5WT2']
+
+
+def build_verifier_attestation(client_id: str) -> str:
+    """Generate a JWT attestation including the public key (cnf)."""
+    rsa_key = jwk.JWK(**SIGNER_KEY)
     public_key = rsa_key.export(private_key=False, as_dict=True)
-    if public_key.get('kid'): del public_key['kid']
+    public_key.pop('kid', None)
+
     header = {
         'typ': "verifier-attestation+jwt",
-        'alg': alg(rsa_key),
+        'alg': alg(SIGNER_KEY),
     }
-    if not client_id:
-        client_id = "did:web:talao.co"
     payload = {
         'iss': "did:web:talao.co",
-        'sub': client_id,
-        "cnf": {
-            "jwk": public_key
-        },
+        'sub': client_id or "did:web:talao.co",
+        'cnf': {"jwk": public_key},
         'exp': datetime.timestamp(datetime.now()) + 1000,
     }
-    token = jwt.JWT(header=header, claims=payload, algs=[alg(rsa_key)])
+
+    token = jwt.JWT(header=header, claims=payload, algs=[alg(SIGNER_KEY)])
     token.make_signed_token(rsa_key)
     return token.serialize()
+
+
+if __name__ == '__main__':
+    print(generate_x509_san_dns())

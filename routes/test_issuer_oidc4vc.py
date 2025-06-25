@@ -443,8 +443,6 @@ def test_10(mode):
     
     with open('./verifiable_credentials/Pid.json', 'r') as f:
         pid = json.loads(f.read())
-    with open('./verifiable_credentials/binance_sdjwt.json', 'r') as f:
-        crypto_account = json.loads(f.read())
 
     headers = {
         'Content-Type': 'application/json',
@@ -453,11 +451,10 @@ def test_10(mode):
     data = { 
         "issuer_id": issuer_id,
         "vc": {
-            "Pid": pid,
-            "BinanceCryptoAccount" : crypto_account
+            "Pid": pid
         }, 
         "issuer_state": 'test10',
-        "credential_type":  ['Pid', 'BinanceCryptoAccount'],
+        "credential_type":  ['Pid'],
         "pre-authorized_code": True,
         "callback": mode.server + 'sandbox/issuer/callback',
         "user_pin_required": False,
