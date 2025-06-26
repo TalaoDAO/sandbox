@@ -14,8 +14,8 @@ from cryptography.hazmat.backends import default_backend
 with open('keys.json') as f:
     keys = json.load(f)
 
-TRUST_ANCHOR_KEY: Dict = keys['issuer_key']  # Root CA
-SIGNER_KEY: Dict = keys['RSA_key']  # Leaf signer
+TRUST_ANCHOR_KEY: Dict = keys['RSA_key']  # Root CA
+SIGNER_KEY: Dict = keys['issuer_key']  # Leaf signer
 
 
 def alg(key: Union[str, Dict]) -> str:
@@ -47,7 +47,7 @@ def convert_jwk_to_pem(key: Dict) -> bytes:
     return jwk.JWK(**key).export_to_pem(private_key=True, password=None)
 
 
-def generate_certificates(trust_anchor_key: Dict, signer_key: Dict) -> Tuple[bytes, bytes]:
+def generate_certificates( signer_key: Dict, trust_anchor_key: Dict) -> Tuple[bytes, bytes]:
     """
     Generate X.509 certificates for the trust anchor and signer.
     Returns:
@@ -68,7 +68,7 @@ def generate_certificates(trust_anchor_key: Dict, signer_key: Dict) -> Tuple[byt
         x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Web3 Digital Wallet Trust Anchor"),
         x509.NameAttribute(NameOID.COMMON_NAME, "talao.io"),
     ])
-    san = x509.SubjectAlternativeName([x509.DNSName("talao.io")])
+    trust_san = x509.SubjectAlternativeName([x509.DNSName("talao.io")])
     trust_cert = (
         x509.CertificateBuilder()
         .subject_name(trust_subject)
@@ -78,7 +78,7 @@ def generate_certificates(trust_anchor_key: Dict, signer_key: Dict) -> Tuple[byt
         .not_valid_before(now)
         .not_valid_after(now + timedelta(days=3650))
         .add_extension(x509.BasicConstraints(ca=True, path_length=0), False)
-        .add_extension(san, False)
+        .add_extension(trust_san, False)
         .sign(trust_anchor, hashes.SHA256(), default_backend())
     )
 
@@ -89,10 +89,10 @@ def generate_certificates(trust_anchor_key: Dict, signer_key: Dict) -> Tuple[byt
         x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Web3 Digital Wallet"),
         x509.NameAttribute(NameOID.COMMON_NAME, "talao.co"),
     ])
-    san = x509.SubjectAlternativeName([
+    signer_san = x509.SubjectAlternativeName([
         x509.DNSName("talao.co"),
         x509.UniformResourceIdentifier("https://talao.co")
-])
+    ])
     signer_cert = (
         x509.CertificateBuilder()
         .subject_name(signer_subject)
@@ -102,22 +102,22 @@ def generate_certificates(trust_anchor_key: Dict, signer_key: Dict) -> Tuple[byt
         .not_valid_before(now)
         .not_valid_after(now + timedelta(days=3650))
         .add_extension(x509.BasicConstraints(ca=False, path_length=None), False)
-        .add_extension(san, False)
+        .add_extension(signer_san, False)
         .sign(trust_anchor, hashes.SHA256(), default_backend())
     )
 
     return signer_cert.public_bytes(serialization.Encoding.DER), trust_cert.public_bytes(serialization.Encoding.DER)
 
 
-def generate_x509_san_dns(hostname: str = "talao.co") -> List[str]:
+def generate_x509_san_dns() -> List[str]:
     """Generate base64-encoded DER certificates for use in x5c header."""
-    signer_der, trust_anchor_der = generate_certificates(TRUST_ANCHOR_KEY, SIGNER_KEY)
+    signer_der, trust_anchor_der = generate_certificates(SIGNER_KEY, TRUST_ANCHOR_KEY)
     return [base64.b64encode(signer_der).decode(), base64.b64encode(trust_anchor_der).decode()]
 
 
 def build_x509_san_dns():
     """this function is called by oidc4vc.py"""
-    return ['MIICqTCCAlCgAwIBAgIUY7+k67+93hDrG9Ewa0oesv3oXUAwCgYIKoZIzj0EAwIwWzELMAkGA1UEBhMCRlIxDjAMBgNVBAcMBVBhcmlzMSkwJwYDVQQKDCBXZWIzIERpZ2l0YWwgV2FsbGV0IFRydXN0IEFuY2hvcjERMA8GA1UEAwwIdGFsYW8uaW8wHhcNMjUwNjI2MTMzOTE4WhcNMzUwNjI0MTMzOTE4WjBOMQswCQYDVQQGEwJGUjEOMAwGA1UEBwwFUGFyaXMxHDAaBgNVBAoME1dlYjMgRGlnaXRhbCBXYWxsZXQxETAPBgNVBAMMCHRhbGFvLmNvMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApPocyKreTAn3YrmGyPYXHklYqUiSSQirGACwJSYYs+ksfw4brtA3SZCmA2sdAO8a2DXfqADwFgVSxJFtJ3GkHLV2ZvOIOnZCX6MF6NIWHB9c64ydrYNJbEy72oyG/+v+sE6rb0x+D+uJe9DFYIURzisyBlNA7imsiZPQniOjPLv0BUgED0vdO5HijFe7XbpVhoU+2oTkHHQ4CadmBZhelCczACkXpOU7mwcImGj9h1//PsyT5VBLi/92+93NimZjechPaaTYEU2u0rfnfVW5eGDYNAynO4Q2bhpFPRTXWZ5Lhnhnq7M76T6DGA3GeAu/MOzB0l4dxpFMJ6wHnekdkQIDAQABozQwMjAJBgNVHRMEAjAAMCUGA1UdEQQeMByCCHRhbGFvLmNvhhBodHRwczovL3RhbGFvLmNvMAoGCCqGSM49BAMCA0cAMEQCICQBel1IVa96TaESOzqtDzuhkkURzCTw/LinOqMEpk9XAiArAjlrDYOVeOtIzR/kbpqmAkeiLo+bgIU4c+fc9V0QMQ==', 'MIIB4DCCAYagAwIBAgIUUY5MikywTKPGMkRDyZI5F2ZUbsYwCgYIKoZIzj0EAwIwWzELMAkGA1UEBhMCRlIxDjAMBgNVBAcMBVBhcmlzMSkwJwYDVQQKDCBXZWIzIERpZ2l0YWwgV2FsbGV0IFRydXN0IEFuY2hvcjERMA8GA1UEAwwIdGFsYW8uaW8wHhcNMjUwNjI2MTMzOTE4WhcNMzUwNjI0MTMzOTE4WjBbMQswCQYDVQQGEwJGUjEOMAwGA1UEBwwFUGFyaXMxKTAnBgNVBAoMIFdlYjMgRGlnaXRhbCBXYWxsZXQgVHJ1c3QgQW5jaG9yMREwDwYDVQQDDAh0YWxhby5pbzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABDQdcpTL3lePzz2LcfSmBI6EtVlgPKjd90iWr/aKVk2jUtOG2jR3NHadMMJ7wdYEq5/nHJHVfcy7QPt/OBHhBrGjKDAmMA8GA1UdEwQIMAYBAf8CAQAwEwYDVR0RBAwwCoIIdGFsYW8uaW8wCgYIKoZIzj0EAwIDSAAwRQIgdDl2rrQiyfKOZiezHm3f8d5aY2xXnGupw2KNSKMrCcACIQDX7rcwrPPYYE2SwstC/c0bjP0K/XEvdhvnirTknTZR7w==']
+    return ['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']
 
 
 def build_verifier_attestation(client_id: str) -> str:
