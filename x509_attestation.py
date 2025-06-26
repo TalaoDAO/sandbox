@@ -8,6 +8,8 @@ from cryptography import x509
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import rsa, ec, padding
+from cryptography.exceptions import InvalidSignature
 
 
 # Load keys from a JSON file
@@ -47,6 +49,40 @@ def convert_jwk_to_pem(key: Dict) -> bytes:
     return jwk.JWK(**key).export_to_pem(private_key=True, password=None)
 
 
+
+def verify_trust_chain(base64_chain: List[str]) -> None:
+    certs = [
+        x509.load_der_x509_certificate(base64.b64decode(cert), default_backend())
+        for cert in base64_chain
+    ]
+    leaf_cert, issuer_cert = certs[0], certs[1]
+
+    issuer_public_key = issuer_cert.public_key()
+
+    try:
+        if isinstance(issuer_public_key, rsa.RSAPublicKey):
+            issuer_public_key.verify(
+                leaf_cert.signature,
+                leaf_cert.tbs_certificate_bytes,
+                padding.PKCS1v15(),
+                leaf_cert.signature_hash_algorithm,
+            )
+        elif isinstance(issuer_public_key, ec.EllipticCurvePublicKey):
+            issuer_public_key.verify(
+                leaf_cert.signature,
+                leaf_cert.tbs_certificate_bytes,
+                ec.ECDSA(leaf_cert.signature_hash_algorithm),
+            )
+        else:
+            raise ValueError("Unsupported public key type")
+
+        print("✅ Leaf certificate is correctly signed by the issuer.")
+    except InvalidSignature:
+        print("❌ Invalid signature: the chain is broken.")
+    except Exception as e:
+        print(f"⚠️ Verification failed: {e}")
+        
+        
 def generate_certificates( signer_key: Dict, trust_anchor_key: Dict) -> Tuple[bytes, bytes]:
     """
     Generate X.509 certificates for the trust anchor and signer.
@@ -143,8 +179,12 @@ def build_verifier_attestation(client_id: str) -> str:
 
 
 if __name__ == '__main__':
-    print(generate_x509_san_dns())
+    cert_chain = generate_x509_san_dns()
+    verify_trust_chain(cert_chain)
     
+    cert_chain = build_x509_san_dns()
+    verify_trust_chain(cert_chain)
+
 
 
 """

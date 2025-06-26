@@ -7,9 +7,11 @@ from urllib.parse import urlencode
 # https://keycloak-26.dev2.mosip.net/auth/realms/inji-dev
 
 
+ISSUER = "https://injicertify-academic.collab.mosip.net"
+AS = "https://keycloak-26.collab.mosip.net/auth/realms/inji-collab"
 
 OFFER = {
-    "credential_issuer": "https://injicertify-academic.dev-int-inji.mosip.net",
+    "credential_issuer": ISSUER,
     "credential_configuration_ids": [
         "UniversityCredential",
         "University_Credential_SD_JWT"
@@ -17,19 +19,19 @@ OFFER = {
     ],
     "grants": {
         "authorization_code": {
-            "authorization_server": "https://keycloak-26.collab.mosip.net/auth/realms/inji"
+            "authorization_server": AS
         }
     }
 }
 
 OFFER_1 = {
-    "credential_issuer": "https://injicertify-academic.dev-int-inji.mosip.net",
+    "credential_issuer": ISSUER,
     "credential_configuration_ids": [
         "UniversityCredential",
     ],
     "grants": {
         "authorization_code": {
-            "authorization_server": "https://keycloak-26.collab.mosip.net/auth/realms/inji"
+            "authorization_server": AS
         }
     }
 }
@@ -37,13 +39,13 @@ OFFER_1 = {
 
 
 OFFER_2 = {
-    "credential_issuer": "https://injicertify-academic.dev-int-inji.mosip.net",
+    "credential_issuer": ISSUER,
     "credential_configuration_ids": [
         "University_Credential_SD_JWT"
     ],
     "grants": {
         "authorization_code": {
-            "authorization_server": "https://keycloak-26.collab.mosip.net/auth/realms/inji"
+            "authorization_server": AS
         }
     }
 }
