@@ -26,7 +26,7 @@ last one-->
         <div style="display: flex; gap: 30px; justify-content: center; align-items: center;">
             <label for="sdjwtvc_version"><strong>SD-JWT-VC Draft:</strong></label>
             <select id="sdjwtvc_version" name="sdjwtvc_draft">
-                {% for i in range(1, 9) %}
+                {% for i in range(7, 10) %}
                     <option value="{{ i }}" {% if i == 8 %}selected{% endif %}>Draft {{ i }}</option>
                 {% endfor %}
             </select>

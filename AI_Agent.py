@@ -267,7 +267,6 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     if jwt_header.get('x5c'):
         leaf = jwt_header.get('x5c')[0]
         SAN = "SAN DNS = " + str(extract_SAN_DNS(leaf))
-    print("SAN = ", SAN)
 
     # Determine whether the last part is a Key Binding JWT (assumed to be a JWT if it contains 2 dots)
     is_kb_jwt = vcsd[-1].count('.') == 2

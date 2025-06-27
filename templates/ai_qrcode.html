@@ -41,7 +41,7 @@ last one-->
     <div id="draftSelectors" style="display: none; gap: 30px; justify-content: center; align-items: center;">
         <label for="oidc4vp_version"><strong>OIDC4VP Draft:</strong></label>
         <select id="oidc4vp_version" name="oidc4vp_draft">
-            {% for i in range(18, 26) %}
+            {% for i in range(18, 30) %}
                 <option value="{{ i }}" {% if i == 18 %}selected{% endif %}>Draft {{ i }}</option>
             {% endfor %}
         </select>
