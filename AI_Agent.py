@@ -13,7 +13,9 @@ import base64
 import logging
 import re
 import tiktoken
-
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+import base64
 
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -37,6 +39,20 @@ gemini_model = ChatGoogleGenerativeAI(
     model="gemini-1.5-pro-latest",
     temperature=0,
 )
+
+
+def extract_SAN_DNS(pem_certificate):
+    # Decode base64 and load the certificate
+    cert_der = base64.b64decode(pem_certificate)
+    cert = x509.load_der_x509_certificate(cert_der, backend=default_backend())
+    # Extract SAN extension
+    try:
+        san = cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
+        dns_names = san.value.get_values_for_type(x509.DNSName)
+        return dns_names
+    except x509.ExtensionNotFound:
+        return "No SAN extension found in the certificate."
+
 
 def get_llm_client():
     if provider.lower() == "openai":
@@ -246,6 +262,12 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     # Decode SD-JWT header and payload
     jwt_header = get_header_from_token(sd_jwt)
     jwt_payload = get_payload_from_token(sd_jwt)
+    
+    SAN = "There is no X509 certificate to check"
+    if jwt_header.get('x5c'):
+        leaf = jwt_header.get('x5c')[0]
+        SAN = "SAN DNS = " + str(extract_SAN_DNS(leaf))
+    print("SAN = ", SAN)
 
     # Determine whether the last part is a Key Binding JWT (assumed to be a JWT if it contains 2 dots)
     is_kb_jwt = vcsd[-1].count('.') == 2
@@ -300,6 +322,12 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     Key Binding JWT Payload: {json.dumps(kb_payload, indent=2)}
 
     --- Instructions ---
+    {SAN}
+    If the header of the SD-JWT contains an x5c (certificate chain) attribute, extract the Subject Alternative Name (SAN) DNS from the leaf certificate (i.e., the first certificate in the chain). Then:
+    Compare the SAN DNS value to the domain portion of the iss (issuer) field in the SD-JWT payload.
+    If the SAN DNS does not match or does not correspond to the domain of the iss, this is a common configuration error, indicating a potential mismatch between the certificate and the identity provider’s declared issuer.
+    You should warn about this mismatch and suggest verifying that the certificate correctly represents the domain used in the iss claim.    
+    
     Analyze the content above and provide answers to the following points, one per line:
 
     1. Provide the holder's identifier (cnf) and the issuer identifier.

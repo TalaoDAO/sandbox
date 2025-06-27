@@ -3,8 +3,6 @@ import json
 from urllib.parse import urlencode
 
 
-#  https://injicertify-academic.dev2.mosip.net/.well-known/openid-credential-issuer
-# https://keycloak-26.dev2.mosip.net/auth/realms/inji-dev
 
 
 ISSUER = "https://injicertify-academic.collab.mosip.net"
