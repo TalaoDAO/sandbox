@@ -379,7 +379,10 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     else:
         comment_2 = "Error: kid is missing"
     
+    logging.info("comment 1 = %s", comment_1)
     logging.info("comment 2 = %s", comment_2)
+    logging.info("comment 3 = %s", comment_3)
+    logging.info("comment 4 = %s", comment_4)
     # Determine whether the last part is a Key Binding JWT (assumed to be a JWT if it contains 2 dots)
     is_kb_jwt = vcsd[-1].count('.') == 2
 
