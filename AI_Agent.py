@@ -15,11 +15,13 @@ import re
 import tiktoken
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
+from cryptography.x509.oid import ExtensionOID
 import base64
-
+import oidc4vc
+from jwcrypto import jwk, jwt
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-
+import requests
 provider = "openai"
 #provider = "gemini"
 
@@ -40,18 +42,6 @@ gemini_model = ChatGoogleGenerativeAI(
     temperature=0,
 )
 
-
-def extract_SAN_DNS(pem_certificate):
-    # Decode base64 and load the certificate
-    cert_der = base64.b64decode(pem_certificate)
-    cert = x509.load_der_x509_certificate(cert_der, backend=default_backend())
-    # Extract SAN extension
-    try:
-        san = cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
-        dns_names = san.value.get_values_for_type(x509.DNSName)
-        return dns_names
-    except x509.ExtensionNotFound:
-        return "No SAN extension found in the certificate."
 
 
 def get_llm_client():
@@ -141,6 +131,49 @@ def store_report(qrcode, report, report_type):
     return True
 
 
+def load_leaf_cert_from_x5c(x5c_list):
+    """Load the leaf certificate (first in x5c list) as an x509 object"""
+    cert_der = base64.b64decode(x5c_list[0])
+    return x509.load_der_x509_certificate(cert_der, default_backend())
+
+
+def extract_san_domains_and_uris(cert):
+    """Extract DNSNames and URIs from the SAN extension of the certificate"""
+    try:
+        san = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME).value
+        dns_names = san.get_values_for_type(x509.DNSName)
+        uris = san.get_values_for_type(x509.UniformResourceIdentifier)
+        return dns_names, uris
+    except x509.ExtensionNotFound:
+        return [], []
+
+
+def verify_issuer_matches_cert(issuer, x5c_list):
+    cert = load_leaf_cert_from_x5c(x5c_list)
+    dns_names, uris = extract_san_domains_and_uris(cert)
+
+    match_dns = issuer in dns_names
+    match_uri = any(issuer == uri or issuer in uri for uri in uris)
+
+    if match_dns or match_uri:
+        return "Info: Issuer matches SAN DNS or URI in certificate."
+    else:
+        return "Error: Issuer does NOT match SAN DNS or URI in certificate."
+  
+
+def extract_SAN_DNS(pem_certificate):
+    # Decode base64 and load the certificate
+    cert_der = base64.b64decode(pem_certificate)
+    cert = x509.load_der_x509_certificate(cert_der, backend=default_backend())
+    # Extract SAN extension
+    try:
+        san = cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
+        dns_names = san.value.get_values_for_type(x509.DNSName)
+        return dns_names
+    except x509.ExtensionNotFound:
+        return "Error: no SAN extension found in the x509 certificate."
+    
+
 def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str):
     """
     Detect the format of a Verifiable Credential (VC) and route to the correct analysis function.
@@ -206,7 +239,7 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device):
     
 
 def get_verifier_request(qrcode, draft):
-    warning = ""
+    comment = ""
     # Parse verifier's QR code request
     parse_result = urlparse(qrcode)
     result = {k: v[0] for k, v in parse_qs(parse_result.query).items()}
@@ -215,6 +248,12 @@ def get_verifier_request(qrcode, draft):
             response = requests.get(request_uri, timeout=10)
             request_jwt = response.text
             request = get_payload_from_token(request_jwt)
+            request_header = get_header_from_token(request_jwt)
+            if x5c_list := request_header.get('x5c'):
+                if not request.get('iss'):
+                    return None, None, "Error: iss is missing"
+                else:
+                    comment = verify_issuer_matches_cert(request.get('iss'), x5c_list)
         except Exception:
             return None, None, "Error: The request jwt is not available"
         content_type = response.headers.get("Content-Type")
@@ -223,9 +262,16 @@ def get_verifier_request(qrcode, draft):
     elif request := result.get("request"):
         request_jwt = request
         request = get_payload_from_token(request_jwt)
+        request_header = get_header_from_token(request_jwt)
+        if x5c_list := request_header.get('x5c'):
+            if not request.get('iss'):
+                return None, None, "Error: iss is missing"
+            else:
+                comment = verify_issuer_matches_cert(request.get('iss'), x5c_list)
+       
     elif result.get("response_mode"):
         request = result
-        warning = "Passing OIDC request parameters via the request or request_uri parameter using a signed JWT is more secure than passing them as plain query parameters."
+        comment = "Warning: Passing OIDC request parameters via the request or request_uri parameter using a signed JWT is more secure than passing them as plain query parameters."
     else:
         return None, None, "Error: The request is not available"
 
@@ -239,9 +285,7 @@ def get_verifier_request(qrcode, draft):
     else:
         presentation_definition = request.get('presentation_definition')
     
-    if warning:
-        warning = "Warning: " + warning
-    return request, presentation_definition, warning
+    return request, presentation_definition, comment
 
 
 def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
@@ -259,15 +303,83 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     vcsd = token.split("~")
     sd_jwt = vcsd[0]
     
+    comment_1 = ""
+    comment_2 = ""
+    comment_3 = ""
+    comment_4 = ""
+    
     # Decode SD-JWT header and payload
     jwt_header = get_header_from_token(sd_jwt)
     jwt_payload = get_payload_from_token(sd_jwt)
+    iss =  jwt_payload.get("iss")
+    kid =  jwt_header.get("kid")
     
-    SAN = "There is no X509 certificate to check"
-    if jwt_header.get('x5c'):
-        leaf = jwt_header.get('x5c')[0]
-        SAN = "SAN DNS = " + str(extract_SAN_DNS(leaf))
+    if not iss:
+        comment_1 = "Error: iss is missing"
+        
+    # check signature of the sd-jwt
+    if x5c_list := jwt_header.get('x5c'):
+        comment_1 = verify_issuer_matches_cert(iss, x5c_list)
+        comment_4 = oidc4vc.verify_x5c_chain(x5c_list)
+    
+    elif kid:
+        if kid.startswith("did:"):
+            pub_key = oidc4vc.resolve_did(kid)
+            try:
+                issuer_key = jwk.JWK(**pub_key)
+                a = jwt.JWT.from_jose_token(sd_jwt)
+                a.validate(issuer_key)
+                comment_2 = "Info: VC is correctly signed with DID"
+            except Exception as e:
+                comment_2 = f"Error: VC is not signed correctly with DID: {e}"
+    
+        elif iss and iss.split(":")[0] in ["http", "https"]:
+            parsed = urlparse(jwt_payload.get('iss'))
+            domain = parsed.netloc
+            path = parsed.path
+            scheme = parsed.scheme
+            well_known_url = f"{scheme}://{domain}/.well-known/jwt-vc-issuer{path}"
 
+            try:
+                metadata = requests.get(well_known_url, timeout=5).json()
+
+                # Case 1: Embedded JWKS
+                if "jwks" in metadata:
+                    keys = metadata["jwks"].get("keys", [])
+
+                # Case 2: External JWKS URI
+                elif "jwks_uri" in metadata:
+                    jwks_uri = metadata["jwks_uri"]
+                    response = requests.get(jwks_uri, timeout=5)
+                    response.raise_for_status()
+                    jwks = response.json()
+                    keys = jwks.get("keys", [])
+                else:
+                    comment_2 = "Error: Public key is not available in well-known/jwt-vc-issuer"
+                    keys = []
+
+                # Try to match key by 'kid'
+                matching_key = next((key for key in keys if key.get('kid') == kid), None)
+
+                if matching_key:
+                    try:
+                        issuer_key = jwk.JWK(**matching_key)
+                        a = jwt.JWT.from_jose_token(sd_jwt)
+                        a.validate(issuer_key)
+                        comment_2 = "Info: VC is correctly signed with issuer key"
+                    except Exception as e:
+                        comment_2 = f"Error: Signature validation failed: {e}"
+                else:
+                    comment_2 = f"Error: No matching key found for kid={kid}"
+
+            except Exception as e:
+                comment_2 = f"Error: Failed to fetch or parse issuer metadata: {e}"
+        else:
+            comment_2 = "Error: 'iss' is missing or improperly formatted."
+    else:
+        comment_2 = "Error: kid is missing"
+    
+    logging.info("comment 2 = %s", comment_2)
     # Determine whether the last part is a Key Binding JWT (assumed to be a JWT if it contains 2 dots)
     is_kb_jwt = vcsd[-1].count('.') == 2
 
@@ -275,10 +387,14 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     disclosure_parts = vcsd[1:-1] if is_kb_jwt else vcsd[1:]
 
     # Decode disclosures
-    disclosures = "\r\n".join(
-        base64url_decode(part).decode() for part in disclosure_parts
-    )
-
+    try:
+        disclosures = "\r\n".join(
+            base64url_decode(part).decode() for part in disclosure_parts
+        )
+    except Exception as e:
+        comment_3 = f"Error: Disclosures are not formatted correctly: {e}"
+        disclosures = "Error: Disclosures could not be decoded."
+        
     # Decode Key Binding JWT (KB-JWT) if present
     if is_kb_jwt:
         kb_header = get_header_from_token(vcsd[-1])
@@ -291,9 +407,9 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
         with open(f"./dataset/sdjwtvc/{draft}.txt", "r") as f:
             content = f.read()
     except FileNotFoundError:
-        with open("./dataset/sdjwtvc/8.txt", "r") as fallback:
+        with open("./dataset/sdjwtvc/9.txt", "r") as fallback:
             content = fallback.read()
-            draft = "8"
+            draft = "9"
 
     # Token count logging for diagnostics
     tokens = enc.encode(content)
@@ -320,13 +436,14 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     Key Binding JWT Header: {json.dumps(kb_header, indent=2)}
     Key Binding JWT Payload: {json.dumps(kb_payload, indent=2)}
 
-    --- Instructions ---
-    {SAN}
-    If the header of the SD-JWT contains an x5c (certificate chain) attribute, extract the Subject Alternative Name (SAN) DNS from the leaf certificate (i.e., the first certificate in the chain). Then:
-    Compare the SAN DNS value to the domain portion of the iss (issuer) field in the SD-JWT payload.
-    If the SAN DNS does not match or does not correspond to the domain of the iss, this is a common configuration error, indicating a potential mismatch between the certificate and the identity provider’s declared issuer.
-    You should warn about this mismatch and suggest verifying that the certificate correctly represents the domain used in the iss claim.    
+    --- Comments ---
+    {comment_1}
+    {comment_2}
+    {comment_3}
+    {comment_4}
+
     
+     --- Instructions ---
     Analyze the content above and provide answers to the following points, one per line:
 
     1. Provide the holder's identifier (cnf) and the issuer identifier.
@@ -621,9 +738,9 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device):
         draft = "18"
 
     date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
-    verifier_request, presentation_definition, error_warning = get_verifier_request(qrcode, draft)
+    verifier_request, presentation_definition, comment = get_verifier_request(qrcode, draft)
     if not verifier_request or not presentation_definition:
-        return error_warning
+        return comment
     
     try:
         f = open("./dataset/oidc4vp/" + draft + ".md", "r")
@@ -665,8 +782,8 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device):
     --- Profile Constraints ---
     {profile}
 
-    --- Warning ---
-    {error_warning}
+    --- Comment ---
+    {comment}
 
     --- Authorization Request ---
     {json.dumps(verifier_request, indent=2)}

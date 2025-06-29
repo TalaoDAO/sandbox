@@ -1549,17 +1549,23 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
     jti = 'urn:uuid:' + str(uuid.uuid1())
   
     if format == 'vc+sd-jwt':
-        #credential['status'] = {
-        #    'status_list': {
-        #        'idx': randint(0, 99999),
-        #        'uri': mode.server + 'issuer/statuslist/1'
-        #    }
-        #}
+        credential['status'] = {
+            'status_list': {
+                'idx': randint(0, 99999),
+                'uri': mode.server + 'issuer/statuslist/1'
+            }
+        }
         if issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
             x5c = True
         else:
             x5c = False
-        return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk, wallet_did, wallet_identifier, x5c=x5c, draft=draft)
+        if not issuer_data.get('issuer_id_as_url'):
+            issuer = issuer_did
+            kid = issuer_vm
+        else:
+            kid = oidc4vc.thumbprint_str(issuer_key)
+
+        return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk, wallet_did, wallet_identifier, kid, x5c=x5c, draft=draft)
     elif format in ['ldp_vc', 'jwt_vc_json-ld']:
         logging.info('wallet did = %s', wallet_did)
         if wallet_did:

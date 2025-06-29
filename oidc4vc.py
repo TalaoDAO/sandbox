@@ -1,9 +1,8 @@
 import requests
 from jwcrypto import jwk, jwt
-import base64
 import base58  # type: ignore
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import math
 import hashlib
@@ -11,6 +10,13 @@ from random import randbytes
 import x509_attestation
 import copy
 logging.basicConfig(level=logging.INFO)
+import base64
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives.asymmetric import rsa, ec, ed25519, padding
+from cryptography.hazmat.primitives import hashes
+
 
 """
 https://ec.europa.eu/digital-building-blocks/wikis/display/EBSIDOC/EBSI+DID+Method
@@ -267,12 +273,7 @@ def sd(data):
     return payload, _disclosure
 
 
-def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_identifier, duration=365*24*60*60, x5c=False, draft=13):
-    """
-    https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-01.html
-    GAIN POC https://gist.github.com/javereec/48007399d9876d71f523145da307a7a3
-    HAIP : https://openid.net/specs/openid4vc-high-assurance-interoperability-profile-sd-jwt-vc-1_0-00.html
-    """
+def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_identifier, kid, duration=365*24*60*60, x5c=False, draft=13):
     issuer_key = json.loads(issuer_key) if isinstance(issuer_key, str) else issuer_key
     if x5c:
         with open('keys.json') as f:
@@ -304,7 +305,6 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
     logging.info("sd-jwt payload = %s", json.dumps(payload, indent=4))
     
     signer_key = jwk.JWK(**issuer_key)
-    kid = issuer_key.get('kid') if issuer_key.get('kid') else signer_key.thumbprint()
     
     # build header
     header = {
@@ -421,6 +421,7 @@ def base58_to_jwk_secp256k1(base58_key: str):
 
 
 def resolve_did(vm) -> dict:
+    """Return public key in jwk format from DID"""
     logging.info('vm = %s', vm)
     try:
         if vm[:4] != "did:":
@@ -611,7 +612,13 @@ def did_resolve_lp(did):
         logging.info('Access to Talao Universal Resolver')
     except Exception:
         logging.error('cannot access to Talao Universal Resolver API')
-        return "{'error': 'cannot access to Talao Universal Resolver API'}"
+        url = 'https://dev.uniresolver.io/1.0/identifiers/' + did
+        try:
+            r = requests.get(url, timeout=5)
+            logging.info('Access to Public Universal Resolver')
+        except Exception:
+            logging.warning('fails to access to both universal resolver')
+            return "{'error': 'cannot access to Universal Resolver'}"
     logging.info("DID Document = %s", r.json())
     return r.json().get('didDocument')
 
@@ -636,3 +643,84 @@ def get_issuer_registry_data(did):
     except Exception:
         logging.error('registry data in invalid format')
         return
+
+
+def load_cert_from_b64(b64_der):
+    der = base64.b64decode(b64_der)
+    return x509.load_der_x509_certificate(der, default_backend())
+
+
+def verify_signature(cert, issuer_cert):
+    pubkey = issuer_cert.public_key()
+    try:
+        if isinstance(pubkey, rsa.RSAPublicKey):
+            pubkey.verify(
+                cert.signature,
+                cert.tbs_certificate_bytes,
+                padding.PKCS1v15(),
+                cert.signature_hash_algorithm
+            )
+        elif isinstance(pubkey, ec.EllipticCurvePublicKey):
+            pubkey.verify(
+                cert.signature,
+                cert.tbs_certificate_bytes,
+                ec.ECDSA(cert.signature_hash_algorithm)
+            )
+        elif isinstance(pubkey, ed25519.Ed25519PublicKey):
+            pubkey.verify(
+                cert.signature,
+                cert.tbs_certificate_bytes
+            )
+        else:
+            return f"Error: Unsupported public key type: {type(pubkey)}"
+        return None  # success
+    except InvalidSignature:
+        return "Error: Signature verification failed."
+    except Exception as e:
+        return f"Error: Verification failed with exception: {e}"
+
+
+def verify_x5c_chain(x5c_list):
+    """
+    Verifies a certificate chain from the x5c header field of a JWT.
+    
+    Checks:
+      1. Each certificate is signed by the next one in the list.
+      2. Each certificate is valid at the current time.
+    
+    Args:
+        x5c_list (List[str]): List of base64-encoded DER certificates (leaf to root).
+    
+    Returns:
+        str: Info or error message.
+    """
+    if not x5c_list or len(x5c_list) < 2:
+        return "Error: Insufficient certificate chain."
+
+    try:
+        certs = [load_cert_from_b64(b64cert) for b64cert in x5c_list]
+    except Exception as e:
+        return f"Error loading certificates: {e}"
+
+    now = datetime.now(timezone.utc)
+
+    for i, cert in enumerate(certs):
+        if now < cert.not_valid_before_utc or now > cert.not_valid_after_utc:
+            return (
+                f"Error: Certificate {i} is not valid at current time:\n"
+                f" - Not before: {cert.not_valid_before_utc}\n"
+                f" - Not after : {cert.not_valid_after_utc}"
+            )
+        else:
+            print(f"[OK] Certificate {i} is within validity period.")
+
+    for i in range(len(certs) - 1):
+        cert = certs[i]
+        issuer_cert = certs[i + 1]
+        result = verify_signature(cert, issuer_cert)
+        if result:
+            return f"[Error: Certificate {i} verification failed: {result}"
+        else:
+            print(f"[OK] Certificate {i} is signed by certificate {i+1}.")
+
+    return "Info: Certificate chain and validity periods are all OK."
