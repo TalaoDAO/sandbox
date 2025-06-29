@@ -325,7 +325,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
         try:
             # Extract the first certificate (leaf cert) from the x5c list
             cert_der = base64.b64decode(x5c_list[0])
-            cert = x509.load_der_x509_certificate(cert_der, default_backend())
+            cert = x509.load_der_x509_certificate(cert_der)
             # Get public key from the cert
             public_key = cert.public_key()
             # Convert it to JWK format
@@ -336,6 +336,19 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
             comment_2 = "Info: VC is correctly signed with x5c public key"
         except Exception as e:
             comment_2 = f"Error: VC signature verification with x5c public key failed: {e}"
+    
+    elif jwt_header.get('jwk'):
+        try:
+            jwk_data = jwt_header['jwk']
+            if isinstance(jwk_data, str):
+                jwk_data = json.loads(jwk_data)
+            issuer_key = jwk.JWK(**jwk_data)
+            # Validate signature
+            a = jwt.JWT.from_jose_token(sd_jwt)
+            a.validate(issuer_key)
+            comment_2 = "Info: VC is correctly signed with jwk in header"
+        except Exception as e:
+            comment_2 = f"Error: VC signature verification with jwk in header failed: {e}"
     
     elif kid:
         if kid.startswith("did:"):
@@ -354,6 +367,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
             path = parsed.path
             scheme = parsed.scheme
             well_known_url = f"{scheme}://{domain}/.well-known/jwt-vc-issuer{path}"
+            logging.info("well known url = %s", well_known_url)
 
             try:
                 metadata = requests.get(well_known_url, timeout=5).json()
@@ -381,7 +395,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
                         issuer_key = jwk.JWK(**matching_key)
                         a = jwt.JWT.from_jose_token(sd_jwt)
                         a.validate(issuer_key)
-                        comment_2 = "Info: VC is correctly signed with issuer key"
+                        comment_2 = "Info: VC is correctly signed with public key from issuer metadata"
                     except Exception as e:
                         comment_2 = f"Error: Signature validation failed: {e}"
                 else:
@@ -471,7 +485,8 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     3. Check that no required claims are missing from the header.
     4. Check that no required claims are missing from the payload.
     5. Validate that the Key Binding JWT (if present) is structurally correct.
-    6. List any errors, inconsistencies, or anomalies and propose improvements
+    6. Provide information about the signature
+    7. List any errors, inconsistencies, or anomalies and propose improvements
     """
 
     # Call the OpenAI API

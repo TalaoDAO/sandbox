@@ -12,12 +12,9 @@ import copy
 logging.basicConfig(level=logging.INFO)
 import base64
 from cryptography import x509
-from cryptography.hazmat.backends import default_backend
+#from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric import rsa, ec, ed25519, padding
-from cryptography.hazmat.primitives import hashes
-
-
 """
 https://ec.europa.eu/digital-building-blocks/wikis/display/EBSIDOC/EBSI+DID+Method
 VC/VP https://ec.europa.eu/digital-building-blocks/wikis/display/EBSIDOC/E-signing+and+e-sealing+Verifiable+Credentials+and+Verifiable+Presentations
@@ -491,32 +488,47 @@ def resolve_did(vm) -> dict:
     return jwk
 
 
-def verif_token(token, nonce, aud=None):
-    """
-    For issuer
-    raise exception if problem
-    https://jwcrypto.readthedocs.io/en/latest/jwt.html#jwcrypto.jwt.JWT.validate
-    """
+def verif_token(token):
     header = get_header_from_token(token)
-    payload = get_payload_from_token(token)
-    if aud and payload.get('aud') != aud:
-        raise Exception("aud is incorrect")
-    if header.get('jwk'):
-        if isinstance(header['jwk'], str):
-            header['jwk'] = json.loads(header['jwk'])
-        dict_key = header['jwk']
+    if x5c_list := header.get('x5c'):
+        try:
+            cert_der = base64.b64decode(x5c_list[0])
+            cert = x509.load_der_x509_certificate(cert_der)
+            public_key = cert.public_key()
+            issuer_key = jwk.JWK.from_pyca(public_key)
+        except Exception as e:
+            raise ValueError(f"Invalid x5c certificate or public key extraction failed: {e}")
+
+    elif header.get('jwk'):
+        try:
+            jwk_data = header['jwk']
+            if isinstance(jwk_data, str):
+                jwk_data = json.loads(jwk_data)
+            issuer_key = jwk.JWK(**jwk_data)
+        except Exception as e:
+            raise ValueError(f"Invalid 'jwk' in header: {e}")
+
     elif header.get('kid'):
         dict_key = resolve_did(header['kid'])
-        if not dict_key:
-            raise Exception("Cannot get public key with kid")
-    elif payload.get('sub_jwk'):
-        dict_key = payload['sub_jwk']
+        if not dict_key or not isinstance(dict_key, dict):
+            raise ValueError(f"Unable to resolve public key from kid: {header['kid']}")
+        try:
+            issuer_key = jwk.JWK(**dict_key)
+        except Exception as e:
+            raise ValueError(f"Invalid public key structure from DID: {e}")
+
     else:
-        raise Exception("Cannot resolve public key")
-    a = jwt.JWT.from_jose_token(token)
-    issuer_key = jwk.JWK(**dict_key)
-    a.validate(issuer_key)
-    return True
+        raise ValueError("Header missing key info: expected 'x5c', 'jwk', or 'kid'")
+
+    try:
+        parsed_jwt = jwt.JWT.from_jose_token(token)
+        parsed_jwt.validate(issuer_key)
+    except Exception as e:
+        raise ValueError(f"JWT signature validation failed: {e}")
+
+    return True  # if no exceptions, verification succeeded
+
+
 
 
 def get_payload_from_token(token) -> dict:
@@ -647,7 +659,7 @@ def get_issuer_registry_data(did):
 
 def load_cert_from_b64(b64_der):
     der = base64.b64decode(b64_der)
-    return x509.load_der_x509_certificate(der, default_backend())
+    return x509.load_der_x509_certificate(der)
 
 
 def verify_signature(cert, issuer_cert):

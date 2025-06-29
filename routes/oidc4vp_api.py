@@ -976,10 +976,10 @@ async def oidc4vc_response_endpoint(stream_id, red):
     # check id_token signature
     if access and id_token:
         try:
-            oidc4vc.verif_token(id_token, nonce)
-        except Exception:
+            oidc4vc.verif_token(id_token)
+        except Exception as e:
             id_token_status = "signature check failed"
-            logging.info(" id_token invalid format ")
+            logging.warning(" id_token invalid format %s", str(e))
             access = False
     
     if access and id_token:
@@ -1027,13 +1027,13 @@ async def oidc4vc_response_endpoint(stream_id, red):
             if len(vp_token.split("~")) > 1: # sd_jwt
                 vp_token = vp_token.split("~")[0]
             try:
-                oidc4vc.verif_token(vp_token, nonce)
+                oidc4vc.verif_token(vp_token)
                 vp_token_status = "ok"
                 vp_token_payload = oidc4vc.get_payload_from_token(vp_token)
-            except Exception:
+            except Exception as e:
                 vp_token_status = "signature check failed"
                 access = False
-                logging.info("signature check failed")
+                logging.warning("signature check failed %s", str(e))
         elif vp_format == "vc+sd-jwt":
             vcsd_jwt = vp_token.split("~")
             nb_disclosure = len(vcsd_jwt)

@@ -1214,10 +1214,10 @@ async def issuer_credential(issuer_id, red, mode):
             if not proof_payload.get('nonce'):
                 return Response(**manage_error('invalid_proof', 'c_nonce is missing', red, mode, request=request, stream_id=stream_id, status=403))
             try:
-                oidc4vc.verif_token(jwt_proof, 'nonce')
+                oidc4vc.verif_token(jwt_proof)
                 logging.info('proof is validated')
-            except Exception:
-                logging.error('proof is not validated')
+            except ValueError as e:
+                logging.error(f"Proof verification failed: {e}")
                 #return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id, status=403))
             if not red.get(proof_payload['nonce']):
                 logging.error('nonce does not exist')
