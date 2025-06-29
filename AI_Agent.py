@@ -16,6 +16,7 @@ import tiktoken
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509.oid import ExtensionOID
+from cryptography.hazmat.primitives import serialization
 import base64
 import oidc4vc
 from jwcrypto import jwk, jwt
@@ -321,6 +322,20 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     if x5c_list := jwt_header.get('x5c'):
         comment_1 = verify_issuer_matches_cert(iss, x5c_list)
         comment_4 = oidc4vc.verify_x5c_chain(x5c_list)
+        try:
+            # Extract the first certificate (leaf cert) from the x5c list
+            cert_der = base64.b64decode(x5c_list[0])
+            cert = x509.load_der_x509_certificate(cert_der, default_backend())
+            # Get public key from the cert
+            public_key = cert.public_key()
+            # Convert it to JWK format
+            issuer_key = jwk.JWK.from_pyca(public_key)
+            # Validate signature
+            a = jwt.JWT.from_jose_token(sd_jwt)
+            a.validate(issuer_key)
+            comment_2 = "Info: VC is correctly signed with x5c public key"
+        except Exception as e:
+            comment_2 = f"Error: VC signature verification with x5c public key failed: {e}"
     
     elif kid:
         if kid.startswith("did:"):
@@ -379,10 +394,6 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     else:
         comment_2 = "Error: kid is missing"
     
-    logging.info("comment 1 = %s", comment_1)
-    logging.info("comment 2 = %s", comment_2)
-    logging.info("comment 3 = %s", comment_3)
-    logging.info("comment 4 = %s", comment_4)
     # Determine whether the last part is a Key Binding JWT (assumed to be a JWT if it contains 2 dots)
     is_kb_jwt = vcsd[-1].count('.') == 2
 
@@ -394,10 +405,16 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
         disclosures = "\r\n".join(
             base64url_decode(part).decode() for part in disclosure_parts
         )
+        comment_3 = "Info: Disclosures are formatted correctly"
     except Exception as e:
         comment_3 = f"Error: Disclosures are not formatted correctly: {e}"
         disclosures = "Error: Disclosures could not be decoded."
-        
+    
+    logging.info("comment 1 = %s", comment_1)
+    logging.info("comment 2 = %s", comment_2)
+    logging.info("comment 3 = %s", comment_3)
+    logging.info("comment 4 = %s", comment_4)
+   
     # Decode Key Binding JWT (KB-JWT) if present
     if is_kb_jwt:
         kb_header = get_header_from_token(vcsd[-1])

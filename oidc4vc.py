@@ -712,7 +712,7 @@ def verify_x5c_chain(x5c_list):
                 f" - Not after : {cert.not_valid_after_utc}"
             )
         else:
-            print(f"[OK] Certificate {i} is within validity period.")
+            logging.info(f"Certificate {i} is within validity period.")
 
     for i in range(len(certs) - 1):
         cert = certs[i]
@@ -721,6 +721,6 @@ def verify_x5c_chain(x5c_list):
         if result:
             return f"[Error: Certificate {i} verification failed: {result}"
         else:
-            print(f"[OK] Certificate {i} is signed by certificate {i+1}.")
+            logging.info(f"Certificate {i} is signed by certificate {i+1}.")
 
     return "Info: Certificate chain and validity periods are all OK."
