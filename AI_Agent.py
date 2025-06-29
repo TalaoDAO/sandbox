@@ -481,12 +481,11 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     Analyze the content above and provide answers to the following points, one per line:
 
     1. Provide the holder's identifier (cnf) and the issuer identifier.
-    2. Display all disclosed claims.
-    3. Check that no required claims are missing from the header.
-    4. Check that no required claims are missing from the payload.
-    5. Validate that the Key Binding JWT (if present) is structurally correct.
-    6. Provide information about the signature
-    7. List any errors, inconsistencies, or anomalies and propose improvements
+    2. Check that no required claims are missing from the header.
+    3. Check that no required claims are missing from the payload.
+    4. Validate that the Key Binding JWT (if present) is structurally correct.
+    5. Provide information about the signature
+    6. List any errors, inconsistencies, or anomalies and propose improvements
     """
 
     # Call the OpenAI API

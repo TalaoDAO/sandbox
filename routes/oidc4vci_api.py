@@ -1600,7 +1600,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
     if format in ['jwt_vc', 'jwt_vc_json', 'jwt_vc_json-ld']:
         # sign_jwt_vc(vc, kid, issuer_key, nonce, iss, jti, sub)
         if issuer_data.get('issuer_id_as_url'):
-            kid = oidc4vc.thumbprint_str(issuer_key)
+            kid = thumbprint(issuer_key)
             credential_signed = oidc4vc.sign_jwt_vc(credential, kid, issuer_key, c_nonce, issuer, jti, wallet_did)
         else:
             credential_signed = oidc4vc.sign_jwt_vc(credential, issuer_vm, issuer_key, c_nonce, issuer_did, jti, wallet_did)

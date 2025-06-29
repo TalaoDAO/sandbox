@@ -12,7 +12,6 @@ import copy
 logging.basicConfig(level=logging.INFO)
 import base64
 from cryptography import x509
-#from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric import rsa, ec, ed25519, padding
 """
@@ -87,7 +86,7 @@ def resolve_wallet_did_ebsi_v3(did) -> str:
 def generate_wallet_did_ebsiv3(key):
     # json string, remove space, alphabetical ordered
     if isinstance(key, str):
-        key = json.loads(pub_key)
+        key = json.loads(key)
     if key["kty"] == "EC":
         jwk = {
             "crv": key["crv"],  # seckp256k1 or P-256 
@@ -488,7 +487,7 @@ def resolve_did(vm) -> dict:
     return jwk
 
 
-def verif_token(token):
+def verif_token(token: str):
     header = get_header_from_token(token)
     if x5c_list := header.get('x5c'):
         try:
@@ -534,13 +533,19 @@ def verif_token(token):
 def get_payload_from_token(token) -> dict:
     payload = token.split('.')[1]
     payload += "=" * ((4 - len(payload) % 4) % 4)  # solve the padding issue of the base64 python lib
-    return json.loads(base64.urlsafe_b64decode(payload).decode())
+    try:
+        return json.loads(base64.urlsafe_b64decode(payload).decode())
+    except Exception as e:
+        raise ValueError(f"Invalid token payload: {e}")
 
 
 def get_header_from_token(token):
     header = token.split('.')[0]
     header += "=" * ((4 - len(header) % 4) % 4)  # solve the padding issue of the base64 python lib
-    return json.loads(base64.urlsafe_b64decode(header).decode())
+    try:
+        return json.loads(base64.urlsafe_b64decode(header).decode())
+    except Exception as e:
+        raise ValueError(f"Invalid token header: {e}")
 
 
 def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce, jwk=False):
@@ -564,7 +569,7 @@ def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce, jwk=False):
     token.make_signed_token(signer_key)
     return token.serialize()
 
-
+"""
 def thumbprint(key):
     key = json.loads(key) if isinstance(key, str) else key
     if key['crv'] == 'P-256K':
@@ -573,7 +578,16 @@ def thumbprint(key):
     a = signer_key.thumbprint()
     a  += "=" * ((4 - len(a) % 4) % 4)
     return base64.urlsafe_b64decode(a).hex()
+"""
 
+def thumbprint(key):
+    key = json.loads(key) if isinstance(key, str) else key
+    if key.get('crv') == 'P-256K':
+        key['crv'] = 'secp256k1'
+    signer_key = jwk.JWK(**key)
+    return signer_key.thumbprint()
+
+"""
 
 def thumbprint_str(key):
     key = json.loads(key) if isinstance(key, str) else key
@@ -581,7 +595,7 @@ def thumbprint_str(key):
         key['crv'] = 'secp256k1'
     signer_key = jwk.JWK(**key)
     return signer_key.thumbprint()
-
+"""
 
 def verification_method(did, key):  # = kid
     key = json.loads(key) if isinstance(key, str) else key
@@ -731,7 +745,7 @@ def verify_x5c_chain(x5c_list):
         issuer_cert = certs[i + 1]
         result = verify_signature(cert, issuer_cert)
         if result:
-            return f"[Error: Certificate {i} verification failed: {result}"
+            return f"Error: Certificate {i} verification failed: {result}"
         else:
             logging.info(f"Certificate {i} is signed by certificate {i+1}.")
 
