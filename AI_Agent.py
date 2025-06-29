@@ -454,7 +454,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     mention = (
         f"\n\nThe model {engine()} is used in conjunction with the Web3 Digital Wallet dataset.\n"
         f"This report is based on the IETF SD-JWT VC Draft {draft} specification.\n"
-        f"Date of issuance: {date}. ©Web3 Digital Wallet 2025."
+        f"Date of issuance: {date}. Web3 Digital Wallet 2025."
     )
 
     # Prompt for OpenAI model

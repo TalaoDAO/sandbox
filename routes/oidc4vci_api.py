@@ -334,6 +334,8 @@ def as_openid_configuration(issuer_id, mode):
 
 
 def thumbprint(key):
+    if isinstance(key, str):
+        key = json.loads(key)
     signer_key = jwk.JWK(**key)
     return signer_key.thumbprint()
 
@@ -1563,7 +1565,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
             issuer = issuer_did
             kid = issuer_vm
         else:
-            kid = oidc4vc.thumbprint_str(issuer_key)
+            kid = thumbprint(issuer_key)
 
         return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk, wallet_did, wallet_identifier, kid, x5c=x5c, draft=draft)
     elif format in ['ldp_vc', 'jwt_vc_json-ld']:
