@@ -1093,10 +1093,12 @@ def issuer_token(issuer_id, red, mode):
         'expires_in': ACCESS_TOKEN_LIFE,
         'refresh_token': refresh_token
     }
-    if int(issuer_profile['oidc4vciDraft']) < 14 and issuer_id not in ['kivrsduinn', 'grlvzckofy']:
+    
+    # add nonce in token endpoint response
+    if int(issuer_profile['oidc4vciDraft']) <= 13:
         endpoint_response['c_nonce'] = str(uuid.uuid1())
         endpoint_response['c_nonce_expires_in'] = 1704466725
-        red.setex(endpoint_response['c_nonce'], 60, 'nonce')
+        red.setex(endpoint_response['c_nonce'], 600, 'nonce')
         
     # authorization_details in case of multiple VC of the same type
     authorization_details = []
