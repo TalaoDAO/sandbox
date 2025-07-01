@@ -1182,10 +1182,10 @@ async def issuer_credential(issuer_id, red, mode):
     # check vc format
     vc_format = result.get('format')
     logging.info('format in credential request = %s', vc_format)
-    if vc_format and vc_format not in ['ldp_vc', 'vc+sd-jwt', 'jwt_vc_json', 'jwt_vc_json-ld', 'jwt_vc']:
+    if vc_format and vc_format not in ['ldp_vc', 'dc+sd-jwt', 'vc+sd-jwt', 'jwt_vc_json', 'jwt_vc_json-ld', 'jwt_vc']:
         return Response(**manage_error('unsupported_credential_format', 'Invalid VC format: ' + vc_format, red, mode, request=request, stream_id=stream_id))
     if int(issuer_profile['oidc4vciDraft']) >= 13:
-        if result.get('format') == 'vc+sd-jwt' and not result.get('vct'):
+        if result.get('format') in ['dc+sd-jwt', 'vc+sd-jwt'] and not result.get('vct'):
             return Response(**manage_error('invalid_request', 'Invalid request format, vct is missing for vc+sd-jwt format', red, mode, request=request, stream_id=stream_id))
         elif result.get('format') in ['ldp_vc', 'jwt_vc_json-ld']:
             try:
@@ -1272,7 +1272,7 @@ async def issuer_credential(issuer_id, red, mode):
     credential_type = None
     if int(issuer_profile['oidc4vciDraft']) >= 13:   # standard case
         credentials_supported = list(issuer_profile['credential_configurations_supported'].keys())
-        if vc_format == 'vc+sd-jwt' and result.get('vct'):  # vc+sd-jwt'
+        if vc_format in ['dc+sd-jwt', 'vc+sd-jwt'] and result.get('vct'):  # vc+sd-jwt'
             vct = result.get('vct')
             for vc in credentials_supported:
                 if issuer_profile['credential_configurations_supported'][vc].get('vct') == vct:
@@ -1295,7 +1295,7 @@ async def issuer_credential(issuer_id, red, mode):
     
     elif int(issuer_profile['oidc4vciDraft']) == 11:
         credentials_supported = issuer_profile['credentials_supported']
-        if vc_format == 'vc+sd-jwt' and result.get('vct'):  # draft 11 with vc+sd-jwt'
+        if vc_format == 'vc+sd-jwt' and result.get('vct'):  
             vct = result.get('vct')
             for vc in credentials_supported:
                 if vc['vct'] == vct:
@@ -1552,7 +1552,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
     issuer_vm = issuer_data['verification_method']
     jti = 'urn:uuid:' + str(uuid.uuid1())
   
-    if format == 'vc+sd-jwt':
+    if format in ['dc+sd-jwt', 'vc+sd-jwt']:
         credential['status'] = {
             'status_list': {
                 'idx': randint(0, 99999),
