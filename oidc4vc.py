@@ -303,12 +303,12 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
     signer_key = jwk.JWK(**issuer_key)
     
     # build header
-    header = {
-        'typ': "vc+sd-jwt",
-        'alg': alg(issuer_key)
-    }
+    header = { 'alg': alg(issuer_key)}
     if draft >= 15:
         header['typ'] = "dc+sd-jwt"
+    else:
+         header['typ'] = "vc+sd-jwt"
+         
     if x5c:
         logging.info("x509 certificates are added")
         header['x5c'] = x509_attestation.build_x509_san_dns()
