@@ -711,7 +711,6 @@ def analyze_wallet_qrcode():
     oidc4vci_draft = data.get('oidc4vciDraft')
     oidc4vp_draft = data.get('oidc4vpDraft')
     profil = data.get('profil', 'custom')
-    print("profile = ", profil)
 
     # Decode base64 QR content
     try:

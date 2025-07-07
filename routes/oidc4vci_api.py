@@ -1184,7 +1184,8 @@ async def issuer_credential(issuer_id, red, mode):
     logging.info('format in credential request = %s', vc_format)
     if vc_format and vc_format not in ['ldp_vc', 'dc+sd-jwt', 'vc+sd-jwt', 'jwt_vc_json', 'jwt_vc_json-ld', 'jwt_vc']:
         return Response(**manage_error('unsupported_credential_format', 'Invalid VC format: ' + vc_format, red, mode, request=request, stream_id=stream_id))
-    if int(issuer_profile['oidc4vciDraft']) >= 13:
+    
+    if int(issuer_profile['oidc4vciDraft']) in [13, 14]:
         if result.get('format') in ['dc+sd-jwt', 'vc+sd-jwt'] and not result.get('vct'):
             return Response(**manage_error('invalid_request', 'Invalid request format, vct is missing for vc+sd-jwt format', red, mode, request=request, stream_id=stream_id))
         elif result.get('format') in ['ldp_vc', 'jwt_vc_json-ld']:
@@ -1200,7 +1201,11 @@ async def issuer_credential(issuer_id, red, mode):
                 type = credential_definition['type']  # to check if it exists
             except Exception:
                 return Response(**manage_error('invalid_request', 'Invalid request format, type  is missing for jwt_vc_json', red, mode, request=request, stream_id=stream_id))
-
+    elif int(issuer_profile['oidc4vciDraft']) >= 15:
+        if vc_format:
+            return Response(**manage_error('invalid_request', 'Invalid request format, format is no more supported', red, mode, request=request, stream_id=stream_id))
+        credential_configuration_id = result.get('credential_configuration_id')
+        
     # check types fo deprecated draft
     if int(issuer_profile['oidc4vciDraft']) < 13 and not result.get('types'):
         return Response(**manage_error('unsupported_credential_format', 'Invalid VC format, types is missing', red, mode, request=request, stream_id=stream_id))
@@ -1270,7 +1275,14 @@ async def issuer_credential(issuer_id, red, mode):
     # Get credential type requested
     credential_identifier = None
     credential_type = None
-    if int(issuer_profile['oidc4vciDraft']) >= 13:   # standard case
+    if int(issuer_profile['oidc4vciDraft']) >= 15:
+        credentials_supported = list(issuer_profile['credential_configurations_supported'].keys())      
+        for vc in credentials_supported:
+            if issuer_profile['credential_configurations_supported'][vc] == credential_configuration_id:
+                credential_type = credential_configuration_id
+                break
+    
+    elif int(issuer_profile['oidc4vciDraft']) in [13, 14]:
         credentials_supported = list(issuer_profile['credential_configurations_supported'].keys())
         if vc_format in ['dc+sd-jwt', 'vc+sd-jwt'] and result.get('vct'):  # vc+sd-jwt'
             vct = result.get('vct')
