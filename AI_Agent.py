@@ -351,15 +351,18 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
             comment_2 = f"Error: VC signature verification with jwk in header failed: {e}"
     
     elif kid:
-        if kid.startswith("did:"):
-            pub_key = oidc4vc.resolve_did(kid)
-            try:
-                issuer_key = jwk.JWK(**pub_key)
-                a = jwt.JWT.from_jose_token(sd_jwt)
-                a.validate(issuer_key)
-                comment_2 = "Info: VC is correctly signed with DID"
-            except Exception as e:
-                comment_2 = f"Error: VC is not signed correctly with DID: {e}"
+        if iss.startswith("did:"):            
+            if kid.startswith("did:"):
+                pub_key = oidc4vc.resolve_did(kid)
+                try:
+                    issuer_key = jwk.JWK(**pub_key)
+                    a = jwt.JWT.from_jose_token(sd_jwt)
+                    a.validate(issuer_key)
+                    comment_2 = "Info: VC is correctly signed with DID"
+                except Exception as e:
+                    comment_2 = f"Error: VC is not signed correctly with DID: {e}"
+            else:
+                comment_2 = "Error: kid should be a DID verification method"
     
         elif iss and iss.split(":")[0] in ["http", "https"]:
             parsed = urlparse(jwt_payload.get('iss'))
