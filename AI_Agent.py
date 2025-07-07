@@ -351,7 +351,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
             comment_2 = f"Error: VC signature verification with jwk in header failed: {e}"
     
     elif kid:
-        if iss.startswith("did:"):            
+        if iss and iss.startswith("did:"):            
             if kid.startswith("did:"):
                 pub_key = oidc4vc.resolve_did(kid)
                 try:
