@@ -232,11 +232,7 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device):
     if result.get('credential_offer_uri') or result.get('credential_offer'):
         return analyze_issuer_qrcode(qrcode, oidc4vciDraft, profile, device)
     else:
-        request, presentation_definition, error_description = get_verifier_request(qrcode, oidc4vpDraft)
-        if not request or not presentation_definition:
-            return "This QR code is not supported : " + error_description
-        else:
-            return analyze_verifier_qrcode(qrcode, oidc4vpDraft, profile, device)
+        return analyze_verifier_qrcode(qrcode, oidc4vpDraft, profile, device)
     
 
 def get_verifier_request(qrcode, draft):
@@ -246,8 +242,10 @@ def get_verifier_request(qrcode, draft):
     result = {k: v[0] for k, v in parse_qs(parse_result.query).items()}
     if request_uri := result.get('request_uri'):
         try:
+            print("passage ")
             response = requests.get(request_uri, timeout=10)
             request_jwt = response.text
+            print("request_jwt = ", request_jwt)
             request = get_payload_from_token(request_jwt)
             request_header = get_header_from_token(request_jwt)
             if x5c_list := request_header.get('x5c'):
@@ -409,7 +407,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
         else:
             comment_2 = "Error: 'iss' is missing or improperly formatted."
     else:
-        comment_2 = "Error: kid is missing"
+        comment_2 = "Error: kid or x5c or jwk is missing in the header"
     
     # Determine whether the last part is a Key Binding JWT (assumed to be a JWT if it contains 2 dots)
     is_kb_jwt = vcsd[-1].count('.') == 2
