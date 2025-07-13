@@ -212,7 +212,7 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device):
         profile = "Use only jwt_vc format. Use only did:key and did:ebsi as identifier"
     elif profil == "DIIP_V3":
         oidc4vciDraft = "13"
-        oidc4vpDraft = "18"
+        oidc4vpDraft = "20"
         profile = "Use only sd-jwt vc, jwt_vc_json and ldp_vc (JSON-LD) format. Use only ES256 as key. Use only did:jwk and did:web as identifier"
     elif profil == "DIIP_V4":
         oidc4vciDraft = "15"
@@ -242,10 +242,8 @@ def get_verifier_request(qrcode, draft):
     result = {k: v[0] for k, v in parse_qs(parse_result.query).items()}
     if request_uri := result.get('request_uri'):
         try:
-            print("passage ")
             response = requests.get(request_uri, timeout=10)
             request_jwt = response.text
-            print("request_jwt = ", request_jwt)
             request = get_payload_from_token(request_jwt)
             request_header = get_header_from_token(request_jwt)
             if x5c_list := request_header.get('x5c'):

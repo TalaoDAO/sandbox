@@ -676,7 +676,7 @@ def oidc4vc_login_qrcode(red, mode):
 
     # Set client_id
     if verifier_data.get('client_id_scheme') == "x509_san_dns":
-        client_id = "talao.co"
+        client_id = "https://talao.co"
     elif verifier_data.get('client_id_scheme') == "redirect_uri":
         client_id = redirect_uri
     elif verifier_data.get('client_id_scheme') == "did":
