@@ -13,7 +13,8 @@ TALAO_ISSUER = {
         "EmailPass",
         "PhoneProof",
         "Pid",
-        "AgeProof"
+        "AgeProof",
+        "EmployeeBadge"
     ],
     "credential_configurations_supported": {
         "AgeProof": {
@@ -277,6 +278,118 @@ TALAO_ISSUER = {
                 {
                     "name": "Preuve de numéro de téléphone",
                     "locale": "fr-FR"
+                }
+            ]
+        },
+        "EmployeeBadge": {
+            "format": "dc+sd-jwt",
+            "scope": "EmployeeBadge_scope",
+            "claims": [
+                {
+                    "path": ["id"],
+                    "display": [
+                        {
+                            "name": "Employee ID",
+                            "locale": "en-US"
+                        }
+                    ]
+                },
+                {
+                    "path": ["employee"],
+                    "display": [
+                        {
+                            "name": "Employee Details",
+                            "locale": "en-US"
+                        }
+                    ],
+                },
+                {
+                    "path": ["employee", "employeeId"],
+                    "display": [
+                        {
+                            "name": "Employee ID",
+                            "locale": "en-US"
+                        }
+                    ]
+                },
+                {
+                    "path": ["employee", "jobTitle"],
+                    "display": [
+                        {
+                            "name": "Employee Job Title",
+                            "locale": "en-US"
+                        }
+                    ]
+                },
+                {
+                    "path" : ["employee", "department"],
+                    "display": [
+                        {
+                            "name": "Employee Department",
+                            "locale": "en-US"
+                        }
+                    ]
+                },
+                {
+                    "path": ["employee", "employmentStartDate"],
+                    "display": [
+                        {
+                            "name": "Employee Start Date",
+                            "locale": "en-US"
+                        }
+                    ]
+                },
+                {
+                    "path": ["employer"],
+                    "display": [
+                        {
+                            "name": "Employeer Details",
+                            "locale": "en-US"
+                        }
+                    ]
+                },
+                {
+                    "path": ["employer", "employerName"],
+                    "display": [
+                        {
+                            "name": "Employer Name",
+                            "locale": "en-US"
+                        }
+                    ]
+                },
+                {
+                    "path": ["employer", "employerId"],
+                    "display": [
+                        {
+                            "name": "DID of Employer",
+                            "locale": "en-US"
+                        }
+                    ]
+                }
+            ],
+            "cryptographic_binding_methods_supported": [
+                "did",
+                "jwk"
+            ],
+            "credential_signing_alg_values_supported": [
+                "ES256K",
+                "ES256",
+                "EdDSA",
+                "RS256"
+            ],
+            "vct": "urn:eu.europa.ec.eudi:employee_badge:1",
+            "display": [
+                {
+                    "name": "Employee Badge",
+                    "locale": "en-US",
+                    "background_color": "#2c5364",
+                    "text_color": "#FFFFFF"
+                },
+                {
+                    "name": "Badge entreprise",
+                    "locale": "fr-FR",
+                    "background_color": "#2c5364",
+                    "text_color": "#FFFFFF"
                 }
             ]
         }
