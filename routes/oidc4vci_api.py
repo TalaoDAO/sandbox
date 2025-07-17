@@ -1277,6 +1277,7 @@ async def issuer_credential(issuer_id, red, mode):
     credential_type = None
     if int(issuer_profile['oidc4vciDraft']) >= 15:
         credential_type = credential_configuration_id
+        vc_format = issuer_profile['credential_configurations_supported'][credential_type]["format"]
     
     elif int(issuer_profile['oidc4vciDraft']) in [13, 14]:
         credentials_supported = list(issuer_profile['credential_configurations_supported'].keys())
@@ -1367,9 +1368,7 @@ async def issuer_credential(issuer_id, red, mode):
                     logging.info('credential found for identifier = %s', credential_identifier)
                     break
     else:
-        print("credential type =", credential_type)
-        print("access_token_data = ", access_token_data)
-        logging.info('Only one VC of the same type')
+        logging.info('Only one VC of the same type = %s and format = %s', credential_type, vc_format)
         try:
             credential = access_token_data['vc'][credential_type]
         except Exception:
