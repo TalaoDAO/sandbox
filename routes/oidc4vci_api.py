@@ -765,7 +765,7 @@ def issuer_authorize(issuer_id, red, mode):
             return
         
         # Push Authorization Request
-        if request_uri:= request.args.get('request_uri'):
+        if request_uri := request.args.get('request_uri'):
             try:
                 request_uri_data = json.loads(red.get(request_uri).decode())   
             except Exception:
@@ -1371,6 +1371,8 @@ async def issuer_credential(issuer_id, red, mode):
                     logging.info('credential found for identifier = %s', credential_identifier)
                     break
     else:
+        print("credential type =", credential_type)
+        print("access_token_data = ", access_token_data)
         logging.info('Only one VC of the same type')
         try:
             credential = access_token_data['vc'][credential_type]

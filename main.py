@@ -22,7 +22,6 @@ import hashlib
 import base64
 import AI_Agent
 
-from trusted_list import trusted_list
 
 # Basic protocole
 from routes import saas4ssi
@@ -810,12 +809,21 @@ def trusted_list_api():
                 "rootCertificates": [
                     "MIIDbDCCAlSgAwIBAgIUAty/lSreb3p3XMf2g6cJNeo9jCQwDQYJKoZIhvcNAQELBQAwWzELMAkGA1UEBhMCRlIxDjAMBgNVBAcMBVBhcmlzMSkwJwYDVQQKDCBXZWIzIERpZ2l0YWwgV2FsbGV0IFRydXN0IEFuY2hvcjERMA8GA1UEAwwIdGFsYW8uaW8wHhcNMjUwNjI2MTUyNDI4WhcNMzUwNjI0MTUyNDI4WjBbMQswCQYDVQQGEwJGUjEOMAwGA1UEBwwFUGFyaXMxKTAnBgNVBAoMIFdlYjMgRGlnaXRhbCBXYWxsZXQgVHJ1c3QgQW5jaG9yMREwDwYDVQQDDAh0YWxhby5pbzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKT6HMiq3kwJ92K5hsj2Fx5JWKlIkkkIqxgAsCUmGLPpLH8OG67QN0mQpgNrHQDvGtg136gA8BYFUsSRbSdxpBy1dmbziDp2Ql+jBejSFhwfXOuMna2DSWxMu9qMhv/r/rBOq29Mfg/riXvQxWCFEc4rMgZTQO4prImT0J4jozy79AVIBA9L3TuR4oxXu126VYaFPtqE5Bx0OAmnZgWYXpQnMwApF6TlO5sHCJho/Ydf/z7Mk+VQS4v/dvvdzYpmY3nIT2mk2BFNrtK3531VuXhg2DQMpzuENm4aRT0U11meS4Z4Z6uzO+k+gxgNxngLvzDswdJeHcaRTCesB53pHZECAwEAAaMoMCYwDwYDVR0TBAgwBgEB/wIBADATBgNVHREEDDAKggh0YWxhby5pbzANBgkqhkiG9w0BAQsFAAOCAQEAEBxrq3d+631jjG7Cb2GMHqMCoWhJEJblr4CpO3U0XN5r+5OsI516V3p3WEL0XPlfYw6qeoQdnb6hBmmhmsjnRBEfVKyIh678Esqhv5XyD3I1969rgY4TzgIdW5KMFj1YbIuvkzS/szGz8UidI2t+bRljN0guQwZNvkTIdKOIF6B+ARiQCcJEVNfq0IzPWhVY67ESLfDyeoGaWDiFT1L4uNmRM5dXd5eFhfHzOUX4BwSdw4jJtGWy/pljWVeDy9I2F9vrdaAZR2NKz6IKaRNm14gM/L+6/OAm75kTI+UKQWjm9mK7GmnB/2bfbSeT5ZMR/GP6Q9rfWycznofgwbpUBg=="
                 ],
+                "kids": [
+                    "did:web:app.altme.io:issuer#key-1",
+                    "did:web:app.altme.io:issuer#key-2",
+                    "did:web:app.altme.io:issuer#key-3",
+                    "did:web:app.altme.io:issuer#key-4"
+                ],
                 "electronicAddress": {
                     "uri": "mailto:contact@talao.io",
                     "lang": "en"
                 },
                 "vcTypes": [
-                    "Pid"
+                    "Pid",
+                    "EmailPass",
+                    "PhoneProof",
+                    "Over18"
                 ]
             }
         ]
