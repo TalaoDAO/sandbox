@@ -1276,11 +1276,7 @@ async def issuer_credential(issuer_id, red, mode):
     credential_identifier = None
     credential_type = None
     if int(issuer_profile['oidc4vciDraft']) >= 15:
-        credentials_supported = list(issuer_profile['credential_configurations_supported'].keys())      
-        for vc in credentials_supported:
-            if issuer_profile['credential_configurations_supported'][vc] == credential_configuration_id:
-                credential_type = credential_configuration_id
-                break
+        credential_type = credential_configuration_id
     
     elif int(issuer_profile['oidc4vciDraft']) in [13, 14]:
         credentials_supported = list(issuer_profile['credential_configurations_supported'].keys())
@@ -1293,7 +1289,7 @@ async def issuer_credential(issuer_id, red, mode):
         else:
             try:
                 vc_type = result['credential_definition'].get('type')
-            except:
+            except Exception:
                 logging.error("credential definition does not exist, wrong request format")
                 return Response(**manage_error('invalid_request', 'credential definition not found', red, mode, request=request, stream_id=stream_id))
             vc_type.sort()
