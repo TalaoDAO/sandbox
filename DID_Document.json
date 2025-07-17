@@ -54,6 +54,17 @@
                 "x":"XlorFi-4xHZT7KZOapzydiuoA9wo6do0cB9y92ySRcI",
                 "y":"aXJLmBIoPhuFvuP32XOamdRXjgHZ3Lf2fPmYsTr316M"
             }
+        },
+        {
+            "id": "did:web:talao.co#key-6",
+            "type": "JsonWebKey2020",
+            "controller": "did:web:talao.co",
+            "publicKeyJwk": {
+                "crv":"P-256",
+                "kty":"EC",
+                "x":"NB1ylMveV4_PPYtx9KYEjoS1WWA8qN33SJav9opWTaM",
+                "y":"UtOG2jR3NHadMMJ7wdYEq5_nHJHVfcy7QPt_OBHhBrE"
+            }
         }
     ],
     "authentication" : [
@@ -61,14 +72,16 @@
         "did:web:talao.co#key-2",
         "did:web:talao.co#key-3",
         "did:web:talao.co#key-4",
-        "did:web:talao.co#key-5"
+        "did:web:talao.co#key-5",
+        "did:web:talao.co#key-6"
     ],
     "assertionMethod" : [
         "did:web:talao.co#key-1",
         "did:web:talao.co#key-2",
         "did:web:talao.co#key-3",
         "did:web:talao.co#key-4",
-        "did:web:talao.co#key-5"
+        "did:web:talao.co#key-5",
+        "did:web:talao.co#key-6"
     ],
     "keyAgreement" : [
         "did:web:talao.co#key-3",

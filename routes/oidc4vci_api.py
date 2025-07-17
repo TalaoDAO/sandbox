@@ -4,6 +4,7 @@ https://issuer.walt.id/issuer-api/default/oidc
 EBSI V2 https://openid.net/specs/openid-connect-4-verifiable-credential-issuance-1_0-05.html
 support Authorization code flow and pre-authorized code flow of OIDC4VCI
 """
+from jwcrypto import jwk, jwt
 
 import copy
 import json
@@ -23,6 +24,7 @@ from flask import (Response, flash, jsonify, redirect,  # type: ignore
                 render_template, request, session)
 from jwcrypto import jwk # type: ignore
 import didkit
+import x509_attestation
 
 logging.basicConfig(level=logging.INFO)
 
@@ -155,12 +157,45 @@ def manage_error(error, error_description, red, mode, request=None, stream_id=No
     return {'response': json.dumps(payload), 'status': status, 'headers': headers}
 
 
+def build_signed_metadata(key, sub, metadata) -> str:
+    key = json.loads(key) if isinstance(key, str) else key
+    signer_key = jwk.JWK(**key) 
+    alg = oidc4vc.alg(key)
+    header = {
+        'typ': "openidvci-issuer-metadata+jwt",
+        'alg': alg,
+    }
+    header['x5c'] = x509_attestation.build_x509_san_dns()
+    #header['kid'] = kid
+    
+    payload = {
+        'iss': 'https://talao.co',
+        'sub': sub,
+        'iat': datetime.timestamp(datetime.now())
+    }
+    payload |= metadata
+    token = jwt.JWT(header=header, claims=payload, algs=[alg])
+    token.make_signed_token(signer_key)
+    return token.serialize()
+
+
+
 # credential issuer openid configuration endpoint
 def credential_issuer_openid_configuration_endpoint(issuer_id, mode):
     logging.info('Call credential issuer configuration endpoint')
-    doc = credential_issuer_openid_configuration(issuer_id, mode)
+    metadata = credential_issuer_openid_configuration(issuer_id, mode)
+    try:
+        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+        issuer_profile = profile[issuer_data['profile']]
+    except Exception:
+        logging.warning('issuer_id not found for %s', issuer_id)
+        return {"error": "server_error"}
+    if int(issuer_profile.get('oidc4vciDraft')) >= 15:
+        sub = mode.server + 'issuer/' + issuer_id
+        print("key = ",issuer_data['jwk'])
+        metadata["signed_metadata"] = build_signed_metadata(issuer_data['jwk'], sub, metadata)
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
-    return Response(response=json.dumps(doc), headers=headers)
+    return Response(response=json.dumps(metadata), headers=headers)
 
 
 # Credential issuer metadata
