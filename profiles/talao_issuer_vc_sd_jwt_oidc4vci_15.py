@@ -1,4 +1,4 @@
-TALAO_ISSUER = { 
+TALAO_ISSUER = {
     "oidc4vciDraft": "15",
     "siopv2Draft": "12",
     "oidc4vpDraft": "23",
@@ -43,7 +43,7 @@ TALAO_ISSUER = {
                     "display": [
                         {"name": "Over 16", "locale": "en-US"},
                         {"name": "Plus de 16 ans", "locale": "fr-FR"}
-                    ] 
+                    ]
                 },
                 {
                     "path": ["age_equal_or_over", "18"],
@@ -139,7 +139,7 @@ TALAO_ISSUER = {
                         {"name": "Gender", "locale": "en-US"},
                         {"name": "Sexe", "locale": "fr-FR"}]
                 },
-                {    
+                {
                     "path": ["age_over_12"],
                     "display": [
                         {"name": "Over 12", "locale": "en-US"},
@@ -183,8 +183,9 @@ TALAO_ISSUER = {
                 },
                 {
                     "path": ["issuing_country"],
-                    "display": [{"name": "Issuing country", "locale": "en-US"},
-                                    {"name": "Pays d'emission", "locale": "fr-FR"}],
+                    "display": [
+                        {"name": "Issuing country", "locale": "en-US"},
+                        {"name": "Pays d'emission", "locale": "fr-FR"}],
                 },
                 {
                     "path": ["issuing_authority"],
@@ -259,7 +260,7 @@ TALAO_ISSUER = {
                     "mandatory": True,
                     "display": [
                         {"name": "Phone", "locale": "en-US"},
-                        {"name": "Numérole de téléphone", "locale": "fr-FR"}
+                        {"name": "Numérol de téléphone", "locale": "fr-FR"}
                     ],
                 },
             ],
@@ -322,7 +323,7 @@ TALAO_ISSUER = {
                     ]
                 },
                 {
-                    "path" : ["employee", "department"],
+                    "path": ["employee", "department"],
                     "display": [
                         {
                             "name": "Employee Department",
@@ -340,7 +341,7 @@ TALAO_ISSUER = {
                     ]
                 },
                 {
-                    "path": ["employer"],
+                    "path": ["employee", "employer"],
                     "display": [
                         {
                             "name": "Employeer Details",
@@ -349,7 +350,7 @@ TALAO_ISSUER = {
                     ]
                 },
                 {
-                    "path": ["employer", "employerName"],
+                    "path": ["employee", "employer", "employerName"],
                     "display": [
                         {
                             "name": "Employer Name",
@@ -358,7 +359,7 @@ TALAO_ISSUER = {
                     ]
                 },
                 {
-                    "path": ["employer", "employerId"],
+                    "path": ["employee", "employer", "employerId"],
                     "display": [
                         {
                             "name": "DID of Employer",
