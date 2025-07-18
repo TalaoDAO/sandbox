@@ -4,7 +4,7 @@
         {
             "id": "employee_badge",
             "format": {
-                "vc+sd-jwt": {
+                "dc+sd-jwt": {
                     "sd-jwt_alg_values": [
                         "ES256",
                         "ES256K",

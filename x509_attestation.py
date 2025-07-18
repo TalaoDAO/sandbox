@@ -17,7 +17,7 @@ with open('keys.json') as f:
     keys = json.load(f)
 
 TRUST_ANCHOR_KEY: Dict = keys['RSA_key']  # Root CA
-SIGNER_KEY: Dict = keys['issuer_key']  # Leaf signer
+SIGNER_KEY: Dict = keys['issuer_key']  # Leaf signer did:web:talao.co#key-6
 
 
 def alg(key: Union[str, Dict]) -> str:
