@@ -225,7 +225,10 @@ def oidc4vc_authorize(red, mode):
     if 'error' in request.args:
         logging.warning('Error in the login process, redirect to client with error code = %s', request.args['error'])
         code = request.args['code']
-        code_data = json.loads(red.get(code).decode())
+        try:
+            code_data = json.loads(red.get(code).decode())
+        except Exception:
+            return jsonify({'error': "access_denied"}), 400
         resp = {
             'error': request.args['error'],
             'error_description': request.args.get('error_description')
