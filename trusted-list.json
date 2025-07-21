@@ -1,5 +1,4 @@
 {
-    "schemaVersion": "1.0",
     "ecosystem": "talao-wallet-network",
     "lastUpdated": "2025-07-15T12:00:00Z",
     "entities": [
@@ -57,17 +56,10 @@
             "name": "Web3 Digital Wallet",
             "description": "Altme and Talao wallet provider backend",
             "type": "wallet-provider",
-            "postalAddress": {
-                "streetAddress": "112 rue des Tuileries",
-                "locality": "St Ouen Marchefroy",
-                "postalCode": "28260",
-                "countryName": "FR"
-            },
             "electronicAddress": {
                 "uri": "mailto:contact@talao.io",
                 "lang": "en"
-            },
-            "vcTypes": []
+            }
         }
     ]
 }
