@@ -92,6 +92,9 @@ def oidc4vc_build_id_token(client_id, sub, nonce, vp, mode):
         if vp.get("vc+sd-jwt"):
             payload['vc+sd-jwt'] = vp["vc+sd-jwt"]
             vc_list = []
+        elif vp.get("dc+sd-jwt"):
+            payload['dc+sd-jwt'] = vp["dc+sd-jwt"]
+            vc_list = []
         elif isinstance(vp['verifiableCredential'], dict):
             vc_list = [vp['verifiableCredential']]
         else:
@@ -200,7 +203,7 @@ def oidc4vc_authorize(red, mode):
             if code_wallet_data['vp_format'] == 'ldp_vp':
                 vp = code_wallet_data['vp_token_payload']
                 id_token = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
-            elif code_wallet_data['vp_format'] == "vc+sd-jwt":
+            elif code_wallet_data['vp_format'] in ["vc+sd-jwt", "dc+sd-jwt"]:
                 id_token = code_wallet_data['vp_token_payload']
             else:
                 vp = code_wallet_data['vp_token_payload'].get('vp')
@@ -361,7 +364,7 @@ def oidc4vc_token(red, mode):
     if code_wallet_data['vp_format'] == 'ldp_vp':
         vp = code_wallet_data['vp_token_payload']
         id_token = oidc4vc_build_id_token(client_id, code_wallet_data['sub'], data['nonce'], vp, mode)
-    elif code_wallet_data['vp_format'] == 'vc+sd-jwt':
+    elif code_wallet_data['vp_format'] in ['vc+sd-jwt', "dc+sd-jwt"]:
         id_token = code_wallet_data['vp_token_payload']
     else:
         vp = code_wallet_data['vp_token_payload'].get('vp')
@@ -584,7 +587,7 @@ def oidc4vc_login_qrcode(red, mode):
                         verifier_data[reason],
                         id= verifier_data[vc].lower() + '_' + i
                     )
-                elif profile[verifier_data['profile']].get("verifier_vp_type") == 'vc+sd-jwt':
+                elif profile[verifier_data['profile']].get("verifier_vp_type") in ['vc+sd-jwt', "dc+sd-jwt"]:
                     prez.add_constraint(
                         "$.vct",
                         verifier_data[vc],
@@ -592,7 +595,7 @@ def oidc4vc_login_qrcode(red, mode):
                         verifier_data[reason],
                         id=verifier_data[vc].lower() + '_' + i
                     )
-                elif profile[verifier_data['profile']].get("verifier_vp_type") == 'vc+sd-jwt' and verifier_data[vc] == "$.age_equal_or_over.18":
+                elif profile[verifier_data['profile']].get("verifier_vp_type") in ['vc+sd-jwt', "dc+sd-jwt"] and verifier_data[vc] == "$.age_equal_or_over.18":
                     prez.add_constraint(
                         "$.age_equal_or_over.18",
                         verifier_data[vc],
@@ -658,7 +661,7 @@ def oidc4vc_login_qrcode(red, mode):
         elif profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp_json-ld':
             prez.add_format_jwt_vp_json()
             prez.add_format_jwt_vc_json()
-        elif profile[verifier_data['profile']].get("verifier_vp_type") == 'vc+sd-jwt':
+        elif profile[verifier_data['profile']].get("verifier_vp_type") in ['vc+sd-jwt', "dc+sd-jwt"]:
             prez.add_format_sd_jwt()
         else:
             return render_template("verifier_oidc/verifier_session_problem.html", message='VOP format not supported')
@@ -953,7 +956,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
             logging.info('vp token received = %s', vp_token)
             vp_format_presentation_submission = presentation_submission["descriptor_map"][0]["format"]
             logging.info("VP format from presentation submission = %s", vp_format_presentation_submission)
-            if vp_format not in ["vc+sd-jwt", "ldp_vp", "jwt_vp_json", "jwt_vp", "jwt_vp_json-ld"]:
+            if vp_format not in ["vc+sd-jwt", "dc+sd-jwt", "ldp_vp", "jwt_vp_json", "jwt_vp", "jwt_vp_json-ld"]:
                 logging.error("vp format unknown")
                 access = False
             elif vp_format_presentation_submission == "jwt_vp" and vp_format == "jwt_vp_json":
@@ -1037,7 +1040,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
                 vp_token_status = "signature check failed"
                 access = False
                 logging.warning("signature check failed %s", str(e))
-        elif vp_format == "vc+sd-jwt":
+        elif vp_format in ["vc+sd-jwt", "dc+sd-jwt"]:
             vcsd_jwt = vp_token.split("~")
             nb_disclosure = len(vcsd_jwt)
             logging.info("nb of disclosure = %s", nb_disclosure - 2 )
@@ -1066,7 +1069,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
             vc_list = oidc4vc.get_payload_from_token(vp_token)['vp']["verifiableCredential"]
             for vc in vc_list:
                 vc_format += " " + format(vc, type="vc")
-        elif vp_format == "vc+sd-jwt":
+        elif vp_format in ["vc+sd-jwt", "dc+sd-jwt"]:
             vc_format = "vc+sd-jwt"
         else:
             vc_list = json.loads(vp_token)["verifiableCredential"]
@@ -1089,7 +1092,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
             else:
                 aud_status = "failed in vp_token for domain "
                 access = False
-        elif vp_format == "vc+sd-jwt":
+        elif vp_format in ["vc+sd-jwt", "dc+sd-jwt"]:
             logging.info("nonce and aud not tested with sd-jwt")
         else:
             try:
