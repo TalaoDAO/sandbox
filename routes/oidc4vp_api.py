@@ -820,7 +820,7 @@ def oidc4vc_login_qrcode(red, mode):
         request_uri_header = json.dumps(oidc4vc.get_header_from_token(request_uri_jwt), indent=4)
         request_uri_payload = json.dumps(oidc4vc.get_payload_from_token(request_uri_jwt), indent=4)
     except Exception as e:
-        logging.warning ("token decryption problem = %s", str(e))
+        logging.warning("token decryption problem = %s", str(e))
         request_uri_header = ""
         request_uri_payload = ""
         
@@ -963,8 +963,8 @@ async def oidc4vc_response_endpoint(stream_id, red):
                 pass
             elif vp_format != vp_format_presentation_submission:
                 presentation_submission_status = "vp_format = " + vp_format + " but presentation submission vp_format = " + vp_format_presentation_submission
-                logging.error(presentation_submission_status)
-                access = False
+                logging.warning(presentation_submission_status)
+                
         else:
             vp_token_status = "Not received"
         
