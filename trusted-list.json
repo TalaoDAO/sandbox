@@ -52,12 +52,12 @@
             ]
         },
         {
-            "id": "https://wallet-provider.talao.co",
+            "id": "did:web:talao.co",
             "name": "Web3 Digital Wallet",
             "description": "Altme and Talao wallet provider backend",
             "type": "wallet-provider",
             "electronicAddress": {
-                "uri": "mailto:contact@talao.io",
+                "uri": "mailto:contact@altme.io",
                 "lang": "en"
             }
         }
