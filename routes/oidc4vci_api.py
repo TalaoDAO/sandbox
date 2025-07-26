@@ -190,7 +190,7 @@ def credential_issuer_openid_configuration_endpoint(issuer_id, mode):
     except Exception:
         logging.warning('issuer_id not found for %s', issuer_id)
         return {"error": "server_error"}
-    if int(issuer_profile.get('oidc4vciDraft')) >= 15:
+    if int(issuer_profile.get('oidc4vciDraft')) >= 13:
         sub = mode.server + 'issuer/' + issuer_id
         print("key = ",issuer_data['jwk'])
         metadata["signed_metadata"] = build_signed_metadata(issuer_data['jwk'], sub, metadata)
