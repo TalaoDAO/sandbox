@@ -22,7 +22,7 @@
                 "lang": "en"
             },
             "vcTypes": [
-                "Pid",
+                "eu.europa.ec.eudi.pid.1",
                 "EmailPass",
                 "PhoneProof",
                 "Over18"
@@ -48,7 +48,7 @@
                 "lang": "en"
             },
             "vcTypes": [
-                "Pid",
+                "eu.europa.ec.eudi.pid.1",
                 "EmailPass",
                 "PhoneProof",
                 "Over18"
@@ -74,7 +74,7 @@
                 "lang": "en"
             },
             "vcTypes": [
-                "Pid",
+                "eu.europa.ec.eudi.pid.1",
                 "EmailPass",
                 "PhoneProof",
                 "Over18"
@@ -100,7 +100,28 @@
                 "lang": "en"
             },
             "vcTypes": [
-                "Pid"
+                "eu.europa.ec.eudi.pid.1"
+            ]
+        },
+        {
+            "id": "did:web:app.altme.io:issuer",
+            "name": "Web3 Digital Wallet Verifier",
+            "description": "This a verifier for testing purpose Test 9",
+            "type": "verifier",
+            "endpoint": "https://talao.co/sandbox/verifier/test_10",
+            "postalAddress": {
+                "streetAddress": "112 rue des Tuileries",
+                "locality": "St Ouen Marchefroy",
+                "postalCode": "28260",
+                "countryName": "FR"
+            },
+            "electronicAddress": {
+                "uri": "mailto:contact@talao.io",
+                "lang": "en"
+            },
+            "vcTypes": [
+                "eu.europa.ec.eudi.pid.1",
+                "urn:eu.europa.ec.eudi:employee_badge:1"
             ]
         },
         {
