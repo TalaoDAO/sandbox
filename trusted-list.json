@@ -104,7 +104,7 @@
             },
             "vcTypes": [
                 "eu.europa.ec.eudi.pid.1",
-                "urn:eu.europa.ec.eudi:employee_badge:1",
+                "urn:eu.europa.ec.eudi:employee_badge:1"
             ]
         },
         {
