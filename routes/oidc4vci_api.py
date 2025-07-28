@@ -255,6 +255,10 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         credential_issuer_openid_configuration.update(
             {'credential_configurations_supported':  issuer_profile.get('credential_configurations_supported')}
         )
+        if int(issuer_profile.get('oidc4vciDraft')) >= 15:
+            for VC in credential_issuer_openid_configuration['credential_configurations_supported']:
+                if credential_issuer_openid_configuration['credential_configurations_supported'][VC]["format"] == "vc+sd-jwt":
+                    credential_issuer_openid_configuration['credential_configurations_supported'][VC]["format"] = "dc+sd-jwt"
     else:
         credential_issuer_openid_configuration.update(
             {'credentials_supported': issuer_profile.get('credentials_supported')}

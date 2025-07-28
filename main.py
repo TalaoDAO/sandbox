@@ -622,7 +622,7 @@ def qrcode_wallet():
     profil = request.form.get('profil', 'custom')
     try:
         qrcode_str = base64.b64decode(qrcode_base64.encode()).decode()
-    except:
+    except Exception:
         return jsonify({"error": "invalid base64 format"}), 400
     try:
         report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft, profil, 'wallet QR code' )
