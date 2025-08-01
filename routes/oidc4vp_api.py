@@ -952,7 +952,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
         
         vp_format = format(vp_token)   
         logging.info("VP format = %s", vp_format)   
-        if vp_token:
+        if vp_token and presentation_submission:
             logging.info('vp token received = %s', vp_token)
             vp_format_presentation_submission = presentation_submission["descriptor_map"][0]["format"]
             logging.info("VP format from presentation submission = %s", vp_format_presentation_submission)
@@ -965,6 +965,8 @@ async def oidc4vc_response_endpoint(stream_id, red):
                 presentation_submission_status = "vp_format = " + vp_format + " but presentation submission vp_format = " + vp_format_presentation_submission
                 logging.warning(presentation_submission_status)
                 
+        elif vp_token and not presentation_submission:
+            vp_token_status = "Not checked as presentation submission is missing"
         else:
             vp_token_status = "Not received"
         
