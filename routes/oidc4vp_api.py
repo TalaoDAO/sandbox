@@ -833,7 +833,7 @@ def oidc4vc_login_qrcode(red, mode):
         title=verifier_data.get('title', "None"),
         page_title=verifier_data['page_title'],
         page_subtitle=verifier_data['page_subtitle'],
-        page_description=verifier_data['page_description'],
+        page_description=verifier_data.get('page_description', "None"),
         code=request.args['code']
     )
 
