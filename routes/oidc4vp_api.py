@@ -412,12 +412,6 @@ def oidc4vc_logout():
 
 
 # userinfo endpoint
-"""
-https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
-only access token is needed
-"""
-
-
 def oidc4vc_userinfo(red):
     logging.info("user info endpoint request")
     try:
@@ -432,6 +426,7 @@ def oidc4vc_userinfo(red):
             "sub": wallet_data['sub'],
             "vp_token_payload": wallet_data["vp_token_payload"]
         }
+        payload.update(oidc4vc.decode_sd_jwt(wallet_data["vp_token_payload"]))
         headers = {
             "Cache-Control": "no-store",
             "Pragma": "no-cache",

@@ -23,6 +23,12 @@ supported signature: https://ec.europa.eu/digital-building-blocks/wikis/display/
 """
 
 
+RESOLVER_LIST = [
+    'https://unires:test@unires.talao.co/1.0/identifiers/',
+    'https://dev.uniresolver.io/1.0/identifiers/',
+    'https://resolver.cheqd.net/1.0/identifiers/'
+]
+
 def generate_key(curve):
     """
 alg value https://www.rfc-editor.org/rfc/rfc7518#page-6
@@ -442,23 +448,14 @@ def resolve_did(vm) -> dict:
         except Exception:
             logging.warning("did:jwk is not formated correctly")
             return
-    elif did.split(':')[1] == "web":
-        logging.info("did:web")
-        did_document = resolve_did_web(did)
     else:
-        url = 'https://unires:test@unires.talao.co/1.0/identifiers/' + did
-        try:
-            r = requests.get(url, timeout=5)
-            logging.info('Access to Talao Universal Resolver')
-        except Exception:
-            logging.error('cannot access to Talao Universal Resolver for %s', vm)
-            url = 'https://dev.uniresolver.io/1.0/identifiers/' + did
+        for res in RESOLVER_LIST:
             try:
-                r = requests.get(url, timeout=5)
-                logging.info('Access to Public Universal Resolver')
+                r = requests.get(res + did, timeout=10)
+                logging.info("resolver used = %s", res)
+                break
             except Exception:
-                logging.warning('fails to access to both universal resolver')
-                return
+                pass
         did_document = r.json()['didDocument']
     try:
         vm_list = did_document['verificationMethod']
@@ -568,17 +565,6 @@ def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce, jwk=False):
     token.make_signed_token(signer_key)
     return token.serialize()
 
-"""
-def thumbprint(key):
-    key = json.loads(key) if isinstance(key, str) else key
-    if key['crv'] == 'P-256K':
-        key['crv'] = 'secp256k1'
-    signer_key = jwk.JWK(**key)
-    a = signer_key.thumbprint()
-    a  += "=" * ((4 - len(a) % 4) % 4)
-    return base64.urlsafe_b64decode(a).hex()
-"""
-
 def thumbprint(key):
     key = json.loads(key) if isinstance(key, str) else key
     if key.get('crv') == 'P-256K':
@@ -586,15 +572,6 @@ def thumbprint(key):
     signer_key = jwk.JWK(**key)
     return signer_key.thumbprint()
 
-"""
-
-def thumbprint_str(key):
-    key = json.loads(key) if isinstance(key, str) else key
-    if key['crv'] == 'P-256K':
-        key['crv'] = 'secp256k1'
-    signer_key = jwk.JWK(**key)
-    return signer_key.thumbprint()
-"""
 
 def verification_method(did, key):  # = kid
     key = json.loads(key) if isinstance(key, str) else key
@@ -602,27 +579,6 @@ def verification_method(did, key):  # = kid
     thumb_print = signer_key.thumbprint()
     return did + '#' + thumb_print
 
-
-def resolve_did_web(did) -> str:
-    """
-    get DID document for the did:web
-    """
-    if did.split(':')[1] != 'web':
-        return
-    url = 'https://' + did.split(':')[2]
-    i = 3
-    try:
-        while did.split(':')[i]:
-            url = url + '/' + did.split(':')[i]
-            i += 1
-    except Exception:
-        pass
-    url = url + '/did.json'
-    r = requests.get(url, timeout=10)
-    if 399 < r.status_code < 500:
-        logging.warning('return API code = %s', r.status_code)
-        return "{'error': 'did:web not found on server'}"
-    return r.json()
 
 
 def did_resolve_lp(did):
@@ -749,3 +705,34 @@ def verify_x5c_chain(x5c_list):
             logging.info(f"Certificate {i} is signed by certificate {i+1}.")
 
     return "Info: Certificate chain and validity periods are all OK."
+
+
+
+def base64url_decode(input_str):
+    padding = '=' * (4 - (len(input_str) % 4))
+    return base64.urlsafe_b64decode(input_str + padding)
+
+
+def decode_sd_jwt(sd_jwt_str):
+    parts = sd_jwt_str.split("~")
+    jwt_header_payload_signature = parts[0]
+    disclosures = parts[1:-1]  # skip the last detached JWS if present
+
+    # Decode JWT payload
+    jwt_parts = jwt_header_payload_signature.split(".")
+    payload_b64 = jwt_parts[1]
+    payload_json = json.loads(base64url_decode(payload_b64).decode("utf-8"))
+
+    # Print or collect disclosures
+    revealed = {}
+    for disclosure_b64 in disclosures:
+        try:
+            decoded = base64url_decode(disclosure_b64).decode("utf-8")
+            disclosure = json.loads(decoded)
+            salt, claim_name, claim_value = disclosure
+            revealed[claim_name] = claim_value
+        except Exception as e:
+            print("Invalid disclosure:", disclosure_b64)
+            print(e)
+
+    return  revealed
