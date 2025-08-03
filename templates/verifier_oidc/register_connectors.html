@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CONNECTORS - Credential Verification</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #2f4858;
+      --accent: #00a8cc;
+      --bg-light: #f4f4f9;
+      --bg-dark: #1e1e2f;
+      --text-dark: #1c1c1e;
+      --text-light: #eeeeee;
+    }
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background: white;
+      padding: 1.25rem 2rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav a {
+      margin: 0 1rem;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    nav a:hover {
+      color: var(--accent);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 1rem;
+    }
+
+    .qr-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 500px;
+    }
+
+    .qr-box h1 {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .qr-box p {
+      font-size: 1rem;
+      color: #444;
+      margin: 0.5rem 0;
+    }
+
+    .qr-box a {
+      color: var(--accent);
+      text-decoration: none;
+      word-break: break-word;
+    }
+
+    .qr-box img {
+      margin: 2rem 0;
+      border: 8px solid var(--accent);
+      border-radius: 16px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      background: var(--bg-dark);
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div><strong><a href="/" style="color: var(--primary); text-decoration: none;">CONNECTORS</a></strong></div>
+    <nav>
+      <a href="/tech">Tech</a>
+      <a href="/pricing">Pricing</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="qr-box">
+      <h1>Scan the QR Code</h1>
+      <p>Use your EUDI-compatible wallet to proceed</p>
+      <img src="{{ qrcode(url) }}" alt="QR Code" width="300" height="300">
+      <p>Scan this QR code to verify your credential using CONNECTORS</p>
+    </div>
+  </main>
+
+  <footer>
+    <p>Contact us at <a href="mailto:contact@talao.io">contact@talao.io</a></p>
+    <p>Follow us on <a href="https://www.linkedin.com/company/79104266">LinkedIn</a></p>
+    <p><a href="https://altme.io/privacy">Privacy Policy</a> | <a href="https://altme.io/cgu">Terms</a></p>
+  </footer>
+
+  <script>
+    var source = new EventSource('/verifier/wallet/stream');
+    source.onmessage = function (event) {
+      const result = JSON.parse(event.data);
+      if (result.stream_id == '{{ stream_id }}') {
+        window.location.href = '/verifier/wallet/followup?stream_id=' + result.stream_id;
+      }
+    };
+  </script>
+
+</body>
+</html>
