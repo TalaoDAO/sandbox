@@ -830,7 +830,7 @@ def oidc4vc_login_qrcode(red, mode):
         client_metadata=json.dumps(wallet_metadata, indent=4),
         deeplink_altme=deeplink_altme,
         stream_id=stream_id,
-        title=verifier_data['title'],
+        title=verifier_data.get('title', "None"),
         page_title=verifier_data['page_title'],
         page_subtitle=verifier_data['page_subtitle'],
         page_description=verifier_data['page_description'],
