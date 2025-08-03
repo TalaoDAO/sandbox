@@ -147,7 +147,9 @@ oidc4vc_verifier_landing_page_style_list = {
     "./verifier_oidc/verifier_qrcode_wallet_provider.html": "Wallet provider",
     "./verifier_oidc/verifier_qrcode_only.html": "QR code only",
     "./verifier_oidc/verifier_qrcode_test.html": "Test",
-    "./verifier_oidc/diploma_verifier.html": "Diplome Tezos Ebsi"
+    "./verifier_oidc/diploma_verifier.html": "Diplome Tezos Ebsi",
+    "./verifier_oidc/register_connectors.html": "Connectors registration"
+
 }
 
 # verifier qrcode page for guest
