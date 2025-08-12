@@ -1,16 +1,4 @@
 {
-    "scopes_supported": [
-        "openid"
-    ],
-    "response_types_supported": [
-        "id_token",
-        "vp_token"
-    ],
-    "id_token_signing_alg_values_supported": [
-        "ES256",
-        "ES256k",
-        "EdDSA"
-    ],
     "vp_formats": {
         "jwt_vp": {
             "alg_values_supported": [
@@ -54,21 +42,5 @@
                 "EdDSA"
             ]
         }
-    },
-    "subject_syntax_types_supported": [
-        "urn:ietf:params:oauth:jwk-thumbprint", 
-        "did:key",
-        "did:ebsi",
-        "did:ethr"
-    ],
-    "subject_syntax_types_discriminations": [
-        "did:key:jwk_jcs-pub",
-        "did:ebsi:v1"
-    ],
-    "subject_trust_frameworks_supported": [
-        "ebsi"
-    ],
-    "id_token_types_supported": [
-        "subject_signed_id_token"
-    ]
+    }
 }
