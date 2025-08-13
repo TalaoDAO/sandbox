@@ -504,9 +504,9 @@ def build_verifier_metadata(client_id, redirect_uri) -> dict:
         logging.warning("wallet metadata failed to build = %s", str(e))
         return {}
     verifier_metadata = json.load(open('verifier_metadata.json', 'r'))        
-    verifier_metadata['request_uri_parameter_supported'] = bool(verifier_data.get('request_uri_parameter_supported'))
-    verifier_metadata['request_parameter_supported'] = bool(verifier_data.get('request_parameter_supported'))
-    verifier_metadata['redirect_uris'] = [redirect_uri]
+    #verifier_metadata['request_uri_parameter_supported'] = bool(verifier_data.get('request_uri_parameter_supported'))
+    #verifier_metadata['request_parameter_supported'] = bool(verifier_data.get('request_parameter_supported'))
+    #verifier_metadata['redirect_uris'] = [redirect_uri]
     return verifier_metadata
 
 
