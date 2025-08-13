@@ -7,130 +7,136 @@
   <title>Digital Identity with AI</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      margin: 0;
-      font-family: 'Orbitron', sans-serif;
-      background-color: #666363;
-      color: #f0f0f0;
-      overflow-x: hidden;
-    }
-    header {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      padding: 1.5rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      position: sticky;
-      top: 0;
-      z-index: 999;
-    }
-    nav a {
-      margin: 0 1rem;
-      color: #80eaff;
-      text-decoration: none;
-      font-weight: bold;
-      border-bottom: 2px solid transparent;
-      transition: border-bottom 0.3s;
-    }
-    nav a:hover {
-      border-bottom: 2px solid #00ffe0;
-    }
-    .hero {
-      text-align: center;
-      padding: 6rem 2rem;
-    }
-    .main-title {
-      font-size: 3.5rem;
-      color: #00ffe0;
-      margin-bottom: 1rem;
-    }
-    .description {
-      font-size: 1.25rem;
-      max-width: 700px;
-      margin: auto;
-      color: #cccccc;
-    }
-    .cta {
-      margin-top: 2rem;
-    }
-    .glow-button, .outline-button {
-      padding: 0.75rem 2rem;
-      margin: 1rem 0.5rem;
-      border-radius: 8px;
-      font-weight: 600;
-      text-decoration: none;
-    }
-    .glow-button {
-      background-color: #00ffe0;
-      color: #000;
-    }
-    .outline-button {
-      border: 2px solid #00ffe0;
-      color: #00ffe0;
-      background: transparent;
-    }
-    .section {
-      max-width: 1200px;
-      margin: 4rem auto;
-      padding: 0 2rem;
-    }
-    .section h2 {
-      text-align: center;
-      font-size: 2rem;
-      color: #80eaff;
-      margin-bottom: 2rem;
-    }
-    .features, .developers {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 2rem;
-    }
-    .card {
-      background: #151515;
-      border: 1px solid #2e2e2e;
-      border-radius: 16px;
-      padding: 2rem;
-      text-align: center;
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 0 12px rgba(0, 255, 224, 0.3);
-    }
-    .card h3 {
-      color: #ffffff;
-      margin-bottom: 0.5rem;
-    }
-    .card p {
-      color: #cccccc;
-    }
-    footer {
-      text-align: center;
-      padding: 2rem;
-      background: rgba(255,255,255,0.05);
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
-    footer a {
-      color: #00ffe0;
-      text-decoration: none;
-    }
-
-    @media (max-width: 768px) {
-  header {
-    display: none;
-  }
+   body {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  background-color: #f8f9fa; /* light background */
+  color: #222; /* darker text for readability */
+  overflow-x: hidden;
 }
+
+header {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+nav a {
+  margin: 0 1rem;
+  color: #007b8f; /* brand cyan */
+  text-decoration: none;
+  font-weight: bold;
+  border-bottom: 2px solid transparent;
+  transition: border-bottom 0.3s;
+}
+nav a:hover {
+  border-bottom: 2px solid #00bfae;
+}
+
+.hero {
+  text-align: center;
+  padding: 6rem 2rem;
+  background: #e6f8f9; /* subtle cyan-tinted background */
+}
+
+.main-title {
+  font-size: 3.5rem;
+  color: #007b8f;
+  margin-bottom: 1rem;
+}
+
+.description {
+  font-size: 1.25rem;
+  max-width: 700px;
+  margin: auto;
+  color: #444;
+}
+
+.glow-button {
+  background-color: #00bfae;
+  color: #fff;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+}
+.glow-button:hover {
+  background-color: #009e91;
+}
+
+.outline-button {
+  border: 2px solid #00bfae;
+  color: #00bfae;
+  background: transparent;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.outline-button:hover {
+  background: #00bfae;
+  color: #fff;
+}
+
+.section {
+  max-width: 1200px;
+  margin: 4rem auto;
+  padding: 0 2rem;
+}
+
+.section h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #007b8f;
+  margin-bottom: 2rem;
+}
+
+.card {
+  background: #ffffff; /* light card */
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 191, 174, 0.2);
+}
+.card h3 {
+  color: #222;
+}
+.card p {
+  color: #555;
+}
+
+footer {
+  text-align: center;
+  padding: 2rem;
+  background: #f1f1f1;
+  border-top: 1px solid #ddd;
+}
+footer a {
+  color: #007b8f;
+  text-decoration: none;
+}
+
   </style>
 </head>
 <body>
   <header>
     <div><strong><a style="color: #80eaff;" href="https://talao.io">TALAO</a></strong></div>
     <nav>
-      <a href="#features">Wallets</a>
-      <a href="#oidc-apis">APIs</a>
-      <a href="#developers">Developer Hub</a>
+      <a href="https://talao.io">Wallets</a>
+      <a href="https://doc.wallet-provider.io/welcome/">Documentation</a>
       <a href="https://qhf0siml406.typeform.com/to/PdULRDIV">Contact</a>
     </nav>
   </header>
@@ -143,77 +149,9 @@
     </div>
   </section>
 
-  <section id="features" class="section">
-    <h2>Wallets</h2>
-    <div class="features">
-      <div class="card">
-        <a href="https://www.talao.io/talao-wallet/" target="_blank">
-          <h3>Talao Wallet</h3>
-          <p>Secure, EUDIW and EBSI compliant wallet for natural persons.</p>
-        </a>
-      </div>
-      <div class="card">
-        <a href="https://www.altme.io/" target="_blank">
-          <h3>Altme Wallet</h3>
-          <p>Crypto & SSI wallet combining blockchain and identity.</p>
-        </a>
-      </div>
-      <div class="card">
-        <a href="https://credenco.com" target="_blank">
-          <h3>Credenco Wallet</h3>
-          <p>Corporate wallet EUDIW compliant for secure, scalable credential exchange.</p>
-        </a>
-      </div>
-    </div>
-  </section>
+ 
+  
 
-  <section id="oidc-apis" class="section">
-    <h2>APIs boosted by AI</h2>
-    <div class="features">  
-      <div class="card">
-        <a href="sandbox/oidc-ai">
-          <h3>Issuers and Verifiers APIs</h3>
-          <p>Next generation of APIs with generative AI for a better user experience.</p>
-        </a>
-      </div>
-      <div class="card">
-        <a href="https://doc.wallet-provider.io/api/#post-apianalyze-vc">
-          <h3>APIs for VC testing</h3>
-          <p>Provide VC testing for sd-jwt, jwt-vc and json-ld formats.</p>
-        </a>
-      </div>
-      <div class="card">
-        <a href="https://doc.wallet-provider.io/api/#post-apianalyze-qrcode">
-          <h3>APIs for Issuer and Verifier testing</h3>
-          <p>Provide Issuers and Verifiers metadata scoring.</p>
-        </a>
-      </div>
-    </div>
-  </section>
-
- <section id="docuentation" class="section">
-    <h2>Documentation</h2>
-    <div class="developers">
-      <div class="card">
-        <a href="https://doc.wallet-provider.io/welcome/">
-          <h3>Wallet Integration Guides</h3>
-          <p>Learn how to integrate Talao’s wallet technology with step-by-step developer documentation and API references.</p>
-        </a>
-      </div>
-      <div class="card">
-        <a href="https://doc.wallet-provider.io/light_trusted_list_mechanism">
-          <h3>Trusted List Framework</h3>
-          <p>Set up and manage issuers and verifiers within your trusted ecosystem framework.</p>
-        </a>
-      </div>
-      <div class="card">
-        <a href="https://github.com/TalaoDAO/Web3IDPay/blob/main/stablecoin_oidc4vp.md">
-          <h3>Stablecoin Payments with EUDI-Compatible Wallet</h3>
-          <p>Specification for secure and compliant stablecoin transfers using a non-custodial identity wallet with OIDC4VP and Verifiable Credentials.</p>
-        </a>
-      </div>
-    </div>
-</section>
 
   <section id="developers" class="section">
     <h2>Developer Hub</h2>
@@ -256,6 +194,8 @@
       </div>
     </div>
   </section>
+
+
 
   <footer id="contact">
     <p>Contact us at <a href="mailto:contact@talao.io">contact@talao.io</a></p>
