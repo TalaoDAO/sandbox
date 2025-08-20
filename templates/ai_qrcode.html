@@ -130,7 +130,7 @@
             <div class="mode-switch" role="radiogroup" aria-label="Mode">
               <label class="mode-option" for="mode-flash">
                 <input type="radio" id="mode-flash" name="mode" value="flash" checked aria-controls="pane-flash" />
-                <span>⚡ Flash (default)</span>
+                <span>⚡ Flash </span>
               </label>
               <label class="mode-option" for="mode-escalation">
                 <input type="radio" id="mode-escalation" name="mode" value="escalation" aria-controls="pane-escalation" />
@@ -146,7 +146,7 @@
           <!-- Mode explainer -->
           <div id="modeExplainer" class="explainer">
             <div id="pane-flash" class="explainer-card mode-pane active" data-mode="flash">
-              <div class="pill"><span class="icon" aria-hidden="true">⚡</span> Flash (default)</div>
+              <div class="pill"><span class="icon" aria-hidden="true">⚡</span> Flash </div>
               <h3>Fast validation (~ 15 sec)</h3>
               <ul>
                 <li><strong>Approach:</strong> lightweight LLM pass optimized for speed and cost.</li>
@@ -158,7 +158,7 @@
             </div>
 
             <div id="pane-escalation" class="explainer-card mode-pane" data-mode="escalation" hidden>
-              <div class="pill"><span class="icon" aria-hidden="true">🧠</span> Escalation</div>
+              <div class="pill"><span class="icon" aria-hidden="true">🧠</span> Escalation (wallet default) </div>
               <h3>Deeper reasoning for edge cases (~ 1 min)</h3>
               <ul>
                 <li><strong>Approach:</strong> higher-capacity LLM pass that allocates more compute to cross-checks.</li>
@@ -175,8 +175,8 @@
               <ul>
                 <li><strong>Approach:</strong> premium reasoning pass with expanded analysis budget.</li>
                 <li><strong>For developers & auditors:</strong> includes <em>clear links to the relevant OIDC4VC(I)/OIDC4VP spec sections</em> for every failure/warning.</li>
-                <li><strong>Output:</strong> structured JSON + human-readable report (section references, rationale, and remediation hints).</li>
-                <li class="disabled-note"><strong>Status:</strong> not available on this page. Contact us to enable Pro.</li>
+                <li><strong>Output:</strong> detailed human-readable report with links to section references, rationale, and remediation hints.</li>
+                <li class="disabled-note"><strong>Status:</strong> limited use. Contact us to enable Pro.</li>
               </ul>
             </div>
           </div>
