@@ -75,14 +75,48 @@
     footer { text-align: center; padding: 2rem; color: var(--muted); }
     footer a { color: var(--accent); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
-    /* Footer notice */
-    .notice { display: flex; gap: .6rem; align-items: flex-start; padding: .75rem .9rem; border-radius: 10px; border: 1px solid var(--border); background: #f9fafb; }
-    .counter { text-align: center; margin-top: .5rem; }
 
     @media (max-width: 720px) {
       .toolbar { flex-direction: column; align-items: stretch; }
       .toolbar-left, .toolbar-right { justify-content: space-between; }
     }
+    /* --- prevent long identifiers from overflowing the card --- */
+md-block.report { overflow: hidden; }
+
+/* Let plain text wrap anywhere (lists, paragraphs, table cells, links, headings) */
+md-block.report p,
+md-block.report li,
+md-block.report td,
+md-block.report th,
+md-block.report a,
+md-block.report h1,
+md-block.report h2,
+md-block.report h3,
+md-block.report h4,
+md-block.report h5,
+md-block.report h6 {
+  overflow-wrap: anywhere;   /* modern, breaks long tokens safely */
+  word-break: break-word;    /* fallback for older engines */
+  hyphens: auto;
+}
+
+/* Inline code chips (often contain long JWT/base64) */
+md-block.report code:not(pre code) {
+  overflow-wrap: anywhere;
+  word-break: break-all;     /* allow breaks inside very long tokens */
+}
+
+/* Code blocks: keep formatting, but scroll horizontally if needed */
+md-block.report pre {
+  white-space: pre;          /* don't wrap multi-line code */
+  overflow-x: auto;          /* show horizontal scrollbar instead of overflowing */
+  max-width: 100%;
+}
+
+/* Tables/images should never push the card wider */
+md-block.report table { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; }
+md-block.report img   { max-width: 100%; height: auto; }
+
   </style>
 </head>
 <body>
