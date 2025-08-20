@@ -105,7 +105,7 @@ last one (with mode switches added) -->
       <div style="display: flex; gap: 30px; justify-content: center; align-items: center;">
         <label for="sdjwtvc_version"><strong>SD-JWT-VC Draft:</strong></label>
         <select id="sdjwtvc_version" name="sdjwtvc_draft">
-          {% for i in range(7, 10) %}
+          {% for i in range(7, 11) %}
           <option value="{{ i }}" {% if i == 9 %}selected{% endif %}>Draft {{ i }}</option>
           {% endfor %}
         </select>
