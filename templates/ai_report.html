@@ -7,14 +7,14 @@
   <title>Report – VALIDATORS</title>
   <link rel="icon" href="/static/img/altmeIcon.png">
 
-  <!-- Typography to match the suite -->
+  <!-- Typography -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <!-- Markdown renderer -->
   <script type="module" src="https://md-block.verou.me/md-block.js"></script>
 
   <style>
     :root {
-      --primary: #172554; /* indigo-950 */
+      --primary: #172554;
       --accent: #0057FF;
       --bg: #f6f7fb;
       --text: #111827;
@@ -24,6 +24,8 @@
       --success: #0a7f3f;
       --warn: #b45309;
       --error: #b91c1c;
+
+      --prose-max: 78ch; /* readable line length */
     }
 
     * { box-sizing: border-box; }
@@ -33,7 +35,7 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji";
     }
 
-    /* Header consistent with ai_qrcode.html */
+    /* Header */
     header {
       min-height: 64px; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center;
       background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.05);
@@ -61,17 +63,74 @@
     .btn:hover { border-color: #cbd5e1; }
     .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
     .btn.icon { display: inline-flex; align-items: center; gap: .45rem; }
-    .btn.danger { border-color: var(--error); color: var(--error); }
 
-    /* Markdown viewer */
+    /* TOC */
+    .toc-inline {
+      display:flex; align-items:center; gap:.75rem; flex-wrap:wrap;
+      background:#f9fafb; border:1px solid var(--border); border-radius:10px;
+      padding:.6rem .75rem; margin-bottom:1rem;
+      max-width: var(--prose-max); margin-left:auto; margin-right:auto;
+    }
+    .toc-inline strong { color: var(--muted); }
+    .toc-inline a {
+      text-decoration: none; border:1px solid var(--border); border-radius:9999px; padding:.25rem .6rem; font-size:.9rem;
+      color: var(--text);
+    }
+    .toc-inline a:hover { background: rgba(0,0,0,.03); }
+
+    /* Markdown “prose” */
     md-block.report {
       display: block;
-      text-align: left; max-width: 100%; font-size: 16px;
-      background-color: #fff; padding: 20px; border-radius: 10px; border: 1px solid var(--border);
+      background-color: #fff; border: 1px solid var(--border); border-radius: 10px;
+      padding: 28px; max-width: var(--prose-max); margin: 0 auto;
+      font-size: 17px; line-height: 1.65; color: var(--text);
+      overflow: hidden; /* prevent visual overflow from children */
     }
-    md-block.report pre { background: #0b1220; color: #e5e7eb; border-radius: 8px; padding: .85rem 1rem; overflow:auto; }
-    md-block.report code:not(pre code) { background: rgba(0,0,0,.06); padding: .1rem .35rem; border-radius: 6px; }
- /* Footer */
+
+    /* Headings */
+    md-block.report :is(h1,h2,h3,h4){scroll-margin-top: 90px; line-height:1.25;}
+    md-block.report h2 { margin-top: 2.25rem; margin-bottom: .6rem; padding-bottom: .35rem; border-bottom: 1px solid var(--border); }
+    md-block.report h3 { margin-top: 1.5rem; margin-bottom: .35rem; color: #0f172a; }
+
+    /* Paragraphs & Lists */
+    md-block.report p { margin: .4rem 0 1rem; }
+    md-block.report ul, md-block.report ol { margin: .4rem 0 1rem 1.25rem; }
+    md-block.report li + li { margin-top: .35rem; }
+    md-block.report li > ul, md-block.report li > ol { margin-top: .35rem; }
+    md-block.report blockquote {
+      margin: 1rem 0; padding: .75rem 1rem; border-left: 4px solid #cbd5e1; background: #f8fafc; border-radius: 6px;
+    }
+    md-block.report hr { border: 0; border-top: 1px dashed var(--border); margin: 2rem 0; }
+
+    /* Tables */
+    md-block.report table { display:block; width:100%; overflow-x:auto; border-collapse: collapse; margin: 1rem 0; }
+    md-block.report th, md-block.report td { border: 1px solid #e5e7eb; padding: .5rem .6rem; text-align: left; }
+    md-block.report thead th { background:#f3f4f6; font-weight:700; }
+
+    /* Code */
+    md-block.report code:not(pre code) {
+      background: rgba(0,0,0,.06); padding: .15rem .35rem; border-radius: 6px;
+      overflow-wrap: anywhere; word-break: break-all;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    md-block.report pre {
+      background: #0b1220; color: #e5e7eb; border-radius: 8px; padding: .9rem 1rem;
+      overflow: auto; max-width: 100%; line-height: 1.55; font-size: 14px;
+    }
+
+    /* Long identifiers (JWT/base64/URLs/DIDs) */
+    md-block.report p, md-block.report li, md-block.report td, md-block.report th, md-block.report a,
+    md-block.report h1, md-block.report h2, md-block.report h3, md-block.report h4, md-block.report h5, md-block.report h6 {
+      overflow-wrap: anywhere; word-break: break-word; hyphens: auto;
+    }
+
+    /* Callouts */
+    .callout { padding:.75rem 1rem; border-radius:10px; margin:.75rem 0; }
+    .callout.info { background:#eef2ff; border:1px solid #c7d2fe; }
+    .callout.warn { background:#fff7ed; border:1px solid #fed7aa; }
+    .callout.error{ background:#fef2f2; border:1px solid #fecaca; }
+
+    /* Footer */
     footer { text-align: center; padding: 2rem; color: var(--muted); }
     footer a { color: var(--accent); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
@@ -79,44 +138,9 @@
     @media (max-width: 720px) {
       .toolbar { flex-direction: column; align-items: stretch; }
       .toolbar-left, .toolbar-right { justify-content: space-between; }
+      .toc-inline { display: none; } /* keep mobile simple */
+      md-block.report { padding: 22px; }
     }
-    /* --- prevent long identifiers from overflowing the card --- */
-md-block.report { overflow: hidden; }
-
-/* Let plain text wrap anywhere (lists, paragraphs, table cells, links, headings) */
-md-block.report p,
-md-block.report li,
-md-block.report td,
-md-block.report th,
-md-block.report a,
-md-block.report h1,
-md-block.report h2,
-md-block.report h3,
-md-block.report h4,
-md-block.report h5,
-md-block.report h6 {
-  overflow-wrap: anywhere;   /* modern, breaks long tokens safely */
-  word-break: break-word;    /* fallback for older engines */
-  hyphens: auto;
-}
-
-/* Inline code chips (often contain long JWT/base64) */
-md-block.report code:not(pre code) {
-  overflow-wrap: anywhere;
-  word-break: break-all;     /* allow breaks inside very long tokens */
-}
-
-/* Code blocks: keep formatting, but scroll horizontally if needed */
-md-block.report pre {
-  white-space: pre;          /* don't wrap multi-line code */
-  overflow-x: auto;          /* show horizontal scrollbar instead of overflowing */
-  max-width: 100%;
-}
-
-/* Tables/images should never push the card wider */
-md-block.report table { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; }
-md-block.report img   { max-width: 100%; height: auto; }
-
   </style>
 </head>
 <body>
@@ -125,6 +149,7 @@ md-block.report img   { max-width: 100%; height: auto; }
       <strong><a href="/">VALIDATORS</a></strong>
     </div>
     <nav class="nav">
+      <a href="/documentation/ai_vc_guide" target="_blank" rel="noopener">Explain ?</a>
     </nav>
   </header>
 
@@ -153,24 +178,27 @@ md-block.report img   { max-width: 100%; height: auto; }
           </div>
         </div>
 
+        <!-- Inline TOC (auto-generated) -->
+        <div class="toc-inline" id="toc" hidden>
+          <strong>On this report:</strong>
+          <nav id="tocNav"></nav>
+        </div>
+
         <!-- Markdown report -->
         <md-block class="report" id="reportView">{{ report | safe }}</md-block>
         <textarea id="reportRaw" style="display:none;">{{ report }}</textarea>
       </div>
 
       <div class="card-footer">
-        <div class="notice">
-          <div>ℹ️</div>
-          <div class="muted">Use this report for diagnostics only. Always cross-check cryptographic results against your conformance suite.</div>
-        </div>
+        <p class="muted">Use this report for diagnostics only. Always cross-check cryptographic results against your conformance suite.</p>
       </div>
     </section>
   </main>
 
- <footer>
-      <p>Contact us at <a href="mailto:contact@talao.io">contact@talao.io</a> · <a href="https://www.linkedin.com/company/79104266">LinkedIn</a></p>
-      <p><a href="https://altme.io/privacy">Privacy Policy</a> · <a href="https://altme.io/cgu">Terms</a></p>
-    </footer>
+  <footer>
+    <p>Contact us at <a href="mailto:contact@talao.io">contact@talao.io</a> · <a href="https://www.linkedin.com/company/79104266">LinkedIn</a></p>
+    <p><a href="https://altme.io/privacy">Privacy Policy</a> · <a href="https://altme.io/cgu">Terms</a></p>
+  </footer>
 
   <script>
     // helpers
@@ -215,6 +243,54 @@ md-block.report img   { max-width: 100%; height: auto; }
         downloadBlob(raw, name, 'text/plain');
       }
       e.target.selectedIndex = 0; // reset to first option
+    });
+
+    // ---- Enhance readability after markdown renders ----
+    const reportEl = document.getElementById('reportView');
+
+    // Build TOC & callouts once the markdown is rendered
+    reportEl.addEventListener('md-rendered', () => {
+      const toc = document.getElementById('toc');
+      const tocNav = document.getElementById('tocNav');
+
+      // Slug helper
+      const slug = s => (s || '')
+        .toString()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase().trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+
+      // Build TOC from h2/h3
+      const headings = reportEl.querySelectorAll('h2, h3');
+      if (headings.length) {
+        toc.hidden = false;
+        tocNav.innerHTML = '';
+        headings.forEach(h => {
+          if (!h.id) h.id = slug(h.textContent);
+          const a = document.createElement('a');
+          a.href = '#' + h.id;
+          a.textContent = h.textContent;
+          a.style.marginRight = '.25rem';
+          tocNav.appendChild(a);
+        });
+      }
+
+      // Simple callouts for leading “Error:”, “Warning:”, “Info:”
+      reportEl.querySelectorAll('p').forEach(p => {
+        const t = (p.textContent || '').trim();
+        let cls = '';
+        if (t.startsWith('Error:')) cls = 'error';
+        else if (t.startsWith('Warning:')) cls = 'warn';
+        else if (t.startsWith('Info:')) cls = 'info';
+        if (cls) {
+          const wrap = document.createElement('div');
+          wrap.className = `callout ${cls}`;
+          p.parentNode.insertBefore(wrap, p);
+          wrap.appendChild(p);
+        }
+      });
     });
   </script>
 </body>
