@@ -131,9 +131,9 @@
                 <input type="radio" id="mode-escalation" name="mode" value="escalation" aria-controls="pane-escalation" />
                 <span>🧠 Escalation</span>
               </label>
-              <label class="mode-option" aria-disabled="true" for="mode-pro">
-                <input type="radio" id="mode-pro" name="mode" value="pro" aria-controls="pane-pro" disabled />
-                <span>👑 Pro (disabled)</span>
+              <label class="mode-option" aria-disabled="False" for="mode-pro">
+                <input type="radio" id="mode-pro" name="mode" value="pro" aria-controls="pane-pro" />
+                <span>👑 Pro</span>
               </label>
             </div>
           </fieldset>
@@ -142,7 +142,7 @@
           <div id="modeExplainer" class="explainer">
             <div id="pane-flash" class="explainer-card mode-pane active" data-mode="flash">
               <div class="pill"><span class="icon" aria-hidden="true">⚡</span> Flash (default)</div>
-              <h3>Fast validation</h3>
+              <h3>Fast validation (~ 15 sec}</h3>
               <ul>
                 <li><strong>Approach:</strong> lightweight LLM pass optimized for speed and cost.</li>
                 <li><strong>Best for developers:</strong> batch runs, CI pipelines, quick feedback loops.</li>
@@ -153,7 +153,7 @@
 
             <div id="pane-escalation" class="explainer-card mode-pane" data-mode="escalation" hidden>
               <div class="pill"><span class="icon" aria-hidden="true">🧠</span> Escalation</div>
-              <h3>Deeper reasoning for edge cases</h3>
+              <h3>Deeper reasoning for edge cases 4 {~ 1 min}</h3>
               <ul>
                 <li><strong>Approach:</strong> higher-capacity LLM pass that allocates more compute to cross-checks.</li>
                 <li><strong>Best for developers:</strong> SD-JWT disclosures, JWS signatures, JSON-LD contexts.</li>
@@ -163,8 +163,8 @@
             </div>
 
             <div id="pane-pro" class="explainer-card mode-pane" data-mode="pro" aria-disabled="true" hidden>
-              <div class="pill"><span class="icon" aria-hidden="true">👑</span> Pro (paid, disabled)</div>
-              <h3>Audit-grade explanations with spec links</h3>
+              <div class="pill"><span class="icon" aria-hidden="true">👑</span> Pro </div>
+              <h3>Audit-grade explanations with spec links (> 3 min}</h3>
               <ul>
                 <li><strong>Approach:</strong> premium reasoning pass with expanded analysis budget.</li>
                 <li><strong>Output:</strong> structured JSON + human-readable report (section references, rationale, remediation).</li>

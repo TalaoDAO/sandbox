@@ -17,12 +17,10 @@ from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509.oid import ExtensionOID
 from cryptography.hazmat.primitives import serialization
-import base64
 import oidc4vc
 from jwcrypto import jwk, jwt
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-import requests
 #provider = "openai"
 #provider = "gemini"
 
@@ -32,19 +30,27 @@ with open("keys.json", "r") as f:
     keys = json.load(f)
 
 
-openai_model = ChatOpenAI(
+openai_model_flash = ChatOpenAI(
     api_key=keys["openai"],
-    model="gpt-5",
+    model="gpt-4o-mini",
     #temperature=0
 )
 
 
-openai_model_flash = ChatOpenAI(
+openai_model_escalation = ChatOpenAI(
     api_key=keys["openai"],
     model="gpt-5-mini",
     #temperature=0
 )
 
+
+openai_model_pro = ChatOpenAI(
+    api_key=keys["openai"],
+    model="gpt-5",
+    #temperature=0
+)
+
+"""
 gemini_model = ChatGoogleGenerativeAI(
     google_api_key=keys["gemini"],
     model="gemini-2.5-pro",
@@ -56,7 +62,7 @@ gemini_model_flash = ChatGoogleGenerativeAI(
     model="gemini-2.5-flash",
     #temperature=0
 )
-
+"""
 
 
 def get_llm_client(model):
@@ -64,22 +70,24 @@ def get_llm_client(model):
     if model == "flash":
         return openai_model_flash
     elif model == "escalation":
-        return openai_model
+        return openai_model_escalation
     elif model == "pro":
-        return openai_model
+        return openai_model_pro
     else:
         raise ValueError(f"Unsupported provider: {model}")
 
 
-def engine(model):
-    if model == "flash":
-        return "gpt-5-mini"
-    else:
-        return "gpt-5"
+def engine(model: str) -> str:
+    return {
+        "flash": "gpt-4o-mini",      # fast + accurate enough
+        "escalation": "gpt-5-mini",       # medium depth
+        "pro": "gpt-5"               # with spec-linking prompts
+    }[model]
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-    
+
 # Define models and constants
 ADVICE = "\n\nLLM can make mistakes. Check important info. For a deeper analysis, review the cryptographic binding methods, signing algorithms, and specific scopes supported by the issuer and authorization server."
 MAX_RETRIES = 3
@@ -94,6 +102,146 @@ except Exception:
         enc = tiktoken.get_encoding("o200k_base")
     except Exception:
         enc = tiktoken.get_encoding("cl100k_base")
+
+
+# ---------- Report style system (flash / escalation / pro) ----------
+from dataclasses import dataclass
+from typing import Dict, Optional
+
+@dataclass
+class ReportStyle:
+    name: str
+    bullets_max: int
+    chars_per_bullet: int
+    include_rationales: bool
+    include_examples: bool
+    include_spec_links: bool
+    tone: str
+    audience: str
+    add_findings_counts: bool = False
+
+REPORT_STYLES: Dict[str, ReportStyle] = {
+    "flash": ReportStyle(
+        name="flash",
+        bullets_max=6,
+        chars_per_bullet=160,
+        include_rationales=False,
+        include_examples=False,
+        include_spec_links=False,
+        tone="ultra-concise",
+        audience="developer",
+        add_findings_counts=True,
+    ),
+    "escalation": ReportStyle(
+        name="escalation",
+        bullets_max=12,
+        chars_per_bullet=300,
+        include_rationales=True,
+        include_examples=False,
+        include_spec_links=False,
+        tone="concise",
+        audience="developer",
+    ),
+    "pro": ReportStyle(
+        name="pro",
+        bullets_max=20,
+        chars_per_bullet=480,
+        include_rationales=True,
+        include_examples=True,
+        include_spec_links=True,
+        tone="audit",
+        audience="developer",
+    ),
+}
+
+def style_for(model: str) -> ReportStyle:
+    return REPORT_STYLES.get(model, REPORT_STYLES["escalation"])
+
+# ---------- Spec link helpers for "pro" ----------
+def spec_url_oidc4vci(draft: str) -> str:
+    # https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0-16.html
+    try:
+        specs = f"https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0-{draft}.html"
+    except Exception:
+        specs = "https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html"
+    print("OIDC4VCI specs = ", specs)
+    return specs
+
+        
+def spec_url_oidc4vp(draft: str) -> str:
+    # https://openid.net/specs/openid-4-verifiable-presentations-1_0-17.html
+    try:
+        specs = f"https://openid.net/specs/openid-4-verifiable-presentations-1_0-{draft}.html"
+    except Exception:
+        specs = "https://openid.net/specs/openid-4-verifiable-presentations-1_0-final.html"
+    print("OIDC4VP specs = ", specs)
+    return specs
+
+
+def spec_url_sdjwtvc(draft: str) -> str:
+    d = {"7": "07", "8": "08", "9": "99", "10": "10"}
+    try:
+        specs = f"https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-{d[draft]}.html"
+    except Exception:
+        specs = "https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-10.html"
+    print("SD-JWT VC specs = ", specs)
+    return specs
+
+
+def spec_url_vcdm(draft: str) -> str:
+    if str(draft).startswith("2"):
+        return "https://www.w3.org/TR/vc-data-model-2.0/"
+    return "https://www.w3.org/TR/vc-data-model/"
+
+
+# ---------- Prompt shaping per style ----------
+def style_instructions(style: ReportStyle, domain: str, draft: str, extra_urls: Optional[Dict[str, str]] = None) -> str:
+    base = [
+        f"- Audience: {style.audience}. Tone: {style.tone}.",
+        f"- Use Markdown. Max {style.bullets_max} bullets per section; keep bullets under ~{style.chars_per_bullet} chars.",
+        "- Prefer short, technical wording (no fluff).",
+    ]
+    if style.add_findings_counts:
+        base.append("- At the end of each section title, append (✓ pass / ⚠ warn / ✖ fail counts).")
+    if style.include_rationales:
+        base.append("- Provide 1-sentence rationale for each FAIL/WARN.")
+    if style.include_examples:
+        base.append("- When useful, include tiny examples (one-liners) for fixes (keep them brief).")
+    if style.include_spec_links:
+        base.append("- For each FAIL/WARN, add a **Spec** line with Markdown links to relevant sections.")
+        urls = extra_urls or {}
+        if domain == "oidc4vci":
+            urls.setdefault("OIDC4VCI", spec_url_oidc4vci(draft))
+        elif domain == "oidc4vp":
+            urls.setdefault("OIDC4VP", spec_url_oidc4vp(draft))
+        elif domain == "sdjwtvc":
+            urls.setdefault("SD-JWT VC", spec_url_sdjwtvc(draft))
+        elif domain in ("vcdm-jwt", "vcdm-jsonld"):
+            urls.setdefault("VCDM", spec_url_vcdm(draft))
+        if urls:
+            base.append("- Use these base URLs for links: " + ", ".join([f"[{k}]({v})" for k, v in urls.items()]) + ".")
+    if style.name == "flash":
+        base.append("- Do not include any introduction or summary. Only the requested sections, as short checklists.")
+    elif style.name == "escalation":
+        base.append("- No introduction. Output the requested sections exactly as titled.")
+    else:
+        base.append("- No introduction. Output the requested sections exactly as titled. Add **Spec** links for each FAIL/WARN.")
+    return "\n".join(base)
+
+# ---------- Attribution footer ----------
+def attribution(model: str, spec_label: str, draft: str) -> str:
+    date = datetime.now().replace(microsecond=0).isoformat()
+    base = (
+        f"\n\nThe model {engine(model)} is used with the Web3 Digital Wallet dataset.\n"
+        f"This report is based on {spec_label} {draft}.\n"
+        f"Date of issuance: {date}. © Web3 Digital Wallet 2025."
+    )
+    if model == "flash":
+        return base + "\nTip: Switch to *Escalation* for deeper checks when results are uncertain."
+    elif model == "pro":
+        return base + "\nSpec references included per finding. Always verify cryptographic operations with your conformance suite."
+    return base + "\nLLMs can make mistakes. Verify cryptographic results."
+
 
 def base64url_decode(input_str):
     padding = '=' * ((4 - len(input_str) % 4) % 4)
@@ -183,7 +331,7 @@ def verify_issuer_matches_cert(issuer, x5c_list):
         return "Info: Issuer matches SAN DNS or URI in certificate."
     else:
         return "Error: Issuer does NOT match SAN DNS or URI in certificate."
-  
+
 
 def extract_SAN_DNS(pem_certificate):
     # Decode base64 and load the certificate
@@ -196,7 +344,7 @@ def extract_SAN_DNS(pem_certificate):
         return dns_names
     except x509.ExtensionNotFound:
         return "Error: no SAN extension found in the x509 certificate."
-    
+
 
 def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str, model: str):
     """
@@ -226,7 +374,7 @@ def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str,
     return "Unknown VC format. Supported formats: SD-JWT VC, JWT VC (compact), JSON-LD VC."
 
 
-def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model):    
+def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model):
     # Analyze a QR code and delegate based on protocol type
     profile = ""
     if profil == "EBSI":
@@ -256,7 +404,7 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model):
         return analyze_issuer_qrcode(qrcode, oidc4vciDraft, profile, device, model)
     else:
         return analyze_verifier_qrcode(qrcode, oidc4vpDraft, profile, device, model)
-    
+
 
 def get_verifier_request(qrcode, draft):
     comment = ""
@@ -288,7 +436,7 @@ def get_verifier_request(qrcode, draft):
                 return None, None, "Error: iss is missing"
             else:
                 comment = verify_issuer_matches_cert(request.get('iss'), x5c_list)
-    
+
     elif result.get("response_mode"):
         request = result
         comment = "Warning: Passing OIDC request parameters via the request or request_uri parameter using a signed JWT is more secure than passing them as plain query parameters."
@@ -304,14 +452,14 @@ def get_verifier_request(qrcode, draft):
         request['presentation_definition'] = presentation_definition
     else:
         presentation_definition = request.get('presentation_definition')
-    
+
     return request, presentation_definition, comment
 
 
 def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
     """
     Analyze a Verifiable Presentation (VP) in SD-JWT format and return a structured report.
-    
+
     Args:
         token (str): The full SD-JWT token, formatted as base64url sections separated by `~`
         draft (str): Draft version number to load the appropriate spec documentation
@@ -322,21 +470,21 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
     # Split token into components: header~payload~disclosures...~key_binding_jwt (optional)
     vcsd = token.split("~")
     sd_jwt = vcsd[0]
-    
+
     comment_1 = ""
     comment_2 = ""
     comment_3 = ""
     comment_4 = ""
-    
+
     # Decode SD-JWT header and payload
     jwt_header = get_header_from_token(sd_jwt)
     jwt_payload = get_payload_from_token(sd_jwt)
     iss =  jwt_payload.get("iss")
     kid =  jwt_header.get("kid")
-    
+
     if not iss:
         comment_1 = "Error: iss is missing"
-        
+
     # check signature of the sd-jwt
     if x5c_list := jwt_header.get('x5c'):
         comment_1 = verify_issuer_matches_cert(iss, x5c_list)
@@ -355,7 +503,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
             comment_2 = "Info: VC is correctly signed with x5c public key"
         except Exception as e:
             comment_2 = f"Error: VC signature verification with x5c public key failed: {e}"
-    
+
     elif jwt_header.get('jwk'):
         try:
             jwk_data = jwt_header['jwk']
@@ -368,9 +516,9 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
             comment_2 = "Info: VC is correctly signed with jwk in header"
         except Exception as e:
             comment_2 = f"Error: VC signature verification with jwk in header failed: {e}"
-    
+
     elif kid:
-        if iss and iss.startswith("did:"):            
+        if iss and iss.startswith("did:"):
             if kid.startswith("did:"):
                 pub_key = oidc4vc.resolve_did(kid)
                 try:
@@ -382,7 +530,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
                     comment_2 = f"Error: VC is not signed correctly with DID: {e}"
             else:
                 comment_2 = "Error: kid should be a DID verification method"
-    
+
         elif iss and iss.split(":")[0] in ["http", "https"]:
             parsed = urlparse(jwt_payload.get('iss'))
             domain = parsed.netloc
@@ -429,7 +577,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
             comment_2 = "Error: 'iss' is missing or improperly formatted."
     else:
         comment_2 = "Error: kid or x5c or jwk is missing in the header"
-    
+
     # Determine whether the last part is a Key Binding JWT (assumed to be a JWT if it contains 2 dots)
     is_kb_jwt = vcsd[-1].count('.') == 2
 
@@ -445,12 +593,12 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
     except Exception as e:
         comment_3 = f"Error: Disclosures are not formatted correctly: {e}"
         disclosures = "Error: Disclosures could not be decoded."
-    
+
     logging.info("comment 1 = %s", comment_1)
     logging.info("comment 2 = %s", comment_2)
     logging.info("comment 3 = %s", comment_3)
     logging.info("comment 4 = %s", comment_4)
-   
+
     # Decode Key Binding JWT (KB-JWT) if present
     if is_kb_jwt:
         kb_header = get_header_from_token(vcsd[-1])
@@ -473,11 +621,11 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
 
     # Timestamp and attribution
     date = datetime.now().replace(microsecond=0).isoformat()
-    mention = (
-        f"\n\nThe model {engine(model)} is used in conjunction with the Web3 Digital Wallet dataset.\n"
-        f"This report is based on the IETF SD-JWT VC Draft {draft} specification.\n"
-        f"Date of issuance: {date}. Web3 Digital Wallet 2025."
-    )
+    mention = attribution(model, "SD-JWT VC", draft)
+    st = style_for(model)
+    instr = style_instructions(st, domain="sdjwtvc", draft=draft)
+
+
 
     # Prompt for OpenAI model
     prompt = f"""
@@ -498,16 +646,17 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
     {comment_3}
     {comment_4}
 
-    
-     --- Instructions ---
-    Analyze the content above and provide answers to the following points, one per line:
+    ### Output style
+    {instr}
 
-    1. Provide the holder's identifier (cnf) and the issuer identifier.
-    2. Check that no required claims are missing from the header.
-    3. Check that no required claims are missing from the payload.
-    4. Validate that the Key Binding JWT (if present) is structurally correct.
-    5. Provide information about the signature
-    6. List any errors, inconsistencies, or anomalies and propose improvements
+    ### Report Sections (use these exact titles):
+    1. **Holder & Issuer Identifiers**
+    2. **Header Required Claims**
+    3. **Payload Required Claims**
+    4. **Key Binding JWT Check**
+    5. **Signature Information**
+    6. **Errors & Improvements**
+
     """
 
     # Call the OpenAI API
@@ -525,7 +674,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
 def analyze_jwt_vc(token, draft, device, model):
     """
     Analyze a Verifiable Presentation (VP) in JWT format and return a structured report.
-    
+
     Args:
         token (str): The full token, formatted as base64url sections separated by `~`
         draft (str): Draft version number to load the appropriate spec documentation
@@ -553,30 +702,34 @@ def analyze_jwt_vc(token, draft, device, model):
 
     # Timestamp and attribution
     date = datetime.now().replace(microsecond=0).isoformat()
-    mention = (
-        f"\n\nThe model {engine(model)} is used in conjunction with the Web3 Digital Wallet dataset.\n"
-        f"This report is based on the W3C VCDM {draft} specification.\n"
-        f"Date of issuance: {date}. ©Web3 Digital Wallet 2025."
-    )
+    mention = attribution(model, "VCDM", draft)
+
 
     # Prompt for OpenAI model
+
+    st = style_for(model)
+    instr = style_instructions(st, domain="vcdm-jwt", draft=draft)
+
     prompt = f"""
-    --- Specifications ---
-    {content}
+--- Specifications ---
+{content}
 
-    --- VC Data for Analysis ---
-    VC Header: {json.dumps(jwt_header, indent=2)}
-    VC Payload: {json.dumps(jwt_payload, indent=2)}
+--- VC Data for Analysis ---
+VC Header: {json.dumps(jwt_header, indent=2)}
+VC Payload: {json.dumps(jwt_payload, indent=2)}
 
-    --- Instructions ---
-    Analyze the content above and provide answers to the following points, one per line:
+### Output style
+{instr}
 
-    1. Provide the holder's identifier and the issuer identifier.
-    2. Display all claims.
-    3. Check that no required claims are missing from the header.
-    4. Check that no required claims are missing from the payload.
-    5. List any errors, inconsistencies, or anomalies and propose improvements
-    """
+### Report Sections (use these exact titles):
+1. **Holder & Issuer Identifiers**
+2. **All Claims**
+3. **Header Required Claims**
+4. **Payload Required Claims**
+5. **Errors & Improvements**
+
+"""
+
 
     # Call the LLM API
     llm = get_llm_client(model)  # Add 'provider' param to function
@@ -589,13 +742,13 @@ def analyze_jwt_vc(token, draft, device, model):
     counter_update(device)
     return response + ADVICE + mention
 
-    
+
 def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str) -> str:
     """
     Analyze a Verifiable Presentation (VP) in JSON-LD format and return a structured report.
-    
+
     Args:
-        vc (str): The full VC, 
+        vc (str): The full VC,
         draft (str): Draft version number to load the appropriate spec documentation
 
     Returns:
@@ -610,36 +763,36 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str) -> str:
         with open("./dataset/vcdm/1.1.txt", "r", encoding="utf-8") as fallback:
             content = fallback.read()
             draft = "1.1"
-            
+
     # Token count logging for diagnostics
     tokens = enc.encode(content)
     logging.info("Token count: %s", len(tokens))
 
     # Timestamp and attribution
     date = datetime.now().replace(microsecond=0).isoformat()
-    mention = (
-        f"\n\nThe model {engine(model)} is used in conjunction with the Web3 Digital Wallet dataset.\n"
-        f"This report is based on the W3C VC DM {draft} specification.\n"
-        f"Date of issuance: {date}. ©Web3 Digital Wallet 2025."
-    )
+    mention = attribution(model, "VCDM", draft)
+    st = style_for(model)
+    instr = style_instructions(st, domain="vcdm-jsonld", draft=draft)
 
-    # Prompt for OpenAI model
     prompt = f"""
-    --- Specifications ---
-    {content}
+--- Specifications ---
+{content}
 
-    --- VC Data for Analysis ---
-    JSON-LD VC : {json.dumps(vc, indent=2)}
+--- VC Data for Analysis ---
+JSON-LD VC : {json.dumps(vc, indent=2)}
 
-    --- Instructions ---
-    Analyze the content above and provide answers to the following points, one per line:
+### Output style
+{instr}
 
-    1. Provide the holder's identifier and the issuer identifier.
-    2. Display all claims.
-    3. Check that no required claims are missing from the VC.
-    4. List any errors, inconsistencies, or anomalies and propose improvements
-    """
-    
+### Report Sections (use these exact titles):
+1. **Holder & Issuer Identifiers**
+2. **All Claims**
+3. **Required Claims Check**
+4. **Errors & Improvements**
+
+"""
+
+
     # Call the OpenAI API
     llm = get_llm_client(model)  # Add 'provider' param to function
     response = llm.invoke([
@@ -681,14 +834,14 @@ def get_issuer_data(qrcode, draft):
         except Exception:
             authorization_server_metadata = "Error: The authorization server is not found not"
             return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
-    
+
     logging.info("authorization server = %s", authorization_server)
 
     if int(draft) <= 11:
         authorization_server_url = f"{authorization_server}/.well-known/openid-configuration"
     else:
         authorization_server_url = f"{authorization_server}/.well-known/oauth-authorization-server"
-    
+
     try:
         authorization_server_metadata = requests.get(authorization_server_url, timeout=10).json()
     except Exception:
@@ -696,7 +849,7 @@ def get_issuer_data(qrcode, draft):
     return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
 
 
-def analyze_issuer_qrcode(qrcode, draft, profile, device, model):    
+def analyze_issuer_qrcode(qrcode, draft, profile, device, model):
     logging.info("draft = %s", draft)
     # Analyze issuer QR code and generate a structured report using OpenAI
     if not draft:
@@ -704,7 +857,7 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model):
 
     date = datetime.now().replace(microsecond=0).isoformat()
     credential_offer, issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode, draft)
-    
+
     try:
         f = open("./dataset/oidc4vci/" + draft + ".md", "r")
         context = f.read()
@@ -714,21 +867,21 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model):
         context = f.read()
         f.close
         draft = "13"
-    
+
     # Token count logging for diagnostics
     tokens = enc.encode(context)
     logging.info("Token count: %s", len(tokens))
-    
-    context = clean_md(context) 
+
+    context = clean_md(context)
     if int(draft) <= 11:
         context += "\n If EBSI tell to the user to add did:key:jwk_jcs-pub as subject_syntax_type_supported in the authorization server metadata"
-    mention = (
-        f"\n\n The model {engine(model)} is used in addition to a Web3 Digital Wallet dataset."
-        f" This report is based on the OIDC4VCI specifications Draft {draft}."
-        f" Date of issuance: {date}. © Web3 Digital Wallet 2025."
-    )
+    mention = attribution(model, "OIDC4VCI", draft)
 
+
+    st = style_for(model)
+    instr = style_instructions(st, domain="oidc4vci", draft=draft)
     messages = [
+
         {
             "role": "system",
             "content": f"""You are a compliance analyst specializing in OIDC4VCI Draft {draft}.
@@ -755,28 +908,25 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model):
     --- Authorization Server Metadata ---
     {authorization_server_metadata}
 
-    ### Instructions:
-    - Follow the 9 report sections listed below, in **exact order and with exact titles**.
-    - Use markdown formatting with **bold** section titles and bullet points if needed.
-    - Keep answers short, accurate, and technical.
-    - **Do not include any introduction or summary. Start directly with point 1.**
+    ### Output style
+{instr}
 
-    ### Report Sections:
+### Report Sections:
 
-    1. **VC Summary**  
-    2. **Required Claims Check**  
-    3. **Flow Type**  
-    4. **Issuer Metadata Summary**  
-    5. **Issuer Metadata Check**  
-    6. **Authorization Server Metadata Summary**  
-    7. **Auth Server Metadata Check**  
-    8. **Errors & Warnings**  
-    9. **Improvements** – Suggest developer-focused enhancements  
+    1. **VC Summary**
+    2. **Required Claims Check**
+    3. **Flow Type**
+    4. **Issuer Metadata Summary**
+    5. **Issuer Metadata Check**
+    6. **Authorization Server Metadata Summary**
+    7. **Auth Server Metadata Check**
+    8. **Errors & Warnings**
+    9. **Improvements** – Suggest developer-focused enhancements
     """
         }
     ]
-    
-    llm = get_llm_client(model)  
+
+    llm = get_llm_client(model)
     response = llm.invoke(messages).content
 
     result = response + ADVICE + mention
@@ -785,8 +935,8 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model):
     return result
 
 
-def analyze_verifier_qrcode(qrcode, draft, profile, device, model):   
-    
+def analyze_verifier_qrcode(qrcode, draft, profile, device, model):
+
     # Analyze verifier QR code and generate a structured report using OpenAI
     if not draft:
         draft = "18"
@@ -795,7 +945,7 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model):
     verifier_request, presentation_definition, comment = get_verifier_request(qrcode, draft)
     if not verifier_request or not presentation_definition:
         return comment
-    
+
     try:
         f = open("./dataset/oidc4vp/" + draft + ".md", "r")
         context = f.read()
@@ -805,20 +955,20 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model):
         context = f.read()
         f.close
         draft = "18"
-    
-    context = clean_md(context) 
-    
+
+    context = clean_md(context)
+
     # Token count logging for diagnostics
     tokens = enc.encode(context)
     logging.info("Token count: %s", len(tokens))
-    
-    mention = (
-        f"\n\n The model {engine(model)} is used in addition to a Web3 Digital Wallet dataset."
-        f" This report is based on the OIDC4VP specifications Draft {draft}."
-        f" Date of issuance: {date}. © Web3 Digital Wallet 2025."
-    )
 
+    mention = attribution(model, "OIDC4VP", draft)
+
+
+    st = style_for(model)
+    instr = style_instructions(st, domain="oidc4vp", draft=draft)
     messages = [
+
         {
             "role": "system",
             "content": f"""You are a compliance analyst specializing in OIDC4VP Draft {draft}.
@@ -845,20 +995,17 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model):
     --- Presentation Definition ---
     {json.dumps(presentation_definition, indent=2)}
 
-    ### Instructions:
-    - Follow the 6 report sections listed below, in **exact order and with exact titles**.
-    - Use markdown formatting with **bold** section titles and bullet points if needed.
-    - Keep answers short, accurate, and technical.
-    - **Do not include any introduction or summary. Start directly with point 1.**
+    ### Output style
+{instr}
 
-    ### Report Sections:
+### Report Sections:
 
-    1. **Abstract**  
-    2. **Authorization Request** – Check required OIDC4VP claims  
-    3. **Presentation Definition** – Verify format and structure  
-    4. **Client Metadata** – Validate content (if present)  
-    5. **Errors & Warnings**  
-    6. **Improvements** – Suggest developer-focused enhancements  
+    1. **Abstract**
+    2. **Authorization Request** – Check required OIDC4VP claims
+    3. **Presentation Definition** – Verify format and structure
+    4. **Client Metadata** – Validate content (if present)
+    5. **Errors & Warnings**
+    6. **Improvements** – Suggest developer-focused enhancements
     """
         }
     ]
