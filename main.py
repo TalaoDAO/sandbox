@@ -600,6 +600,7 @@ def vc():
         request_number = str(counter["request_number"])
         return render_template("ai_vc.html", request_number=request_number)
     else:
+        model = request.form.get("mode", "flash")
         vc = request.form.get("vc")
         sdjwtvc_draft = request.form.get("sdjwtvc_draft")
         vcdm_draft = request.form.get("vcdm_draft")
@@ -795,6 +796,16 @@ def trusted_list_api():
     trusted_list = json.load(open('trusted-list.json', 'r'))
     return jsonify(trusted_list)
 
+
+@app.route('/documentation/<page>')
+def show_markdown_page(page):
+    try:
+        with open(f"documentation/{page}.md", "r") as f:
+            content = f.read()
+    except FileNotFoundError:
+        return "Page not found", 404
+    html_content = markdown.markdown(content, extensions=["tables", "fenced_code"])
+    return render_template("markdown_template.html", page=page, html_content=html_content)
 
 
 

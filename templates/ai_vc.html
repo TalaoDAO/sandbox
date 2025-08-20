@@ -1,159 +1,313 @@
 <!DOCTYPE html>
-<!-- home.html
-last one (with mode switches added) -->
-<html>
-
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="/static/img/altmeIcon.png">
-  <title>Talao</title>
-  <link rel="stylesheet" href="/static/ai_vc.css">
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Validate VC / VP - VALIDATORS</title>
+
+  <!-- Match typography used across the app -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
-    /* --- Mode explainer + switch --- */
-    .explainer { max-width: 820px; margin: 0 auto 8px auto }
-    .explainer-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 18px; background: #fafafa }
+    :root {
+      --primary: #172554; /* indigo-950 */
+      --accent: #0057FF;
+      --bg: #f6f7fb;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --card: #ffffff;
+    }
+
+    /* ===== Base / Layout ===== */
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    header {
+      min-height: 64px; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center;
+      background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.05);
+    }
+    .logo a { color: var(--primary); text-decoration: none; font-family: Orbitron, sans-serif; letter-spacing: .5px; }
+    nav { display: flex; align-items: center; gap: 1rem; }
+    nav a { color: var(--primary); text-decoration: none; font-weight: 600; }
+    nav a:hover { color: var(--accent); }
+
+    .container { max-width: 960px; margin: 2.5rem auto; padding: 0 1rem; }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+    .card-header { padding: 1.25rem 1.25rem 0 1.25rem; }
+    .card-body { padding: 1.25rem; }
+    .card-footer { padding: 1rem 1.25rem; border-top: 1px solid var(--border); background: #fafafa; border-radius: 0 0 14px 14px; }
+
+    h1 { margin: 0; color: var(--primary); text-align: center; }
+    p.muted { color: var(--muted); font-size: .95rem; }
+
+    /* ===== Form ===== */
+    form { display: grid; gap: 1.25rem; }
+    .row { display: grid; grid-template-columns: 1fr; gap: .75rem; }
+    .row.inline { grid-template-columns: 220px 1fr; align-items: center; }
+
+    label { font-weight: 600; }
+    select, textarea, input[type="text"] {
+      width: 100%; padding: .8rem .9rem; border: 1px solid #d1d5db; border-radius: 10px; font-size: 1rem; background: #fff;
+    }
+    textarea { min-height: 460px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    /* helpers above/below the textarea */
+    .toolbar { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: space-between; align-items: center; margin-top: .25rem; }
+    .toolbar-left, .toolbar-right { display: flex; gap: .5rem; align-items: center; }
+
+    .btn { appearance: none; border: 1px solid var(--border); background: #fff; color: var(--primary);
+      padding: .55rem .8rem; border-radius: 10px; font-weight: 600; cursor: pointer; }
+    .btn:hover { border-color: #cbd5e1; }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn.icon { display: inline-flex; align-items: center; gap: .45rem; }
+
+    /* Segmented control */
+    fieldset { border: 0; padding: 0; margin: 0; }
+    .mode-switch { display: flex; justify-content: center; gap: .5rem; flex-wrap: wrap; }
+    .mode-option { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .75rem; border: 1px solid var(--border);
+      border-radius: 9999px; cursor: pointer; user-select: none; background: #fff; font-weight: 600; }
+    .mode-option input { accent-color: var(--accent); }
+    .mode-option[aria-disabled="true"] { opacity: .6; cursor: not-allowed; }
+
+    /* Explainer */
+    .explainer { max-width: 840px; margin: 0 auto .5rem auto }
+    .explainer-card { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; background: #fafafa }
     .explainer h3 { margin: 0 0 6px 0; font-size: 1.05rem }
-    .pill { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; border: 1px solid #e5e7eb; border-radius: 9999px; padding: 4px 10px; margin-right: 8px; background: #fff }
+    .pill { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; border: 1px solid var(--border); border-radius: 9999px; padding: 4px 10px; margin-right: 8px; background: #fff }
     .pill .icon { font-size: 1.05rem }
     .explainer ul { margin: 8px 0 0 18px; padding: 0 }
     .explainer li { margin: 4px 0 }
-    .hint { font-size: .9rem; color: #666; margin-top: 8px }
-    .disabled-note { opacity: .8 }
-    .mode-pane { display: none }
-    .mode-pane.active { display: block }
+    .hint { font-size: .9rem; color: var(--muted); margin-top: 8px }
 
-    /* Mode segmented control */
-    .mode-switch { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 6px auto 16px auto }
-    .mode-option { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 9999px; cursor: pointer; user-select: none; background: #fff }
-    .mode-option input { accent-color: #0057FF }
-    .mode-option[aria-disabled="true"] { opacity: .6; cursor: not-allowed }
+    /* Counters / notices */
+    .counter { text-align: center; margin-top: .5rem; }
+    .notice { display: flex; gap: .6rem; align-items: flex-start; padding: .75rem .9rem; border-radius: 10px; border: 1px solid var(--border); background: #f9fafb; }
+    .notice small { color: var(--muted); }
+
+    /* Footer */
+    footer { text-align: center; padding: 2rem; color: var(--muted); }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* Responsive */
+    @media (max-width: 720px) {
+      .row.inline { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
-
 <body>
+  <header>
+    <div class="logo">
+      <strong><a href="/">VALIDATORS</a></strong>
+    </div>
+    <nav class="nav">
+      <a href="/documentation/ai_vc_guide" target="_blank" rel="noopener">Explain ?</a>
+    </nav>
+  </header>
 
-  {% include 'header.html' %}
+  <main class="container">
+    <section class="card">
+      <div class="card-header">
+        <h1>Validate VC / VP (JSON-LD, SD-JWT VC, JWT VC)</h1>
+      </div>
+      <div class="card-body">
+        <form action="/ai/vc" method="POST" id="vcForm">
+          <!-- Mode selector -->
+          <fieldset aria-label="Analysis mode">
+            <legend class="sr-only" style="position:absolute; left:-10000px;">Choose analysis mode</legend>
+            <div class="mode-switch" role="radiogroup" aria-label="Mode">
+              <label class="mode-option" for="mode-flash">
+                <input type="radio" id="mode-flash" name="mode" value="flash" checked aria-controls="pane-flash" />
+                <span>⚡ Flash (default)</span>
+              </label>
+              <label class="mode-option" for="mode-escalation">
+                <input type="radio" id="mode-escalation" name="mode" value="escalation" aria-controls="pane-escalation" />
+                <span>🧠 Escalation</span>
+              </label>
+              <label class="mode-option" aria-disabled="true" for="mode-pro">
+                <input type="radio" id="mode-pro" name="mode" value="pro" aria-controls="pane-pro" disabled />
+                <span>👑 Pro (disabled)</span>
+              </label>
+            </div>
+          </fieldset>
 
-  <div id="mainBox" style="max-width: 900px; margin: auto; padding: 30px; font-family: 'Roboto', sans-serif;">
+          <!-- Mode explainer -->
+          <div id="modeExplainer" class="explainer">
+            <div id="pane-flash" class="explainer-card mode-pane active" data-mode="flash">
+              <div class="pill"><span class="icon" aria-hidden="true">⚡</span> Flash (default)</div>
+              <h3>Fast validation</h3>
+              <ul>
+                <li><strong>Approach:</strong> lightweight LLM pass optimized for speed and cost.</li>
+                <li><strong>Best for developers:</strong> batch runs, CI pipelines, quick feedback loops.</li>
+                <li><strong>When to use:</strong> straightforward VCs/VPs, common profiles.</li>
+              </ul>
+              <p class="hint">Tip: keep this on by default; escalate only when results are uncertain or contradictory.</p>
+            </div>
 
-    <h1 style="text-align: center; margin-bottom: 30px;">Validate your VC/VP (json-ld, sd-jwt vc, jwt vc)</h1>
+            <div id="pane-escalation" class="explainer-card mode-pane" data-mode="escalation" hidden>
+              <div class="pill"><span class="icon" aria-hidden="true">🧠</span> Escalation</div>
+              <h3>Deeper reasoning for edge cases</h3>
+              <ul>
+                <li><strong>Approach:</strong> higher-capacity LLM pass that allocates more compute to cross-checks.</li>
+                <li><strong>Best for developers:</strong> SD-JWT disclosures, JWS signatures, JSON-LD contexts.</li>
+                <li><strong>Output:</strong> richer rationales for failed checks.</li>
+              </ul>
+              <p class="hint">Trade-off: slower and pricier than Flash, but reduces false negatives on tricky inputs.</p>
+            </div>
 
-    <form action="/ai/vc" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
+            <div id="pane-pro" class="explainer-card mode-pane" data-mode="pro" aria-disabled="true" hidden>
+              <div class="pill"><span class="icon" aria-hidden="true">👑</span> Pro (paid, disabled)</div>
+              <h3>Audit-grade explanations with spec links</h3>
+              <ul>
+                <li><strong>Approach:</strong> premium reasoning pass with expanded analysis budget.</li>
+                <li><strong>Output:</strong> structured JSON + human-readable report (section references, rationale, remediation).</li>
+                <li class="muted"><strong>Status:</strong> not available on this page.</li>
+              </ul>
+            </div>
+          </div>
 
-      <!-- Mode selector -->
-      <fieldset aria-label="Analysis mode" style="border:0; padding:0; margin:0">
-        <legend style="position:absolute; left:-10000px;">Choose analysis mode</legend>
-        <div class="mode-switch" role="radiogroup" aria-label="Mode">
-          <label class="mode-option" for="mode-flash">
-            <input type="radio" id="mode-flash" name="mode" value="flash" checked aria-controls="pane-flash" />
-            <span>⚡ Flash (default)</span>
-          </label>
-          <label class="mode-option" for="mode-escalation">
-            <input type="radio" id="mode-escalation" name="mode" value="escalation" aria-controls="pane-escalation" />
-            <span>🧠 Escalation</span>
-          </label>
-          <label class="mode-option" aria-disabled="true" for="mode-pro">
-            <input type="radio" id="mode-pro" name="mode" value="pro" aria-controls="pane-pro" disabled />
-            <span>👑 Pro (disabled)</span>
-          </label>
-        </div>
-      </fieldset>
+          <!-- Draft selectors -->
+          <div class="row inline">
+            <label for="sdjwtvc_version">SD-JWT VC Draft</label>
+            <div>
+              <select id="sdjwtvc_version" name="sdjwtvc_draft">
+                {% for i in range(7, 11) %}
+                <option value="{{ i }}" {% if i == 9 %}selected{% endif %}>Draft {{ i }}</option>
+                {% endfor %}
+              </select>
+              <small class="muted">Used for SD-JWT VC token analysis.</small>
+            </div>
+          </div>
 
-      <!-- Mode explainer -->
-      <div id="modeExplainer" class="explainer">
-        <!-- Flash -->
-        <div id="pane-flash" class="explainer-card mode-pane active" data-mode="flash">
-          <div class="pill"><span class="icon" aria-hidden="true">⚡</span> Flash (default)</div>
-          <h3>Fast validation</h3>
-          <ul>
-            <li><strong>Approach:</strong> lightweight LLM pass optimized for speed and cost.</li>
-            <li><strong>Best for developers:</strong> batch runs, CI pipelines, quick feedback loops.</li>
-            <li><strong>Output:</strong> strict JSON (field-by-field <em>PASS/FAIL/WARN</em>) ready for tooling.</li>
-            <li><strong>When to use:</strong> straightforward issuers/verifiers, unsigned metadata, common profiles.</li>
-          </ul>
-          <p class="hint">Tip: keep this on by default; escalate only when results are uncertain or contradictory.</p>
-        </div>
+          <div class="row inline">
+            <label for="vcdm_version">VCDM</label>
+            <div>
+              <select id="vcdm_version" name="vcdm_draft">
+                {% for i in ["1.1"] %}
+                <option value="{{ i }}" selected>{{ i }}</option>
+                {% endfor %}
+              </select>
+              <small class="muted">Used for JWT VC and JSON-LD VC analysis.</small>
+            </div>
+          </div>
 
-        <!-- Escalation -->
-        <div id="pane-escalation" class="explainer-card mode-pane" data-mode="escalation">
-          <div class="pill"><span class="icon" aria-hidden="true">🧠</span> Escalation</div>
-          <h3>Deeper reasoning for edge cases</h3>
-          <ul>
-            <li><strong>Approach:</strong> higher-capacity LLM pass that allocates more compute to cross-checks.</li>
-            <li><strong>Best for developers:</strong> multi-AS setups, JWS-signed metadata, nuanced profile rules.</li>
-            <li><strong>Output:</strong> the same strict JSON, plus <em>richer rationales</em> for failed checks.</li>
-            <li><strong>When to use:</strong> Flash returns <em>UNCERTAIN</em>, conflicting fields, or complex issuer configs.</li>
-          </ul>
-          <p class="hint">Trade-off: slower and pricier than Flash, but reduces false negatives on tricky inputs.</p>
-        </div>
+          <!-- VC/VP content -->
+          <div class="row">
+            <label for="vc">VC / VP payload</label>
+            <textarea id="vc" name="vc" aria-describedby="vcHelp" placeholder="Paste your VC or VP here (SD-JWT VC, JWT VC, or JSON-LD VC/VP).\nExamples:\n- SD-JWT VC: xxx.yyy.zzz~disclosure~...~kb-jwt\n- JWT VC: xxx.yyy.zzz\n- JSON-LD VC: { \"@context\": [...], \"type\": [...], ... }"></textarea>
 
-        <!-- Pro (disabled / paid) -->
-        <div id="pane-pro" class="explainer-card mode-pane" data-mode="pro" aria-disabled="true">
-          <div class="pill disabled-note"><span class="icon" aria-hidden="true">👑</span> Pro (paid, disabled)</div>
-          <h3>Audit-grade explanations with spec links</h3>
-          <ul>
-            <li><strong>Approach:</strong> premium reasoning pass with expanded analysis budget.</li>
-            <li><strong>For developers & auditors:</strong> includes <em>clear links to the relevant specs</em> for every failure/warning.</li>
-            <li><strong>Output:</strong> structured JSON + human-readable report (section references, rationale, and remediation hints).</li>
-            <li class="disabled-note"><strong>Status:</strong> not available on this page. Contact us to enable Pro.</li>
-          </ul>
+            <div class="toolbar" aria-live="polite">
+              <div class="toolbar-left">
+                <button type="button" class="btn icon" id="pasteBtn">📋 Paste</button>
+                <button type="button" class="btn icon" id="clearBtn">🧹 Clear</button>
+                <div class="btn icon" style="position:relative;">
+                  🔽 Samples
+                  <select id="sampleSelect" aria-label="Insert sample" style="position:absolute; inset:0; opacity:0; cursor:pointer;">
+                    <option value="">Choose a sample…</option>
+                    <option value="sample_sdjwt">SD-JWT VC (minimal)</option>
+                    <option value="sample_jwt">JWT VC (minimal)</option>
+                    <option value="sample_jsonld">JSON-LD VC</option>
+                  </select>
+                </div>
+              </div>
+              <div class="toolbar-right">
+                <small id="vcHelp" class="muted">SD-JWT VC, JWT VC, and JSON-LD inputs supported.</small>
+                <small class="muted" id="countInfo">0 chars</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="row" style="justify-content:center">
+            <button type="submit" class="btn primary" id="submitBtn">Run Diagnostic</button>
+            <button type="reset" class="btn" id="resetBtn">Reset</button>
+          </div>
+        </form>
+      </div>
+      <div class="card-footer">
+        <div class="notice">
+          <div>ℹ️</div>
+          <div>
+            <div class="muted">An OpenAI model is used in addition to Web3 Digital Wallet testing tools and datasets. <strong>Do not use personal data.</strong></div>
+            <div class="counter">VCs/VPs tested: <strong>{{request_number}}</strong></div>
+          </div>
         </div>
       </div>
+    </section>
 
-      <div style="display: flex; gap: 30px; justify-content: center; align-items: center;">
-        <label for="sdjwtvc_version"><strong>SD-JWT-VC Draft:</strong></label>
-        <select id="sdjwtvc_version" name="sdjwtvc_draft">
-          {% for i in range(7, 11) %}
-          <option value="{{ i }}" {% if i == 9 %}selected{% endif %}>Draft {{ i }}</option>
-          {% endfor %}
-        </select>
-        <label for="vcdm_version"><strong>VCDM:</strong></label>
-        <select id="vcdm_version" name="vcdm_draft">
-          {% for i in ["1.1", "1.1"] %}
-          <option value="{{ i }}" {% if i == 1.1 %}selected{% endif %}>{{ i }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <textarea placeholder="Paste your VC or VP here" name="vc" style="display: block; width: 600px; height: 600px; min-height: 600px; padding: 24px; font-size: 18px; font-family: monospace; border-radius: 8px; border: 1px solid #ccc; resize: vertical; box-sizing: border-box !important; overflow: auto !important;"></textarea>
-
-      <button type="submit" style="align-self: center; padding: 12px 30px; font-size: 16px; background-color: #0057FF; color: white; border: none; border-radius: 6px; cursor: pointer;">
-        Run Diagnostic
-      </button>
-    </form>
-
-    <p style="margin-top: 30px; text-align: center;">
-      VC tested: <strong>{{request_number}}</strong>
-    </p>
-
-    <p style="font-size: 14px; color: #555; text-align: center; margin-top: 40px;">
-      An OpenAI model is used in addition to Web3 Digital Wallet testing tools and datasets. <strong>Do not use personal data</strong>.
-    </p>
-  </div>
-
-  {% include 'footer.html' %}
+    <footer>
+      <p>Contact us at <a href="mailto:contact@talao.io">contact@talao.io</a> · <a href="https://www.linkedin.com/company/79104266">LinkedIn</a></p>
+      <p><a href="https://altme.io/privacy">Privacy Policy</a> · <a href="https://altme.io/cgu">Terms</a></p>
+    </footer>
+  </main>
 
   <script>
-    // Robust mode switcher: keeps explainer in sync with selected radio
-    document.addEventListener('DOMContentLoaded', function () {
+    // Mode explainer switch
+    (function() {
       const panes = document.querySelectorAll('#modeExplainer .mode-pane');
-      const modeRadios = document.querySelectorAll('input[name="mode"]');
-
+      const radios = document.querySelectorAll('input[name="mode"]');
       function setPane(mode) {
-        panes.forEach(p => p.classList.toggle('active', p.dataset.mode === mode));
+        panes.forEach(p => {
+          const active = p.dataset.mode === mode;
+          p.classList.toggle('active', active);
+          p.hidden = !active;
+        });
       }
-
-      const checked = document.querySelector('input[name="mode"]:checked') || modeRadios[0];
+      const checked = document.querySelector('input[name="mode"]:checked');
       if (checked) setPane(checked.value);
+      radios.forEach(r => r.addEventListener('change', e => setPane(e.target.value)));
+    })();
 
-      modeRadios.forEach(r => {
-        r.addEventListener('change', (e) => setPane(e.target.value));
+    // Toolbar helpers
+    (function() {
+      const ta = document.getElementById('vc');
+      const countInfo = document.getElementById('countInfo');
+      const pasteBtn = document.getElementById('pasteBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const sampleSelect = document.getElementById('sampleSelect');
+      const submitBtn = document.getElementById('submitBtn');
+      const form = document.getElementById('vcForm');
+
+      const samples = {
+        sample_sdjwt: 'eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6YXBwLmFsdG1lLmlvOmlzc3VlciNrZXktMSIsInR5cCI6InZjK3NkLWp3dCJ9.eyJfc2QiOlsiMDBMZVRaQ0pmbi04WUhXZ0ctcmZDeVV0T3JJWDJaRkdiakM3NjNBSVAxVSIsImdBVWVLcDRSS1hXME1WMWlsYjFEb1BsT1FTUE5VYjJvWW9RSzhNNGRwc2ciLCItMXIyVWlpZjUxcUhfWU51UmJTVFkwd1N1WmFQSHE3cVVHcVo4ZTVjUkowIiwiS2hVRDQ2aDBUTURpWUMxMDhDV2RJakJCUXZDcFgyN295ZFhuc2I2Z2NycyIsIjRSSUlmUEc5NUZsaTdlNVBSMS1BYVBHLXdOeEMxRU1UUmlFanlyV3JJUGciLCJEbVZpQjB3ek1BSk9Fd3ROWmJxSUNfcXZHY3I1VnZQRTFFRzc3MkpWU2dvIiwiZXlpN3FjRDE2RGlseWVHZ21CNG4xLXZvMlhGTlZTRUR4Szh4Tng1Y1hTRSIsIldlOVpmaUpNYVdKVEJaWDFQa0c0ZkhNakZhZlI1VU5vUGJibjM3a2ZnRjgiLCJfODVETWY5OWhobHBGUloxVlBoX3FFTEdJZVpWaGV0VEN6UE9JZmNaRWJvIiwiVUtwZ1FEbmRlc1drazB3dHJrNkkxNW1yWklOamdDZzVMTDFhV211dkdaVSIsIndaNmszTXlqemFyWWZPZldTR3ZOOWhzZDBkTWQ2ZmN5Vi0zUDVMbFRDaE0iLCJzWElTUE83X0lxVVdHU0VSblc0RzdQMVNFR2NqcFl4V1dURjFqNGFMV25RIiwiZUVUNDVLSkRVeXlianZiYWExMnVyM0V4TEQwOUkzOE0zWEs0dWViX0FwayIsIjlmalhuTWVzbW1hN2dhNzl3WnFERlpmWEhZRjdob1FGSk9NMkhaMkwyS3ciLCJmYm1iekFOMjJ0UHd5WkFSTlJuR21iREtLVUQtZktsajYtVVRFdGZsbjVFIiwiR2Jqb21KcVB5ZHc2T0Z2MVgzQmNkS1lUQjZkRXJGTVRHbkdMVlQtT2pVcyJdLCJfc2RfYWxnIjoic2hhLTI1NiIsImNuZiI6eyJraWQiOiJkaWQ6andrOmV5SmpjbllpT2lKUUxUSTFOaUlzSW10MGVTSTZJa1ZESWl3aWVDSTZJbUZUVkV0SWFVeG9iek5RTWxob2VWcFdaR1JQUldnNFYyVnVWbDg1TFhoa1UxWlpaVWQxVHkwM2NVa2lMQ0o1SWpvaU5HMVROMjVXV1ZocWRqbG5hbFUxYmtoM2FUZHJhMU42ZFZoa09VbHRVSEUyVUU1T2NFeFdTVlJ1VFNKOSJ9LCJleHAiOjE3ODYyMDYyMDMsImlhdCI6MTc1NDY3MDIwMywiaXNzIjoiZGlkOndlYjphcHAuYWx0bWUuaW86aXNzdWVyIiwibmF0aW9uYWxpdGllcyI6W3siLi4uIjoiRExsbmg2bF96MFpSNHNEdjk3ZDRQMU1scWRFRXd5ZGt0YnA0NXgtSlYyWSJ9LHsiLi4uIjoiVnRibVgxdGdibV9HVWhXQVdfT1BGcXVaUEtpUFNhUHdRZHZJQ2JSY3FaQSJ9XSwic3RhdHVzIjp7InN0YXR1c19saXN0Ijp7ImlkeCI6OTg5NjQsInVyaSI6Imh0dHBzOi8vdGFsYW8uY28vaXNzdWVyL3N0YXR1c2xpc3QvMSJ9fSwidmN0IjoiZXUuZXVyb3BhLmVjLmV1ZGkucGlkLjEifQ.8I-tiKk4o1OWgrhoDBZcAA4FSpN2KZIr_N0zC_OrfHt4KmZsGiQ6JsITK_65-QcDjRy-nMh-FkCM5knLm_vaCg~WyJqZlJ5V1VCTVlIRjJOdk44LWhYSXRBIiwgImdpdmVuX25hbWUiLCAiUGF0cmljayJd~WyJfeXcxM2Jab2NVbW84Z2lGdkhRNnp3IiwgImZhbWlseV9uYW1lIiwgIkRvZSJd~WyJUejRJbmN2Y2NHQ01EZjZnTnBBZDhnIiwgImJpcnRoX2RhdGUiLCAiMjAwMC0xMi0wMSJd~WyJZUTlJTXEwbHBkZVcxS043TXpSYlJRIiwgImJpcnRoX3BsYWNlIiwgIkRFIl0~WyJzcDJEOFFYOS1rTDVBTFZZaDVzOXNnIiwgImZvcm1hdHRlZCIsICIxMjMgVmlhIEFwcGlhLCBSb21lLCAwMDEwMCBMYXppbywgSXRhbHkiXQ~WyJpcnZlSW44TlJSS29XS25SbW1jbzZ3IiwgInN0cmVldF9hZGRyZXNzIiwgIjEyMyBWaWEgQXBwaWEiXQ~WyJsanBwUjVPNjVnOW5XQXUtVUFhVUZnIiwgImxvY2FsaXR5IiwgIlJvbWUiXQ~WyJxbmRnMmg3MllMenNuZHZpTzFfeEZ3IiwgInJlZ2lvbiIsICJMYXppbyJd~WyJSb3RQM2tTMlAzQ3lIUnFYWXBXUThRIiwgInBvc3RhbF9jb2RlIiwgIjAwMTAwIl0~WyJDV0Y5Y2tWTG85cFhVV2RURHd2T3pRIiwgImNvdW50cnkiLCAiSVQiXQ~WyJqSDd5bi1vY0lFV3BsYjdhVVpzNS1BIiwgImFkZHJlc3MiLCB7Il9zZCI6IFsienlXUzRWdXZZRFU4V1NjeGFJaDZWcnhPTndYRnM4Y1Q5YWh3djVQQ2lYbyIsICJzZTRFUUtJNmVvT01QNVNzT21TaXRrbGRUUEMyczZwVFVIZDBJTEZWNERFIiwgIjNFbXJiLUFpR1FRbDZ4UGd2RGV3R0RQWmZQa3NtRFpMa3djeHpSM3pNQk0iLCAiMWIxdWl1ckYwcVVtM1lsdE1jOUtOY2VWZVFEU3o4TkFEQms5WHh1U3liVSIsICJ0Uk9qZ1BFcHZvV3NRT2ZmYjByWGU5VGd5b011cUluaDRMdzNyOEZnNEEwIiwgIjFjSk5pX3BsYWlfT3VwXzF5ZHliVVNycVlvTXBPbHotSU13ZmlFRzY2aEUiLCAiVS1GYVlxZ3ZCbGVEZDlSZTZyU0dnVnZGQnljUzJrVHJDeUtNUV85Zm1EbyJdfV0~WyJ5YlhfSTBwMzRQU0dheF9RRWZwRkpBIiwgImxvY2FsaXR5IiwgIkxlaXB6aWciXQ~WyJ5WGNLcE5Dbl9PbHduTTAzNktOVm5nIiwgInJlZ2lvbiIsICJTYXhvbnkiXQ~WyI5VG5YUGJLanF4WjNNLW1JMDZmUkZ3IiwgImNvdW50cnkiLCAiREUiXQ~WyJwLUpLSkJFbDFyS3UxazZwekdkZW5RIiwgInBsYWNlX29mX2JpcnRoIiwgeyJfc2QiOiBbImc5WElQeVhEM1d0UWVsMmRuWlVYS2YxQWlES1dpcU4xMWVGYTRob1dDc0UiLCAib2lvYUkxMDJBcE5OcGpsVHNjeDJjMmcxWHUycXdydEJtdEZnRmhrd1IxRSIsICJ2OXJIMHpubHJjT3RVSnIwU2xFLVE3dXM5NFBIbC02RWdzTWk0ekpVT1A0IiwgImhEWWVpZ1ZKaG9XWS1qS0dMT1UtQm8yNnh4VjB6VlJ6R3pTSmZsSzByZjAiXX1d~WyI3WTVrZDVfQURxa2thZE9RWS1hWTlnIiwgIkRFIl0~WyJSNUY1R1htRXBnVWxlemtmYjR1MVJnIiwgIklUIl0~WyJNdW5IckpQdFdtWWxoaEkxTlY3Wlh3IiwgImFnZV9vdmVyXzEyIiwgdHJ1ZV0~WyI1eElJaVcwRFRKY2xTWGRZNXdUY1NBIiwgImFnZV9vdmVyXzE0IiwgdHJ1ZV0~WyJpSThQQlk5RTdBSWYwSXptX3M2UjRnIiwgImFnZV9vdmVyXzE2IiwgdHJ1ZV0~WyJ4eGVaN1VGMGNFQ1JBVWVYaExWWmRBIiwgImFnZV9vdmVyXzE4IiwgdHJ1ZV0~WyJIVjZYT2taU0g4bFdNLVNrQkJ3cFNRIiwgImFnZV9vdmVyXzIxIiwgdHJ1ZV0~WyJNbnpPZkg5b3c3Q3lEOVd0bE1mc1BnIiwgImFnZV9vdmVyXzY1IiwgZmFsc2Vd~WyJyVFlMMWd1Vjk5OVMwZ2ZMRkRHOG93IiwgInNleCIsIDFd~WyIxTFU4bVY1UkdDdWNZdS1uRHdBdWpnIiwgImlzc3VpbmdfY291bnRyeSIsICJERSJd~WyJXNGVrZVpFcDlDRUk3TmpIMGJsLWJBIiwgImlzc3VpbmdfYXV0aG9yaXR5IiwgIkRFIl0~',
+        sample_jwt: 'eyJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJodHRwczovL2lzc3Vlci5leGFtcGxlIiwic3ViIjoiZGlkOmtleTp6eXgifQ.SIGNATURE',
+        sample_jsonld: '{\n  "@context": ["https://www.w3.org/ns/credentials/v2"],\n  "type": ["VerifiableCredential"],\n  "issuer": "https://issuer.example",\n  "credentialSubject": {"id": "did:key:xyz", "name": "Alice"}\n}'
+      };
+
+      function updateCount(){
+        const len = ta.value.length;
+        countInfo.textContent = len + ' chars';
+      }
+      ta.addEventListener('input', updateCount);
+      updateCount();
+
+      pasteBtn?.addEventListener('click', async () => {
+        try {
+          const txt = await navigator.clipboard.readText();
+          if (txt) { ta.value = txt; ta.focus(); updateCount(); }
+        } catch(e) {
+          alert('Clipboard access not available. Please paste with Ctrl/Cmd+V.');
+        }
       });
-    });
+
+      clearBtn?.addEventListener('click', () => { ta.value = ''; ta.focus(); updateCount(); });
+
+      sampleSelect?.addEventListener('change', (e) => {
+        const key = e.target.value; if (!key) return;
+        ta.value = samples[key] || ''; ta.focus(); updateCount(); e.target.value = '';
+      });
+
+      form.addEventListener('submit', () => {
+        submitBtn.disabled = true; submitBtn.textContent = 'Running…';
+      });
+
+    })();
   </script>
-
 </body>
-
 </html>

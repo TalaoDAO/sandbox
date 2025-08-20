@@ -1,186 +1,340 @@
 <!DOCTYPE html>
-<!-- home.html
-last one (fixed: working mode switch) -->
-<html>
-
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="/static/img/altmeIcon.png">
-  <title>Talao</title>
-  <link rel="stylesheet" href="/static/ai_qrcode.css">
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Validate Issuers/Verifiers - VAIDATORS</title>
+
+  <!-- Fonts match create_verifier.html style -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
-    /* --- Mode explainer + switch --- */
-    .explainer { max-width: 820px; margin: 0 auto 8px auto }
-    .explainer-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 18px; background: #fafafa }
+    :root {
+      --primary: #172554; /* indigo-950 */
+      --accent: #0057FF;
+      --bg: #f6f7fb;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --card: #ffffff;
+      --success: #0a7f3f;
+      --warn: #b45309;
+      --error: #b91c1c;
+    }
+
+    /* ===== Base / Layout ===== */
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    header {
+      min-height: 64px; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center;
+      background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.05);
+    }
+    .logo a { color: var(--primary); text-decoration: none; font-family: Orbitron, sans-serif; letter-spacing: .5px; }
+    nav { display: flex; align-items: center; gap: 1rem; }
+    nav a { color: var(--primary); text-decoration: none; font-weight: 600; }
+    nav a:hover { color: var(--accent); }
+
+    .container { max-width: 960px; margin: 2.5rem auto; padding: 0 1rem; }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+    .card-header { padding: 1.25rem 1.25rem 0 1.25rem; }
+    .card-body { padding: 1.25rem; }
+    .card-footer { padding: 1rem 1.25rem; border-top: 1px solid var(--border); background: #fafafa; border-radius: 0 0 14px 14px; }
+
+    h1 { margin: 0; color: var(--primary); text-align: center; }
+    p.muted { color: var(--muted); font-size: .95rem; }
+
+    /* ===== Form ===== */
+    form { display: grid; gap: 1.25rem; }
+    .row { display: grid; grid-template-columns: 1fr; gap: .75rem; }
+    .row.inline { grid-template-columns: 160px 1fr; align-items: center; }
+
+    label { font-weight: 600; }
+    select, textarea, input[type="text"] {
+      width: 100%; padding: .8rem .9rem; border: 1px solid #d1d5db; border-radius: 10px; font-size: 1rem; background: #fff;
+    }
+    textarea { min-height: 460px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    /* helpers above the textarea */
+    .toolbar { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: space-between; align-items: center; margin-top: .25rem; }
+    .toolbar-left, .toolbar-right { display: flex; gap: .5rem; align-items: center; }
+
+    .btn { appearance: none; border: 1px solid var(--border); background: #fff; color: var(--primary);
+      padding: .55rem .8rem; border-radius: 10px; font-weight: 600; cursor: pointer; }
+    .btn:hover { border-color: #cbd5e1; }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn.ghost { background: transparent; }
+    .btn.icon { display: inline-flex; align-items: center; gap: .45rem; }
+
+    /* Segmented control */
+    fieldset { border: 0; padding: 0; margin: 0; }
+    .mode-switch { display: flex; justify-content: center; gap: .5rem; flex-wrap: wrap; }
+    .mode-option { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .75rem; border: 1px solid var(--border);
+      border-radius: 9999px; cursor: pointer; user-select: none; background: #fff; font-weight: 600; }
+    .mode-option input { accent-color: var(--accent); }
+    .mode-option[aria-disabled="true"] { opacity: .6; cursor: not-allowed; }
+
+    /* Explainer */
+    .explainer { max-width: 840px; margin: 0 auto .5rem auto }
+    .explainer-card { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; background: #fafafa }
     .explainer h3 { margin: 0 0 6px 0; font-size: 1.05rem }
-    .pill { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; border: 1px solid #e5e7eb; border-radius: 9999px; padding: 4px 10px; margin-right: 8px; background: #fff }
+    .pill { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; border: 1px solid var(--border); border-radius: 9999px; padding: 4px 10px; margin-right: 8px; background: #fff }
     .pill .icon { font-size: 1.05rem }
     .explainer ul { margin: 8px 0 0 18px; padding: 0 }
     .explainer li { margin: 4px 0 }
-    .hint { font-size: .9rem; color: #666; margin-top: 8px }
-    .disabled-note { opacity: .8 }
-    .linklike { color: #0a58ff; text-decoration: underline; cursor: help }
-    /* visibility toggling */
-    .mode-pane { display: none }
-    .mode-pane.active { display: block }
+    .hint { font-size: .9rem; color: var(--muted); margin-top: 8px }
 
-    /* Mode segmented control */
-    .mode-switch { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 6px auto 16px auto }
-    .mode-option { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 9999px; cursor: pointer; user-select: none; background: #fff }
-    .mode-option input { accent-color: #0057FF }
-    .mode-option[aria-disabled="true"] { opacity: .6; cursor: not-allowed }
+    /* Counters / notices */
+    .counter { text-align: center; margin-top: .5rem; }
+    .notice { display: flex; gap: .6rem; align-items: flex-start; padding: .75rem .9rem; border-radius: 10px; border: 1px solid var(--border); background: #f9fafb; }
+    .notice small { color: var(--muted); }
+
+    /* Footer */
+    footer { text-align: center; padding: 2rem; color: var(--muted); }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* Responsive */
+    @media (min-width: 720px) {
+      .row.inline { grid-template-columns: 220px 1fr; }
+      .card-body.grid-2 { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+    }
   </style>
 </head>
-
 <body>
+  <header>
+    <div class="logo">
+      <strong><a href="/">VALIDATORS</a></strong>
+    </div>
+    <nav class="nav">
+      <a href="/documentation/ai_qrcode_guide" target="_blank" rel="noopener">Explain ?</a>
+    </nav>
+  </header>
 
-  {% include 'header.html' %}
+  <main class="container">
+    <section class="card">
+      <div class="card-header">
+        <h1>Validate OIDC4VC Issuers & Verifiers</h1>
+      </div>
+      <div class="card-body">
+        <form action="/ai/qrcode" method="POST" id="qrForm">
+          <!-- Mode selector -->
+          <fieldset aria-label="Analysis mode">
+            <legend class="sr-only" style="position:absolute; left:-10000px;">Choose analysis mode</legend>
+            <div class="mode-switch" role="radiogroup" aria-label="Mode">
+              <label class="mode-option" for="mode-flash">
+                <input type="radio" id="mode-flash" name="mode" value="flash" checked aria-controls="pane-flash" />
+                <span>⚡ Flash (default)</span>
+              </label>
+              <label class="mode-option" for="mode-escalation">
+                <input type="radio" id="mode-escalation" name="mode" value="escalation" aria-controls="pane-escalation" />
+                <span>🧠 Escalation</span>
+              </label>
+              <label class="mode-option" aria-disabled="true" for="mode-pro">
+                <input type="radio" id="mode-pro" name="mode" value="pro" aria-controls="pane-pro" disabled />
+                <span>👑 Pro (disabled)</span>
+              </label>
+            </div>
+          </fieldset>
 
-  <div id="mainBox" style="max-width: 900px; margin: auto; padding: 30px; font-family: 'Roboto', sans-serif;">
+          <!-- Mode explainer -->
+          <div id="modeExplainer" class="explainer">
+            <div id="pane-flash" class="explainer-card mode-pane active" data-mode="flash">
+              <div class="pill"><span class="icon" aria-hidden="true">⚡</span> Flash (default)</div>
+              <h3>Fast validation</h3>
+              <ul>
+                <li><strong>Approach:</strong> lightweight LLM pass optimized for speed and cost.</li>
+                <li><strong>Best for developers:</strong> batch runs, CI pipelines, quick feedback loops.</li>
+                <li><strong>Output:</strong> strict JSON (field-by-field <em>PASS/FAIL/WARN</em>) ready for tooling.</li>
+                <li><strong>When to use:</strong> straightforward issuers/verifiers, unsigned metadata, common profiles.</li>
+              </ul>
+              <p class="hint">Tip: keep this on by default; escalate only when results are uncertain or contradictory.</p>
+            </div>
 
-    <h1 style="text-align: center; margin-bottom: 30px;">Validate your OIDC4VC Issuers or Verifiers compliance with standards and best practices</h1>
+            <div id="pane-escalation" class="explainer-card mode-pane" data-mode="escalation" hidden>
+              <div class="pill"><span class="icon" aria-hidden="true">🧠</span> Escalation</div>
+              <h3>Deeper reasoning for edge cases</h3>
+              <ul>
+                <li><strong>Approach:</strong> higher-capacity LLM pass that allocates more compute to cross-checks.</li>
+                <li><strong>Best for developers:</strong> multi-AS setups, JWS-signed metadata, nuanced profile rules.</li>
+                <li><strong>Output:</strong> the same strict JSON, plus <em>richer rationales</em> for failed checks.</li>
+                <li><strong>When to use:</strong> Flash returns <em>UNCERTAIN</em>, conflicting fields, or complex issuer configs.</li>
+              </ul>
+              <p class="hint">Trade-off: slower and pricier than Flash, but reduces false negatives on tricky inputs.</p>
+            </div>
 
-    <form action="/ai/qrcode" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
+            <div id="pane-pro" class="explainer-card mode-pane" data-mode="pro" aria-disabled="true" hidden>
+              <div class="pill"><span class="icon" aria-hidden="true">👑</span> Pro (paid, disabled)</div>
+              <h3>Audit-grade explanations with spec links</h3>
+              <ul>
+                <li><strong>Approach:</strong> premium reasoning pass with expanded analysis budget.</li>
+                <li><strong>For developers & auditors:</strong> includes <em>clear links to the relevant OIDC4VC(I)/OIDC4VP spec sections</em> for every failure/warning.</li>
+                <li><strong>Output:</strong> structured JSON + human-readable report (section references, rationale, and remediation hints).</li>
+                <li class="disabled-note"><strong>Status:</strong> not available on this page. Contact us to enable Pro.</li>
+              </ul>
+            </div>
+          </div>
 
-      <!-- Mode selector -->
-      <fieldset aria-label="Analysis mode" style="border:0; padding:0; margin:0">
-        <legend style="position:absolute; left:-10000px;">Choose analysis mode</legend>
-        <div class="mode-switch" role="radiogroup" aria-label="Mode">
-          <label class="mode-option" for="mode-flash">
-            <input type="radio" id="mode-flash" name="mode" value="flash" checked aria-controls="pane-flash" />
-            <span>⚡ Flash (default)</span>
-          </label>
-          <label class="mode-option" for="mode-escalation">
-            <input type="radio" id="mode-escalation" name="mode" value="escalation" aria-controls="pane-escalation" />
-            <span>🧠 Escalation</span>
-          </label>
-          <label class="mode-option" aria-disabled="true" for="mode-pro">
-            <input type="radio" id="mode-pro" name="mode" value="pro" aria-controls="pane-pro" disabled />
-            <span>👑 Pro (disabled)</span>
-          </label>
-        </div>
-      </fieldset>
+          <!-- Profile & drafts -->
+          <div class="row inline">
+            <label for="profil">Profil</label>
+            <div>
+              <select id="profil" name="profil" onchange="toggleDraftSelectors()">
+                <option value="EBSI">EBSI V 3.X</option>
+                <option value="DIIP_V3">DIIP V3</option>
+                <option value="DIIP_V4">DIIP V4</option>
+                <option value="INJI">INJI from MOSIP</option>
+                <option value="EWC">ARF EWC</option>
+                <option selected value="custom">Custom</option>
+              </select>
+              <small class="muted">Choose a profile or use <em>Custom</em> to select drafts.</small>
+            </div>
+          </div>
 
-      <!-- Mode explainer -->
-      <div id="modeExplainer" class="explainer">
-        <!-- Flash -->
-        <div id="pane-flash" class="explainer-card mode-pane active" data-mode="flash">
-          <div class="pill"><span class="icon" aria-hidden="true">⚡</span> Flash (default)</div>
-          <h3>Fast validation</h3>
-          <ul>
-            <li><strong>Approach:</strong> lightweight LLM pass optimized for speed and cost.</li>
-            <li><strong>Best for developers:</strong> batch runs, CI pipelines, quick feedback loops.</li>
-            <li><strong>Output:</strong> strict JSON (field-by-field <em>PASS/FAIL/WARN</em>) ready for tooling.</li>
-            <li><strong>When to use:</strong> straightforward issuers/verifiers, unsigned metadata, common profiles.</li>
-          </ul>
-          <p class="hint">Tip: keep this on by default; escalate only when results are uncertain or contradictory.</p>
-        </div>
+          <div id="draftSelectors" class="row inline" style="display:none">
+            <label>Draft versions</label>
+            <div class="row" style="grid-template-columns: 1fr 1fr; gap: .75rem;">
+              <div>
+                <label for="oidc4vp_version" class="muted" style="font-weight:500;">OIDC4VP</label>
+                <select id="oidc4vp_version" name="oidc4vp_draft">
+                  {% for i in range(18, 30) %}
+                  <option value="{{ i }}" {% if i == 18 %}selected{% endif %}>Draft {{ i }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div>
+                <label for="oidc4vci_version" class="muted" style="font-weight:500;">OIDC4VCI</label>
+                <select id="oidc4vci_version" name="oidc4vci_draft">
+                  {% for i in range(10, 18) %}
+                  <option value="{{ i }}" {% if i == 13 %}selected{% endif %}>Draft {{ i }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
 
-        <!-- Escalation -->
-        <div id="pane-escalation" class="explainer-card mode-pane" data-mode="escalation">
-          <div class="pill"><span class="icon" aria-hidden="true">🧠</span> Escalation</div>
-          <h3>Deeper reasoning for edge cases</h3>
-          <ul>
-            <li><strong>Approach:</strong> higher-capacity LLM pass that allocates more compute to cross-checks.</li>
-            <li><strong>Best for developers:</strong> multi-AS setups, JWS-signed metadata, nuanced profile rules.</li>
-            <li><strong>Output:</strong> the same strict JSON, plus <em>richer rationales</em> for failed checks.</li>
-            <li><strong>When to use:</strong> Flash returns <em>UNCERTAIN</em>, conflicting fields, or complex issuer configs.</li>
-          </ul>
-          <p class="hint">Trade-off: slower and pricier than Flash, but reduces false negatives on tricky inputs.</p>
-        </div>
+          <!-- QR content -->
+          <div class="row">
+            <label for="qrcode">QR code / deeplink content</label>
+            <textarea id="qrcode" name="qrcode" aria-describedby="qrHelp" placeholder="Paste the QR code content or deeplink value here."></textarea>
 
-        <!-- Pro (disabled / paid) -->
-        <div id="pane-pro" class="explainer-card mode-pane" data-mode="pro" aria-disabled="true">
-          <div class="pill disabled-note"><span class="icon" aria-hidden="true">👑</span> Pro (paid, disabled)</div>
-          <h3>Audit-grade explanations with spec links</h3>
-          <ul>
-            <li><strong>Approach:</strong> premium reasoning pass with expanded analysis budget.</li>
-            <li><strong>For developers & auditors:</strong> includes <em>clear links to the relevant OIDC4VC(I)/OIDC4VP spec sections</em> for every failure/warning.</li>
-            <li><strong>Output:</strong> structured JSON + human-readable report (section references, rationale, and remediation hints).</li>
-            <li class="disabled-note"><strong>Status:</strong> not available on this page. Contact us to enable Pro.</li>
-          </ul>
+            <div class="toolbar" aria-live="polite">
+              <div class="toolbar-left">
+                <button type="button" class="btn icon" id="pasteBtn">📋 Paste</button>
+                <button type="button" class="btn icon" id="clearBtn">🧹 Clear</button>
+                <div class="btn icon" style="position:relative;">
+                  🔽 Samples
+                  <select id="sampleSelect" aria-label="Insert sample" style="position:absolute; inset:0; opacity:0; cursor:pointer;">
+                    <option value="">Choose a sample…</option>
+                    <option value="sample_offer">Credential Offer (VCI)</option>
+                    <option value="sample_vp">Authorization Request (VP)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="toolbar-right">
+                <small id="qrHelp" class="muted">Supports full deep links and JSON payloads.</small>
+                <small class="muted" id="countInfo">0 chars</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="row" style="justify-content:center">
+            <button type="submit" class="btn primary" id="submitBtn">Run Diagnostic</button>
+            <button type="reset" class="btn" id="resetBtn">Reset</button>
+          </div>
+        </form>
+      </div>
+      <div class="card-footer">
+        <div class="notice">
+          <div>ℹ️</div>
+          <div>
+            <div class="muted">An OpenAI model is used in addition to Web3 Digital Wallet testing tools and datasets. <strong>Do not use personal data.</strong></div>
+            <div class="counter">Issuer and verifier QR codes tested: <strong>{{request_number}}</strong></div>
+          </div>
         </div>
       </div>
+    </section>
 
-      <div style="display: flex; gap: 30px; justify-content: center; align-items: center;">
-        <label for="profil"><strong>Profil:</strong></label>
-        <select id="profil" name="profil" onchange="toggleDraftSelectors()">
-          <option value="EBSI">EBSI V 3.X</option>
-          <option value="DIIP_V3">DIIP V3</option>
-          <option value="DIIP_V4">DIIP V4</option>
-          <option value="INJI">INJI from MOSIP</option>
-          <option value="EWC">ARF EWC</option>
-          <option selected value="custom">Custom</option>
-        </select>
-      </div>
-
-      <div id="draftSelectors" style="display: none; gap: 30px; justify-content: center; align-items: center;">
-        <label for="oidc4vp_version"><strong>OIDC4VP Draft:</strong></label>
-        <select id="oidc4vp_version" name="oidc4vp_draft">
-          {% for i in range(18, 30) %}
-          <option value="{{ i }}" {% if i == 18 %}selected{% endif %}>Draft {{ i }}</option>
-          {% endfor %}
-        </select>
-
-        <label for="oidc4vci_version"><strong>OIDC4VCI Draft:</strong></label>
-        <select id="oidc4vci_version" name="oidc4vci_draft">
-          {% for i in range(10, 18) %}
-          <option value="{{ i }}" {% if i == 13 %}selected{% endif %}>Draft {{ i }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-    <textarea placeholder="Paste the QR code content or deeplink value here. Example:
-openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%22%2C+%22credential_configuration_ids%22%3A+%5B%22Pid%22%5D%2C+%22grants%22%3A+%7B%22authorization_code%22%3A+%7B%22issuer_state%22%3A+%22test9%22%2C+%22authorization_server%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%2Fstandalone%22%7D%7D%7D" name="qrcode" style="display: block; width: 600px; height: 600px; min-height: 600px; padding: 24px; font-size: 18px; font-family: monospace; border-radius: 8px; border: 1px solid #ccc; resize: vertical; box-sizing: border-box !important; overflow: auto !important;"></textarea>
-
-      <button type="submit" style="align-self: center; padding: 12px 30px; font-size: 16px; background-color: #0057FF; color: white; border: none; border-radius: 6px; cursor: pointer;">
-        Run Diagnostic
-      </button>
-    </form>
-
-    <p style="margin-top: 30px; text-align: center;">
-      Issuer and verifier QR codes tested: <strong>{{request_number}}</strong>
-    </p>
-
-    <p style="font-size: 14px; color: #555; text-align: center; margin-top: 40px;">
-      An OpenAI model is used in addition to Web3 Digital Wallet testing tools and datasets. <strong>Do not use personal data</strong>.
-    </p>
-  </div>
-
-  {% include 'footer.html' %}
+    <footer>
+      <p>Contact us at <a href="mailto:contact@talao.io">contact@talao.io</a> · <a href="https://www.linkedin.com/company/79104266">LinkedIn</a></p>
+      <p><a href="https://altme.io/privacy">Privacy Policy</a> · <a href="https://altme.io/cgu">Terms</a></p>
+    </footer>
+  </main>
 
   <script>
+    // Toggle draft selectors when profile is custom
     function toggleDraftSelectors() {
       const profil = document.getElementById('profil').value;
       const draftSection = document.getElementById('draftSelectors');
-      draftSection.style.display = (profil === 'custom') ? 'flex' : 'none';
+      draftSection.style.display = (profil === 'custom') ? 'grid' : 'none';
     }
-    window.onload = toggleDraftSelectors;
-  </script>
+    window.addEventListener('load', toggleDraftSelectors);
 
-  <script>
-    // Robust mode switcher: keeps explainer in sync with selected radio
-    document.addEventListener('DOMContentLoaded', function () {
+    // Mode explainer switch
+    (function() {
       const panes = document.querySelectorAll('#modeExplainer .mode-pane');
-      const modeRadios = document.querySelectorAll('input[name="mode"]');
-
+      const radios = document.querySelectorAll('input[name="mode"]');
       function setPane(mode) {
-        panes.forEach(p => p.classList.toggle('active', p.dataset.mode === mode));
+        panes.forEach(p => {
+          const active = p.dataset.mode === mode;
+          p.classList.toggle('active', active);
+          p.hidden = !active;
+        });
       }
-
-      // Initialize to the checked radio (or first radio as fallback)
-      const checked = document.querySelector('input[name="mode"]:checked') || modeRadios[0];
+      const checked = document.querySelector('input[name="mode"]:checked');
       if (checked) setPane(checked.value);
+      radios.forEach(r => r.addEventListener('change', e => setPane(e.target.value)));
+    })();
 
-      // Listen for changes
-      modeRadios.forEach(r => {
-        r.addEventListener('change', (e) => setPane(e.target.value));
+    // Toolbar helpers
+    (function() {
+      const ta = document.getElementById('qrcode');
+      const countInfo = document.getElementById('countInfo');
+      const pasteBtn = document.getElementById('pasteBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const sampleSelect = document.getElementById('sampleSelect');
+      const submitBtn = document.getElementById('submitBtn');
+      const form = document.getElementById('qrForm');
+
+      const samples = {
+        sample_offer: 'openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%22%2C+%22credential_configuration_ids%22%3A+%5B%22Pid%22%5D%2C+%22grants%22%3A+%7B%22authorization_code%22%3A+%7B%22issuer_state%22%3A+%22test9%22%2C+%22authorization_server%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%2Fstandalone%22%7D%7D%7D',
+        sample_vp: 'openid-vc://?client_id=talao.co&request_uri=https%3A%2F%2Ftalao.co%2Fverifier%2Fwallet%2Frequest_uri%2F7db48240-7dbe-11f0-91c7-0a1628958560'
+      };
+
+      function updateCount(){
+        const len = ta.value.length;
+        countInfo.textContent = len + ' chars';
+      }
+      ta.addEventListener('input', updateCount);
+      updateCount();
+
+      pasteBtn?.addEventListener('click', async () => {
+        try {
+          const txt = await navigator.clipboard.readText();
+          if (txt) { ta.value = txt; ta.focus(); updateCount(); }
+        } catch(e) {
+          alert('Clipboard access not available. Please paste with Ctrl/Cmd+V.');
+        }
       });
-    });
+
+      clearBtn?.addEventListener('click', () => { ta.value = ''; ta.focus(); updateCount(); });
+
+      sampleSelect?.addEventListener('change', (e) => {
+        const key = e.target.value; if (!key) return;
+        ta.value = samples[key] || ''; ta.focus(); updateCount(); e.target.value = '';
+      });
+
+      form.addEventListener('submit', () => {
+        submitBtn.disabled = true; submitBtn.textContent = 'Running…';
+      });
+
+    })();
   </script>
-
 </body>
-
 </html>
