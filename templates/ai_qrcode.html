@@ -1,92 +1,185 @@
 <!DOCTYPE html>
 <!-- home.html
-last one-->
+last one (fixed: working mode switch) -->
 <html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/static/img/altmeIcon.png">
-    <title>Talao</title>
-    <link rel="stylesheet" href="/static/ai_qrcode.css">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/static/img/altmeIcon.png">
+  <title>Talao</title>
+  <link rel="stylesheet" href="/static/ai_qrcode.css">
+  <style>
+    /* --- Mode explainer + switch --- */
+    .explainer { max-width: 820px; margin: 0 auto 8px auto }
+    .explainer-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 18px; background: #fafafa }
+    .explainer h3 { margin: 0 0 6px 0; font-size: 1.05rem }
+    .pill { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; border: 1px solid #e5e7eb; border-radius: 9999px; padding: 4px 10px; margin-right: 8px; background: #fff }
+    .pill .icon { font-size: 1.05rem }
+    .explainer ul { margin: 8px 0 0 18px; padding: 0 }
+    .explainer li { margin: 4px 0 }
+    .hint { font-size: .9rem; color: #666; margin-top: 8px }
+    .disabled-note { opacity: .8 }
+    .linklike { color: #0a58ff; text-decoration: underline; cursor: help }
+    /* visibility toggling */
+    .mode-pane { display: none }
+    .mode-pane.active { display: block }
+
+    /* Mode segmented control */
+    .mode-switch { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 6px auto 16px auto }
+    .mode-option { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 9999px; cursor: pointer; user-select: none; background: #fff }
+    .mode-option input { accent-color: #0057FF }
+    .mode-option[aria-disabled="true"] { opacity: .6; cursor: not-allowed }
+  </style>
 </head>
 
 <body>
 
-    {% include 'header.html' %}
+  {% include 'header.html' %}
 
+  <div id="mainBox" style="max-width: 900px; margin: auto; padding: 30px; font-family: 'Roboto', sans-serif;">
 
-
-    
-<div id="mainBox" style="max-width: 900px; margin: auto; padding: 30px; font-family: 'Roboto', sans-serif;">
-
-    <h1 style="text-align: center; margin-bottom: 30px;">Test your OIDC4VC Issuers or Verifiers compliance with standards and best practicies</h1>
+    <h1 style="text-align: center; margin-bottom: 30px;">Validate your OIDC4VC Issuers or Verifiers compliance with standards and best practices</h1>
 
     <form action="/ai/qrcode" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
-        
-        
-    <div style="display: flex; gap: 30px; justify-content: center; align-items: center;">
+
+      <!-- Mode selector -->
+      <fieldset aria-label="Analysis mode" style="border:0; padding:0; margin:0">
+        <legend style="position:absolute; left:-10000px;">Choose analysis mode</legend>
+        <div class="mode-switch" role="radiogroup" aria-label="Mode">
+          <label class="mode-option" for="mode-flash">
+            <input type="radio" id="mode-flash" name="mode" value="flash" checked aria-controls="pane-flash" />
+            <span>⚡ Flash (default)</span>
+          </label>
+          <label class="mode-option" for="mode-escalation">
+            <input type="radio" id="mode-escalation" name="mode" value="escalation" aria-controls="pane-escalation" />
+            <span>🧠 Escalation</span>
+          </label>
+          <label class="mode-option" aria-disabled="true" for="mode-pro">
+            <input type="radio" id="mode-pro" name="mode" value="pro" aria-controls="pane-pro" disabled />
+            <span>👑 Pro (disabled)</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <!-- Mode explainer -->
+      <div id="modeExplainer" class="explainer">
+        <!-- Flash -->
+        <div id="pane-flash" class="explainer-card mode-pane active" data-mode="flash">
+          <div class="pill"><span class="icon" aria-hidden="true">⚡</span> Flash (default)</div>
+          <h3>Fast validation</h3>
+          <ul>
+            <li><strong>Approach:</strong> lightweight LLM pass optimized for speed and cost.</li>
+            <li><strong>Best for developers:</strong> batch runs, CI pipelines, quick feedback loops.</li>
+            <li><strong>Output:</strong> strict JSON (field-by-field <em>PASS/FAIL/WARN</em>) ready for tooling.</li>
+            <li><strong>When to use:</strong> straightforward issuers/verifiers, unsigned metadata, common profiles.</li>
+          </ul>
+          <p class="hint">Tip: keep this on by default; escalate only when results are uncertain or contradictory.</p>
+        </div>
+
+        <!-- Escalation -->
+        <div id="pane-escalation" class="explainer-card mode-pane" data-mode="escalation">
+          <div class="pill"><span class="icon" aria-hidden="true">🧠</span> Escalation</div>
+          <h3>Deeper reasoning for edge cases</h3>
+          <ul>
+            <li><strong>Approach:</strong> higher-capacity LLM pass that allocates more compute to cross-checks.</li>
+            <li><strong>Best for developers:</strong> multi-AS setups, JWS-signed metadata, nuanced profile rules.</li>
+            <li><strong>Output:</strong> the same strict JSON, plus <em>richer rationales</em> for failed checks.</li>
+            <li><strong>When to use:</strong> Flash returns <em>UNCERTAIN</em>, conflicting fields, or complex issuer configs.</li>
+          </ul>
+          <p class="hint">Trade-off: slower and pricier than Flash, but reduces false negatives on tricky inputs.</p>
+        </div>
+
+        <!-- Pro (disabled / paid) -->
+        <div id="pane-pro" class="explainer-card mode-pane" data-mode="pro" aria-disabled="true">
+          <div class="pill disabled-note"><span class="icon" aria-hidden="true">👑</span> Pro (paid, disabled)</div>
+          <h3>Audit-grade explanations with spec links</h3>
+          <ul>
+            <li><strong>Approach:</strong> premium reasoning pass with expanded analysis budget.</li>
+            <li><strong>For developers & auditors:</strong> includes <em>clear links to the relevant OIDC4VC(I)/OIDC4VP spec sections</em> for every failure/warning.</li>
+            <li><strong>Output:</strong> structured JSON + human-readable report (section references, rationale, and remediation hints).</li>
+            <li class="disabled-note"><strong>Status:</strong> not available on this page. Contact us to enable Pro.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 30px; justify-content: center; align-items: center;">
         <label for="profil"><strong>Profil:</strong></label>
         <select id="profil" name="profil" onchange="toggleDraftSelectors()">
-            <option value="EBSI">EBSI V 3.X</option>
-            <option value="DIIP_V3">DIIP V3</option>
-            <option value="DIIP_V4">DIIP V4</option>
-            <option value="INJI">INJI from MOSIP</option>
-            <option value="EWC">ARF EWC</option>
-            <option selected value="custom">Custom</option>
+          <option value="EBSI">EBSI V 3.X</option>
+          <option value="DIIP_V3">DIIP V3</option>
+          <option value="DIIP_V4">DIIP V4</option>
+          <option value="INJI">INJI from MOSIP</option>
+          <option value="EWC">ARF EWC</option>
+          <option selected value="custom">Custom</option>
         </select>
-    </div>
+      </div>
 
-    <div id="draftSelectors" style="display: none; gap: 30px; justify-content: center; align-items: center;">
+      <div id="draftSelectors" style="display: none; gap: 30px; justify-content: center; align-items: center;">
         <label for="oidc4vp_version"><strong>OIDC4VP Draft:</strong></label>
         <select id="oidc4vp_version" name="oidc4vp_draft">
-            {% for i in range(18, 30) %}
-                <option value="{{ i }}" {% if i == 18 %}selected{% endif %}>Draft {{ i }}</option>
-            {% endfor %}
+          {% for i in range(18, 30) %}
+          <option value="{{ i }}" {% if i == 18 %}selected{% endif %}>Draft {{ i }}</option>
+          {% endfor %}
         </select>
 
         <label for="oidc4vci_version"><strong>OIDC4VCI Draft:</strong></label>
         <select id="oidc4vci_version" name="oidc4vci_draft">
-            {% for i in range(10, 18) %}
-                <option value="{{ i }}" {% if i == 13 %}selected{% endif %}>Draft {{ i }}</option>
-            {% endfor %}
+          {% for i in range(10, 18) %}
+          <option value="{{ i }}" {% if i == 13 %}selected{% endif %}>Draft {{ i }}</option>
+          {% endfor %}
         </select>
-    </div>
+      </div>
 
+    <textarea placeholder="Paste the QR code content or deeplink value here. Example:
+openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%22%2C+%22credential_configuration_ids%22%3A+%5B%22Pid%22%5D%2C+%22grants%22%3A+%7B%22authorization_code%22%3A+%7B%22issuer_state%22%3A+%22test9%22%2C+%22authorization_server%22%3A+%22https%3A%2F%2Ftalao.co%2Fissuer%2Fpexkhrzlmj%2Fstandalone%22%7D%7D%7D" name="qrcode" style="display: block; width: 600px; height: 600px; min-height: 600px; padding: 24px; font-size: 18px; font-family: monospace; border-radius: 8px; border: 1px solid #ccc; resize: vertical; box-sizing: border-box !important; overflow: auto !important;"></textarea>
 
-<textarea placeholder="Paste the QR code content or deeplink value here" name="qrcode" style="display: block; width: 600px; height: 600px; min-height: 600px; padding: 24px; font-size: 18px; font-family: monospace; border-radius: 8px; border: 1px solid #ccc; resize: vertical; box-sizing: border-box !important; overflow: auto !important;"></textarea>
-
-        <button type="submit" style="align-self: center; padding: 12px 30px; font-size: 16px; background-color: #0057FF; color: white; border: none; border-radius: 6px; cursor: pointer;">
-            Run Diagnostic
-        </button>
+      <button type="submit" style="align-self: center; padding: 12px 30px; font-size: 16px; background-color: #0057FF; color: white; border: none; border-radius: 6px; cursor: pointer;">
+        Run Diagnostic
+      </button>
     </form>
 
     <p style="margin-top: 30px; text-align: center;">
-        Issuer and verifier QR codes tested: <strong>{{request_number}}</strong>
+      Issuer and verifier QR codes tested: <strong>{{request_number}}</strong>
     </p>
 
     <p style="font-size: 14px; color: #555; text-align: center; margin-top: 40px;">
-        An OpenAI model is used in addition to Web3 Digital Wallet testing tools and datasets. <strong>Do not use personal data</strong>.
+      An OpenAI model is used in addition to Web3 Digital Wallet testing tools and datasets. <strong>Do not use personal data</strong>.
     </p>
-</div>
+  </div>
 
-        
-        
-   
+  {% include 'footer.html' %}
 
-    {% include 'footer.html' %}
-
-
-
-<script>
+  <script>
     function toggleDraftSelectors() {
-        const profil = document.getElementById('profil').value;
-        const draftSection = document.getElementById('draftSelectors');
-        draftSection.style.display = (profil === 'custom') ? 'flex' : 'none';
+      const profil = document.getElementById('profil').value;
+      const draftSection = document.getElementById('draftSelectors');
+      draftSection.style.display = (profil === 'custom') ? 'flex' : 'none';
     }
-     window.onload = toggleDraftSelectors;
-</script>
+    window.onload = toggleDraftSelectors;
+  </script>
+
+  <script>
+    // Robust mode switcher: keeps explainer in sync with selected radio
+    document.addEventListener('DOMContentLoaded', function () {
+      const panes = document.querySelectorAll('#modeExplainer .mode-pane');
+      const modeRadios = document.querySelectorAll('input[name="mode"]');
+
+      function setPane(mode) {
+        panes.forEach(p => p.classList.toggle('active', p.dataset.mode === mode));
+      }
+
+      // Initialize to the checked radio (or first radio as fallback)
+      const checked = document.querySelector('input[name="mode"]:checked') || modeRadios[0];
+      if (checked) setPane(checked.value);
+
+      // Listen for changes
+      modeRadios.forEach(r => {
+        r.addEventListener('change', (e) => setPane(e.target.value));
+      });
+    });
+  </script>
 
 </body>
 

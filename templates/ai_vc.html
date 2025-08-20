@@ -1,79 +1,158 @@
 <!DOCTYPE html>
 <!-- home.html
-last one-->
+last one (with mode switches added) -->
 <html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/static/img/altmeIcon.png">
-    <title>Talao</title>
-    <link rel="stylesheet" href="/static/ai_vc.css">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/static/img/altmeIcon.png">
+  <title>Talao</title>
+  <link rel="stylesheet" href="/static/ai_vc.css">
+  <style>
+    /* --- Mode explainer + switch --- */
+    .explainer { max-width: 820px; margin: 0 auto 8px auto }
+    .explainer-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 18px; background: #fafafa }
+    .explainer h3 { margin: 0 0 6px 0; font-size: 1.05rem }
+    .pill { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; border: 1px solid #e5e7eb; border-radius: 9999px; padding: 4px 10px; margin-right: 8px; background: #fff }
+    .pill .icon { font-size: 1.05rem }
+    .explainer ul { margin: 8px 0 0 18px; padding: 0 }
+    .explainer li { margin: 4px 0 }
+    .hint { font-size: .9rem; color: #666; margin-top: 8px }
+    .disabled-note { opacity: .8 }
+    .mode-pane { display: none }
+    .mode-pane.active { display: block }
+
+    /* Mode segmented control */
+    .mode-switch { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 6px auto 16px auto }
+    .mode-option { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 9999px; cursor: pointer; user-select: none; background: #fff }
+    .mode-option input { accent-color: #0057FF }
+    .mode-option[aria-disabled="true"] { opacity: .6; cursor: not-allowed }
+  </style>
 </head>
 
 <body>
 
-    {% include 'header.html' %}
+  {% include 'header.html' %}
 
-    
-<div id="mainBox" style="max-width: 900px; margin: auto; padding: 30px; font-family: 'Roboto', sans-serif;">
+  <div id="mainBox" style="max-width: 900px; margin: auto; padding: 30px; font-family: 'Roboto', sans-serif;">
 
-    <h1 style="text-align: center; margin-bottom: 30px;">Check your VC/VP (json-ld, sd-jwt vc, jwt vc)</h1>
+    <h1 style="text-align: center; margin-bottom: 30px;">Validate your VC/VP (json-ld, sd-jwt vc, jwt vc)</h1>
 
     <form action="/ai/vc" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
-        
-        <div style="display: flex; gap: 30px; justify-content: center; align-items: center;">
-            <label for="sdjwtvc_version"><strong>SD-JWT-VC Draft:</strong></label>
-            <select id="sdjwtvc_version" name="sdjwtvc_draft">
-                {% for i in range(7, 10) %}
-                    <option value="{{ i }}" {% if i == 9 %}selected{% endif %}>Draft {{ i }}</option>
-                {% endfor %}
-            </select>
-            <label for="vcdm_version"><strong>VCDM:</strong></label>
-            <select id="vcdm_version" name="vcdm_draft">
-                {% for i in ["1.1", "1.1"] %}
-                    <option value="{{ i }}" {% if i == 1.1 %}selected{% endif %}>{{ i }}</option>
-                {% endfor %}
-            </select>
+
+      <!-- Mode selector -->
+      <fieldset aria-label="Analysis mode" style="border:0; padding:0; margin:0">
+        <legend style="position:absolute; left:-10000px;">Choose analysis mode</legend>
+        <div class="mode-switch" role="radiogroup" aria-label="Mode">
+          <label class="mode-option" for="mode-flash">
+            <input type="radio" id="mode-flash" name="mode" value="flash" checked aria-controls="pane-flash" />
+            <span>⚡ Flash (default)</span>
+          </label>
+          <label class="mode-option" for="mode-escalation">
+            <input type="radio" id="mode-escalation" name="mode" value="escalation" aria-controls="pane-escalation" />
+            <span>🧠 Escalation</span>
+          </label>
+          <label class="mode-option" aria-disabled="true" for="mode-pro">
+            <input type="radio" id="mode-pro" name="mode" value="pro" aria-controls="pane-pro" disabled />
+            <span>👑 Pro (disabled)</span>
+          </label>
         </div>
-        <textarea placeholder="Paste your VC or VP here" name="vc" style="
-            display: block;
-            width: 600px;
-            height: 600px;
-            min-height: 600px;
-            padding: 24px;
-            font-size: 18px;
-            font-family: monospace;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            resize: vertical;
-            box-sizing: border-box !important;
-            overflow: auto !important;"></textarea>
+      </fieldset>
 
+      <!-- Mode explainer -->
+      <div id="modeExplainer" class="explainer">
+        <!-- Flash -->
+        <div id="pane-flash" class="explainer-card mode-pane active" data-mode="flash">
+          <div class="pill"><span class="icon" aria-hidden="true">⚡</span> Flash (default)</div>
+          <h3>Fast validation</h3>
+          <ul>
+            <li><strong>Approach:</strong> lightweight LLM pass optimized for speed and cost.</li>
+            <li><strong>Best for developers:</strong> batch runs, CI pipelines, quick feedback loops.</li>
+            <li><strong>Output:</strong> strict JSON (field-by-field <em>PASS/FAIL/WARN</em>) ready for tooling.</li>
+            <li><strong>When to use:</strong> straightforward issuers/verifiers, unsigned metadata, common profiles.</li>
+          </ul>
+          <p class="hint">Tip: keep this on by default; escalate only when results are uncertain or contradictory.</p>
+        </div>
 
+        <!-- Escalation -->
+        <div id="pane-escalation" class="explainer-card mode-pane" data-mode="escalation">
+          <div class="pill"><span class="icon" aria-hidden="true">🧠</span> Escalation</div>
+          <h3>Deeper reasoning for edge cases</h3>
+          <ul>
+            <li><strong>Approach:</strong> higher-capacity LLM pass that allocates more compute to cross-checks.</li>
+            <li><strong>Best for developers:</strong> multi-AS setups, JWS-signed metadata, nuanced profile rules.</li>
+            <li><strong>Output:</strong> the same strict JSON, plus <em>richer rationales</em> for failed checks.</li>
+            <li><strong>When to use:</strong> Flash returns <em>UNCERTAIN</em>, conflicting fields, or complex issuer configs.</li>
+          </ul>
+          <p class="hint">Trade-off: slower and pricier than Flash, but reduces false negatives on tricky inputs.</p>
+        </div>
 
+        <!-- Pro (disabled / paid) -->
+        <div id="pane-pro" class="explainer-card mode-pane" data-mode="pro" aria-disabled="true">
+          <div class="pill disabled-note"><span class="icon" aria-hidden="true">👑</span> Pro (paid, disabled)</div>
+          <h3>Audit-grade explanations with spec links</h3>
+          <ul>
+            <li><strong>Approach:</strong> premium reasoning pass with expanded analysis budget.</li>
+            <li><strong>For developers & auditors:</strong> includes <em>clear links to the relevant specs</em> for every failure/warning.</li>
+            <li><strong>Output:</strong> structured JSON + human-readable report (section references, rationale, and remediation hints).</li>
+            <li class="disabled-note"><strong>Status:</strong> not available on this page. Contact us to enable Pro.</li>
+          </ul>
+        </div>
+      </div>
 
-        <button type="submit" style="align-self: center; padding: 12px 30px; font-size: 16px; background-color: #0057FF; color: white; border: none; border-radius: 6px; cursor: pointer;">
-            Run Diagnostic
-        </button>
+      <div style="display: flex; gap: 30px; justify-content: center; align-items: center;">
+        <label for="sdjwtvc_version"><strong>SD-JWT-VC Draft:</strong></label>
+        <select id="sdjwtvc_version" name="sdjwtvc_draft">
+          {% for i in range(7, 10) %}
+          <option value="{{ i }}" {% if i == 9 %}selected{% endif %}>Draft {{ i }}</option>
+          {% endfor %}
+        </select>
+        <label for="vcdm_version"><strong>VCDM:</strong></label>
+        <select id="vcdm_version" name="vcdm_draft">
+          {% for i in ["1.1", "1.1"] %}
+          <option value="{{ i }}" {% if i == 1.1 %}selected{% endif %}>{{ i }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <textarea placeholder="Paste your VC or VP here" name="vc" style="display: block; width: 600px; height: 600px; min-height: 600px; padding: 24px; font-size: 18px; font-family: monospace; border-radius: 8px; border: 1px solid #ccc; resize: vertical; box-sizing: border-box !important; overflow: auto !important;"></textarea>
+
+      <button type="submit" style="align-self: center; padding: 12px 30px; font-size: 16px; background-color: #0057FF; color: white; border: none; border-radius: 6px; cursor: pointer;">
+        Run Diagnostic
+      </button>
     </form>
 
     <p style="margin-top: 30px; text-align: center;">
-        VC tested: <strong>{{request_number}}</strong>
+      VC tested: <strong>{{request_number}}</strong>
     </p>
 
     <p style="font-size: 14px; color: #555; text-align: center; margin-top: 40px;">
-        An OpenAI model is used in addition to Web3 Digital Wallet testing tools and datasets. <strong>Do not use personal data</strong>.
+      An OpenAI model is used in addition to Web3 Digital Wallet testing tools and datasets. <strong>Do not use personal data</strong>.
     </p>
-</div>
+  </div>
 
-        
-        
-   
+  {% include 'footer.html' %}
 
-    {% include 'footer.html' %}
+  <script>
+    // Robust mode switcher: keeps explainer in sync with selected radio
+    document.addEventListener('DOMContentLoaded', function () {
+      const panes = document.querySelectorAll('#modeExplainer .mode-pane');
+      const modeRadios = document.querySelectorAll('input[name="mode"]');
 
+      function setPane(mode) {
+        panes.forEach(p => p.classList.toggle('active', p.dataset.mode === mode));
+      }
+
+      const checked = document.querySelector('input[name="mode"]:checked') || modeRadios[0];
+      if (checked) setPane(checked.value);
+
+      modeRadios.forEach(r => {
+        r.addEventListener('change', (e) => setPane(e.target.value));
+      });
+    });
+  </script>
 
 </body>
 

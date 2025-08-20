@@ -23,7 +23,7 @@ from jwcrypto import jwk, jwt
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 import requests
-provider = "openai"
+#provider = "openai"
 #provider = "gemini"
 
 
@@ -31,35 +31,51 @@ provider = "openai"
 with open("keys.json", "r") as f:
     keys = json.load(f)
 
+
 openai_model = ChatOpenAI(
     api_key=keys["openai"],
-    model="gpt-4o",
-    temperature=0,
+    model="gpt-5",
+    #temperature=0
+)
+
+
+openai_model_flash = ChatOpenAI(
+    api_key=keys["openai"],
+    model="gpt-5-mini",
+    #temperature=0
 )
 
 gemini_model = ChatGoogleGenerativeAI(
     google_api_key=keys["gemini"],
-    model="gemini-1.5-pro-latest",
-    temperature=0,
+    model="gemini-2.5-pro",
+    #temperature=0
+)
+
+gemini_model_flash = ChatGoogleGenerativeAI(
+    google_api_key=keys["gemini"],
+    model="gemini-2.5-flash",
+    #temperature=0
 )
 
 
 
-def get_llm_client():
-    if provider.lower() == "openai":
+def get_llm_client(model):
+    print("model = ", model)
+    if model == "flash":
+        return openai_model_flash
+    elif model == "escalation":
         return openai_model
-    elif provider.lower() == "gemini":
-        return gemini_model
+    elif model == "pro":
+        return openai_model
     else:
-        raise ValueError(f"Unsupported provider: {provider}")
+        raise ValueError(f"Unsupported provider: {model}")
 
-def engine():
-    if provider.lower() == "openai":
-        return "gpt-4o"
-    elif provider.lower() == "gemini":
-        return "gemini-2.5-flash-preview-05-20"
+
+def engine(model):
+    if model == "flash":
+        return "gpt-5-mini"
     else:
-        raise ValueError(f"Unsupported provider: {provider}")
+        return "gpt-5"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -69,8 +85,15 @@ ADVICE = "\n\nLLM can make mistakes. Check important info. For a deeper analysis
 MAX_RETRIES = 3
 DELAY_SECONDS = 2
 
-enc = tiktoken.encoding_for_model("gpt-4")  # or "gpt-3.5-turbo"
-
+try:
+    enc = tiktoken.encoding_for_model("gpt-5")
+except Exception:
+    # Some tiktoken versions may not have an explicit mapping for gpt-5 yet.
+    # Prefer the newer 200k encoding if available; otherwise fall back to cl100k_base.
+    try:
+        enc = tiktoken.get_encoding("o200k_base")
+    except Exception:
+        enc = tiktoken.get_encoding("cl100k_base")
 
 def base64url_decode(input_str):
     padding = '=' * ((4 - len(input_str) % 4) % 4)
@@ -203,7 +226,7 @@ def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str)
     return "Unknown VC format. Supported formats: SD-JWT VC, JWT VC (compact), JSON-LD VC."
 
 
-def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device):    
+def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model):    
     # Analyze a QR code and delegate based on protocol type
     profile = ""
     if profil == "EBSI":
@@ -230,9 +253,9 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device):
     logging.info('profil = %s, oidc4vci draft = %s, oidc4vp draft = %s', profil, oidc4vciDraft, oidc4vpDraft)
     result = parse_qs(parse_result.query)
     if result.get('credential_offer_uri') or result.get('credential_offer'):
-        return analyze_issuer_qrcode(qrcode, oidc4vciDraft, profile, device)
+        return analyze_issuer_qrcode(qrcode, oidc4vciDraft, profile, device, model)
     else:
-        return analyze_verifier_qrcode(qrcode, oidc4vpDraft, profile, device)
+        return analyze_verifier_qrcode(qrcode, oidc4vpDraft, profile, device, model)
     
 
 def get_verifier_request(qrcode, draft):
@@ -265,7 +288,7 @@ def get_verifier_request(qrcode, draft):
                 return None, None, "Error: iss is missing"
             else:
                 comment = verify_issuer_matches_cert(request.get('iss'), x5c_list)
-       
+    
     elif result.get("response_mode"):
         request = result
         comment = "Warning: Passing OIDC request parameters via the request or request_uri parameter using a signed JWT is more secure than passing them as plain query parameters."
@@ -285,7 +308,7 @@ def get_verifier_request(qrcode, draft):
     return request, presentation_definition, comment
 
 
-def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
+def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
     """
     Analyze a Verifiable Presentation (VP) in SD-JWT format and return a structured report.
     
@@ -451,7 +474,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     # Timestamp and attribution
     date = datetime.now().replace(microsecond=0).isoformat()
     mention = (
-        f"\n\nThe model {engine()} is used in conjunction with the Web3 Digital Wallet dataset.\n"
+        f"\n\nThe model {engine(model)} is used in conjunction with the Web3 Digital Wallet dataset.\n"
         f"This report is based on the IETF SD-JWT VC Draft {draft} specification.\n"
         f"Date of issuance: {date}. Web3 Digital Wallet 2025."
     )
@@ -488,7 +511,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     """
 
     # Call the OpenAI API
-    llm = get_llm_client()  # Add 'provider' param to function
+    llm = get_llm_client(model)  # Add 'provider' param to function
     response = llm.invoke([
         {"role": "system", "content": "You are an expert in SD-JWT VC specifications compliance."},
         {"role": "user", "content": prompt}
@@ -499,7 +522,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str) -> str:
     return response + ADVICE + mention
 
 
-def analyze_jwt_vc(token, draft, device):
+def analyze_jwt_vc(token, draft, device, model):
     """
     Analyze a Verifiable Presentation (VP) in JWT format and return a structured report.
     
@@ -510,8 +533,6 @@ def analyze_jwt_vc(token, draft, device):
     Returns:
         str: A markdown-formatted compliance report generated using OpenAI
     """
-    
-    llm = get_llm_client()
 
     # Decode SD-JWT header and payload
     jwt_header = get_header_from_token(token)
@@ -533,7 +554,7 @@ def analyze_jwt_vc(token, draft, device):
     # Timestamp and attribution
     date = datetime.now().replace(microsecond=0).isoformat()
     mention = (
-        f"\n\nThe model {engine()} is used in conjunction with the Web3 Digital Wallet dataset.\n"
+        f"\n\nThe model {engine(model)} is used in conjunction with the Web3 Digital Wallet dataset.\n"
         f"This report is based on the W3C VCDM {draft} specification.\n"
         f"Date of issuance: {date}. ©Web3 Digital Wallet 2025."
     )
@@ -558,7 +579,7 @@ def analyze_jwt_vc(token, draft, device):
     """
 
     # Call the LLM API
-    llm = get_llm_client()  # Add 'provider' param to function
+    llm = get_llm_client(model)  # Add 'provider' param to function
     response = llm.invoke([
         {"role": "system", "content": "You are an expert in JWT VC specifications compliance."},
         {"role": "user", "content": prompt}
@@ -569,7 +590,7 @@ def analyze_jwt_vc(token, draft, device):
     return response + ADVICE + mention
 
     
-def analyze_jsonld_vc(vc: str, draft: str, device: str) -> str:
+def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str) -> str:
     """
     Analyze a Verifiable Presentation (VP) in JSON-LD format and return a structured report.
     
@@ -597,7 +618,7 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str) -> str:
     # Timestamp and attribution
     date = datetime.now().replace(microsecond=0).isoformat()
     mention = (
-        f"\n\nThe model {engine()} is used in conjunction with the Web3 Digital Wallet dataset.\n"
+        f"\n\nThe model {engine(model)} is used in conjunction with the Web3 Digital Wallet dataset.\n"
         f"This report is based on the W3C VC DM {draft} specification.\n"
         f"Date of issuance: {date}. ©Web3 Digital Wallet 2025."
     )
@@ -620,7 +641,7 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str) -> str:
     """
     
     # Call the OpenAI API
-    llm = get_llm_client()  # Add 'provider' param to function
+    llm = get_llm_client(model)  # Add 'provider' param to function
     response = llm.invoke([
         {"role": "system", "content": "You are an expert in VC DM specifications compliance."},
         {"role": "user", "content": prompt}
@@ -675,7 +696,7 @@ def get_issuer_data(qrcode, draft):
     return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
 
 
-def analyze_issuer_qrcode(qrcode, draft, profile, device):    
+def analyze_issuer_qrcode(qrcode, draft, profile, device, model):    
     logging.info("draft = %s", draft)
     # Analyze issuer QR code and generate a structured report using OpenAI
     if not draft:
@@ -702,7 +723,7 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device):
     if int(draft) <= 11:
         context += "\n If EBSI tell to the user to add did:key:jwk_jcs-pub as subject_syntax_type_supported in the authorization server metadata"
     mention = (
-        f"\n\n The model {engine()} is used in addition to a Web3 Digital Wallet dataset."
+        f"\n\n The model {engine(model)} is used in addition to a Web3 Digital Wallet dataset."
         f" This report is based on the OIDC4VCI specifications Draft {draft}."
         f" Date of issuance: {date}. © Web3 Digital Wallet 2025."
     )
@@ -755,7 +776,7 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device):
         }
     ]
     
-    llm = get_llm_client()  
+    llm = get_llm_client(model)  
     response = llm.invoke(messages).content
 
     result = response + ADVICE + mention
@@ -764,7 +785,7 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device):
     return result
 
 
-def analyze_verifier_qrcode(qrcode, draft, profile, device):   
+def analyze_verifier_qrcode(qrcode, draft, profile, device, model):   
     
     # Analyze verifier QR code and generate a structured report using OpenAI
     if not draft:
@@ -792,7 +813,7 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device):
     logging.info("Token count: %s", len(tokens))
     
     mention = (
-        f"\n\n The model {engine()} is used in addition to a Web3 Digital Wallet dataset."
+        f"\n\n The model {engine(model)} is used in addition to a Web3 Digital Wallet dataset."
         f" This report is based on the OIDC4VP specifications Draft {draft}."
         f" Date of issuance: {date}. © Web3 Digital Wallet 2025."
     )
@@ -842,7 +863,7 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device):
         }
     ]
 
-    llm = get_llm_client()  # Add 'provider' param to function
+    llm = get_llm_client(model)  # Add 'provider' param to function
     response = llm.invoke(messages).content
 
     result = response + ADVICE + mention
