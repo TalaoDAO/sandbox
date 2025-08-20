@@ -198,7 +198,7 @@ def extract_SAN_DNS(pem_certificate):
         return "Error: no SAN extension found in the x509 certificate."
     
 
-def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str):
+def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str, model: str):
     """
     Detect the format of a Verifiable Credential (VC) and route to the correct analysis function.
     Args:
@@ -209,17 +209,17 @@ def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str)
 
     # 1. SD-JWT: starts with base64 segment and uses '~' delimiter
     if "~" in vc and "." in vc.split("~")[0]:
-        return analyze_sd_jwt_vc(vc, sdjwtvc_draft, device)
+        return analyze_sd_jwt_vc(vc, sdjwtvc_draft, device, model)
 
     # 2. JWT VC (compact JWT): 3 base64 parts separated by dots
     if vc.count(".") == 2 and all(len(part.strip()) > 0 for part in vc.split(".")):
-        return analyze_jwt_vc(vc, vcdm_draft, device)
+        return analyze_jwt_vc(vc, vcdm_draft, device, model)
 
     # 3. JSON-LD: must be valid JSON with @context
     try:
         vc_json = json.loads(vc)
         if "@context" in vc_json and "type" in vc_json:
-            return analyze_jsonld_vc(vc_json, vcdm_draft, device)
+            return analyze_jsonld_vc(vc_json, vcdm_draft, device, model)
     except Exception as e:
         return "Invalid JSON. Cannot parse input. " + str(e)
 
