@@ -66,7 +66,7 @@ gemini_model_flash = ChatGoogleGenerativeAI(
 
 
 def get_llm_client(model):
-    logging.info("model = ", model)
+    logging.info("model = %s", model)
     if model == "flash":
         return openai_model_flash
     elif model == "escalation":
@@ -162,7 +162,7 @@ def spec_url_oidc4vci(draft: str) -> str:
         specs = f"https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0-{draft}.html"
     except Exception:
         specs = "https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html"
-    logging.info("OIDC4VCI specs = ", specs)
+    logging.info("OIDC4VCI specs = %s", specs)
     return specs
 
         
