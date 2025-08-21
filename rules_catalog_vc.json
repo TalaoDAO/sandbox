@@ -1,0 +1,100 @@
+{
+    "VC_PARSE_ERROR":                 {"severity":"FAIL","component":"vc","message":"Credential could not be parsed (malformed JSON/JWT/bytes)."},
+    "VC_CHARSET_INVALID":             {"severity":"FAIL","component":"vc","message":"Invalid character encoding or non-UTF-8 content."},
+    "VC_SIZE_EXCESSIVE":              {"severity":"WARN","component":"vc","message":"Credential size unusually large; may impact transport or verification."},
+
+    "VC_ISSUER_ID_MISSING":           {"severity":"FAIL","component":"vc","message":"Issuer identifier is missing."},
+    "VC_ISSUER_DID_RESOLVE_FAIL":     {"severity":"FAIL","component":"vc","message":"Issuer DID/URL could not be resolved."},
+    "VC_ISSUER_METHOD_NOT_ALLOWED":   {"severity":"WARN","component":"vc","message":"Issuer DID method not allowed by profile."},
+
+    "VC_SUBJECT_ID_MISSING":          {"severity":"FAIL","component":"vc","message":"credentialSubject.id (or equivalent) is missing when required."},
+    "VC_SUBJECT_ID_FORMAT_INVALID":   {"severity":"WARN","component":"vc","message":"credentialSubject.id format is invalid or unexpected."},
+    "VC_SUBJECT_BINDING_MISSING":     {"severity":"WARN","component":"vc","message":"Holder binding is missing; cannot prove possession."},
+
+    "VC_JTI_MISSING":                 {"severity":"WARN","component":"vc","message":"Unique identifier (jti/id) missing; replay protection may be weaker."},
+    "VC_JTI_DUPLICATE":               {"severity":"FAIL","component":"vc","message":"Unique identifier re-use detected (possible replay)."},
+
+    "VC_TIME_NBF_AFTER_EXP":          {"severity":"FAIL","component":"vc","message":"nbf is after exp; time window invalid."},
+    "VC_TIME_IAT_AFTER_EXP":          {"severity":"FAIL","component":"vc","message":"iat is after exp; time window invalid."},
+    "VC_TIME_CLOCK_SKEW_LARGE":       {"severity":"WARN","component":"vc","message":"Clock skew or token lifetime unusually large."},
+    "VC_TIME_EXPIRED":                {"severity":"FAIL","component":"vc","message":"Credential is expired."},
+    "VC_TIME_NOT_YET_VALID":          {"severity":"FAIL","component":"vc","message":"Credential is not yet valid (nbf in future)."},
+
+    "VC_STATUS_MISSING":              {"severity":"WARN","component":"vc","message":"No status information present (revocation/suspension unknown)."},
+    "VC_STATUS_ENDPOINT_UNREACHABLE": {"severity":"FAIL","component":"vc","message":"Status endpoint unreachable."},
+    "VC_STATUS_LIST_INVALID":         {"severity":"FAIL","component":"vc","message":"Status list/entry invalid or could not be decoded."},
+    "VC_STATUS_REVOKED":              {"severity":"FAIL","component":"vc","message":"Credential is revoked."},
+    "VC_STATUS_SUSPENDED":            {"severity":"WARN","component":"vc","message":"Credential is suspended."},
+
+    "VC_KEY_ALG_UNSUPPORTED":         {"severity":"WARN","component":"vc","message":"Signature algorithm not supported by profile."},
+    "VC_KEY_FORMAT_MISMATCH":         {"severity":"FAIL","component":"vc","message":"Key format/type does not match signature/proof type."},
+    "VC_KID_MISSING":                 {"severity":"WARN","component":"vc","message":"Key identifier (kid/verificationMethod) is missing."},
+    "VC_KEY_RESOLVE_FAIL":            {"severity":"FAIL","component":"vc","message":"Could not resolve verification key (DID Doc/JWKS/VM)."},
+    "VC_KEY_NOT_AUTHORIZED":          {"severity":"FAIL","component":"vc","message":"Key is not authorized for assertion/proof purpose."},
+    "VC_KEY_REVOKED":                 {"severity":"FAIL","component":"vc","message":"Verification key has been revoked/expired."},
+
+    "VC_SIG_MALFORMED":               {"severity":"FAIL","component":"vc","message":"Signature/proof object malformed."},
+    "VC_SIG_VERIFICATION_FAILED":     {"severity":"FAIL","component":"vc","message":"Signature/proof verification failed."},
+    "VC_SIG_CRITICAL_HEADER_UNKNOWN": {"severity":"FAIL","component":"vc","message":"Unknown or unsupported critical header/parameter present."},
+
+    "VC_SCHEMA_UNDECLARED_FIELDS":    {"severity":"WARN","component":"vc","message":"Undeclared or unexpected fields present (schema mismatch)."},
+    "VC_SCHEMA_REQUIRED_MISSING":     {"severity":"FAIL","component":"vc","message":"Required fields missing by profile/schema."},
+    "VC_DATA_FORMAT_INVALID":         {"severity":"WARN","component":"vc","message":"Field value format invalid (e.g., date/URI)."},
+
+    "VC_AUD_MISMATCH":                {"severity":"FAIL","component":"vc","message":"'aud' does not match the intended verifier/relying party."},
+    "VC_NONCE_MISSING":               {"severity":"WARN","component":"vc","message":"Nonce/challenge missing where required by profile."},
+    "VC_NONCE_MISMATCH":              {"severity":"FAIL","component":"vc","message":"Nonce/challenge mismatch with the verifier request."},
+
+    "SDJWTVC_ISS_MISSING":            {"severity":"FAIL","component":"vc","message":"'iss' claim missing in SD-JWT VC."},
+    "SDJWTVC_SUB_MISSING":            {"severity":"FAIL","component":"vc","message":"'sub' claim missing in SD-JWT VC."},
+    "SDJWTVC_TYP_INVALID":            {"severity":"FAIL","component":"vc","message":"Unexpected 'typ' for SD-JWT VC."},
+    "SDJWTVC_ALG_UNSUPPORTED":        {"severity":"WARN","component":"vc","message":"Unsupported or discouraged JWS 'alg'."},
+    "SDJWTVC_DISCLOSURE_MISSING":     {"severity":"FAIL","component":"vc","message":"Required disclosures missing."},
+    "SDJWTVC_DISCLOSURE_DUPLICATE":   {"severity":"WARN","component":"vc","message":"Duplicate disclosures detected."},
+    "SDJWTVC_DISCLOSURE_FORMAT":      {"severity":"FAIL","component":"vc","message":"Disclosure encoding/format invalid."},
+    "SDJWTVC_DIGEST_MISMATCH":        {"severity":"FAIL","component":"vc","message":"Digest binding / disclosure hash mismatch."},
+    "SDJWTVC_UNBOUND_DISCLOSURE":     {"severity":"FAIL","component":"vc","message":"Disclosure present but not bound to SD-JWT claims."},
+    "SDJWTVC_CLAIM_INTEGRITY_FAIL":   {"severity":"FAIL","component":"vc","message":"Reconstructed claims do not match signed payload."},
+
+    "SDJWTVC_KEYBINDING_MISSING":     {"severity":"WARN","component":"kb_jwt","message":"Key binding (holder binding) is missing or invalid."},
+    "SDJWTVC_KB_ALG_UNSUPPORTED":     {"severity":"WARN","component":"kb_jwt","message":"Key binding JWS algorithm unsupported by profile."},
+    "SDJWTVC_AUD_MISMATCH":           {"severity":"FAIL","component":"kb_jwt","message":"'aud' does not match verifier / RP."},
+    "SDJWTVC_NONCE_MISSING":          {"severity":"WARN","component":"kb_jwt","message":"kb-jwt nonce missing where required."},
+
+    "SDJWTVC_EXP_INVALID":            {"severity":"WARN","component":"vc","message":"Token lifetime (exp/nbf/iat) is unusual or invalid."},
+    "SDJWTVC_CRIT_UNSUPPORTED":       {"severity":"FAIL","component":"vc","message":"Unsupported 'crit' header present."},
+
+    "JSONLD_CONTEXT_MISSING":         {"severity":"FAIL","component":"vc","message":"@context is missing or invalid."},
+    "JSONLD_CONTEXT_REMOTE_FETCH_FAIL":{"severity":"FAIL","component":"vc","message":"@context remote document could not be fetched/resolved."},
+    "JSONLD_CONTEXT_CONFLICT":        {"severity":"WARN","component":"vc","message":"Context term conflicts or redefinitions detected."},
+    "JSONLD_TYPE_MISSING":            {"severity":"FAIL","component":"vc","message":"VC 'type' is missing."},
+    "JSONLD_VCDM_VERSION_UNEXPECTED": {"severity":"WARN","component":"vc","message":"Unexpected VC Data Model version/terms for profile."},
+
+    "JSONLD_PROOF_MISSING":           {"severity":"FAIL","component":"vc","message":"Linked Data Proof is missing."},
+    "JSONLD_PROOF_TYPE_UNSUPPORTED":  {"severity":"WARN","component":"vc","message":"Linked Data Proof type is unsupported for profile."},
+    "JSONLD_PROOF_PURPOSE_INVALID":   {"severity":"FAIL","component":"vc","message":"proofPurpose invalid or not 'assertionMethod' when required."},
+    "JSONLD_PROOF_CREATED_INVALID":   {"severity":"WARN","component":"vc","message":"'created' timestamp invalid or outside acceptable window."},
+    "JSONLD_VM_MISSING":              {"severity":"FAIL","component":"vc","message":"verificationMethod missing in proof."},
+    "JSONLD_VM_RESOLVE_FAIL":         {"severity":"FAIL","component":"vc","message":"verificationMethod could not be resolved to a key."},
+    "JSONLD_CONTROLLER_RESOLVE_FAIL": {"severity":"FAIL","component":"vc","message":"Controller/DID Document could not be resolved."},
+    "JSONLD_KEY_NOT_AUTHORIZED":      {"severity":"FAIL","component":"vc","message":"Key not authorized for assertionMethod."},
+    "JSONLD_SIG_VERIFICATION_FAILED": {"severity":"FAIL","component":"vc","message":"Linked Data Proof verification failed."},
+    "JSONLD_CANONICALIZATION_ERROR":  {"severity":"FAIL","component":"vc","message":"Canonicalization/normalization error during verification."},
+
+    "JSONLD_SCHEMA_VOCAB_UNKNOWN":    {"severity":"WARN","component":"vc","message":"Unknown vocabulary/terms (interoperability risk)."},
+    "JSONLD_EVIDENCE_INVALID":        {"severity":"WARN","component":"vc","message":"Evidence object present but invalid format/content."},
+    "JSONLD_STATUS_2021_INVALID":     {"severity":"FAIL","component":"vc","message":"StatusList2021 entry invalid or not decodable."},
+
+    "VCJWT_TYP_INVALID":              {"severity":"FAIL","component":"vc","message":"Unexpected 'typ' for VC-JWT."},
+    "VCJWT_CLAIMS_MISSING":           {"severity":"FAIL","component":"vc","message":"Required VC-JWT claims are missing (vc/iss/sub/nbf/exp)."},
+    "VCJWT_VC_OBJECT_MISSING":        {"severity":"FAIL","component":"vc","message":"'vc' object missing in JWT claims."},
+    "VCJWT_VC_ISSUER_MISMATCH":       {"severity":"FAIL","component":"vc","message":"JWT 'iss' does not match 'vc.issuer'."},
+    "VCJWT_SUBJECT_MISMATCH":         {"severity":"FAIL","component":"vc","message":"JWT 'sub' does not match 'vc.credentialSubject.id' when required."},
+    "VCJWT_AUD_MISMATCH":             {"severity":"FAIL","component":"vc","message":"'aud' does not match verifier / RP."},
+    "VCJWT_ALG_UNSUPPORTED":          {"severity":"WARN","component":"vc","message":"Unsupported or discouraged JWS 'alg' for VC-JWT."},
+    "VCJWT_KID_MISSING":              {"severity":"WARN","component":"vc","message":"'kid' missing in header; key discovery may be ambiguous."},
+    "VCJWT_JWKS_UNREACHABLE":         {"severity":"FAIL","component":"vc","message":"JWKS/JWKS URI unreachable or invalid."},
+    "VCJWT_SIG_VERIFICATION_FAILED":  {"severity":"FAIL","component":"vc","message":"JWT signature verification failed."},
+    "VCJWT_EXP_INVALID":              {"severity":"WARN","component":"vc","message":"Token lifetime (exp/nbf/iat) is unusual or invalid."},
+    "VCJWT_CRIT_UNSUPPORTED":         {"severity":"FAIL","component":"vc","message":"Unsupported 'crit' header present."}
+}

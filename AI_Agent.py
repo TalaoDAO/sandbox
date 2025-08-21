@@ -29,6 +29,12 @@ from dataclasses import dataclass
 with open("keys.json", "r") as f:
     keys = json.load(f)
 
+with open("rules_catalog_vc.json", "r") as f:
+    RULES_CATALO_VC = json.load(f)
+
+with open("rules_catalog_oidc4vc.json", "r") as f:
+    RULES_CATALO_OIDC4VC = json.load(f)
+
 
 openai_model_flash = ChatOpenAI(
     api_key=keys["openai"],
@@ -80,7 +86,7 @@ def get_llm_client(model):
 def engine(model: str) -> str:
     return {
         "flash": "gpt-4o-mini",      # fast + accurate enough
-        "escalation": "gpt-5-mini",       # medium depth
+        "escalation": "gpt-5-mini",  # medium depth
         "pro": "gpt-5"               # with spec-linking prompts
     }[model]
 
@@ -118,6 +124,7 @@ class ReportStyle:
     audience: str
     add_findings_counts: bool = False
 
+
 REPORT_STYLES: Dict[str, ReportStyle] = {
     "flash": ReportStyle(
         name="flash",
@@ -152,8 +159,10 @@ REPORT_STYLES: Dict[str, ReportStyle] = {
     ),
 }
 
+
 def style_for(model: str) -> ReportStyle:
     return REPORT_STYLES.get(model, REPORT_STYLES["escalation"])
+
 
 # ---------- Spec link helpers for "pro" ----------
 def spec_url_oidc4vci(draft: str) -> str:
@@ -225,6 +234,7 @@ def style_instructions(style: ReportStyle, domain: str, draft: str, extra_urls: 
     else:
         base.append("- No introduction. Output the requested sections exactly as titled. Add **Spec** links for each FAIL/WARN.")
     return "\n".join(base)
+
 
 # ---------- Attribution footer ----------
 def attribution(model: str, spec_label: str, draft: str) -> str:
@@ -575,8 +585,8 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
     # Decode SD-JWT header and payload
     jwt_header = get_header_from_token(sd_jwt)
     jwt_payload = get_payload_from_token(sd_jwt)
-    iss =  jwt_payload.get("iss")
-    kid =  jwt_header.get("kid")
+    iss = jwt_payload.get("iss")
+    kid = jwt_header.get("kid")
 
     if not iss:
         comment_1 = "Error: iss is missing"
@@ -716,12 +726,9 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
     logging.info("Token count: %s", len(tokens))
 
     # Timestamp and attribution
-    date = datetime.now().replace(microsecond=0).isoformat()
     mention = attribution(model, "SD-JWT VC", draft)
     st = style_for(model)
     instr = style_instructions(st, domain="sdjwtvc", draft=draft)
-
-
 
     # Prompt for OpenAI model
     prompt = f"""
@@ -797,12 +804,9 @@ def analyze_jwt_vc(token, draft, device, model):
     logging.info("Token count: %s", len(tokens))
 
     # Timestamp and attribution
-    date = datetime.now().replace(microsecond=0).isoformat()
     mention = attribution(model, "VCDM", draft)
 
-
     # Prompt for OpenAI model
-
     st = style_for(model)
     instr = style_instructions(st, domain="vcdm-jwt", draft=draft)
 
@@ -825,8 +829,6 @@ VC Payload: {json.dumps(jwt_payload, indent=2)}
 5. **Errors & Improvements**
 
 """
-
-
     # Call the LLM API
     llm = get_llm_client(model)  # Add 'provider' param to function
     response = llm.invoke([
@@ -852,7 +854,6 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str) -> str:
     """
 
     # Load the appropriate specification contenif not presentation_definition:
-    comment += "\nWarning: No presentation definition found"
     # still analyze the request and return it
     try:
         with open(f"./dataset/vcdm/{draft}.txt", "r", encoding="utf-8") as f:
@@ -864,12 +865,10 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str) -> str:
 
     # Token count logging for diagnostics
     tokens = enc.encode(content)
-    comment += "\nWarning: No presentation definition found"
     # still analyze the request and return it
     logging.info("Token count: %s", len(tokens))
 
     # Timestamp and attribution
-    date = datetime.now().replace(microsecond=0).isoformat()
     mention = attribution(model, "VCDM", draft)
     st = style_for(model)
     instr = style_instructions(st, domain="vcdm-jsonld", draft=draft)
@@ -1121,3 +1120,136 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model):
     counter_update(device)
     store_report(qrcode, result, "verifier")
     return result
+
+
+
+
+def report_to_json_via_gpt(
+    report_text: str,
+    *,
+    model: str = "flash",
+    profile: str = "",
+    input: Optional[Dict[str, Any]] = None,  # e.g., {"kind":"verifier_qr"} | {"kind":"issuer_qr"} | {"kind":"vc_sdjwt"} | {"kind":"vc_jsonld"} | {"kind":"vc_jwt"}
+    drafts: Optional[Dict[str, str]] = None, # e.g., {"oidc4vci":"14","oidc4vp":"18","sdjwtvc":"10","vcdm":"2.0"}
+    tool_version: str = "1.0.0",
+) -> Dict[str, Any]:
+    """
+    LLM-based extractor that converts your human-readable report into a strict, machine-readable JSON object.
+    Supports OIDC4VP / OIDC4VCI QR analyses and VC audits (SD-JWT VC, JSON-LD VC, VC-JWT).
+    Returns a dict (never a raw string). If parsing fails, returns a minimal JSON object with zero findings.
+    """
+    # Safe defaults
+    drafts = drafts or {}
+
+    # ISO 8601 timestamp, Zulu
+    timestamp = datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+
+    # --------- RULES & CODES (for the model to use consistently) ----------
+    # We ask the model to emit these codes/severities/messages when it detects them in the report.
+    # This stabilizes outputs across: OIDC4VP, OIDC4VCI, SD-JWT VC, JSON-LD VC, VC-JWT.
+    if input["kind"] == "VC analysis":
+        rules_catalog = RULES_CATALO_VC
+    else:
+        rules_catalog = RULES_CATALO_OIDC4VC
+
+    # Schema template (the model must fill this)
+    schema_template = {
+        "tool": "ai-agent",
+        "version": tool_version,
+        "input": input,
+        "profile": profile,
+        "drafts": drafts,
+        "timestamp": timestamp,
+        "summary": {"pass": 0, "warn": 0, "fail": 0},
+        "findings": [
+            # { "code":"...", "severity":"PASS|WARN|FAIL|INFO", "message":"...", "component":"..." , "spec":"<optional>", "location":"<optional>", "fix":"<optional>" }
+        ],
+    }
+
+    # ---------- Prompt ----------
+    system = (
+        "You are a strict extractor that converts compliance reports into machine-readable JSON. "
+        "Always return ONLY JSON that conforms to the required shape. No prose."
+    )
+
+    # Pass the rules catalog & shape as JSON strings so quoting is correct
+    user = f"""
+Extract machine-readable findings from the report below.
+
+### Required JSON shape
+{json.dumps(schema_template, ensure_ascii=False, indent=2)}
+
+### Stable codes catalogue (choose the most appropriate; do not invent random codes)
+{json.dumps(rules_catalog, ensure_ascii=False, indent=2)}
+
+### Rules
+- Return ONLY JSON. No markdown, no extra text.
+- 'summary' MUST equal the counts derived from 'findings' (WARN → warn, FAIL → fail, PASS → pass; ignore INFO).
+- Use codes from the catalogue above when possible (e.g., OIDC4VP_PD_MISSING, OIDC4VCI_OFFER_MISSING, SDJWTVC_ISS_MISSING, JSONLD_CONTEXT_MISSING, VCJWT_TYP_INVALID).
+- Set 'component' appropriately: one of ["auth_request","presentation_definition","credential_offer","issuer_metadata","vc","kb_jwt","network","general"].
+- Add optional fields when you can: 'spec' (URL), 'location' (JSONPath/field path), 'fix' (short hint).
+- If the report indicates everything is OK for a specific check, you MAY add PASS items (sparingly).
+- If nothing is extractable, return the shape with an empty 'findings' array and zeros in 'summary'.
+
+--- REPORT START ---
+{report_text}
+--- REPORT END ---
+""".strip()
+
+    # ---------- LLM call ----------
+    llm = get_llm_client(model)  # your existing helper
+    resp_text = llm.invoke([
+        {"role": "system", "content": system},
+        {"role": "user", "content": user},
+    ]).content
+
+    # ---------- Parse & harden ----------
+    def _coerce_json(payload: str) -> Optional[Dict[str, Any]]:
+        try:
+            return json.loads(payload)
+        except Exception:
+            # Try to salvage a JSON object from the text (first { ... } block)
+            m = re.search(r"\{[\s\S]*\}$", payload.strip())
+            if not m:
+                return None
+            try:
+                return json.loads(m.group(0))
+            except Exception:
+                return None
+
+    obj = _coerce_json(resp_text) or {
+        "tool": "ai-agent",
+        "version": tool_version,
+        "input": input,
+        "profile": profile,
+        "drafts": drafts,
+        "timestamp": timestamp,
+        "summary": {"pass": 0, "warn": 0, "fail": 0},
+        "findings": []
+    }
+
+    # Normalize minimal invariants
+    if "summary" not in obj or "findings" not in obj or not isinstance(obj.get("findings"), list):
+        obj["summary"] = {"pass": 0, "warn": 0, "fail": 0}
+        obj["findings"] = []
+
+    # Recompute summary to be safe
+    counts = {"pass": 0, "warn": 0, "fail": 0}
+    for f in obj["findings"]:
+        sev = (f.get("severity") or "").upper()
+        if sev == "WARN": counts["warn"] += 1
+        elif sev == "FAIL": counts["fail"] += 1
+        elif sev == "PASS": counts["pass"] += 1
+    obj["summary"] = counts
+
+    # Ensure required top-level fields exist
+    obj.setdefault("tool", "ai-agent")
+    obj.setdefault("version", tool_version)
+    obj.setdefault("input", input)
+    obj.setdefault("profile", profile)
+    obj.setdefault("drafts", drafts)
+    obj.setdefault("timestamp", timestamp)
+    
+    print("json =", json.dumps(obj, indent=4))
+
+    return obj

@@ -119,6 +119,11 @@
       </div>
       <div class="card-body">
         <form action="/ai/vc" method="POST" id="vcForm">
+          <div>
+            <label><input type="radio" name="outfmt" value="text" checked> Text</label>
+            <label><input type="radio" name="outfmt" value="json"> JSON</label>
+          </div>
+
           <!-- Mode selector -->
           <fieldset aria-label="Analysis mode">
             <legend class="sr-only" style="position:absolute; left:-10000px;">Choose analysis mode</legend>

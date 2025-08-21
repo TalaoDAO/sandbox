@@ -1,0 +1,88 @@
+{
+    "GENERAL_PARSE_ERROR":              {"severity": "FAIL", "component": "general", "message": "Report could not be parsed."},
+    "NETWORK_FETCH_FAILED":             {"severity": "FAIL", "component": "network", "message": "Network fetch failed or timed out."},
+    "CONTENT_TYPE_UNEXPECTED":          {"severity": "FAIL", "component": "network", "message": "Unexpected Content-Type received."},
+    "URL_SCHEME_INSECURE":              {"severity": "FAIL", "component": "network", "message": "Insecure URL scheme (http) is not allowed for this context."},
+    "URL_HOSTNAME_MISMATCH":            {"severity": "FAIL", "component": "network", "message": "Hostname mismatch between request and expected issuer domain."},
+
+    "OIDC4VP_AUTHZ_MISSING":            {"severity": "FAIL", "component": "auth_request", "message": "Authorization request is missing or invalid."},
+    "OIDC4VP_REQUEST_JWT_INVALID":      {"severity": "FAIL", "component": "auth_request", "message": "Signed request JWT is invalid or malformed."},
+    "OIDC4VP_REQUEST_JWT_EXPIRED":      {"severity": "FAIL", "component": "auth_request", "message": "Signed request JWT is expired or not yet valid."},
+    "OIDC4VP_REQUEST_JWT_SIG_INVALID":  {"severity": "FAIL", "component": "auth_request", "message": "Signed request JWT signature verification failed."},
+    "OIDC4VP_REQUEST_JWT_CRIT_UNSUPPORTED":{"severity": "FAIL", "component": "auth_request", "message": "Unsupported 'crit' header in request JWT."},
+
+    "OIDC4VP_ISS_MISSING":              {"severity": "FAIL", "component": "auth_request", "message": "'iss' is missing from request JWT."},
+    "OIDC4VP_ISS_CERT_MISMATCH":        {"severity": "FAIL", "component": "auth_request", "message": "Issuer does not match certificate SAN (x5c) or allowed domains."},
+
+    "OIDC4VP_CT_BAD":                   {"severity": "FAIL", "component": "network", "message": "request_uri response Content-Type must be application/oauth-authz-req+jwt."},
+    "OIDC4VP_REQUEST_URI_HTTP":         {"severity": "FAIL", "component": "network", "message": "request_uri must use HTTPS."},
+    "OIDC4VP_REQUEST_URI_TOO_LARGE":    {"severity": "WARN", "component": "network", "message": "request_uri payload size unusually large."},
+    "OIDC4VP_REQUEST_URI_UNREACHABLE":  {"severity": "FAIL", "component": "network", "message": "request_uri is unreachable or returned an error."},
+
+    "OIDC4VP_AUTHZ_PLAIN_PARAMS":       {"severity": "WARN", "component": "auth_request", "message": "Authorization request passed via plain query params; signed request/request_uri recommended."},
+    "OIDC4VP_RESPONSE_TYPE_UNSUPPORTED":{"severity": "FAIL", "component": "auth_request", "message": "Unsupported or missing response_type for OIDC4VP."},
+    "OIDC4VP_RESPONSE_MODE_UNSUPPORTED":{"severity": "WARN", "component": "auth_request", "message": "response_mode value is unsupported by profile or verifier."},
+    "OIDC4VP_CLIENT_ID_MISSING":        {"severity": "FAIL", "component": "auth_request", "message": "client_id is missing."},
+    "OIDC4VP_CLIENT_ID_SCHEME_INVALID": {"severity": "WARN", "component": "auth_request", "message": "client_id scheme not supported by profile."},
+    "OIDC4VP_REDIRECT_URI_MISSING":     {"severity": "FAIL", "component": "auth_request", "message": "redirect_uri is missing in authorization request."},
+    "OIDC4VP_REDIRECT_URI_UNREGISTERED":{"severity": "FAIL", "component": "auth_request", "message": "redirect_uri not registered for this client_id."},
+    "OIDC4VP_SCOPE_MISSING":            {"severity": "WARN", "component": "auth_request", "message": "scope is missing or empty."},
+    "OIDC4VP_NONCE_MISSING":            {"severity": "WARN", "component": "auth_request", "message": "nonce missing; replay protection may be weaker."},
+    "OIDC4VP_STATE_MISSING":            {"severity": "WARN", "component": "auth_request", "message": "state missing; CSRF protection may be weaker."},
+    "OIDC4VP_AUD_MISMATCH":             {"severity": "FAIL", "component": "auth_request", "message": "aud claim does not match the wallet/relying party."},
+
+    "OIDC4VP_PD_MISSING":               {"severity": "WARN", "component": "presentation_definition", "message": "Presentation Definition/DCQL not provided."},
+    "OIDC4VP_PD_URI":                   {"severity": "INFO", "component": "presentation_definition", "message": "Verifier uses 'presentation_definition_uri'."},
+    "OIDC4VP_PD_EMBEDDED":              {"severity": "INFO", "component": "presentation_definition", "message": "Verifier embeds 'presentation_definition'."},
+    "OIDC4VP_DCQL_USED":                {"severity": "INFO", "component": "presentation_definition", "message": "Verifier uses 'dcql_query' (Digital Credential Query)."},
+    "OIDC4VP_PD_FETCH_FAILED":          {"severity": "FAIL", "component": "presentation_definition", "message": "presentation_definition_uri is unreachable or invalid."},
+    "OIDC4VP_PD_INVALID":               {"severity": "FAIL", "component": "presentation_definition", "message": "Presentation Definition structure is invalid."},
+    "OIDC4VP_INPUT_DESCRIPTOR_MISSING": {"severity": "FAIL", "component": "presentation_definition", "message": "No input_descriptors found in Presentation Definition."},
+    "OIDC4VP_FORMATS_UNSUPPORTED":      {"severity": "WARN", "component": "presentation_definition", "message": "Requested VP/VC formats not supported by wallet profile."},
+    "OIDC4VP_CONSTRAINTS_INVALID":      {"severity": "WARN", "component": "presentation_definition", "message": "Constraints or fields filters are invalid or non-portable."},
+
+    "OIDC4VP_CLIENT_METADATA_MISSING":  {"severity": "WARN", "component": "client_metadata", "message": "Client metadata not provided or could not be fetched."},
+    "OIDC4VP_CLIENT_METADATA_MISMATCH": {"severity": "FAIL", "component": "client_metadata", "message": "Client metadata does not match request parameters."},
+    "OIDC4VP_VP_FORMATS_MISSING":       {"severity": "WARN", "component": "client_metadata", "message": "vp_formats missing in verifier metadata."},
+
+    "OIDC4VP_DPOP_REQUIRED_MISSING":    {"severity": "WARN", "component": "auth_request", "message": "DPoP indicated by profile but not used in request/metadata."},
+    "OIDC4VP_TOK_BINDING_REQUIRED":     {"severity": "WARN", "component": "auth_request", "message": "Token binding/holder binding required by profile but not indicated."},
+
+    "OIDC4VCI_OFFER_MISSING":           {"severity": "FAIL", "component": "credential_offer", "message": "Credential offer is missing or invalid."},
+    "OIDC4VCI_OFFER_URI_HTTP":          {"severity": "FAIL", "component": "network", "message": "credential_offer_uri must use HTTPS."},
+    "OIDC4VCI_OFFER_URI_UNREACHABLE":   {"severity": "FAIL", "component": "network", "message": "credential_offer_uri unreachable or returned an error."},
+    "OIDC4VCI_OFFER_CT_BAD":            {"severity": "FAIL", "component": "network", "message": "credential_offer_uri returned unexpected Content-Type."},
+    "OIDC4VCI_OFFER_JSON_INVALID":      {"severity": "FAIL", "component": "credential_offer", "message": "Credential offer JSON is invalid."},
+
+    "OIDC4VCI_ISSUER_METADATA_MISSING": {"severity": "FAIL", "component": "issuer_metadata", "message": "Issuer .well-known metadata missing or unreachable."},
+    "OIDC4VCI_ISSUER_MISMATCH":         {"severity": "FAIL", "component": "issuer_metadata", "message": "Issuer in offer does not match issuer metadata."},
+    "OIDC4VCI_TOKEN_ENDPOINT_MISSING":  {"severity": "FAIL", "component": "issuer_metadata", "message": "token_endpoint missing in metadata."},
+    "OIDC4VCI_CREDENTIAL_ENDPOINT_MISSING":{"severity": "FAIL", "component": "issuer_metadata", "message": "credential_endpoint missing in metadata."},
+    "OIDC4VCI_JWKS_MISSING":            {"severity": "WARN", "component": "issuer_metadata", "message": "JWKS/JWKS URI missing in metadata; key discovery may fail."},
+    "OIDC4VCI_JWKS_UNREACHABLE":        {"severity": "FAIL", "component": "issuer_metadata", "message": "JWKS/JWKS URI unreachable or invalid."},
+
+    "OIDC4VCI_GRANT_MISSING":           {"severity": "FAIL", "component": "issuer_metadata", "message": "Grant details (e.g., pre-authorized code, authorization_code) are missing."},
+    "OIDC4VCI_GRANT_COMBINATION_INVALID":{"severity": "FAIL", "component": "issuer_metadata", "message": "Invalid or conflicting grant configuration."},
+    "OIDC4VCI_PREAUTH_CODE_MISSING":    {"severity": "FAIL", "component": "credential_offer", "message": "pre-authorized_code grant selected but code missing in offer."},
+    "OIDC4VCI_USER_PIN_REQUIRED_MISSING":{"severity": "WARN", "component": "credential_offer", "message": "User PIN required by offer but not provided."},
+    "OIDC4VCI_AUTHZ_CODE_PARAMS_MISSING":{"severity": "FAIL", "component": "issuer_metadata", "message": "Authorization Code flow missing PKCE or required parameters."},
+
+    "OIDC4VCI_CONFIGURATION_MISSING":   {"severity": "FAIL", "component": "issuer_metadata", "message": "Issuer credential configurations are missing."},
+    "OIDC4VCI_CREDENTIAL_IDS_UNKNOWN":  {"severity": "WARN", "component": "issuer_metadata", "message": "Unknown credential_configuration_ids in offer or metadata."},
+    "OIDC4VCI_FORMAT_UNSUPPORTED":      {"severity": "WARN", "component": "issuer_metadata", "message": "Requested credential format not supported by profile."},
+    "OIDC4VCI_DISPLAY_MISSING":         {"severity": "WARN", "component": "issuer_metadata", "message": "Display metadata missing; UX/localization may be degraded."},
+    "OIDC4VCI_LOCALE_UNSUPPORTED":      {"severity": "WARN", "component": "issuer_metadata", "message": "Requested locale not supported by display metadata."},
+
+    "OIDC4VCI_PROOF_REQUIRED_MISSING":  {"severity": "FAIL", "component": "issuer_metadata", "message": "Issuer requires a proof (e.g., JWT/CNF) but none was provided."},
+    "OIDC4VCI_PROOF_TYPE_UNSUPPORTED":  {"severity": "WARN", "component": "issuer_metadata", "message": "Proof type not supported by profile or issuer."},
+    "OIDC4VCI_ALG_UNSUPPORTED":         {"severity": "WARN", "component": "issuer_metadata", "message": "Credential signature algorithm not supported by profile."},
+    "OIDC4VCI_ALG_MISMATCH_PROFILE":    {"severity": "WARN", "component": "issuer_metadata", "message": "Algorithm allowed by issuer but not by selected profile."},
+
+    "OIDC4VCI_DPOP_REQUIRED_MISSING":   {"severity": "WARN", "component": "issuer_metadata", "message": "DPoP required by issuer/profile but not indicated."},
+    "OIDC4VCI_SCOPE_MISSING":           {"severity": "WARN", "component": "issuer_metadata", "message": "Token scope missing or empty for issuance."},
+    "OIDC4VCI_JTI_REPLAY_RISK":         {"severity": "WARN", "component": "issuer_metadata", "message": "No unique jti in client proofs; replay risk possible."},
+
+    "OIDC4VCI_ENDPOINT_MISMATCH":       {"severity": "FAIL", "component": "issuer_metadata", "message": "Endpoints in metadata do not align with offer/authorization server metadata."},
+    "OIDC4VCI_AUTHZ_SERVER_MISSING":    {"severity": "WARN", "component": "issuer_metadata", "message": "authorization_server metadata missing; dynamic discovery may fail."},
+    "OIDC4VCI_PROFILE_CONFLICT":        {"severity": "WARN", "component": "issuer_metadata", "message": "Issuer configuration conflicts with selected ecosystem profile."}
+}

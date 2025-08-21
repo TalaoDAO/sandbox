@@ -577,16 +577,37 @@ def qrcode():
         request_number = str(counter["request_number"])
         return render_template("ai_qrcode.html", request_number=request_number)
     else:
+        outfmt = request.form.get("outfmt", "text")
         model = request.form.get("mode", "flash")
         qrcode = request.form.get("qrcode")
         oidc4vci_draft = request.form.get("oidc4vci_draft")
         oidc4vp_draft = request.form.get("oidc4vp_draft")
-        profil = request.form.get("profil")
+        profile = request.form.get("profile")
         
         logging.info("qrcode = %s", qrcode)
         if not qrcode:
             return redirect('/qrcode')
-        report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profil, 'sandbox QR code', model)
+        report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profile, 'sandbox QR code', model)
+        
+        if outfmt == 'json':
+            input = {
+                "kind": "QR code analysis",
+                "hash": hashlib.sha256(qrcode.encode("utf-8")).hexdigest()
+            }
+            report = AI_Agent.report_to_json_via_gpt(
+                report,
+                profile=profile,
+                model="flash",
+                input=input,
+                drafts={"OIDCVCI": oidc4vci_draft, "0IDC4VP": oidc4vp_draft}
+            )
+            
+            return Response(
+                response=json.dumps(report, ensure_ascii=False, indent=2),
+                mimetype="application/json; charset=utf-8",
+                headers={"X-Content-Type-Options": "nosniff"}
+            )
+        
         return render_template("ai_report.html", back="/ai/qrcode", report= "\n\n" + report)
 
 
@@ -600,6 +621,7 @@ def vc():
         request_number = str(counter["request_number"])
         return render_template("ai_vc.html", request_number=request_number)
     else:
+        outfmt = request.form.get("outfmt", "text")
         model = request.form.get("mode", "flash")
         vc = request.form.get("vc")
         sdjwtvc_draft = request.form.get("sdjwtvc_draft")
@@ -607,6 +629,25 @@ def vc():
         if not qrcode:
             return redirect('/ai/vc')
         report = AI_Agent.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "sandbox VC", model)
+        print("report = ", report)
+        if outfmt == 'json':
+            input = {
+                "kind": "VC analysis",
+                "hash": hashlib.sha256(vc.encode("utf-8")).hexdigest()
+            }
+            report = AI_Agent.report_to_json_via_gpt(
+                report,
+                profile="",
+                model="flash",
+                input=input,
+                drafts={"SD-JWT VC": sdjwtvc_draft, "W3C VCDM": vcdm_draft}
+            )
+            
+            return Response(
+                response=json.dumps(report, ensure_ascii=False, indent=2),
+                mimetype="application/json; charset=utf-8",
+                headers={"X-Content-Type-Options": "nosniff"}
+            )
         return render_template("ai_report.html", back="/ai/vc", report= "\n\n" + report)
     
 

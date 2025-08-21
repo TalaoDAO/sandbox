@@ -124,6 +124,13 @@
       </div>
       <div class="card-body">
         <form action="/ai/qrcode" method="POST" id="qrForm">
+
+          <div>
+            <label><input type="radio" name="outfmt" value="text" checked> Text</label>
+            <label><input type="radio" name="outfmt" value="json"> JSON</label>
+          </div>
+
+
           <!-- Mode selector -->
           <fieldset aria-label="Analysis mode">
             <legend class="sr-only" style="position:absolute; left:-10000px;">Choose analysis mode</legend>
@@ -183,9 +190,9 @@
 
           <!-- Profile & drafts -->
           <div class="row inline">
-            <label for="profil">Profil</label>
+            <label for="profil">Profile</label>
             <div>
-              <select id="profil" name="profil" onchange="toggleDraftSelectors()">
+              <select id="profil" name="profile" onchange="toggleDraftSelectors()">
                 <option value="EBSI">EBSI V 3.X</option>
                 <option value="DIIP_V3">DIIP V3</option>
                 <option value="DIIP_V4">DIIP V4</option>
@@ -194,9 +201,12 @@
                 <option selected value="custom">Custom</option>
               </select>
               <small class="muted">Choose a profile or use <em>Custom</em> to select drafts.</small>
-            </div>
-          </div>
 
+               
+            </div>
+            
+          </div>
+        
           <div id="draftSelectors" class="row inline" style="display:none">
             <label>Draft versions</label>
             <div class="row" style="grid-template-columns: 1fr 1fr; gap: .75rem;">
