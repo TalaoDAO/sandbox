@@ -1,6 +1,6 @@
 # Light Trusted List Mechanism
 
-Updated the 2nd of August, 2025
+Updated the 21nd of August, 2025
 
 ## Table of Contents
 
@@ -317,7 +317,7 @@ Each ecosystem must implement an HTTP(S) endpoint returning the following JSON s
 - `ecosystem` : REQUIRED. Unique identifier for the issuing ecosystem or trust domain
 - `lastUpdated` : REQUIRED. ISO timestamp for the last update
 - `entities` : REQUIRED. Array of a json object defining an issuer, a verifier or a wallet-provider.
-  - `id` : REQUIRED. URI identifying the organization (URL or DID). It could be the `iss` of an sd-jwt, the subject of an x509 certificate or the `issuer` of a W3C VC. In case of a verifier this is the `client_id` of the OIDC4VP authorization request.
+  - `id` : REQUIRED. URI identifying the organization (URL or DID). It could be the `iss` of an sd-jwt, the subject of an x509 certificate or the `issuer` of a W3C VC. In case of a verifier this is the `client_id` of the OIDC4VP authorization request. In case of an issuer it is the issuer identifier (and `sub` of the signed metadata JWT).
   - `name` : Human-readable name of the entity
   - `description`: Description of the service offered,
   - `endpoint`: For an issuer it is the credential issuer URL. For a verifier this is where the wallet (holder) is redirected to start the presentation flow.

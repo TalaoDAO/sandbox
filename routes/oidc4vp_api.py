@@ -741,20 +741,18 @@ def oidc4vc_login_qrcode(red, mode):
     }
     red.setex(stream_id, QRCODE_LIFE, json.dumps(data))
 
+    print("request uri supported =", verifier_data.get('request_uri_parameter_supported'))
     # Request uri    
     if 'vp_token' in response_type:
-        if not verifier_data.get('client_metadata_uri'):
-            if verifier_data.get('request_uri_parameter_supported'):
-                authorization_request['client_metadata'] = wallet_metadata
-        else:
+        if verifier_data.get('client_metadata_uri'):
             authorization_request['client_metadata_uri'] = client_metadata_uri
-
-        if not verifier_data.get('presentation_definition_uri'):
-            if verifier_data.get('request_uri_parameter_supported'):
-                authorization_request['presentation_definition'] = presentation_definition
         else:
-            authorization_request['presentation_definition_uri'] = presentation_definition_uri
+            authorization_request['client_metadata'] = wallet_metadata
 
+        if verifier_data.get('presentation_definition_uri'):
+            authorization_request['presentation_definition_uri'] = presentation_definition_uri
+        else:
+            authorization_request['presentation_definition'] = presentation_definition
     
     if response_type == "id_token" and verifier_data.get('request_uri_parameter_supported'):
         authorization_request['client_metadata'] = wallet_metadata
@@ -782,8 +780,10 @@ def oidc4vc_login_qrcode(red, mode):
             "client_id": client_id,
             "request_uri": mode.server + "verifier/wallet/request_uri/" + stream_id 
         }
-    elif verifier_data.get('request_parameter_supported'):
+    elif verifier_data.get('request_parameter_supported') and not verifier_data.get('request_uri_parameter_supported'):
+        authorization_request = {}
         authorization_request['request'] = request_as_jwt
+        authorization_request["client_id"] = client_id
         authorization_request_displayed = authorization_request
     else:
         authorization_request_displayed = authorization_request

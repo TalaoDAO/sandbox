@@ -16,13 +16,13 @@ import tiktoken
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509.oid import ExtensionOID
-from cryptography.hazmat.primitives import serialization
+#from cryptography.hazmat.primitives import serialization
 import oidc4vc
 from jwcrypto import jwk, jwt
 from langchain_openai import ChatOpenAI
-from langchain_google_genai import ChatGoogleGenerativeAI
-#provider = "openai"
-#provider = "gemini"
+#from langchain_google_genai import ChatGoogleGenerativeAI
+from typing import Any, Dict, Optional, Tuple
+from dataclasses import dataclass
 
 
 # Load API keys
@@ -66,7 +66,7 @@ gemini_model_flash = ChatGoogleGenerativeAI(
 
 
 def get_llm_client(model):
-    print("model = ", model)
+    logging.info("model = ", model)
     if model == "flash":
         return openai_model_flash
     elif model == "escalation":
@@ -105,8 +105,6 @@ except Exception:
 
 
 # ---------- Report style system (flash / escalation / pro) ----------
-from dataclasses import dataclass
-from typing import Dict, Optional
 
 @dataclass
 class ReportStyle:
@@ -164,7 +162,7 @@ def spec_url_oidc4vci(draft: str) -> str:
         specs = f"https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0-{draft}.html"
     except Exception:
         specs = "https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html"
-    print("OIDC4VCI specs = ", specs)
+    logging.info("OIDC4VCI specs = ", specs)
     return specs
 
         
@@ -174,17 +172,17 @@ def spec_url_oidc4vp(draft: str) -> str:
         specs = f"https://openid.net/specs/openid-4-verifiable-presentations-1_0-{draft}.html"
     except Exception:
         specs = "https://openid.net/specs/openid-4-verifiable-presentations-1_0-final.html"
-    print("OIDC4VP specs = ", specs)
+    logging.info("OIDC4VP specs = %s", specs)
     return specs
 
 
 def spec_url_sdjwtvc(draft: str) -> str:
-    d = {"7": "07", "8": "08", "9": "99", "10": "10"}
+    d = {"7": "07", "8": "08", "9": "09", "10": "10"}
     try:
         specs = f"https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-{d[draft]}.html"
     except Exception:
         specs = "https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-10.html"
-    print("SD-JWT VC specs = ", specs)
+    logging.info("SD-JWT VC specs = %s", specs)
     return specs
 
 
@@ -406,54 +404,152 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model):
         return analyze_verifier_qrcode(qrcode, oidc4vpDraft, profile, device, model)
 
 
-def get_verifier_request(qrcode, draft):
-    comment = ""
-    # Parse verifier's QR code request
-    parse_result = urlparse(qrcode)
-    result = {k: v[0] for k, v in parse_qs(parse_result.query).items()}
-    if request_uri := result.get('request_uri'):
+def _is_compact_jwt(value: str) -> bool:
+    # quick check for "header.payload.signature" shape
+    return isinstance(value, str) and value.count(".") == 2 and all(p.strip() for p in value.split("."))
+
+
+def _safe_get_json(url: str, timeout: int = 10) -> Dict[str, Any]:
+    if not url.lower().startswith(("https://", "http://")):
+        raise ValueError("Only http(s) schemes are allowed for external fetches")
+    headers = {"Accept": "application/json, */*;q=0.1"}
+    r = requests.get(url, headers=headers, timeout=timeout)
+    r.raise_for_status()
+    return r.json()
+
+
+def _safe_get_text(url: str, timeout: int = 10) -> requests.Response:
+    if not url.lower().startswith(("https://", "http://")):
+        raise ValueError("Only http(s) schemes are allowed for external fetches")
+    headers = {"Accept": "application/oauth-authz-req+jwt, text/plain;q=0.5, */*;q=0.1"}
+    r = requests.get(url, headers=headers, timeout=timeout)
+    r.raise_for_status()
+    return r
+
+
+
+def _content_type_is_authz_req_jwt(value: Optional[str]) -> bool:
+    # Accept "application/oauth-authz-req+jwt" with optional parameters (charset=..., etc.)
+    if not value:
+        return False
+    return value.split(";")[0].strip().lower() == "application/oauth-authz-req+jwt"
+
+
+def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]], str]:
+    """
+    Parse a Verifier authorization request from a QR (OIDC4VP).
+    Returns: (authorization_request_dict, presentation_definition_or_dcql, comment)
+    - If a fatal problem occurs, (None, None, "Error: ...") is returned.
+    """
+    comments: list[str] = []
+    try:
+        parse_result = urlparse(qrcode)
+        # Keep single-value params only; ignore repeated keys for simplicity
+        query: Dict[str, str] = {k: v[0] for k, v in parse_qs(parse_result.query).items()}
+    except Exception as e:
+        return None, None, f"Error: cannot parse QR: {e}"
+
+    request: Optional[Dict[str, Any]] = None
+    presentation_obj: Optional[Dict[str, Any]] = None
+
+    # 1) request_uri → fetch JWT
+    if request_uri := query.get("request_uri"):
         try:
-            response = requests.get(request_uri, timeout=10)
-            request_jwt = response.text
+            resp = _safe_get_text(request_uri, timeout=10)
+            request_jwt = resp.text.strip()
+        except Exception as e:
+            return None, None, f"Error: the request_uri could not be fetched: {e}"
+
+        # Verify media type but accept minor variations (charset)
+        if not _content_type_is_authz_req_jwt(resp.headers.get("Content-Type")):
+            return None, None, "Error: request_uri response must be 'application/oauth-authz-req+jwt'"
+        
+        # Decode signed request JWT
+        try:
             request = get_payload_from_token(request_jwt)
-            request_header = get_header_from_token(request_jwt)
-            if x5c_list := request_header.get('x5c'):
-                if not request.get('iss'):
-                    return None, None, "Error: iss is missing"
-                else:
-                    comment = verify_issuer_matches_cert(request.get('iss'), x5c_list)
-        except Exception:
-            return None, None, "Error: The request jwt is not available"
-        content_type = response.headers.get("Content-Type")
-        if content_type != "application/oauth-authz-req+jwt":
-            return None, None, "Error: The request_uri response Content-Type must be application/oauth-authz-req+jwt"
-    elif request := result.get("request"):
-        request_jwt = request
-        request = get_payload_from_token(request_jwt)
-        request_header = get_header_from_token(request_jwt)
-        if x5c_list := request_header.get('x5c'):
-            if not request.get('iss'):
+            header = get_header_from_token(request_jwt)
+        except Exception as e:
+            return None, None, f"Error: cannot decode request JWT: {e}"
+
+        # x5c / iss binding (optional but recommended)
+        if isinstance(header, dict) and (x5c_list := header.get("x5c")):
+            iss = request.get("iss")
+            if not iss:
                 return None, None, "Error: iss is missing"
-            else:
-                comment = verify_issuer_matches_cert(request.get('iss'), x5c_list)
+            comments.append(verify_issuer_matches_cert(iss, x5c_list))
 
-    elif result.get("response_mode"):
-        request = result
-        comment = "Warning: Passing OIDC request parameters via the request or request_uri parameter using a signed JWT is more secure than passing them as plain query parameters."
-    else:
-        return None, None, "Error: The request is not available"
-
-    if presentation_definition_uri := request.get("presentation_definition_uri"):
+    # 2) request (inline) → parse JWT
+    elif inline_req := query.get("request"):
+        request_jwt = inline_req.strip()
+        if not _is_compact_jwt(request_jwt):
+            return None, None, "Error: 'request' parameter is not a compact JWS"
         try:
-            presentation_definition = json.loads(requests.get(presentation_definition_uri, timeout=10).text)
-        except Exception:
-            return request, None,  "Error: The presentation definition is not available"
-        request.pop("presentation_definition_uri")
-        request['presentation_definition'] = presentation_definition
-    else:
-        presentation_definition = request.get('presentation_definition')
+            request = get_payload_from_token(request_jwt)
+            header = get_header_from_token(request_jwt)
+        except Exception as e:
+            return None, None, f"Error: cannot decode inline request JWT: {e}"
 
-    return request, presentation_definition, comment
+        if isinstance(header, dict) and (x5c_list := header.get("x5c")):
+            iss = request.get("iss")
+            if not iss:
+                return None, None, "Error: iss is missing"
+            comments.append(verify_issuer_matches_cert(iss, x5c_list))
+
+    # 3) Plain query params (least secure)
+    elif query.get("response_mode"):
+        request = query  # keep as-is
+        comments.append(
+            "Warning: Using plain query parameters. A signed 'request' or 'request_uri' JWT is more secure."
+        )
+    else:
+        return None, None, "Error: no authorization request found (missing request_uri / request / response_mode)."
+
+    # 4) Presentation Definition / DCQL resolution
+    if not isinstance(request, dict):
+        return None, None, "Error: malformed authorization request"
+
+    # presentation_definition_uri
+    if (pd_uri := request.get("presentation_definition_uri")):
+        try:
+            presentation_obj = _safe_get_json(pd_uri, timeout=10)
+            # normalize: move into the request and drop the URI (helpers expect embedded PD)
+            request = dict(request)
+            request.pop("presentation_definition_uri", None)
+            request["presentation_definition"] = presentation_obj
+            comments.append("Info: Verifier uses 'presentation_definition_uri'.")
+        except Exception as e:
+            return request, None, f"Error: the Presentation Definition could not be fetched: {e}"
+
+    # dcql_query (draft >= 23)
+    elif request.get("dcql_query") and int(draft) >= 23:
+        presentation_obj = {"dcql_query": request.get("dcql_query")}
+        comments.append("Info: Verifier uses 'dcql_query' (Digital Credential Query).")
+
+    # embedded presentation_definition
+    elif request.get("presentation_definition"):
+        try:
+            # Ensure it’s a dict (some send JSON-encoded strings)
+            pd = request["presentation_definition"]
+            if isinstance(pd, str):
+                pd = json.loads(pd)
+            if not isinstance(pd, dict):
+                raise ValueError("presentation_definition is not a JSON object")
+            presentation_obj = pd
+            comments.append("Info: Verifier embeds 'presentation_definition'.")
+        except Exception as e:
+            return request, None, f"Error: invalid embedded Presentation Definition: {e}"
+
+    else:
+        comments.append("Warning: No Presentation Definition / DCQL parameter found.")
+
+    # Optional sanity: ensure required OIDC params exist (response_type, client_id, redirect_uri, scope, nonce/state, etc.)
+    # Keep it advisory; don’t fail here to let the analyzer produce a full report later.
+    for k in ("client_id", "redirect_uri"):
+        if k not in request:
+            comments.append(f"Warning: '{k}' is missing in authorization request.")
+
+    return request, presentation_obj, "\n".join(comments)
+
 
 
 def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
@@ -755,7 +851,9 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str) -> str:
         str: A markdown-formatted compliance report generated using OpenAI
     """
 
-    # Load the appropriate specification content based on draft
+    # Load the appropriate specification contenif not presentation_definition:
+    comment += "\nWarning: No presentation definition found"
+    # still analyze the request and return it
     try:
         with open(f"./dataset/vcdm/{draft}.txt", "r", encoding="utf-8") as f:
             content = f.read()
@@ -766,6 +864,8 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str) -> str:
 
     # Token count logging for diagnostics
     tokens = enc.encode(content)
+    comment += "\nWarning: No presentation definition found"
+    # still analyze the request and return it
     logging.info("Token count: %s", len(tokens))
 
     # Timestamp and attribution
@@ -865,7 +965,7 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model):
     except Exception:
         f = open("./dataset/oidc4vci/13.md", "r")
         context = f.read()
-        f.close
+        f.close()
         draft = "13"
 
     # Token count logging for diagnostics
@@ -943,9 +1043,13 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model):
 
     date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
     verifier_request, presentation_definition, comment = get_verifier_request(qrcode, draft)
-    if not verifier_request or not presentation_definition:
+    if not verifier_request:
         return comment
-
+    
+    if not presentation_definition:
+    # request is valid but no PD/DCQL → keep request and warn
+        comment += "\n Error: No presentation definition found"
+    
     try:
         f = open("./dataset/oidc4vp/" + draft + ".md", "r")
         context = f.read()
@@ -953,7 +1057,7 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model):
     except Exception:
         f = open("./dataset/oidc4vp/18.md", "r")
         context = f.read()
-        f.close
+        f.close()
         draft = "18"
 
     context = clean_md(context)
