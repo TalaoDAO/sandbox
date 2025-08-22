@@ -120,8 +120,8 @@
       <div class="card-body">
         <form action="/ai/vc" method="POST" id="vcForm">
           <div>
-            <label><input type="radio" name="outfmt" value="text" checked> Text</label>
-            <label><input type="radio" name="outfmt" value="json"> JSON</label>
+            <label><input type="radio" name="outfmt" value="text" checked> Text report</label>
+            <label><input type="radio" name="outfmt" value="json"> JSON report</label>
           </div>
 
           <!-- Mode selector -->
@@ -221,6 +221,7 @@
                     <option value="sample_jsonld">JSON-LD VC</option>
                   </select>
                 </div>
+                <a href="/documentation/api" class="btn icon" id="apiBtn" target="_blank" rel="noopener" style="text-decoration:none">🔌 API</a>
               </div>
               <div class="toolbar-right">
                 <small id="vcHelp" class="muted">SD-JWT VC, JWT VC, and JSON-LD inputs supported.</small>

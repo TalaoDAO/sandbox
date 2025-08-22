@@ -954,7 +954,6 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model):
     if not draft:
         draft = "13"
 
-    date = datetime.now().replace(microsecond=0).isoformat()
     credential_offer, issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode, draft)
 
     try:

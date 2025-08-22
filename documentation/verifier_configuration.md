@@ -1,6 +1,6 @@
 # Verifier configuration
 
-Updated the 19th of July 2025.
+Updated the 22nd of August 2025.
 
 ## OIDC4VP Specifications Drafts
 

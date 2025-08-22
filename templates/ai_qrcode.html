@@ -126,8 +126,8 @@
         <form action="/ai/qrcode" method="POST" id="qrForm">
 
           <div>
-            <label><input type="radio" name="outfmt" value="text" checked> Text</label>
-            <label><input type="radio" name="outfmt" value="json"> JSON</label>
+            <label><input type="radio" name="outfmt" value="text" checked> Text report</label>
+            <label><input type="radio" name="outfmt" value="json"> JSON report</label>
           </div>
 
 
@@ -246,7 +246,10 @@
                     <option value="sample_vp">Authorization Request (VP)</option>
                   </select>
                 </div>
+                <a href="/documentation/api" class="btn icon" id="apiBtn" target="_blank" rel="noopener" style="text-decoration:none">🔌 API</a>
+
               </div>
+
               <div class="toolbar-right">
                 <small id="qrHelp" class="muted">Supports full deep links and JSON payloads.</small>
                 <small class="muted" id="countInfo">0 chars</small>

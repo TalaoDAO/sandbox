@@ -702,130 +702,170 @@ def vc_wallet():
     return report_base64
 
 
-# OpenAI tools for public API
+# ---------------------------
+# /api/analyze-qrcode
+# ---------------------------
 @app.route('/api/analyze-qrcode', methods=['POST'])
 def analyze_wallet_qrcode():
     """
-    Analyze a wallet QR code using OpenAI and return a report.
+    Analyze a wallet QR code with the AI agent and return a report.
 
-    --- API Endpoint ---
-    POST /api/analyze-qrcode
-
-    --- Request Headers ---
-    Api-Key: your-api-key
-
-    --- JSON Payload ---
+    JSON Body
+    ---------
     {
-        "qrcode": "<base64-encoded QR code string>",
-        "oidc4vciDraft": "15",  # optional
-        "oidc4vpDraft": "22",    # optional
-        "profil": "EBSI"      # optional
+      "qrcode": "<base64-encoded QR code string>",                // required
+      "oidc4vciDraft": "15",                                      // optional
+      "oidc4vpDraft": "22",                                       // optional
+      "profile": "EBSI",                                          // optional, default "custom"
+      "format": "text" | "json",                                  // optional, default "text"
+      "model": "flash" | "escalation" | "pro"                     // optional, default "flash"
     }
-
-    --- Successful Response ---
-    {
-        "report_base64": "<base64-encoded markdown report>"
-    }
-
-    --- Error Response Example ---
-    {
-        "error": "invalid base64 format"
-    }
-
-    --- Example cURL ---
-    curl -X POST http://talao.co/api/analyze-qrcode \
-      -H "Content-Type: application/json" \
-      -H "Api-Key: your-api-key" \
-      -d '{
-            "qrcode": "c29tZS1hc3NpZ24tdGV4dA==",
-            "oidc4vciDraft": "13",
-            "oidc4vpDraft": "18",
-            "profil": "INJI"
-          }'
     """
-    #api_key = request.headers.get("Api-Key")
-    #if api_key not in ai_api_keys:
-    #    return jsonify({"error": "access denied"}), 403
+    # api_key = request.headers.get("Api-Key")
+    # if api_key not in ai_api_keys:
+    #     return jsonify({"error": "access denied"}), 403
 
-    data = request.get_json()
-    if not data or 'qrcode' not in data:
-        return jsonify({"error": "missing qrcode"}), 400
+    # Parse JSON
+    try:
+        data = request.get_json(force=True)
+    except Exception:
+        return jsonify({"error": "invalid JSON body"}), 400
 
-    qrcode_base64 = data['qrcode']
-    oidc4vci_draft = data.get('oidc4vciDraft')
-    oidc4vp_draft = data.get('oidc4vpDraft')
-    profil = data.get('profil', 'custom')
+    if not data or "qrcode" not in data:
+        return jsonify({"error": "missing 'qrcode' field"}), 400
+
+    qrcode_base64 = data["qrcode"]
+    oidc4vci_draft = data.get("oidc4vciDraft")
+    oidc4vp_draft = data.get("oidc4vpDraft")
+    profile = data.get("profile", "custom")
+    model = data.get("model", "flash")
+    output_format = data.get("format", "text")
 
     # Decode base64 QR content
     try:
-        qrcode_str = base64.b64decode(qrcode_base64.encode()).decode()
+        qrcode_str = base64.b64decode(qrcode_base64.encode("utf-8")).decode("utf-8")
     except Exception:
-        return jsonify({"error": "invalid base64 format"}), 400
+        return jsonify({"error": "invalid base64 for 'qrcode'"}), 400
 
-    # Run the OpenAI agent
+    # Run the AI agent
     try:
-        report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vci_draft, oidc4vp_draft, profil, 'QR code public API', "flash")
+        report = AI_Agent.analyze_qrcode(
+            qrcode_str,
+            oidc4vci_draft,
+            oidc4vp_draft,
+            profile,
+            "QR code public API",
+            model,
+        )
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
 
-    logging.info("report = %s", report)
+    # Structured JSON branch
+    if output_format == "json":
+        input_meta = {
+            "kind": "QR code analysis",
+            "hash": hashlib.sha256(qrcode_base64.encode("utf-8")).hexdigest(),
+        }
+        try:
+            structured = AI_Agent.report_to_json_via_gpt(
+                report,
+                profile=profile,
+                model="flash",
+                input=input_meta,
+                drafts={"OIDC4VCI": oidc4vci_draft, "OIDC4VP": oidc4vp_draft},
+            )
+        except Exception as e:
+            logging.error("report_to_json_via_gpt failed: %s", e)
+            return jsonify({"error": "internal processing error"}), 500
 
-    # Return as base64
-    report_base64 = base64.b64encode(report.encode()).decode()
-    return jsonify({"report_base64": report_base64})
+        return jsonify(structured), 200
+
+    # Default: base64-encoded markdown
+    report_base64 = base64.b64encode(report.encode("utf-8")).decode("utf-8")
+    return jsonify({"report_base64": report_base64}), 200
 
 
+# ---------------------------
+# /api/analyze-vc
+# ---------------------------
 @app.route('/api/analyze-vc', methods=['POST'])
 def api_analyze_vc():
     """
-    Analyze a Verifiable Credential (VC) based on its format (SD-JWT VC, JWT VC, JSON-LD VC).
+    Analyze a Verifiable Credential (VC) with the AI agent and return a report.
 
-    Input:
-    - Content-Type: application/json
-    - Required: "vc" (base64-encoded string)
-    - Optional: "sdjwtvc_draft", "vcdm_draft"
-
-    Returns:
-    - JSON object with "report_base64" containing the base64-encoded markdown analysis.
-    
-    --- Example cURL ---
-    curl -X POST http://localhost:5000/api/analyze-vc \
-      -H "Content-Type: application/json" \
-      -H "Api-Key: your-api-key" \
-      -d '{
-            "vc": "eyc29tZS1hc3NpZ24tdGV4dA..."
-          }'
+    JSON Body
+    ---------
+    {
+      "vc": "<base64-encoded VC>",                                // required
+      "sdjwtvc_draft": "12",                                      // optional
+      "vcdm_draft": "2.0",                                        // optional
+      "format": "text" | "json",                                  // optional, default "text"
+      "model": "flash" | "escalation" | "pro"                     // optional, default "flash"
+    }
     """
+    # api_key = request.headers.get("Api-Key")
+    # if api_key not in ai_api_keys:
+    #     return jsonify({"error": "access denied"}), 403
 
-    #api_key = request.headers.get("Api-Key")
-    #if api_key not in ai_api_keys:
-    #    return jsonify({"error": "Access denied"}), 403
-
+    # Parse JSON
     try:
         data = request.get_json(force=True)
-        vc_b64 = data.get("vc")
-        sdjwtvc_draft = data.get("sdjwtvc_draft")
-        vcdm_draft = data.get("vcdm_draft")
     except Exception:
-        return jsonify({"error": "Invalid JSON body"}), 400
+        return jsonify({"error": "invalid JSON body"}), 400
 
+    vc_b64 = (data or {}).get("vc")
     if not vc_b64:
-        return jsonify({"error": "Missing 'vc' field"}), 400
+        return jsonify({"error": "missing 'vc' field"}), 400
 
+    sdjwtvc_draft = data.get("sdjwtvc_draft")
+    vcdm_draft = data.get("vcdm_draft")
+    model = data.get("model", "flash")
+    output_format = data.get("format", "text")
+
+    # Decode base64 VC content
     try:
-        vc_str = base64.b64decode(vc_b64.encode()).decode()
+        vc_str = base64.b64decode(vc_b64.encode("utf-8")).decode("utf-8")
     except Exception:
-        return jsonify({"error": "Invalid base64 encoding for VC"}), 400
+        return jsonify({"error": "invalid base64 for 'vc'"}), 400
 
+    # Run the AI agent
     try:
-        report = AI_Agent.process_vc_format(vc_str, sdjwtvc_draft, vcdm_draft, "analyze VC API", "flash")
+        report = AI_Agent.process_vc_format(
+            vc_str,
+            sdjwtvc_draft,
+            vcdm_draft,
+            "analyze VC API",
+            model,
+        )
     except Exception as e:
-        logging.error(f"VC analysis failed: {e}")
-        return jsonify({"error": "Internal processing error"}), 500
+        logging.error("VC analysis failed: %s", e)
+        return jsonify({"error": "internal processing error"}), 500
 
-    report_b64 = base64.b64encode(report.encode()).decode()
-    return jsonify({"report_base64": report_b64})
+    # Structured JSON branch
+    if output_format == "json":
+        input_meta = {
+            "kind": "VC analysis",
+            "hash": hashlib.sha256(vc_b64.encode("utf-8")).hexdigest(),
+        }
+        try:
+            structured = AI_Agent.report_to_json_via_gpt(
+                report,
+                profile="",
+                model="flash",
+                input=input_meta,
+                drafts={"SD-JWT VC": sdjwtvc_draft, "W3C VCDM": vcdm_draft},
+            )
+        except Exception as e:
+            logging.error("report_to_json_via_gpt failed: %s", e)
+            return jsonify({"error": "internal processing error"}), 500
+
+        return jsonify(structured), 200
+
+    # Default: base64-encoded markdown
+    report_base64 = base64.b64encode(report.encode("utf-8")).decode("utf-8")
+    return jsonify({"report_base64": report_base64}), 200
+
 
 
 @app.route('/marketplace', methods=['GET'])
