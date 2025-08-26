@@ -474,9 +474,7 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
 
         # Verify media type but accept minor variations (charset)
         if not _content_type_is_authz_req_jwt(resp.headers.get("Content-Type")):
-            comments.append(
-            "Error: request_uri response must be 'application/oauth-authz-req+jwt'"
-        )
+            comments.append("Error: request_uri response must be 'application/oauth-authz-req+jwt'")
         
         # Decode signed request JWT
         try:
@@ -485,12 +483,10 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
         except Exception as e:
             return None, None, f"Error: cannot decode request JWT: {e}"
 
-        # x5c / iss binding (optional but recommended)
-        if isinstance(header, dict) and (x5c_list := header.get("x5c")):
+        if isinstance(header, dict) and header.get("x5c"):
             iss = request.get("iss")
             if not iss:
-                return None, None, "Error: iss is missing"
-            comments.append(verify_issuer_matches_cert(iss, x5c_list))
+                comments.append("Warning: iss is missing")
 
     # 2) request (inline) → parse JWT
     elif inline_req := query.get("request"):
@@ -503,11 +499,10 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
         except Exception as e:
             return None, None, f"Error: cannot decode inline request JWT: {e}"
 
-        if isinstance(header, dict) and (x5c_list := header.get("x5c")):
+        if isinstance(header, dict) and header.get("x5c"):
             iss = request.get("iss")
             if not iss:
-                return None, None, "Error: iss is missing"
-            comments.append(verify_issuer_matches_cert(iss, x5c_list))
+                comments.append("Warning: iss is missing")
 
     # 3) Plain query params (least secure)
     elif query.get("response_mode"):
@@ -517,7 +512,12 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
         )
     else:
         return None, None, "Error: no authorization request found (missing request_uri / request / response_mode)."
-
+    
+    if request.get("response_mode") in ["direct_post", "direct_post.jwt"]:
+        comments.append(
+            "Info: response_uri must be present and redirect_uri must not be present."
+        )
+            
     # 4) Presentation Definition / DCQL resolution
     if not isinstance(request, dict):
         return None, None, "Error: malformed authorization request"
@@ -553,14 +553,20 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
         except Exception as e:
             return request, None, f"Error: invalid embedded Presentation Definition: {e}"
 
+    elif request.get("response_type") not in ["vp_token", "vp_token id_token", "id_token vp_token"]: 
+        comments.append("Error: No Presentation Definition / DCQL parameter found.")
+        
+    elif request.get("response_type") == "id_token":
+        comments.append("Info: It is an Id_token request wihout Presentation Definition or DCQL parameter.")
+    
     else:
-        comments.append("Warning: No Presentation Definition / DCQL parameter found.")
+        comments.append("Error: No Presentation Definition / DCQL parameter found.")
 
     # Optional sanity: ensure required OIDC params exist (response_type, client_id, redirect_uri, scope, nonce/state, etc.)
     # Keep it advisory; don’t fail here to let the analyzer produce a full report later.
-    for k in ("client_id", "redirect_uri"):
+    for k in ("client_id", "nonce", "response_mode"):
         if k not in request:
-            comments.append(f"Warning: '{k}' is missing in authorization request.")
+            comments.append(f"Error: '{k}' is missing in authorization request.")
 
     return request, presentation_obj, "\n".join(comments)
 
