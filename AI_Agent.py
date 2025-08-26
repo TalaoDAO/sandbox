@@ -474,7 +474,9 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
 
         # Verify media type but accept minor variations (charset)
         if not _content_type_is_authz_req_jwt(resp.headers.get("Content-Type")):
-            return None, None, "Error: request_uri response must be 'application/oauth-authz-req+jwt'"
+            comments.append(
+            "Error: request_uri response must be 'application/oauth-authz-req+jwt'"
+        )
         
         # Decode signed request JWT
         try:
