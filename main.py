@@ -587,7 +587,7 @@ def qrcode():
         logging.info("qrcode = %s", qrcode)
         if not qrcode:
             return redirect('/qrcode')
-        report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profile, 'sandbox QR code', model)
+        report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profile, 'Website Analyze QR code', model)
         
         if outfmt == 'json':
             input = {
@@ -628,7 +628,7 @@ def vc():
         vcdm_draft = request.form.get("vcdm_draft")
         if not qrcode:
             return redirect('/ai/vc')
-        report = AI_Agent.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "sandbox VC", model)
+        report = AI_Agent.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "Website Analyze VC", model)
         print("report = ", report)
         if outfmt == 'json':
             input = {
