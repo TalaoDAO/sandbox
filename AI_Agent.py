@@ -248,7 +248,7 @@ def attribution(model: str, spec_label: str, draft: str) -> str:
         return base + "\nTip: Switch to *Escalation* for deeper checks when results are uncertain."
     elif model == "pro":
         return base + "\nSpec references included per finding. Always verify cryptographic operations with your conformance suite."
-    return base + "\nLLMs can make mistakes. Verify cryptographic results."
+    return base + "\nTip: Switch to *Pro* for deeper checks and explicit links to specifications."
 
 
 def base64url_decode(input_str):
@@ -405,6 +405,8 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model):
         oidc4vciDraft = "13"
         oidc4vpDraft = "18"
         profile = "Use only sd-jwt vc format and mdoc format"
+    elif profil == "connectors":
+        profile = "User is working with the API platform CONNECTORS, he must audit his own configuration. Check in particular the client metadata (vp formats)"
     parse_result = urlparse(qrcode)
     logging.info('profil = %s, oidc4vci draft = %s, oidc4vp draft = %s', profil, oidc4vciDraft, oidc4vpDraft)
     result = parse_qs(parse_result.query)
@@ -915,7 +917,10 @@ def get_issuer_data(qrcode, draft):
         except Exception:
             credential_offer = "Error: The credential offer is not available"
     else:
-        credential_offer = json.loads(result.get('credential_offer', '{}'))
+        try:
+            credential_offer = json.loads(result.get('credential_offer', '{}'))
+        except Exception:
+            credential_offer = "Error: The credential offer is not a correct JSON structure"
 
     issuer = credential_offer.get('credential_issuer')
     issuer_metadata_url = f"{issuer}/.well-known/openid-credential-issuer"
@@ -1039,7 +1044,6 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model):
     if not draft:
         draft = "18"
 
-    date = datetime.now().replace(microsecond=0).isoformat() + 'Z'
     verifier_request, presentation_definition, comment = get_verifier_request(qrcode, draft)
     if not verifier_request:
         return comment
