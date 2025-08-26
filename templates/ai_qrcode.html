@@ -212,18 +212,39 @@
             <div class="row" style="grid-template-columns: 1fr 1fr; gap: .75rem;">
               <div>
                 <label for="oidc4vp_version" class="muted" style="font-weight:500;">OIDC4VP</label>
-                <select id="oidc4vp_version" name="oidc4vp_draft">
-                  {% for i in range(18, 30) %}
-                  <option value="{{ i }}" {% if i == 18 %}selected{% endif %}>Draft {{ i }}</option>
-                  {% endfor %}
-                </select>
+               <select id="oidc4vp_version" name="oidc4vp_draft">
+                {% set draft_labels = {
+                    18: "ID2 (Draft 18) EBSI",
+                    20: "Draft 20 DIIP V3",
+                    22: "ID3 (Draft 22)",
+                    28: "Draft 28 DIIP V4",
+                    30: "Final 1.0"
+                } %}
+                
+                {% for i in range(8, 31) %}
+                  <option value="{{ i }}"
+                    {% if i == 18 %} selected {% endif %}>
+                    {{ draft_labels.get(i, "Draft " ~ i) }}
+                  </option>
+                {% endfor %}
+              </select>
               </div>
               <div>
                 <label for="oidc4vci_version" class="muted" style="font-weight:500;">OIDC4VCI</label>
                 <select id="oidc4vci_version" name="oidc4vci_draft">
-                  {% for i in range(10, 18) %}
-                  <option value="{{ i }}" {% if i == 13 %}selected{% endif %}>Draft {{ i }}</option>
-                  {% endfor %}
+                 {% set draft_labels = {
+                    11: "Draft 11 EBSI V3",
+                    13: "ID1 (Draft 13) DIIP V3",
+                    15: "ID2 (Draft 15) DIIP V4",
+                    18: "Final 1.0"
+                } %}
+                
+                {% for i in range(11, 19) %}
+                  <option value="{{ i }}"
+                    {% if i == 13 %} selected {% endif %}>
+                    {{ draft_labels.get(i, "Draft " ~ i) }}
+                  </option>
+                {% endfor %}
                 </select>
               </div>
             </div>
