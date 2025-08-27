@@ -525,7 +525,6 @@ def verif_token(token: str):
 
 
 
-
 def get_payload_from_token(token) -> dict:
     payload = token.split('.')[1]
     payload += "=" * ((4 - len(payload) % 4) % 4)  # solve the padding issue of the base64 python lib

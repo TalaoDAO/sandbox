@@ -333,17 +333,17 @@ def verify_issuer_matches_cert(issuer, x5c_list, token="vc"):
     dns_names, uris = extract_san_domains_and_uris(cert)
 
     match_dns = issuer in dns_names
-    match_uri = any(issuer == uri or issuer in uri for uri in uris)
-
+    match_uri = issuer in uris
+    
     if match_dns or match_uri:
         if token == "vc":
             return "Info: Issuer matches SAN DNS or URI in certificate."
         return "Info: client_id matches SAN DNS or URI in certificate."
     else:
         if token == "vc":
-            return "Error: Issuer does NOT match SAN DNS or URI in certificate."
+            return "Error: Issuer does NOT match SAN DNS or URI in certificate. SAN DNS in certificate = " + str(dns_names) + " but issuer = " + issuer
         else:
-            return "Error: client_id does NOT match SAN DNS or URI in certificate."
+            return "Error: client_id does NOT match SAN DNS or URI in certificate. SAN DNS in certificate = " + str(dns_names) + " but client_id = " + issuer
 
 
 def extract_SAN_DNS(pem_certificate):
