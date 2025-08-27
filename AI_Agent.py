@@ -367,6 +367,7 @@ def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str,
     Returns:
         str: Result of analysis or error message.
     """
+    logging.info("VC received = %s", vc)
 
     # 1. SD-JWT: starts with base64 segment and uses '~' delimiter
     if "~" in vc and "." in vc.split("~")[0]:
@@ -388,6 +389,7 @@ def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str,
 
 
 def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model):
+    
     # Analyze a QR code and delegate based on protocol type
     profile = ""
     if profil == "EBSI":
