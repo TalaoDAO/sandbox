@@ -245,10 +245,10 @@ def attribution(model: str, spec_label: str, draft: str) -> str:
         f"Date of issuance: {date}. © Web3 Digital Wallet 2025."
     )
     if model == "flash":
-        return base + "\nTip: Switch to *Escalation* for deeper checks when results are uncertain."
+        return base + f"\nTip: 💡Switch to *Escalation* for deeper checks when results are uncertain."
     elif model == "pro":
         return base + "\nSpec references included per finding. Always verify cryptographic operations with your conformance suite."
-    return base + "\nTip: Switch to *Pro* for deeper checks and explicit links to specifications."
+    return base + f"\Tip: 💡Switch to *Pro* for deeper checks and explicit links to specifications."
 
 
 def base64url_decode(input_str):
@@ -335,16 +335,11 @@ def verify_issuer_matches_cert(issuer, x5c_list, token="vc"):
     match_dns = issuer in dns_names
     match_uri = issuer in uris
     
+    subject = "Issuer" if token == "vc" else "client_id"
     if match_dns or match_uri:
-        if token == "vc":
-            return "Info: Issuer matches SAN DNS or URI in certificate."
-        return "Info: client_id matches SAN DNS or URI in certificate."
-    else:
-        if token == "vc":
-            return "Error: Issuer does NOT match SAN DNS or URI in certificate. SAN DNS in certificate = " + str(dns_names) + " but issuer = " + issuer
-        else:
-            return "Error: client_id does NOT match SAN DNS or URI in certificate. SAN DNS in certificate = " + str(dns_names) + " but client_id = " + issuer
-
+        return f"Info: {subject} matches SAN DNS or URI in certificate."
+    return (f"Error: {subject} does NOT match SAN DNS or URI in certificate. "
+            f"SAN DNS in certificate = {dns_names} but {subject.lower()} = {issuer}")
 
 def extract_SAN_DNS(pem_certificate):
     # Decode base64 and load the certificate
