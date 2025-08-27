@@ -567,7 +567,7 @@ def oidc_ai():
     return render_template('oidc_oidc4vc_ai.html')
 
 
-# OpenAI tools for sandbox
+# OpenAI tools for website
 @app.route('/qrcode', methods=['GET', 'POST'])
 @app.route('/ai/qrcode', methods=['GET', 'POST'])
 def qrcode():
@@ -583,7 +583,6 @@ def qrcode():
         oidc4vci_draft = request.form.get("oidc4vci_draft")
         oidc4vp_draft = request.form.get("oidc4vp_draft")
         profile = request.form.get("profile")
-        
         logging.info("qrcode = %s", qrcode)
         if not qrcode:
             return redirect('/qrcode')

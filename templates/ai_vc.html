@@ -195,9 +195,8 @@
             <label for="vcdm_version">VCDM</label>
             <div>
               <select id="vcdm_version" name="vcdm_draft">
-                {% for i in ["1.1"] %}
-                <option value="{{ i }}" selected>{{ i }}</option>
-                {% endfor %}
+                <option value="1.1" selected>1.1</option>
+                <option value="2.0" >2.0</option>
               </select>
               <small class="muted">Used for JWT VC and JSON-LD VC analysis.</small>
             </div>
