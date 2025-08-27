@@ -156,7 +156,7 @@
               <div class="pill"><span class="icon" aria-hidden="true">⚡</span> Flash </div>
               <h3>Fast validation (~ 15 sec)</h3>
               <ul>
-                <li><strong>Approach:</strong> lightweight LLM pass optimized for speed.</li>
+                <li><strong>Approach:</strong> lightweight analysis pass optimized for speed.</li>
                 <li><strong>Best for developers:</strong> batch runs, CI pipelines, quick feedback loops.</li>
                 <li><strong>Output:</strong> strict JSON (field-by-field <em>PASS/FAIL/WARN</em>) ready for tooling.</li>
                 <li><strong>When to use:</strong> straightforward issuers/verifiers, unsigned metadata, common profiles.</li>
@@ -168,7 +168,7 @@
               <div class="pill"><span class="icon" aria-hidden="true">🧠</span> Escalation (wallet default) </div>
               <h3>Deeper reasoning for edge cases (~ 1 min)</h3>
               <ul>
-                <li><strong>Approach:</strong> higher-capacity LLM pass that allocates more compute to cross-checks.</li>
+                <li><strong>Approach:</strong> higher-capacity analysis pass that allocates more compute to cross-checks.</li>
                 <li><strong>Best for developers:</strong> multi-AS setups, JWS-signed metadata, nuanced profile rules.</li>
                 <li><strong>Output:</strong> the same strict JSON, plus <em>richer rationales</em> for failed checks.</li>
                 <li><strong>When to use:</strong> Flash returns <em>UNCERTAIN</em>, conflicting fields, or complex issuer configs.</li>
@@ -180,10 +180,10 @@
               <div class="pill"><span class="icon" aria-hidden="true">👑</span> Pro</div>
               <h3>Audit-grade explanations with spec links (> 3 min)</h3>
               <ul>
-                <li><strong>Approach:</strong> premium reasoning pass with expanded analysis budget.</li>
+                <li><strong>Approach:</strong> premium reasoning pass with expanded analysis plan.</li>
                 <li><strong>For developers & auditors:</strong> includes <em>clear links to the relevant OIDC4VC(I)/OIDC4VP spec sections</em> for every failure/warning.</li>
                 <li><strong>Output:</strong> detailed human-readable report with links to section references, rationale, and remediation hints.</li>
-                <li class="disabled-note"><strong>Status:</strong> limited use. Contact us to enable Pro.</li>
+                <li class="disabled-note"><strong>Status:</strong> limited use. Contact us to enable Pro for your company.</li>
               </ul>
             </div>
           </div>
@@ -198,6 +198,7 @@
                 <option value="DIIP_V4">DIIP V4</option>
                 <option value="INJI">INJI from MOSIP</option>
                 <option value="EWC">ARF EWC</option>
+                <option value="HAIP">HAIP with OIDC4VC Final 1.0</option>
                 <option selected value="custom">Custom</option>
               </select>
               <small class="muted">Choose a profile or use <em>Custom</em> to select drafts.</small>

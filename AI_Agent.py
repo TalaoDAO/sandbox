@@ -201,6 +201,10 @@ def spec_url_vcdm(draft: str) -> str:
     return "https://www.w3.org/TR/vc-data-model/"
 
 
+def spec_url_haip() -> str:
+    return "https://openid.net/specs/openid4vc-high-assurance-interoperability-profile-1_0.html"
+
+
 # ---------- Prompt shaping per style ----------
 def style_instructions(style: ReportStyle, domain: str, draft: str, extra_urls: Optional[Dict[str, str]] = None) -> str:
     base = [
@@ -407,6 +411,10 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model):
         oidc4vciDraft = "13"
         oidc4vpDraft = "18"
         profile = "Use only sd-jwt vc format and mdoc format"
+    elif profil == "HAIP":
+        oidc4vciDraft = "18"
+        oidc4vpDraft = "30"
+        profile = "HAIP"  
     elif profil == "connectors":
         profile = "User is working with the API platform CONNECTORS, he must audit his own configuration. Check in particular the client metadata (vp formats)"
     parse_result = urlparse(qrcode)
@@ -1011,6 +1019,15 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model):
         context = f.read()
         f.close()
         draft = "13"
+    
+    if profile == "HAIP":
+        f = open("./dataset/haip/3.md", "r")
+        haip = f.read()
+        f.close()
+        haip = clean_md(haip)
+        context += "\n\n" + haip
+        print("merge is ok")
+        
 
     # Token count logging for diagnostics
     tokens = enc.encode(context)
@@ -1106,6 +1123,15 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model):
         draft = "18"
 
     context = clean_md(context)
+    
+    if profile == "HAIP":
+        f = open("./dataset/haip/3.md", "r")
+        haip = f.read()
+        f.close()
+        haip = clean_md(haip)
+        context += "\n\n" + haip
+        print("merge is ok")
+        
 
     # Token count logging for diagnostics
     tokens = enc.encode(context)
