@@ -328,7 +328,7 @@ def extract_san_domains_and_uris(cert):
         return [], []
 
 
-def verify_issuer_matches_cert(issuer, x5c_list):
+def verify_issuer_matches_cert(issuer, x5c_list, token="vc"):
     cert = load_leaf_cert_from_x5c(x5c_list)
     dns_names, uris = extract_san_domains_and_uris(cert)
 
@@ -336,9 +336,14 @@ def verify_issuer_matches_cert(issuer, x5c_list):
     match_uri = any(issuer == uri or issuer in uri for uri in uris)
 
     if match_dns or match_uri:
-        return "Info: Issuer matches SAN DNS or URI in certificate."
+        if token == "vc":
+            return "Info: Issuer matches SAN DNS or URI in certificate."
+        return "Info: client_id matches SAN DNS or URI in certificate."
     else:
-        return "Error: Issuer does NOT match SAN DNS or URI in certificate."
+        if token == "vc":
+            return "Error: Issuer does NOT match SAN DNS or URI in certificate."
+        else:
+            return "Error: client_id does NOT match SAN DNS or URI in certificate."
 
 
 def extract_SAN_DNS(pem_certificate):
@@ -482,11 +487,35 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
             header = get_header_from_token(request_jwt)
         except Exception as e:
             return None, None, f"Error: cannot decode request JWT: {e}"
+        
+        if header.get("alg") == "none":
+            comments.append("Warning: the request_uri is not signed which is correct only if the client_id_scheme is 'redirect_uri'")
+        else:
+            comments.append("Info: the request_uri is signed which is great for safety")
+
 
         if isinstance(header, dict) and header.get("x5c"):
             iss = request.get("iss")
             if not iss:
                 comments.append("Warning: iss is missing")
+            # check signature of the request jwt
+            if x5c_list := header.get('x5c'):
+                comments.append(verify_issuer_matches_cert(iss, x5c_list, token="request_jwt"))
+                comments.append(oidc4vc.verify_x5c_chain(x5c_list))
+                try:
+                    # Extract the first certificate (leaf cert) from the x5c list
+                    cert_der = base64.b64decode(x5c_list[0])
+                    cert = x509.load_der_x509_certificate(cert_der)
+                    # Get public key from the cert
+                    public_key = cert.public_key()
+                    # Convert it to JWK format
+                    issuer_key = jwk.JWK.from_pyca(public_key)
+                    # Validate signature
+                    a = jwt.JWT.from_jose_token(request_jwt)
+                    a.validate(issuer_key)
+                    comments.append("Info: Request JWT is correctly signed with x5c public key")
+                except Exception as e:
+                    comments.append(f"Error: Request JWT signature verification with x5c public key failed: {e}")
 
     # 2) request (inline) → parse JWT
     elif inline_req := query.get("request"):
@@ -538,6 +567,9 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
     elif request.get("dcql_query") and int(draft) >= 23:
         presentation_obj = {"dcql_query": request.get("dcql_query")}
         comments.append("Info: Verifier uses 'dcql_query' (Digital Credential Query).")
+        
+        if "credentials" not in request.get("dcql_query"):
+            comments.append(f"Error: 'credentials' is missing in DCQL.")
 
     # embedded presentation_definition
     elif request.get("presentation_definition"):
@@ -552,6 +584,10 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
             comments.append("Info: Verifier embeds 'presentation_definition'.")
         except Exception as e:
             return request, None, f"Error: invalid embedded Presentation Definition: {e}"
+        
+        for k in ("id", "input_descriptors"):
+            if k not in pd:
+                comments.append(f"Error: '{k}' is missing in presentation Definition.")
 
     elif request.get("response_type") not in ["vp_token", "vp_token id_token", "id_token vp_token"]: 
         comments.append("Error: No Presentation Definition / DCQL parameter found.")
@@ -1059,6 +1095,8 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model):
     if not presentation_definition:
     # request is valid but no PD/DCQL → keep request and warn
         comment += "\n Error: No presentation definition found"
+        
+    logging.info("all comments passed to et LLM = %s", comment)
     
     try:
         f = open("./dataset/oidc4vp/" + draft + ".md", "r")
