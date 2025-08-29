@@ -746,7 +746,6 @@ def oidc4vc_login_qrcode(red, mode):
     }
     red.setex(stream_id, QRCODE_LIFE, json.dumps(data))
 
-    print("request uri supported =", verifier_data.get('request_uri_parameter_supported'))
     # Request uri    
     if 'vp_token' in response_type:
         if verifier_data.get('client_metadata_uri'):
@@ -762,8 +761,9 @@ def oidc4vc_login_qrcode(red, mode):
     if response_type == "id_token" and verifier_data.get('request_uri_parameter_supported'):
         authorization_request['client_metadata'] = wallet_metadata
     
+    # Data transaction integgration
     if json.loads(code_data).get("transaction_data"):
-        authorization_request["transaction_data"] = json.loads(code_data)["transaction_data"]
+        authorization_request["transaction_data"] = [json.loads(code_data)["transaction_data"]]
     
     # manage request_uri as jwt
     if verifier_data.get('client_id_scheme') == "redirect_uri":
