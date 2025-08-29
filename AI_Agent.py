@@ -20,7 +20,7 @@ from cryptography.x509.oid import ExtensionOID
 import oidc4vc
 from jwcrypto import jwk, jwt
 from langchain_openai import ChatOpenAI
-#from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from typing import Any, Dict, Optional, Tuple
 from dataclasses import dataclass
 
@@ -56,39 +56,61 @@ openai_model_pro = ChatOpenAI(
     #temperature=0
 )
 
-"""
-gemini_model = ChatGoogleGenerativeAI(
+
+gemini_model_pro = ChatGoogleGenerativeAI(
     google_api_key=keys["gemini"],
     model="gemini-2.5-pro",
     #temperature=0
 )
 
-gemini_model_flash = ChatGoogleGenerativeAI(
+gemini_model_escalation = ChatGoogleGenerativeAI(
     google_api_key=keys["gemini"],
     model="gemini-2.5-flash",
     #temperature=0
 )
-"""
+
+gemini_model_flash = ChatGoogleGenerativeAI(
+    google_api_key=keys["gemini"],
+    model="gemini-2.5-flash-lite",
+    #temperature=0
+)
 
 
-def get_llm_client(model):
-    logging.info("model = %s", model)
-    if model == "flash":
-        return openai_model_flash
-    elif model == "escalation":
-        return openai_model_escalation
-    elif model == "pro":
-        return openai_model_pro
+def get_llm_client(mode, provider):
+    logging.info("mode = %s", mode)
+    logging.info("provider = %s", provider)
+    if mode == "flash":
+        if provider == "openai":
+            return openai_model_flash
+        else:
+            return gemini_model_flash
+    elif mode == "escalation":
+        if provider == "openai":
+            return openai_model_escalation
+        else:
+            return gemini_model_escalation
+    elif mode == "pro":
+        if provider == "openai":
+            return openai_model_pro
+        else:
+            return gemini_model_pro
     else:
-        raise ValueError(f"Unsupported provider: {model}")
+        raise ValueError(f"Unsupported mode : {mode} or {provider}")
 
 
-def engine(model: str) -> str:
-    return {
-        "flash": "gpt-4o-mini",      # fast + accurate enough
-        "escalation": "gpt-5-mini",  # medium depth
-        "pro": "gpt-5"               # with spec-linking prompts
-    }[model]
+def engine(mode: str, provider: str ) -> str:
+    if provider == "openai":
+        return {
+            "flash": "gpt-4o-mini",      # fast + accurate enough
+            "escalation": "gpt-5-mini",  # medium depth
+            "pro": "gpt-5"               # with spec-linking prompts
+        }[mode]
+    else:
+        return {
+            "flash": "gemini-2.5-flash-lite",      # fast + accurate enough
+            "escalation": "gemini-2.5-flash",  # medium depth
+            "pro": "gemini-2.5-pro"               # with spec-linking prompts
+        }[mode]
 
 
 # Configure logging
@@ -252,16 +274,16 @@ def style_instructions(style: ReportStyle, domain: str, draft: str, extra_urls: 
 
 
 # ---------- Attribution footer ----------
-def attribution(model: str, spec_label: str, draft: str) -> str:
+def attribution(mode: str, spec_label: str, draft: str, provider: str) -> str:
     date = datetime.now().replace(microsecond=0).isoformat()
     base = (
-        f"\n\nThe model {engine(model)} is used with the Web3 Digital Wallet dataset.\n"
+        f"\n\nThe model {engine(mode, provider)} is used with the Web3 Digital Wallet dataset.\n"
         f"This report is based on {spec_label} {draft}.\n"
         f"Date of issuance: {date}. © Web3 Digital Wallet 2025."
     )
-    if model == "flash":
+    if mode == "flash":
         return base + f"\nTip: 💡Switch to *Escalation* for deeper checks when results are uncertain."
-    elif model == "pro":
+    elif mode == "pro":
         return base + "\nSpec references included per finding. Always verify cryptographic operations with your conformance suite."
     return base + f"\Tip: 💡Switch to *Pro* for deeper checks and explicit links to specifications."
 
@@ -369,7 +391,7 @@ def extract_SAN_DNS(pem_certificate):
         return "Error: no SAN extension found in the x509 certificate."
 
 
-def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str, model: str):
+def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str, model: str, provider: str):
     """
     Detect the format of a Verifiable Credential (VC) and route to the correct analysis function.
     Args:
@@ -381,24 +403,24 @@ def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str,
 
     # 1. SD-JWT: starts with base64 segment and uses '~' delimiter
     if "~" in vc and "." in vc.split("~")[0]:
-        return analyze_sd_jwt_vc(vc, sdjwtvc_draft, device, model)
+        return analyze_sd_jwt_vc(vc, sdjwtvc_draft, device, model, provider)
 
     # 2. JWT VC (compact JWT): 3 base64 parts separated by dots
     if vc.count(".") == 2 and all(len(part.strip()) > 0 for part in vc.split(".")):
-        return analyze_jwt_vc(vc, vcdm_draft, device, model)
+        return analyze_jwt_vc(vc, vcdm_draft, device, model, provider)
 
     # 3. JSON-LD: must be valid JSON with @context
     try:
         vc_json = json.loads(vc)
         if "@context" in vc_json and "type" in vc_json:
-            return analyze_jsonld_vc(vc_json, vcdm_draft, device, model)
+            return analyze_jsonld_vc(vc_json, vcdm_draft, device, model, provider)
     except Exception as e:
         return "Invalid JSON. Cannot parse input. " + str(e)
 
     return "Unknown VC format. Supported formats: SD-JWT VC, JWT VC (compact), JSON-LD VC."
 
 
-def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model):
+def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model, provider):
     
     # Analyze a QR code and delegate based on protocol type
     profile = ""
@@ -432,9 +454,9 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model):
     logging.info('profil = %s, oidc4vci draft = %s, oidc4vp draft = %s', profil, oidc4vciDraft, oidc4vpDraft)
     result = parse_qs(parse_result.query)
     if result.get('credential_offer_uri') or result.get('credential_offer'):
-        return analyze_issuer_qrcode(qrcode, oidc4vciDraft, profile, device, model)
+        return analyze_issuer_qrcode(qrcode, oidc4vciDraft, profile, device, model, provider)
     else:
-        return analyze_verifier_qrcode(qrcode, oidc4vpDraft, profile, device, model)
+        return analyze_verifier_qrcode(qrcode, oidc4vpDraft, profile, device, model, provider)
 
 
 def _is_compact_jwt(value: str) -> bool:
@@ -624,7 +646,7 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
 
 
 
-def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
+def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider: str) -> str:
     """
     Analyze a Verifiable Presentation (VP) in SD-JWT format and return a structured report.
 
@@ -804,7 +826,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
     logging.info("Token count: %s", len(tokens))
 
     # Timestamp and attribution
-    mention = attribution(model, "SD-JWT VC", draft)
+    mention = attribution(model, "SD-JWT VC", draft, provider)
     st = style_for(model)
     instr = style_instructions(st, domain="sdjwtvc", draft=draft)
 
@@ -841,7 +863,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
     """
 
     # Call the OpenAI API
-    llm = get_llm_client(model)  # Add 'provider' param to function
+    llm = get_llm_client(model,provider)  # Add 'provider' param to function
     response = llm.invoke([
         {"role": "system", "content": "You are an expert in SD-JWT VC specifications compliance."},
         {"role": "user", "content": prompt}
@@ -852,7 +874,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
     return response + ADVICE + mention
 
 
-def analyze_jwt_vc(token, draft, device, model):
+def analyze_jwt_vc(token, draft, device, model, provider):
     """
     Analyze a Verifiable Presentation (VP) in JWT format and return a structured report.
 
@@ -882,7 +904,7 @@ def analyze_jwt_vc(token, draft, device, model):
     logging.info("Token count: %s", len(tokens))
 
     # Timestamp and attribution
-    mention = attribution(model, "VCDM", draft)
+    mention = attribution(model, "VCDM", draft, provider)
 
     # Prompt for OpenAI model
     st = style_for(model)
@@ -908,7 +930,7 @@ VC Payload: {json.dumps(jwt_payload, indent=2)}
 
 """
     # Call the LLM API
-    llm = get_llm_client(model)  # Add 'provider' param to function
+    llm = get_llm_client(model, provider)  # Add 'provider' param to function
     response = llm.invoke([
         {"role": "system", "content": "You are an expert in JWT VC specifications compliance."},
         {"role": "user", "content": prompt}
@@ -919,7 +941,7 @@ VC Payload: {json.dumps(jwt_payload, indent=2)}
     return response + ADVICE + mention
 
 
-def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str) -> str:
+def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str, provider: str) -> str:
     """
     Analyze a Verifiable Presentation (VP) in JSON-LD format and return a structured report.
 
@@ -947,7 +969,7 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str) -> str:
     logging.info("Token count: %s", len(tokens))
 
     # Timestamp and attribution
-    mention = attribution(model, "VCDM", draft)
+    mention = attribution(model, "VCDM", draft, provider)
     st = style_for(model)
     instr = style_instructions(st, domain="vcdm-jsonld", draft=draft)
 
@@ -971,7 +993,7 @@ JSON-LD VC : {json.dumps(vc, indent=2)}
 
 
     # Call the OpenAI API
-    llm = get_llm_client(model)  # Add 'provider' param to function
+    llm = get_llm_client(model, provider)  # Add 'provider' param to function
     response = llm.invoke([
         {"role": "system", "content": "You are an expert in VC DM specifications compliance."},
         {"role": "user", "content": prompt}
@@ -1029,7 +1051,7 @@ def get_issuer_data(qrcode, draft):
     return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
 
 
-def analyze_issuer_qrcode(qrcode, draft, profile, device, model):
+def analyze_issuer_qrcode(qrcode, draft, profile, device, model, provider):
     logging.info("draft = %s", draft)
     # Analyze issuer QR code and generate a structured report using OpenAI
     if not draft:
@@ -1063,7 +1085,7 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model):
     context = clean_md(context)
     if int(draft) <= 11:
         context += "\n If EBSI tell to the user to add did:key:jwk_jcs-pub as subject_syntax_type_supported in the authorization server metadata"
-    mention = attribution(model, "OIDC4VCI", draft)
+    mention = attribution(model, "OIDC4VCI", draft, provider)
 
 
     st = style_for(model)
@@ -1114,7 +1136,7 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model):
         }
     ]
 
-    llm = get_llm_client(model)
+    llm = get_llm_client(model, provider)
     response = llm.invoke(messages).content
 
     result = response + ADVICE + mention
@@ -1123,7 +1145,7 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model):
     return result
 
 
-def analyze_verifier_qrcode(qrcode, draft, profile, device, model):
+def analyze_verifier_qrcode(qrcode, draft, profile, device, model, provider):
 
     # Analyze verifier QR code and generate a structured report using OpenAI
     if not draft:
@@ -1164,7 +1186,7 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model):
     tokens = enc.encode(context)
     logging.info("Token count: %s", len(tokens))
 
-    mention = attribution(model, "OIDC4VP", draft)
+    mention = attribution(model, "OIDC4VP", draft, provider)
 
 
     st = style_for(model)
@@ -1212,7 +1234,7 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model):
         }
     ]
 
-    llm = get_llm_client(model)  # Add 'provider' param to function
+    llm = get_llm_client(model, provider)  # Add 'provider' param to function
     response = llm.invoke(messages).content
 
     result = response + ADVICE + mention
@@ -1296,7 +1318,7 @@ Extract machine-readable findings from the report below.
 """.strip()
 
     # ---------- LLM call ----------
-    llm = get_llm_client(model)  # your existing helper
+    llm = get_llm_client(model, "openai")  # your existing helper
     resp_text = llm.invoke([
         {"role": "system", "content": system},
         {"role": "user", "content": user},

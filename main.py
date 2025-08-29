@@ -586,7 +586,8 @@ def qrcode():
         logging.info("qrcode = %s", qrcode)
         if not qrcode:
             return redirect('/qrcode')
-        report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profile, 'Website Analyze QR code', model)
+        
+        report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profile, 'Website Analyze QR code', model, "openai")
         
         if outfmt == 'json':
             input = {
@@ -611,7 +612,7 @@ def qrcode():
 
 
 
-# OpenAI tools for sandbox
+# OpenAI tools for website
 @app.route('/ai/vc', methods=['GET', 'POST'])
 def vc():
     if  request.method == 'GET':
@@ -621,13 +622,22 @@ def vc():
         return render_template("ai_vc.html", request_number=request_number)
     else:
         outfmt = request.form.get("outfmt", "text")
-        model = request.form.get("mode", "flash")
+        mode = request.form.get("mode", "flash")
         vc = request.form.get("vc")
         sdjwtvc_draft = request.form.get("sdjwtvc_draft")
         vcdm_draft = request.form.get("vcdm_draft")
+        
+        # taking into account of limited token for flash versus open ai
         if not qrcode:
             return redirect('/ai/vc')
-        report = AI_Agent.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "Website Analyze VC", model)
+        if mode == "flash":
+            provider = "gemini"
+        else:
+            provider = "openai"
+            
+        #provider = "gemini"
+            
+        report = AI_Agent.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "Website Analyze VC", mode, provider)
         print("report = ", report)
         if outfmt == 'json':
             input = {
@@ -659,7 +669,6 @@ def qrcode_wallet():
     qrcode_base64 = request.form.get("qrcode")
     if not qrcode_base64:
         return jsonify({"error": "missing qrcode"}), 400
-    model = request.form.get('oidc4vciDraft', "escalation")
     oidc4vciDraft = request.form.get('oidc4vciDraft')
     oidc4vpDraft = request.form.get('oidc4vpDraft')
     profil = request.form.get('profil', 'custom')
@@ -668,7 +677,7 @@ def qrcode_wallet():
     except Exception:
         return jsonify({"error": "invalid base64 format"}), 400
     try:
-        report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft, profil, 'wallet QR code', model)
+        report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft, profil, 'wallet QR code', "pro", "gemini")
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
@@ -684,7 +693,6 @@ def vc_wallet():
     if api_key not in ai_api_keys:
         return jsonify({"error": "access denied"}), 403
     vc_base64 = request.form.get("vc")
-    model = request.form.get('oidc4vciDraft', "escalation")
     if not vc_base64:
         return jsonify({"error": "missing qrcode"}), 400
     try:
@@ -692,7 +700,7 @@ def vc_wallet():
     except Exception:
         return jsonify({"error": "invalid base64 format"}), 400
     try:
-        report = AI_Agent.process_vc_format(vc_str, "8", "1.1", "wallet VC", model)
+        report = AI_Agent.process_vc_format(vc_str, "8", "1.1", "wallet VC", "pro", "gemini")
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
@@ -755,6 +763,7 @@ def analyze_wallet_qrcode():
             profile,
             "QR code public API",
             model,
+            "openai"
         )
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
@@ -836,6 +845,7 @@ def api_analyze_vc():
             vcdm_draft,
             "analyze VC API",
             model,
+            "openai"
         )
     except Exception as e:
         logging.error("VC analysis failed: %s", e)
