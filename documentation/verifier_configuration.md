@@ -1,6 +1,6 @@
 # Verifier configuration
 
-Updated the 22nd of August 2025.
+Updated the 29nd of August 2025.
 
 ## OIDC4VP Specifications Drafts
 
@@ -12,6 +12,7 @@ Wallets support OIDC4VP specifications.
 * [Draft 21](https://openid.net/specs/openid-4-verifiable-presentations-1_0-21.html) added features not supported
 * [Draft 22](https://openid.net/specs/openid-4-verifiable-presentations-1_0-22.html) partially supported
     - remove client_id_scheme
+    - data_transaction support (as Final 1.0)
 * [Implementer Draft 3 (Draft 23)](https://openid.net/specs/openid-4-verifiable-presentations-1_0-23.html) partially supported
     - dc+sd-jwt
 

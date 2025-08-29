@@ -479,7 +479,7 @@ def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None, client
     payload = {
         'iss': iss,
         'aud': aud,
-        'exp': datetime.timestamp(datetime.now()) + 1000
+        'exp': int(datetime.timestamp(datetime.now())) + 1000
     }
     payload |= request
     if key:
