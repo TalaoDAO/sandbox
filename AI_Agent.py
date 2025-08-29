@@ -195,6 +195,17 @@ def spec_url_sdjwtvc(draft: str) -> str:
     return specs
 
 
+
+def spec_url_sdjwt(draft: str) -> str:
+    d = {"22": "22"}
+    try:
+        specs = f"https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-{d[draft]}.html"
+    except Exception:
+        specs = "https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-22.html"
+    logging.info("SD-JWT VC specs = %s", specs)
+    return specs
+
+
 def spec_url_vcdm(draft: str) -> str:
     if str(draft).startswith("2"):
         return "https://www.w3.org/TR/vc-data-model-2.0/"
@@ -763,7 +774,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
     else:
         kb_header = kb_payload = "No Key Binding JWT"
 
-    # Load the appropriate specification content based on draft
+    # Load the appropriate SD-JWT VC specification content based on draft
     try:
         with open(f"./dataset/sdjwtvc/{draft}.txt", "r") as f:
             content = f.read()
@@ -771,6 +782,22 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str) -> str:
         with open("./dataset/sdjwtvc/9.txt", "r") as fallback:
             content = fallback.read()
             draft = "9"
+    
+    # Load the appropriate SD-JWT specification (Draft 22)
+    try:
+        with open(f"./dataset/sdjwt/22.txt", "r") as f:
+            content += "#\n\n" + f.read()
+    except FileNotFoundError:
+        logging.warning("SD-JWT specs not found")
+        
+            
+    # Load the appropriate token status list specification (Draft 12)
+    try:
+        with open(f"./dataset/tsl/12.txt", "r") as f:
+            content += "#\n\n" + f.read()
+    except FileNotFoundError:
+        logging.warning("TSL specs not found")
+        
 
     # Token count logging for diagnostics
     tokens = enc.encode(content)
