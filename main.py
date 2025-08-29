@@ -587,7 +587,14 @@ def qrcode():
         if not qrcode:
             return redirect('/qrcode')
         
-        report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profile, 'Website Analyze QR code', model, "openai")
+        if model == "flash": 
+            provider = "gemini"
+        elif model == "escalation":
+            provider = "openai"
+        else:
+            provider = "gemini"
+                
+        report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profile, 'Website Analyze QR code', model, provider)
         
         if outfmt == 'json':
             input = {
@@ -608,7 +615,7 @@ def qrcode():
                 headers={"X-Content-Type-Options": "nosniff"}
             )
         
-        return render_template("ai_report.html", back="/ai/qrcode", report= "\n\n" + report)
+        return render_template("ai_report.html", back="/ai/qrcode", report= "\n\n" + report, model=model.capitalize())
 
 
 
@@ -622,7 +629,7 @@ def vc():
         return render_template("ai_vc.html", request_number=request_number)
     else:
         outfmt = request.form.get("outfmt", "text")
-        mode = request.form.get("mode", "flash")
+        model = request.form.get("mode", "flash")
         vc = request.form.get("vc")
         sdjwtvc_draft = request.form.get("sdjwtvc_draft")
         vcdm_draft = request.form.get("vcdm_draft")
@@ -630,14 +637,15 @@ def vc():
         # taking into account of limited token for flash versus open ai
         if not qrcode:
             return redirect('/ai/vc')
-        if mode == "flash":
+        
+        if model == "flash": 
             provider = "gemini"
-        else:
+        elif model == "escalation":
             provider = "openai"
+        else:
+            provider = "gemini"
             
-        #provider = "gemini"
-            
-        report = AI_Agent.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "Website Analyze VC", mode, provider)
+        report = AI_Agent.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "Website Analyze VC", model, provider)
         print("report = ", report)
         if outfmt == 'json':
             input = {
@@ -657,7 +665,7 @@ def vc():
                 mimetype="application/json; charset=utf-8",
                 headers={"X-Content-Type-Options": "nosniff"}
             )
-        return render_template("ai_report.html", back="/ai/vc", report= "\n\n" + report)
+        return render_template("ai_report.html", back="/ai/vc", report= "\n\n" + report, model=model.capitalize())
     
 
 # OpenAI tools for wallet

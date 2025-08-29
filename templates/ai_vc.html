@@ -147,7 +147,7 @@
           <div id="modeExplainer" class="explainer">
             <div id="pane-flash" class="explainer-card mode-pane active" data-mode="flash">
               <div class="pill"><span class="icon" aria-hidden="true">⚡</span> Flash </div>
-              <h3>Fast validation (~ 30 sec}</h3>
+              <h3>Fast validation (~ 15 sec}</h3>
               <ul>
                 <li><strong>Approach:</strong> lightweight analysis pass optimized for speed.</li>
                 <li><strong>Best for developers:</strong> batch runs, CI pipelines, quick feedback loops.</li>
@@ -158,7 +158,7 @@
 
             <div id="pane-escalation" class="explainer-card mode-pane" data-mode="escalation" hidden>
               <div class="pill"><span class="icon" aria-hidden="true">🧠</span> Escalation </div>
-              <h3>Deeper reasoning for edge cases 4 {~ 1 min}</h3>
+              <h3>Deeper reasoning for edge cases 4 {~ 30 sec}</h3>
               <ul>
                 <li><strong>Approach:</strong> higher-capacity analysis pass that allocates more compute to cross-checks.</li>
                 <li><strong>Best for developers:</strong> SD-JWT disclosures, JWS signatures, JSON-LD contexts.</li>
@@ -169,7 +169,7 @@
 
             <div id="pane-pro" class="explainer-card mode-pane" data-mode="pro" aria-disabled="true" hidden>
               <div class="pill"><span class="icon" aria-hidden="true">👑</span> Pro </div>
-              <h3>Audit-grade explanations with spec links (> 3 min}</h3>
+              <h3>Audit-grade explanations with spec links (~ 1 min}</h3>
               <ul>
                 <li><strong>Approach:</strong> premium reasoning pass with expanded analysis.</li>
                 <li><strong>Output:</strong> human-readable report with links to section references, rationale, remediation.</li>
@@ -239,7 +239,7 @@
         <div class="notice">
           <div>ℹ️</div>
           <div>
-            <div class="muted">An OpenAI model is used in addition to Web3 Digital Wallet testing tools and datasets. <strong>Do not use personal data.</strong></div>
+            <div class="muted">An LLM model is used in addition to Web3 Digital Wallet testing tools and datasets. <strong>Do not use personal data.</strong></div>
             <div class="counter">VCs/VPs tested: <strong>{{request_number}}</strong></div>
           </div>
         </div>

@@ -79,6 +79,7 @@ gemini_model_flash = ChatGoogleGenerativeAI(
 def get_llm_client(mode, provider):
     logging.info("mode = %s", mode)
     logging.info("provider = %s", provider)
+    logging.info("engine = %s", engine(mode, provider))
     if mode == "flash":
         if provider == "openai":
             return openai_model_flash
