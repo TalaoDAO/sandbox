@@ -263,8 +263,13 @@ def oidc4vc_authorize(red, mode):
             'code_challenge': request.args.get('code_challenge'),
             'code_challenge_method': request.args.get('code_challenge_method'),
             "expires": datetime.timestamp(datetime.now()) + CODE_LIFE,
-            'response_mode': request.args.get('response_mode')
+            'response_mode': request.args.get('response_mode'),
         }
+        if request.args.get('authorization_details'):
+            decoded = unquote(request.args.get("authorization_details"))
+            data["transaction_data"] = base64.urlsafe_b64encode(decoded.encode()).decode().rstrip("=")
+            logging.info("transaction data = %s", data["transaction_data"])
+                        
     except Exception as e:
         logging.warning('invalid request received in authorization server: %s', str(e))
         try:
@@ -756,6 +761,9 @@ def oidc4vc_login_qrcode(red, mode):
     
     if response_type == "id_token" and verifier_data.get('request_uri_parameter_supported'):
         authorization_request['client_metadata'] = wallet_metadata
+    
+    if json.loads(code_data).get("transaction_data"):
+        authorization_request["transaction_data"] = json.loads(code_data)["transaction_data"]
     
     # manage request_uri as jwt
     if verifier_data.get('client_id_scheme') == "redirect_uri":
