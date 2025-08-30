@@ -1,12 +1,5 @@
 {
     "vp_formats": {
-        "jwt_vp": {
-            "alg_values_supported": [
-                "ES256",
-                "ES256K",
-                "EdDSA"
-            ]
-        },
         "jwt_vp_json": {
             "alg_values_supported": [
                 "ES256",

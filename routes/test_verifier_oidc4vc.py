@@ -3,7 +3,6 @@ import json
 import db_api
 import oidc4vc
 import base64
-from AI_Agent import process_vc_format
 import urllib.parse
 
 def init_app(app,red, mode):

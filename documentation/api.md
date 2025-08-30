@@ -1,6 +1,6 @@
 # APIs
 
-Updated on **22 August 2025**.
+Updated on **30 August 2025**.
 
 The server base URL is `https://talao.co`.
 
@@ -26,9 +26,9 @@ This API powers: `https://talao.co/ai/qrcode`
 
 ```jsonc
 {
-  "qrcode": "c29tZS1hc3NpZ24tdGV4dA==", // required, base64-encoded QR content
-  "oidc4vciDraft": "12",                 // optional, OIDC4VCI draft version
-  "oidc4vpDraft": "18",                  // optional, OIDC4VP draft version
+  "qrcode": "c29tZS1hc3NpZ24tdGV4dA==", // required, base64-encoded QR content 
+  "oidc4vciDraft": "12",                 // optional, OIDC4VCI draft version, Final 1.0 is "18"
+  "oidc4vpDraft": "18",                  // optional, OIDC4VP draft version, Final 1.0 is "30"
   "profile": "EBSI",                     // optional, default "custom"
   "format": "text",                       // optional, "text" | "json" (default "text")
   "model": "flash"                        // optional, "flash" | "escalation" | "pro" (default "flash")
@@ -128,8 +128,8 @@ This API powers: `https://talao.co/ai/vc`
 ```jsonc
 {
   "vc": "BASE64_ENCODED_VC_STRING", // required
-  "sdjwtvc_draft": "8",             // optional (SD-JWT VC related)
-  "vcdm_draft": "1.1",              // optional (W3C VCDM related)
+  "sdjwtvc_draft": "8",             // optional (SD-JWT VC related) from "8" to "10"
+  "vcdm_draft": "1.1",              // optional (W3C VCDM related) "1.1" | "2.0"
   "format": "text",                  // optional, "text" | "json" (default "text")
   "model": "flash"                   // optional, "flash" | "escalation" | "pro" (default "flash")
 }

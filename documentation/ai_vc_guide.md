@@ -107,7 +107,7 @@ These choices directly affect required claims and validation logic in the report
 
 Each report ends with attribution lines indicating:
 
-- **Model used** (e.g., GPT‑5 Flash or GPT‑5 for Escalation)  
+- **Model used** (e.g., GPT‑5/Gemini)  
 - **Spec & draft** applied (SD‑JWT VC draft or VCDM version)  
 - **Date of issuance**  
 - A short reminder that LLMs can make mistakes and cryptographic results should be cross‑checked.
@@ -127,6 +127,6 @@ Each report ends with attribution lines indicating:
 
 ## 8) Disclaimer
 
-This tool combines **OpenAI models** with **Web3 Digital Wallet** testing datasets to produce diagnostic reports.  
+This tool combines **OpenAI and Google LLMs** with **Web3 Digital Wallet** testing datasets to produce diagnostic reports.  
 They are **not certifications**. Always confirm against the official specifications and your conformance suite.
 

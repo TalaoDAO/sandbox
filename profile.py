@@ -1521,7 +1521,7 @@ profile = {
                             }
                         ],
                         "employeeId": {
-                            "value_type:": "string",
+                            "value_type": "string",
                             "display": [
                                 {
                                     "name": "Employee ID",
@@ -1530,7 +1530,7 @@ profile = {
                             ]
                         },
                         "jobTitle": {
-                            "value_type:": "string",
+                            "value_type": "string",
                             "display": [
                                 {
                                     "name": "Employee Job Title",
@@ -1539,7 +1539,7 @@ profile = {
                             ]
                         },
                         "department": {
-                            "value_type:": "string",
+                            "value_type": "string",
                             "display": [
                                 {
                                     "name": "Employee Department",
@@ -1548,7 +1548,7 @@ profile = {
                             ]
                         },
                         "employmentStartDate": {
-                            "value_type:": "string",
+                            "value_type": "string",
                             "display": [
                                 {
                                     "name": "Employee Start Date",
@@ -1557,7 +1557,7 @@ profile = {
                             ]
                         },
                         "employer": {
-                            "value_type:": "object",
+                            "value_type": "object",
                             "display": [
                                 {
                                     "name": "Employeer Details",
@@ -1565,7 +1565,7 @@ profile = {
                                 }
                             ],
                             "employerName": {
-                                "value_type:": "string",
+                                "value_type": "string",
                                 "display": [
                                     {
                                         "name": "Employer Name",
@@ -1574,7 +1574,7 @@ profile = {
                                 ]
                             },
                             "employerId": {
-                                "value_type:": "string",
+                                "value_type": "string",
                                 "display": [
                                     {
                                         "name": "DID of Employer",

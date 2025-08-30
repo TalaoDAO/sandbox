@@ -20,7 +20,7 @@ import requests
 from device_detector import SoftwareDetector
 import hashlib
 import base64
-import AI_Agent
+from ai import ai_agent_for_vc, ai_agent_for_qrcode
 
 
 # Basic protocole
@@ -594,14 +594,14 @@ def qrcode():
         else:
             provider = "gemini"
                 
-        report = AI_Agent.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profile, 'Website Analyze QR code', model, provider)
+        report = ai_agent_for_qrcode.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profile, 'Website Analyze QR code', model, provider)
         
         if outfmt == 'json':
             input = {
                 "kind": "QR code analysis",
                 "hash": hashlib.sha256(qrcode.encode("utf-8")).hexdigest()
             }
-            report = AI_Agent.report_to_json_via_gpt(
+            report = ai_agent_for_qrcode.report_to_json_via_gpt(
                 report,
                 profile=profile,
                 model="flash",
@@ -645,14 +645,14 @@ def vc():
         else:
             provider = "gemini"
             
-        report = AI_Agent.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "Website Analyze VC", model, provider)
+        report = ai_agent_for_vc.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "Website Analyze VC", model, provider)
         print("report = ", report)
         if outfmt == 'json':
             input = {
                 "kind": "VC analysis",
                 "hash": hashlib.sha256(vc.encode("utf-8")).hexdigest()
             }
-            report = AI_Agent.report_to_json_via_gpt(
+            report = ai_agent_for_vc.report_to_json_via_gpt(
                 report,
                 profile="",
                 model="flash",
@@ -685,7 +685,7 @@ def qrcode_wallet():
     except Exception:
         return jsonify({"error": "invalid base64 format"}), 400
     try:
-        report = AI_Agent.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft, profil, 'wallet QR code', "pro", "gemini")
+        report = ai_agent_for_qrcode.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft, profil, 'wallet QR code', "pro", "gemini")
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
@@ -708,7 +708,7 @@ def vc_wallet():
     except Exception:
         return jsonify({"error": "invalid base64 format"}), 400
     try:
-        report = AI_Agent.process_vc_format(vc_str, "8", "1.1", "wallet VC", "pro", "gemini")
+        report = ai_agent_for_vc.process_vc_format(vc_str, "8", "1.1", "wallet VC", "pro", "gemini")
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
@@ -764,7 +764,7 @@ def analyze_wallet_qrcode():
 
     # Run the AI agent
     try:
-        report = AI_Agent.analyze_qrcode(
+        report = ai_agent_for_qrcode.analyze_qrcode(
             qrcode_str,
             oidc4vci_draft,
             oidc4vp_draft,
@@ -784,7 +784,7 @@ def analyze_wallet_qrcode():
             "hash": hashlib.sha256(qrcode_base64.encode("utf-8")).hexdigest(),
         }
         try:
-            structured = AI_Agent.report_to_json_via_gpt(
+            structured = ai_agent_for_qrcode.report_to_json_via_gpt(
                 report,
                 profile=profile,
                 model="flash",
@@ -847,7 +847,7 @@ def api_analyze_vc():
 
     # Run the AI agent
     try:
-        report = AI_Agent.process_vc_format(
+        report = ai_agent_for_vc.process_vc_format(
             vc_str,
             sdjwtvc_draft,
             vcdm_draft,
@@ -866,7 +866,7 @@ def api_analyze_vc():
             "hash": hashlib.sha256(vc_b64.encode("utf-8")).hexdigest(),
         }
         try:
-            structured = AI_Agent.report_to_json_via_gpt(
+            structured = ai_agent_for_vc.report_to_json_via_gpt(
                 report,
                 profile="",
                 model="flash",

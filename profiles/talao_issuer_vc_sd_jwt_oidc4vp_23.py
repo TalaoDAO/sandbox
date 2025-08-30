@@ -17,7 +17,7 @@ TALAO_ISSUER = {
         ],
         "credential_configurations_supported": {
             "AgeProof": {
-                "format": "vc+sd-jwt",
+                "format": "dc+sd-jwt",
                 "scope": "AgeProof_scope",
                 "order": [
                     "age_equal_or_over", 
@@ -102,7 +102,7 @@ TALAO_ISSUER = {
                 ],
             },
             "Pid": {
-                "format": "vc+sd-jwt",
+                "format": "dc+sd-jwt",
                 "scope": "Pid_scope",
                 "order": [
                     "given_name",
@@ -217,7 +217,7 @@ TALAO_ISSUER = {
                 ],
             },
             "EmailPass": {
-                "format": "vc+sd-jwt",
+                "format": "dc+sd-jwt",
                 "vct": "talao:issuer:emailpass:1",
                 "scope": "EmailPass_scope",
                 "cryptographic_binding_methods_supported": ["did", "jwk"],
@@ -251,7 +251,7 @@ TALAO_ISSUER = {
                 }
             },
             "PhoneProof": {
-                "format": "vc+sd-jwt",
+                "format": "dc+sd-jwt",
                 "scope": "PhoneProof_scope",
                 "vct": "talao:issuer:phoneproof:1",
                 "claims": {

@@ -130,7 +130,7 @@ numbers manually.
 
 Each report ends with attribution lines:
 
--   Which **LLM model** was used (e.g., GPT-5 Flash or Escalation)\
+-   Which **LLM model** was used (e.g., GPT/Gemini Flash or Escalation)\
 -   Which **spec draft** the validation is based on\
 -   **Date of issuance**\
 -   Reminder: *LLMs can make mistakes; cross-check cryptographic details
@@ -154,7 +154,7 @@ Each report ends with attribution lines:
 
 ## 8. Disclaimer
 
--   This tool integrates **OpenAI LLMs** with **Web3 Digital Wallet
+-   This tool integrates **OpenAI and Google LLMs** with **Web3 Digital Wallet
     testing datasets**.\
 -   Reports are **diagnostic**, not certification.\
 -   Always confirm results against the official specifications and your
