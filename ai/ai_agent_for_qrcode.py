@@ -16,7 +16,6 @@ import tiktoken
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.x509.oid import ExtensionOID
-#from cryptography.hazmat.primitives import serialization
 import oidc4vc
 from jwcrypto import jwk, jwt
 from langchain_openai import ChatOpenAI
@@ -436,11 +435,11 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model, p
     elif profil == "DIIP_V4":
         oidc4vciDraft = "15"
         oidc4vpDraft = "28"
-        profile = "Use only sd-jwt vc, jwt_vc_json and ldp_vc (JSON-LD) format. Use only ES256 as key. Use only did:jwk and did:web as identifier"
+        profile = profil
     elif profil == "INJI":
         oidc4vciDraft = "13"
         oidc4vpDraft = "21"
-        profile = "Use only ldp_vc (JSON-LD) format"
+        profile = "Use only ldp_vc (JSON-LD) format and sd-jwt VC format"
     elif profil == "EWC":
         oidc4vciDraft = "13"
         oidc4vpDraft = "18"
@@ -448,11 +447,11 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model, p
     elif profil == "HAIP":
         oidc4vciDraft = "18"
         oidc4vpDraft = "30"
-        profile = "HAIP"  
+        profile = profil
     elif profil == "connectors":
         profile = "User is working with the API platform CONNECTORS, he must audit his own configuration. Check in particular the client metadata (vp formats)"
     parse_result = urlparse(qrcode)
-    logging.info('profil = %s, oidc4vci draft = %s, oidc4vp draft = %s', profil, oidc4vciDraft, oidc4vpDraft)
+    logging.info('profil = %s, oidc4vci draft = %s, oidc4vp draft = %s', profile, oidc4vciDraft, oidc4vpDraft)
     result = parse_qs(parse_result.query)
     if result.get('credential_offer_uri') or result.get('credential_offer'):
         return analyze_issuer_qrcode(qrcode, oidc4vciDraft, profile, device, model, provider)
@@ -1076,7 +1075,16 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model, provider):
         f.close()
         haip = clean_md(haip)
         context += "\n\n" + haip
-        print("merge is ok")
+        logging.info("merge with HAIP specifications is processed")
+    
+    elif profile == "DIIP_V4":
+        f = open("./dataset/diip/4.md", "r")
+        haip = f.read()
+        f.close()
+        haip = clean_md(haip)
+        context += "\n\n" + haip
+        logging.info("merge with DIIP V4 specifications is processed")
+
         
 
     # Token count logging for diagnostics
@@ -1180,8 +1188,15 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model, provider):
         f.close()
         haip = clean_md(haip)
         context += "\n\n" + haip
-        print("merge is ok")
+        logging.info("merge with HAIP specifications is processed")
         
+    elif profile == "DIIP_V4":
+        f = open("./dataset/diip/4.md", "r")
+        haip = f.read()
+        f.close()
+        haip = clean_md(haip)
+        context += "\n\n" + haip
+        logging.info("merge with DIIP V4 specifications is processed")
 
     # Token count logging for diagnostics
     tokens = enc.encode(context)
@@ -1242,7 +1257,6 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model, provider):
     counter_update(device)
     store_report(qrcode, result, "verifier")
     return result
-
 
 
 
@@ -1312,6 +1326,8 @@ Extract machine-readable findings from the report below.
 - Add optional fields when you can: 'spec' (URL), 'location' (JSONPath/field path), 'fix' (short hint).
 - If the report indicates everything is OK for a specific check, you MAY add PASS items (sparingly).
 - If nothing is extractable, return the shape with an empty 'findings' array and zeros in 'summary'.
+- Remove duplicates in 'findings'. Two items are duplicates if they share the same 'code'.Keep only one per code. Prefer the item with the higher severity (FAIL > WARN > PASS > INFO).
+
 
 --- REPORT START ---
 {report_text}
@@ -1372,6 +1388,6 @@ Extract machine-readable findings from the report below.
     obj.setdefault("drafts", drafts)
     obj.setdefault("timestamp", timestamp)
     
-    print("json =", json.dumps(obj, indent=4))
+    logging.info("json = %s", json.dumps(obj, indent=4))
 
     return obj

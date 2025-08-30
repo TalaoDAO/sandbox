@@ -4,7 +4,72 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Validate Issuers/Verifiers - VAIDATORS</title>
+<title>Audit OIDC4VC Issuers & Verifiers – EUDI Wallet QR/Deeplink Validator | Altme</title>
+
+<meta name="description" content="Audit OIDC4VC issuers and verifiers used in EUDI wallet ecosystems. Paste a QR code or deeplink to validate OIDC4VP/OIDC4VCI payloads across profiles (EBSI, DIIP V3/V4, HAIP, INJI). Free tool with API." />
+<link rel="canonical" href="https://talao.co/ai/qrcode" />
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Audit OIDC4VC Issuers & Verifiers – EUDI Wallet QR/Deeplink Validator" />
+<meta property="og:description" content="Validate issuer/verifier QR and deeplink payloads (OIDC4VP/OIDC4VCI) for EUDI wallet profiles. Fast, AI-assisted reports. API available." />
+<meta property="og:url" content="https://talao.co/ai/qrcode" />
+<meta property="og:image" content="https://talao.co/static/img/validator-qr-preview.png" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Audit OIDC4VC Issuers & Verifiers – EUDI Wallet QR/Deeplink Validator" />
+<meta name="twitter:description" content="Validate issuer/verifier payloads for EUDI wallet profiles (EBSI, DIIP, HAIP, INJI). Free tool + API." />
+<meta name="twitter:image" content="https://talao.co/static/img/validator-qr-preview.png" />
+
+<!-- Optional: Search Console verification -->
+<meta name="google-site-verification" content="PASTE_YOUR_TOKEN_HERE" />
+
+<!-- Structured data: WebApplication -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "OIDC4VC Issuer & Verifier Audit",
+  "url": "https://talao.co/ai/qrcode",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Web",
+  "description": "Audit issuer/verifier QR and deeplink payloads for EUDI wallet ecosystems. Supports OIDC4VP/OIDC4VCI drafts and profiles (EBSI, DIIP V3/V4, HAIP, INJI). Free tool with API.",
+  "provider": { "@type": "Organization", "name": "Altme" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+
+<!-- Structured data: FAQ (helps rich results) -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"FAQPage",
+  "mainEntity":[
+    {
+      "@type":"Question",
+      "name":"What formats can I validate?",
+      "acceptedAnswer":{"@type":"Answer","text":"Paste a QR code or deeplink for OIDC4VP authorization requests or OIDC4VCI credential offers. The tool parses and audits the payload."}
+    },
+    {
+      "@type":"Question",
+      "name":"Which EUDI profiles are supported?",
+      "acceptedAnswer":{"@type":"Answer","text":"EBSI V3.X, DIIP V3, DIIP V4, HAIP (OIDC4VC Final 1.0), and INJI (MOSIP). You can also run Custom and pick draft versions."}
+    },
+    {
+      "@type":"Question",
+      "name":"Do you store the QR or payload?",
+      "acceptedAnswer":{"@type":"Answer","text":"No. The page is for diagnostics; avoid personal data. Reports can be output as text or JSON for your own tooling."}
+    },
+    {
+      "@type":"Question",
+      "name":"Is there an API?",
+      "acceptedAnswer":{"@type":"Answer","text":"Yes. Use the API link on the page for programmatic validation in CI/CD or batch tooling."}
+    }
+  ]
+}
+</script>
 
   <!-- Fonts match create_verifier.html style -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">

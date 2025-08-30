@@ -1,0 +1,5 @@
+# https://talao.co/robots.txt
+User-agent: *
+Allow: /
+
+Sitemap: https://talao.co/sitemap.xml
