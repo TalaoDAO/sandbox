@@ -5,7 +5,7 @@ and stores results with Slack notifications and file logging.
 """
 
 import json
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import urlparse
 import requests
 from datetime import datetime
 import hashlib
@@ -421,43 +421,6 @@ def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str,
     return "Unknown VC format. Supported formats: SD-JWT VC, JWT VC (compact), JSON-LD VC."
 
 
-def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model, provider):
-    
-    # Analyze a QR code and delegate based on protocol type
-    profile = ""
-    if profil == "EBSI":
-        oidc4vciDraft = "11"
-        oidc4vpDraft = "18"
-        profile = "Use only jwt_vc format. Use only did:key and did:ebsi as identifier"
-    elif profil == "DIIP_V3":
-        oidc4vciDraft = "13"
-        oidc4vpDraft = "20"
-        profile = "Use only sd-jwt vc, jwt_vc_json and ldp_vc (JSON-LD) format. Use only ES256 as key. Use only did:jwk and did:web as identifier"
-    elif profil == "DIIP_V4":
-        oidc4vciDraft = "15"
-        oidc4vpDraft = "28"
-        profile = "Use only sd-jwt vc, jwt_vc_json and ldp_vc (JSON-LD) format. Use only ES256 as key. Use only did:jwk and did:web as identifier"
-    elif profil == "INJI":
-        oidc4vciDraft = "13"
-        oidc4vpDraft = "21"
-        profile = "Use only ldp_vc (JSON-LD) format"
-    elif profil == "EWC":
-        oidc4vciDraft = "13"
-        oidc4vpDraft = "18"
-        profile = "Use only sd-jwt vc format and mdoc format"
-    elif profil == "HAIP":
-        oidc4vciDraft = "18"
-        oidc4vpDraft = "30"
-        profile = "HAIP"  
-    elif profil == "connectors":
-        profile = "User is working with the API platform CONNECTORS, he must audit his own configuration. Check in particular the client metadata (vp formats)"
-    parse_result = urlparse(qrcode)
-    logging.info('profil = %s, oidc4vci draft = %s, oidc4vp draft = %s', profil, oidc4vciDraft, oidc4vpDraft)
-    result = parse_qs(parse_result.query)
-    if result.get('credential_offer_uri') or result.get('credential_offer'):
-        return analyze_issuer_qrcode(qrcode, oidc4vciDraft, profile, device, model, provider)
-    else:
-        return analyze_verifier_qrcode(qrcode, oidc4vpDraft, profile, device, model, provider)
 
 
 def _is_compact_jwt(value: str) -> bool:
@@ -489,162 +452,6 @@ def _content_type_is_authz_req_jwt(value: Optional[str]) -> bool:
     if not value:
         return False
     return value.split(";")[0].strip().lower() == "application/oauth-authz-req+jwt"
-
-
-def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]], str]:
-    """
-    Parse a Verifier authorization request from a QR (OIDC4VP).
-    Returns: (authorization_request_dict, presentation_definition_or_dcql, comment)
-    - If a fatal problem occurs, (None, None, "Error: ...") is returned.
-    """
-    comments: list[str] = []
-    try:
-        parse_result = urlparse(qrcode)
-        # Keep single-value params only; ignore repeated keys for simplicity
-        query: Dict[str, str] = {k: v[0] for k, v in parse_qs(parse_result.query).items()}
-    except Exception as e:
-        return None, None, f"Error: cannot parse QR: {e}"
-
-    request: Optional[Dict[str, Any]] = None
-    presentation_obj: Optional[Dict[str, Any]] = None
-
-    # 1) request_uri → fetch JWT
-    if request_uri := query.get("request_uri"):
-        try:
-            resp = _safe_get_text(request_uri, timeout=10)
-            request_jwt = resp.text.strip()
-        except Exception as e:
-            return None, None, f"Error: the request_uri could not be fetched: {e}"
-
-        # Verify media type but accept minor variations (charset)
-        if not _content_type_is_authz_req_jwt(resp.headers.get("Content-Type")):
-            comments.append("Error: request_uri response must be 'application/oauth-authz-req+jwt'")
-        
-        # Decode signed request JWT
-        try:
-            request = get_payload_from_token(request_jwt)
-            header = get_header_from_token(request_jwt)
-        except Exception as e:
-            return None, None, f"Error: cannot decode request JWT: {e}"
-        
-        if header.get("alg") == "none":
-            comments.append("Warning: the request_uri is not signed which is correct only if the client_id_scheme is 'redirect_uri'")
-        else:
-            comments.append("Info: the request_uri is signed which is great for safety")
-
-
-        if isinstance(header, dict) and header.get("x5c"):
-            iss = request.get("iss")
-            if not iss:
-                comments.append("Warning: iss is missing")
-            # check signature of the request jwt
-            if x5c_list := header.get('x5c'):
-                comments.append(verify_issuer_matches_cert(iss, x5c_list, token="request_jwt"))
-                comments.append(oidc4vc.verify_x5c_chain(x5c_list))
-                try:
-                    # Extract the first certificate (leaf cert) from the x5c list
-                    cert_der = base64.b64decode(x5c_list[0])
-                    cert = x509.load_der_x509_certificate(cert_der)
-                    # Get public key from the cert
-                    public_key = cert.public_key()
-                    # Convert it to JWK format
-                    issuer_key = jwk.JWK.from_pyca(public_key)
-                    # Validate signature
-                    a = jwt.JWT.from_jose_token(request_jwt)
-                    a.validate(issuer_key)
-                    comments.append("Info: Request JWT is correctly signed with x5c public key")
-                except Exception as e:
-                    comments.append(f"Error: Request JWT signature verification with x5c public key failed: {e}")
-
-    # 2) request (inline) → parse JWT
-    elif inline_req := query.get("request"):
-        request_jwt = inline_req.strip()
-        if not _is_compact_jwt(request_jwt):
-            return None, None, "Error: 'request' parameter is not a compact JWS"
-        try:
-            request = get_payload_from_token(request_jwt)
-            header = get_header_from_token(request_jwt)
-        except Exception as e:
-            return None, None, f"Error: cannot decode inline request JWT: {e}"
-
-        if isinstance(header, dict) and header.get("x5c"):
-            iss = request.get("iss")
-            if not iss:
-                comments.append("Warning: iss is missing")
-
-    # 3) Plain query params (least secure)
-    elif query.get("response_mode"):
-        request = query  # keep as-is
-        comments.append(
-            "Warning: Using plain query parameters. A signed 'request' or 'request_uri' JWT is more secure."
-        )
-    else:
-        return None, None, "Error: no authorization request found (missing request_uri / request / response_mode)."
-    
-    if request.get("response_mode") in ["direct_post", "direct_post.jwt"]:
-        comments.append(
-            "Info: response_uri must be present and redirect_uri must not be present."
-        )
-            
-    # 4) Presentation Definition / DCQL resolution
-    if not isinstance(request, dict):
-        return None, None, "Error: malformed authorization request"
-
-    # presentation_definition_uri
-    if (pd_uri := request.get("presentation_definition_uri")):
-        try:
-            presentation_obj = _safe_get_json(pd_uri, timeout=10)
-            # normalize: move into the request and drop the URI (helpers expect embedded PD)
-            request = dict(request)
-            request.pop("presentation_definition_uri", None)
-            request["presentation_definition"] = presentation_obj
-            comments.append("Info: Verifier uses 'presentation_definition_uri'.")
-        except Exception as e:
-            return request, None, f"Error: the Presentation Definition could not be fetched: {e}"
-
-    # dcql_query (draft >= 23)
-    elif request.get("dcql_query") and int(draft) >= 23:
-        presentation_obj = {"dcql_query": request.get("dcql_query")}
-        comments.append("Info: Verifier uses 'dcql_query' (Digital Credential Query).")
-        
-        if "credentials" not in request.get("dcql_query"):
-            comments.append(f"Error: 'credentials' is missing in DCQL.")
-
-    # embedded presentation_definition
-    elif request.get("presentation_definition"):
-        try:
-            # Ensure it’s a dict (some send JSON-encoded strings)
-            pd = request["presentation_definition"]
-            if isinstance(pd, str):
-                pd = json.loads(pd)
-            if not isinstance(pd, dict):
-                raise ValueError("presentation_definition is not a JSON object")
-            presentation_obj = pd
-            comments.append("Info: Verifier embeds 'presentation_definition'.")
-        except Exception as e:
-            return request, None, f"Error: invalid embedded Presentation Definition: {e}"
-        
-        for k in ("id", "input_descriptors"):
-            if k not in pd:
-                comments.append(f"Error: '{k}' is missing in presentation Definition.")
-
-    elif request.get("response_type") not in ["vp_token", "vp_token id_token", "id_token vp_token"]: 
-        comments.append("Error: No Presentation Definition / DCQL parameter found.")
-        
-    elif request.get("response_type") == "id_token":
-        comments.append("Info: It is an Id_token request wihout Presentation Definition or DCQL parameter.")
-    
-    else:
-        comments.append("Error: No Presentation Definition / DCQL parameter found.")
-
-    # Optional sanity: ensure required OIDC params exist (response_type, client_id, redirect_uri, scope, nonce/state, etc.)
-    # Keep it advisory; don’t fail here to let the analyzer produce a full report later.
-    for k in ("client_id", "nonce", "response_mode"):
-        if k not in request:
-            comments.append(f"Error: '{k}' is missing in authorization request.")
-
-    return request, presentation_obj, "\n".join(comments)
-
 
 
 def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider: str) -> str:
@@ -890,7 +697,27 @@ def analyze_jwt_vc(token, draft, device, model, provider):
     # Decode SD-JWT header and payload
     jwt_header = get_header_from_token(token)
     jwt_payload = get_payload_from_token(token)
-
+    
+    kid = jwt_header.get("kid")
+    iss = jwt_payload.get("iss")
+    
+    comment_1 = ""
+    comment_2 = ""
+    if kid:
+        if iss and iss.startswith("did:"):
+            if kid.startswith("did:"):
+                pub_key = oidc4vc.resolve_did(kid)
+                if not pub_key:
+                    comment_1 = "Error: the kid is a DID but does not resolve."
+                try:
+                    issuer_key = jwk.JWK(**pub_key)
+                    a = jwt.JWT.from_jose_token(token)
+                    a.validate(issuer_key)
+                    comment_2 = "Info: The kid resolves and the JWT-VC is correctly signed with DID"
+                except Exception as e:
+                    comment_2 = f"Error: JWT-VC is not signed correctly with DID: {e}"
+            else:
+                comment_1 = "Error: kid should be a DID verification method"
     # Load the appropriate specification content based on draft
     try:
         with open(f"./dataset/vcdm/{draft}.txt", "r") as f:
@@ -919,6 +746,10 @@ def analyze_jwt_vc(token, draft, device, model, provider):
 VC Header: {json.dumps(jwt_header, indent=2)}
 VC Payload: {json.dumps(jwt_payload, indent=2)}
 
+--- Comments ---
+    {comment_1}
+    {comment_2}
+    
 ### Output style
 {instr}
 
@@ -1003,246 +834,6 @@ JSON-LD VC : {json.dumps(vc, indent=2)}
     # Update usage stats and return response
     counter_update(device)
     return response + ADVICE + mention
-
-
-def get_issuer_data(qrcode, draft):
-    # Retrieve issuer, metadata and authorization server data from a credential offer QR code
-    parse_result = urlparse(qrcode)
-    result = {k: v[0] for k, v in parse_qs(parse_result.query).items()}
-
-    if credential_offer_uri := result.get('credential_offer_uri'):
-        try:
-            credential_offer = requests.get(credential_offer_uri, timeout=10).json()
-        except Exception:
-            credential_offer = "Error: The credential offer is not available"
-    else:
-        try:
-            credential_offer = json.loads(result.get('credential_offer', '{}'))
-        except Exception:
-            credential_offer = "Error: The credential offer is not a correct JSON structure"
-
-    issuer = credential_offer.get('credential_issuer')
-    issuer_metadata_url = f"{issuer}/.well-known/openid-credential-issuer"
-    logging.info("AI Agent call for QR code diagnostic. issuer = %s", issuer)
-    try:
-        issuer_metadata = requests.get(issuer_metadata_url, timeout=10).json()
-    except Exception:
-        issuer_metadata = "Error: Issuer metadata are not available"
-
-    try:
-        authorization_server = issuer_metadata.get("authorization_servers", [issuer])[0]
-    except Exception:
-        try:
-            authorization_server = credential_offer["grants"]["authorization_code"]["authorization_server"]
-        except Exception:
-            authorization_server_metadata = "Error: The authorization server is not found not"
-            return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
-
-    logging.info("authorization server = %s", authorization_server)
-
-    if int(draft) <= 11:
-        authorization_server_url = f"{authorization_server}/.well-known/openid-configuration"
-    else:
-        authorization_server_url = f"{authorization_server}/.well-known/oauth-authorization-server"
-
-    try:
-        authorization_server_metadata = requests.get(authorization_server_url, timeout=10).json()
-    except Exception:
-        authorization_server_metadata = "Error: The authorization server metadata are not available or the draft " + draft + " is not correct ? "
-    return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
-
-
-def analyze_issuer_qrcode(qrcode, draft, profile, device, model, provider):
-    logging.info("draft = %s", draft)
-    # Analyze issuer QR code and generate a structured report using OpenAI
-    if not draft:
-        draft = "13"
-
-    credential_offer, issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode, draft)
-
-    try:
-        f = open("./dataset/oidc4vci/" + draft + ".md", "r")
-        context = f.read()
-        f.close()
-    except Exception:
-        f = open("./dataset/oidc4vci/13.md", "r")
-        context = f.read()
-        f.close()
-        draft = "13"
-    
-    if profile == "HAIP":
-        f = open("./dataset/haip/3.md", "r")
-        haip = f.read()
-        f.close()
-        haip = clean_md(haip)
-        context += "\n\n" + haip
-        print("merge is ok")
-        
-
-    # Token count logging for diagnostics
-    tokens = enc.encode(context)
-    logging.info("Token count: %s", len(tokens))
-
-    context = clean_md(context)
-    if int(draft) <= 11:
-        context += "\n If EBSI tell to the user to add did:key:jwk_jcs-pub as subject_syntax_type_supported in the authorization server metadata"
-    mention = attribution(model, "OIDC4VCI", draft, provider)
-
-
-    st = style_for(model)
-    instr = style_instructions(st, domain="oidc4vci", draft=draft)
-    messages = [
-
-        {
-            "role": "system",
-            "content": f"""You are a compliance analyst specializing in OIDC4VCI Draft {draft}.
-    You write precise, technical markdown reports for developers and product teams.
-    Keep your answers structured, concise, and free of unnecessary commentary."""
-        },
-        {
-            "role": "user",
-            "content": f"""
-    Analyze the following OIDC4VCI credential offer and related metadata.
-
-    --- Context (OIDC4VCI Draft {draft}) ---
-    {context}
-
-    --- Profile Constraints ---
-    {profile}
-
-    --- Credential Offer ---
-    {credential_offer}
-
-    --- Issuer Metadata ---
-    {issuer_metadata}
-
-    --- Authorization Server Metadata ---
-    {authorization_server_metadata}
-
-    ### Output style
-{instr}
-
-### Report Sections:
-
-    1. **VC Summary**
-    2. **Required Claims Check**
-    3. **Flow Type**
-    4. **Issuer Metadata Summary**
-    5. **Issuer Metadata Check**
-    6. **Authorization Server Metadata Summary**
-    7. **Auth Server Metadata Check**
-    8. **Errors & Warnings**
-    9. **Improvements** – Suggest developer-focused enhancements
-    """
-        }
-    ]
-
-    llm = get_llm_client(model, provider)
-    response = llm.invoke(messages).content
-
-    result = response + ADVICE + mention
-    counter_update(device)
-    store_report(qrcode, result, "issuer")
-    return result
-
-
-def analyze_verifier_qrcode(qrcode, draft, profile, device, model, provider):
-
-    # Analyze verifier QR code and generate a structured report using OpenAI
-    if not draft:
-        draft = "18"
-
-    verifier_request, presentation_definition, comment = get_verifier_request(qrcode, draft)
-    if not verifier_request:
-        return comment
-    
-    if not presentation_definition:
-    # request is valid but no PD/DCQL → keep request and warn
-        comment += "\n Error: No presentation definition found"
-        
-    logging.info("all comments passed to et LLM = %s", comment)
-    
-    try:
-        f = open("./dataset/oidc4vp/" + draft + ".md", "r")
-        context = f.read()
-        f.close()
-    except Exception:
-        f = open("./dataset/oidc4vp/18.md", "r")
-        context = f.read()
-        f.close()
-        draft = "18"
-
-    context = clean_md(context)
-    
-    if profile == "HAIP":
-        f = open("./dataset/haip/3.md", "r")
-        haip = f.read()
-        f.close()
-        haip = clean_md(haip)
-        context += "\n\n" + haip
-        print("merge is ok")
-        
-
-    # Token count logging for diagnostics
-    tokens = enc.encode(context)
-    logging.info("Token count: %s", len(tokens))
-
-    mention = attribution(model, "OIDC4VP", draft, provider)
-
-
-    st = style_for(model)
-    instr = style_instructions(st, domain="oidc4vp", draft=draft)
-    messages = [
-
-        {
-            "role": "system",
-            "content": f"""You are a compliance analyst specializing in OIDC4VP Draft {draft}.
-    You write precise, technical markdown reports for engineers.
-    Keep your answers structured, concise, and free of unnecessary commentary."""
-        },
-        {
-            "role": "user",
-            "content": f"""
-    Analyze the following OIDC4VP authorization request and presentation definition.
-
-    --- Context (OIDC4VP Draft {draft}) ---
-    {context}
-
-    --- Profile Constraints ---
-    {profile}
-
-    --- Comment ---
-    {comment}
-
-    --- Authorization Request ---
-    {json.dumps(verifier_request, indent=2)}
-
-    --- Presentation Definition ---
-    {json.dumps(presentation_definition, indent=2)}
-
-    ### Output style
-{instr}
-
-### Report Sections:
-
-    1. **Abstract**
-    2. **Authorization Request** – Check required OIDC4VP claims
-    3. **Presentation Definition** – Verify format and structure
-    4. **Client Metadata** – Validate content (if present)
-    5. **Errors & Warnings**
-    6. **Improvements** – Suggest developer-focused enhancements
-    """
-        }
-    ]
-
-    llm = get_llm_client(model, provider)  # Add 'provider' param to function
-    response = llm.invoke(messages).content
-
-    result = response + ADVICE + mention
-    counter_update(device)
-    store_report(qrcode, result, "verifier")
-    return result
-
 
 
 

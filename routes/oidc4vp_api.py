@@ -133,6 +133,12 @@ def oidc4vc_jwks():
     return jsonify({"keys": [public_rsa_key]})
 
 
+def b64url_no_pad_decode(s: str) -> bytes:
+    # Add back the missing padding if needed
+    padding_needed = (4 - len(s) % 4) % 4
+    s += "=" * padding_needed
+    return base64.urlsafe_b64decode(s)
+
 # For customer app
 def oidc4vc_openid_configuration(mode):
     """
@@ -762,9 +768,12 @@ def oidc4vc_login_qrcode(red, mode):
         authorization_request['client_metadata'] = wallet_metadata
     
     # Data transaction integgration
-    if json.loads(code_data).get("transaction_data"):
+    transaction_data = []
+    if json.loads(code_data).get("transaction_data"): 
         authorization_request["transaction_data"] = [json.loads(code_data)["transaction_data"]]
-    
+        for td in authorization_request["transaction_data"]:
+            transaction_data.append(json.loads(b64url_no_pad_decode(td).decode()))
+        
     # manage request_uri as jwt
     if verifier_data.get('client_id_scheme') == "redirect_uri":
         key = None
@@ -836,6 +845,7 @@ def oidc4vc_login_qrcode(red, mode):
         url_json=unquote(url),
         presentation_definition=json.dumps(presentation_definition, indent=4),
         client_metadata=json.dumps(wallet_metadata, indent=4),
+        transaction_data=json.dumps(transaction_data),
         deeplink_altme=deeplink_altme,
         stream_id=stream_id,
         title=verifier_data.get('title', "None"),

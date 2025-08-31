@@ -391,34 +391,6 @@ def extract_SAN_DNS(pem_certificate):
         return "Error: no SAN extension found in the x509 certificate."
 
 
-def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str, model: str, provider: str):
-    """
-    Detect the format of a Verifiable Credential (VC) and route to the correct analysis function.
-    Args:
-        vc (str): VC input as a string.
-    Returns:
-        str: Result of analysis or error message.
-    """
-    logging.info("VC received = %s", vc)
-
-    # 1. SD-JWT: starts with base64 segment and uses '~' delimiter
-    if "~" in vc and "." in vc.split("~")[0]:
-        return analyze_sd_jwt_vc(vc, sdjwtvc_draft, device, model, provider)
-
-    # 2. JWT VC (compact JWT): 3 base64 parts separated by dots
-    if vc.count(".") == 2 and all(len(part.strip()) > 0 for part in vc.split(".")):
-        return analyze_jwt_vc(vc, vcdm_draft, device, model, provider)
-
-    # 3. JSON-LD: must be valid JSON with @context
-    try:
-        vc_json = json.loads(vc)
-        if "@context" in vc_json and "type" in vc_json:
-            return analyze_jsonld_vc(vc_json, vcdm_draft, device, model, provider)
-    except Exception as e:
-        return "Invalid JSON. Cannot parse input. " + str(e)
-
-    return "Unknown VC format. Supported formats: SD-JWT VC, JWT VC (compact), JSON-LD VC."
-
 
 def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model, provider):
     
@@ -490,6 +462,13 @@ def _content_type_is_authz_req_jwt(value: Optional[str]) -> bool:
     return value.split(";")[0].strip().lower() == "application/oauth-authz-req+jwt"
 
 
+def b64url_no_pad_decode(s: str) -> bytes:
+    # Add back the missing padding if needed
+    padding_needed = (4 - len(s) % 4) % 4
+    s += "=" * padding_needed
+    return base64.urlsafe_b64decode(s)
+
+
 def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]], str]:
     """
     Parse a Verifier authorization request from a QR (OIDC4VP).
@@ -502,7 +481,7 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
         # Keep single-value params only; ignore repeated keys for simplicity
         query: Dict[str, str] = {k: v[0] for k, v in parse_qs(parse_result.query).items()}
     except Exception as e:
-        return None, None, f"Error: cannot parse QR: {e}"
+        return None, None, f"Error: cannot parse QR: {e}", None
 
     request: Optional[Dict[str, Any]] = None
     presentation_obj: Optional[Dict[str, Any]] = None
@@ -513,7 +492,7 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
             resp = _safe_get_text(request_uri, timeout=10)
             request_jwt = resp.text.strip()
         except Exception as e:
-            return None, None, f"Error: the request_uri could not be fetched: {e}"
+            return None, None, f"Error: the request_uri could not be fetched: {e}", None
 
         # Verify media type but accept minor variations (charset)
         if not _content_type_is_authz_req_jwt(resp.headers.get("Content-Type")):
@@ -524,13 +503,12 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
             request = get_payload_from_token(request_jwt)
             header = get_header_from_token(request_jwt)
         except Exception as e:
-            return None, None, f"Error: cannot decode request JWT: {e}"
+            return None, None, f"Error: cannot decode request JWT: {e}", None
         
         if header.get("alg") == "none":
             comments.append("Warning: the request_uri is not signed which is correct only if the client_id_scheme is 'redirect_uri'")
         else:
             comments.append("Info: the request_uri is signed which is great for safety")
-
 
         if isinstance(header, dict) and header.get("x5c"):
             iss = request.get("iss")
@@ -559,12 +537,12 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
     elif inline_req := query.get("request"):
         request_jwt = inline_req.strip()
         if not _is_compact_jwt(request_jwt):
-            return None, None, "Error: 'request' parameter is not a compact JWS"
+            return None, None, "Error: 'request' parameter is not a compact JWS", None
         try:
             request = get_payload_from_token(request_jwt)
             header = get_header_from_token(request_jwt)
         except Exception as e:
-            return None, None, f"Error: cannot decode inline request JWT: {e}"
+            return None, None, f"Error: cannot decode inline request JWT: {e}", None
 
         if isinstance(header, dict) and header.get("x5c"):
             iss = request.get("iss")
@@ -578,7 +556,7 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
             "Warning: Using plain query parameters. A signed 'request' or 'request_uri' JWT is more secure."
         )
     else:
-        return None, None, "Error: no authorization request found (missing request_uri / request / response_mode)."
+        return None, None, "Error: no authorization request found (missing request_uri / request / response_mode).", None
     
     if request.get("response_mode") in ["direct_post", "direct_post.jwt"]:
         comments.append(
@@ -587,7 +565,13 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
             
     # 4) Presentation Definition / DCQL resolution
     if not isinstance(request, dict):
-        return None, None, "Error: malformed authorization request"
+        return None, None, "Error: malformed authorization request", None
+    
+    # transaction data
+    transaction_data = []
+    if request.get("transaction_data"):
+        for td in request.get("transaction_data"):
+            transaction_data.append(json.loads(b64url_no_pad_decode(td)))
 
     # presentation_definition_uri
     if (pd_uri := request.get("presentation_definition_uri")):
@@ -599,7 +583,7 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
             request["presentation_definition"] = presentation_obj
             comments.append("Info: Verifier uses 'presentation_definition_uri'.")
         except Exception as e:
-            return request, None, f"Error: the Presentation Definition could not be fetched: {e}"
+            return request, None, f"Error: the Presentation Definition could not be fetched: {e}", transaction_data
 
     # dcql_query (draft >= 23)
     elif request.get("dcql_query") and int(draft) >= 23:
@@ -621,7 +605,7 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
             presentation_obj = pd
             comments.append("Info: Verifier embeds 'presentation_definition'.")
         except Exception as e:
-            return request, None, f"Error: invalid embedded Presentation Definition: {e}"
+            return request, None, f"Error: invalid embedded Presentation Definition: {e}", transaction_data
         
         for k in ("id", "input_descriptors"):
             if k not in pd:
@@ -635,373 +619,15 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, An
     
     else:
         comments.append("Error: No Presentation Definition / DCQL parameter found.")
-
+        
+    
     # Optional sanity: ensure required OIDC params exist (response_type, client_id, redirect_uri, scope, nonce/state, etc.)
     # Keep it advisory; don’t fail here to let the analyzer produce a full report later.
     for k in ("client_id", "nonce", "response_mode"):
         if k not in request:
             comments.append(f"Error: '{k}' is missing in authorization request.")
 
-    return request, presentation_obj, "\n".join(comments)
-
-
-
-def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider: str) -> str:
-    """
-    Analyze a Verifiable Presentation (VP) in SD-JWT format and return a structured report.
-
-    Args:
-        token (str): The full SD-JWT token, formatted as base64url sections separated by `~`
-        draft (str): Draft version number to load the appropriate spec documentation
-
-    Returns:
-        str: A markdown-formatted compliance report generated using OpenAI
-    """
-    # Split token into components: header~payload~disclosures...~key_binding_jwt (optional)
-    vcsd = token.split("~")
-    sd_jwt = vcsd[0]
-
-    comment_1 = ""
-    comment_2 = ""
-    comment_3 = ""
-    comment_4 = ""
-
-    # Decode SD-JWT header and payload
-    jwt_header = get_header_from_token(sd_jwt)
-    jwt_payload = get_payload_from_token(sd_jwt)
-    iss = jwt_payload.get("iss")
-    kid = jwt_header.get("kid")
-
-    if not iss:
-        comment_1 = "Error: iss is missing"
-
-    # check signature of the sd-jwt
-    if x5c_list := jwt_header.get('x5c'):
-        comment_1 = verify_issuer_matches_cert(iss, x5c_list)
-        comment_4 = oidc4vc.verify_x5c_chain(x5c_list)
-        try:
-            # Extract the first certificate (leaf cert) from the x5c list
-            cert_der = base64.b64decode(x5c_list[0])
-            cert = x509.load_der_x509_certificate(cert_der)
-            # Get public key from the cert
-            public_key = cert.public_key()
-            # Convert it to JWK format
-            issuer_key = jwk.JWK.from_pyca(public_key)
-            # Validate signature
-            a = jwt.JWT.from_jose_token(sd_jwt)
-            a.validate(issuer_key)
-            comment_2 = "Info: VC is correctly signed with x5c public key"
-        except Exception as e:
-            comment_2 = f"Error: VC signature verification with x5c public key failed: {e}"
-
-    elif jwt_header.get('jwk'):
-        try:
-            jwk_data = jwt_header['jwk']
-            if isinstance(jwk_data, str):
-                jwk_data = json.loads(jwk_data)
-            issuer_key = jwk.JWK(**jwk_data)
-            # Validate signature
-            a = jwt.JWT.from_jose_token(sd_jwt)
-            a.validate(issuer_key)
-            comment_2 = "Info: VC is correctly signed with jwk in header"
-        except Exception as e:
-            comment_2 = f"Error: VC signature verification with jwk in header failed: {e}"
-
-    elif kid:
-        if iss and iss.startswith("did:"):
-            if kid.startswith("did:"):
-                pub_key = oidc4vc.resolve_did(kid)
-                try:
-                    issuer_key = jwk.JWK(**pub_key)
-                    a = jwt.JWT.from_jose_token(sd_jwt)
-                    a.validate(issuer_key)
-                    comment_2 = "Info: VC is correctly signed with DID"
-                except Exception as e:
-                    comment_2 = f"Error: VC is not signed correctly with DID: {e}"
-            else:
-                comment_2 = "Error: kid should be a DID verification method"
-
-        elif iss and iss.split(":")[0] in ["http", "https"]:
-            parsed = urlparse(jwt_payload.get('iss'))
-            domain = parsed.netloc
-            path = parsed.path
-            scheme = parsed.scheme
-            well_known_url = f"{scheme}://{domain}/.well-known/jwt-vc-issuer{path}"
-            logging.info("well known url = %s", well_known_url)
-
-            try:
-                metadata = requests.get(well_known_url, timeout=5).json()
-
-                # Case 1: Embedded JWKS
-                if "jwks" in metadata:
-                    keys = metadata["jwks"].get("keys", [])
-
-                # Case 2: External JWKS URI
-                elif "jwks_uri" in metadata:
-                    jwks_uri = metadata["jwks_uri"]
-                    response = requests.get(jwks_uri, timeout=5)
-                    response.raise_for_status()
-                    jwks = response.json()
-                    keys = jwks.get("keys", [])
-                else:
-                    comment_2 = "Error: Public key is not available in well-known/jwt-vc-issuer"
-                    keys = []
-
-                # Try to match key by 'kid'
-                matching_key = next((key for key in keys if key.get('kid') == kid), None)
-
-                if matching_key:
-                    try:
-                        issuer_key = jwk.JWK(**matching_key)
-                        a = jwt.JWT.from_jose_token(sd_jwt)
-                        a.validate(issuer_key)
-                        comment_2 = "Info: VC is correctly signed with public key from issuer metadata"
-                    except Exception as e:
-                        comment_2 = f"Error: Signature validation failed: {e}"
-                else:
-                    comment_2 = f"Error: No matching key found for kid={kid}"
-
-            except Exception as e:
-                comment_2 = f"Error: Failed to fetch or parse issuer metadata: {e}"
-        else:
-            comment_2 = "Error: 'iss' is missing or improperly formatted."
-    else:
-        comment_2 = "Error: kid or x5c or jwk is missing in the header"
-
-    # Determine whether the last part is a Key Binding JWT (assumed to be a JWT if it contains 2 dots)
-    is_kb_jwt = vcsd[-1].count('.') == 2
-
-    # Disclosures are everything between vcsd[1] and vcsd[-2] if KB is present, otherwise vcsd[1:]
-    disclosure_parts = vcsd[1:-1] if is_kb_jwt else vcsd[1:]
-
-    # Decode disclosures
-    try:
-        disclosures = "\r\n".join(
-            base64url_decode(part).decode() for part in disclosure_parts
-        )
-        comment_3 = "Info: Disclosures are formatted correctly"
-    except Exception as e:
-        comment_3 = f"Error: Disclosures are not formatted correctly: {e}"
-        disclosures = "Error: Disclosures could not be decoded."
-
-    logging.info("comment 1 = %s", comment_1)
-    logging.info("comment 2 = %s", comment_2)
-    logging.info("comment 3 = %s", comment_3)
-    logging.info("comment 4 = %s", comment_4)
-
-    # Decode Key Binding JWT (KB-JWT) if present
-    if is_kb_jwt:
-        kb_header = get_header_from_token(vcsd[-1])
-        kb_payload = get_payload_from_token(vcsd[-1])
-    else:
-        kb_header = kb_payload = "No Key Binding JWT"
-
-    # Load the appropriate SD-JWT VC specification content based on draft
-    try:
-        with open(f"./dataset/sdjwtvc/{draft}.txt", "r") as f:
-            content = f.read()
-    except FileNotFoundError:
-        with open("./dataset/sdjwtvc/9.txt", "r") as fallback:
-            content = fallback.read()
-            draft = "9"
-    
-    # Load the appropriate SD-JWT specification (Draft 22)
-    try:
-        with open(f"./dataset/sdjwt/22.txt", "r") as f:
-            content += "#\n\n" + f.read()
-    except FileNotFoundError:
-        logging.warning("SD-JWT specs not found")
-        
-            
-    # Load the appropriate token status list specification (Draft 12)
-    try:
-        with open(f"./dataset/tsl/12.txt", "r") as f:
-            content += "#\n\n" + f.read()
-    except FileNotFoundError:
-        logging.warning("TSL specs not found")
-        
-
-    # Token count logging for diagnostics
-    tokens = enc.encode(content)
-    logging.info("Token count: %s", len(tokens))
-
-    # Timestamp and attribution
-    mention = attribution(model, "SD-JWT VC", draft, provider)
-    st = style_for(model)
-    instr = style_instructions(st, domain="sdjwtvc", draft=draft)
-
-    # Prompt for OpenAI model
-    prompt = f"""
-    --- Specifications ---
-    {content}
-
-    --- VC Data for Analysis ---
-    VC Header: {json.dumps(jwt_header, indent=2)}
-    VC Payload: {json.dumps(jwt_payload, indent=2)}
-    Disclosures:
-    {disclosures}
-    Key Binding JWT Header: {json.dumps(kb_header, indent=2)}
-    Key Binding JWT Payload: {json.dumps(kb_payload, indent=2)}
-
-    --- Comments ---
-    {comment_1}
-    {comment_2}
-    {comment_3}
-    {comment_4}
-
-    ### Output style
-    {instr}
-
-    ### Report Sections (use these exact titles):
-    1. **Holder & Issuer Identifiers**
-    2. **Header Required Claims**
-    3. **Payload Required Claims**
-    4. **Key Binding JWT Check**
-    5. **Signature Information**
-    6. **Errors & Improvements**
-
-    """
-
-    # Call the OpenAI API
-    llm = get_llm_client(model,provider)  # Add 'provider' param to function
-    response = llm.invoke([
-        {"role": "system", "content": "You are an expert in SD-JWT VC specifications compliance."},
-        {"role": "user", "content": prompt}
-        ]).content
-
-    # Update usage stats and return response
-    counter_update(device)
-    return response + ADVICE + mention
-
-
-def analyze_jwt_vc(token, draft, device, model, provider):
-    """
-    Analyze a Verifiable Presentation (VP) in JWT format and return a structured report.
-
-    Args:
-        token (str): The full token, formatted as base64url sections separated by `~`
-        draft (str): Draft version number to load the appropriate spec documentation
-
-    Returns:
-        str: A markdown-formatted compliance report generated using OpenAI
-    """
-
-    # Decode SD-JWT header and payload
-    jwt_header = get_header_from_token(token)
-    jwt_payload = get_payload_from_token(token)
-
-    # Load the appropriate specification content based on draft
-    try:
-        with open(f"./dataset/vcdm/{draft}.txt", "r") as f:
-            content = f.read()
-    except FileNotFoundError:
-        with open("./dataset/vcdm/1.1.txt", "r") as fallback:
-            draft = "1.1"
-            content = fallback.read()
-
-    # Token count logging for diagnostics
-    tokens = enc.encode(content)
-    logging.info("Token count: %s", len(tokens))
-
-    # Timestamp and attribution
-    mention = attribution(model, "VCDM", draft, provider)
-
-    # Prompt for OpenAI model
-    st = style_for(model)
-    instr = style_instructions(st, domain="vcdm-jwt", draft=draft)
-
-    prompt = f"""
---- Specifications ---
-{content}
-
---- VC Data for Analysis ---
-VC Header: {json.dumps(jwt_header, indent=2)}
-VC Payload: {json.dumps(jwt_payload, indent=2)}
-
-### Output style
-{instr}
-
-### Report Sections (use these exact titles):
-1. **Holder & Issuer Identifiers**
-2. **All Claims**
-3. **Header Required Claims**
-4. **Payload Required Claims**
-5. **Errors & Improvements**
-
-"""
-    # Call the LLM API
-    llm = get_llm_client(model, provider)  # Add 'provider' param to function
-    response = llm.invoke([
-        {"role": "system", "content": "You are an expert in JWT VC specifications compliance."},
-        {"role": "user", "content": prompt}
-    ]).content
-
-    # Update usage stats and return response
-    counter_update(device)
-    return response + ADVICE + mention
-
-
-def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str, provider: str) -> str:
-    """
-    Analyze a Verifiable Presentation (VP) in JSON-LD format and return a structured report.
-
-    Args:
-        vc (str): The full VC,
-        draft (str): Draft version number to load the appropriate spec documentation
-
-    Returns:
-        str: A markdown-formatted compliance report generated using OpenAI
-    """
-
-    # Load the appropriate specification contenif not presentation_definition:
-    # still analyze the request and return it
-    try:
-        with open(f"./dataset/vcdm/{draft}.txt", "r", encoding="utf-8") as f:
-            content = f.read()
-    except FileNotFoundError:
-        with open("./dataset/vcdm/1.1.txt", "r", encoding="utf-8") as fallback:
-            content = fallback.read()
-            draft = "1.1"
-
-    # Token count logging for diagnostics
-    tokens = enc.encode(content)
-    # still analyze the request and return it
-    logging.info("Token count: %s", len(tokens))
-
-    # Timestamp and attribution
-    mention = attribution(model, "VCDM", draft, provider)
-    st = style_for(model)
-    instr = style_instructions(st, domain="vcdm-jsonld", draft=draft)
-
-    prompt = f"""
---- Specifications ---
-{content}
-
---- VC Data for Analysis ---
-JSON-LD VC : {json.dumps(vc, indent=2)}
-
-### Output style
-{instr}
-
-### Report Sections (use these exact titles):
-1. **Holder & Issuer Identifiers**
-2. **All Claims**
-3. **Required Claims Check**
-4. **Errors & Improvements**
-
-"""
-
-
-    # Call the OpenAI API
-    llm = get_llm_client(model, provider)  # Add 'provider' param to function
-    response = llm.invoke([
-        {"role": "system", "content": "You are an expert in VC DM specifications compliance."},
-        {"role": "user", "content": prompt}
-    ]).content
-
-    # Update usage stats and return response
-    counter_update(device)
-    return response + ADVICE + mention
+    return request, presentation_obj, "\n".join(comments), transaction_data
 
 
 def get_issuer_data(qrcode, draft):
@@ -1085,8 +711,6 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model, provider):
         context += "\n\n" + haip
         logging.info("merge with DIIP V4 specifications is processed")
 
-        
-
     # Token count logging for diagnostics
     tokens = enc.encode(context)
     logging.info("Token count: %s", len(tokens))
@@ -1160,7 +784,7 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model, provider):
     if not draft:
         draft = "18"
 
-    verifier_request, presentation_definition, comment = get_verifier_request(qrcode, draft)
+    verifier_request, presentation_definition, comment, transaction_data = get_verifier_request(qrcode, draft)
     if not verifier_request:
         return comment
     
@@ -1234,6 +858,9 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model, provider):
 
     --- Presentation Definition ---
     {json.dumps(presentation_definition, indent=2)}
+    
+    --- Transaction Data ---
+    {json.dumps(transaction_data)}
 
     ### Output style
 {instr}
@@ -1243,9 +870,10 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model, provider):
     1. **Abstract**
     2. **Authorization Request** – Check required OIDC4VP claims
     3. **Presentation Definition** – Verify format and structure
-    4. **Client Metadata** – Validate content (if present)
-    5. **Errors & Warnings**
-    6. **Improvements** – Suggest developer-focused enhancements
+    4. **Transaction Data** – Verify format and structure
+    5. **Client Metadata** – Validate content (if present)
+    6. **Errors & Warnings**
+    7. **Improvements** – Suggest developer-focused enhancements
     """
         }
     ]
