@@ -255,18 +255,18 @@
 
           <!-- Profile & drafts -->
           <div class="row inline">
-            <label for="profil">Profile</label>
+            <label for="profil">Ecosystem Profile</label>
             <div>
               <select id="profil" name="profile" onchange="toggleDraftSelectors()">
-                <option value="EBSI">EBSI V 3.X</option>
-                <option value="DIIP_V3">DIIP V3</option>
-                <option value="DIIP_V4">DIIP V4</option>
-                <option value="INJI">INJI from MOSIP</option>
-                <option value="EWC">ARF EWC</option>
+                <option value="EBSI">EBSI V 3.X -> OIDC4VP 18 & OIDC4VCI 11</option>
+                <option value="DIIP_V3">DIIP V3 -> OIDC4VP 20 & OIDC4VCI 13</option>
+                <option value="DIIP_V4">DIIP V4 -> OIDC4VP 28 & OIDC4VCI 15</option>
+                <option value="INJI">INJI from MOSIP -> OIDC4VP 21 & OIDC4VCI 13</option>
+                <option value="EWC">ARF LSP EWC -> OIDC4VP 18 & OIDC4VCI 13</option>
                 <option value="HAIP">HAIP with OIDC4VC Final 1.0</option>
-                <option selected value="custom">Custom</option>
+                <option selected value="custom">Custom -> Choose your protocol drafts below</option>
               </select>
-              <small class="muted">Choose a profile or use <em>Custom</em> to select drafts.</small>
+              <small class="muted">Choose a profile or use <em>Custom</em> to select the protocol drafts.</small>
 
                
             </div>
@@ -274,7 +274,7 @@
           </div>
         
           <div id="draftSelectors" class="row inline" style="display:none">
-            <label>Draft versions</label>
+            <label>Protocol Draft</label>
             <div class="row" style="grid-template-columns: 1fr 1fr; gap: .75rem;">
               <div>
                 <label for="oidc4vp_version" class="muted" style="font-weight:500;">OIDC4VP</label>
