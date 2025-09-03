@@ -23,7 +23,7 @@ from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from typing import Any, Dict, Optional, Tuple
 from dataclasses import dataclass
-
+import tsl # token statys list
 
 # Load API keys
 with open("keys.json", "r") as f:
@@ -614,8 +614,20 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
             content += "#\n\n" + f.read()
     except FileNotFoundError:
         logging.warning("TSL specs not found")
-        
+    
+    # SD-JWT token status list lookup
+    try:
+        token_status_list_result = tsl.check_sd_jwt_vc_status(
+            token,
+            statuslist_jwt_jwk=None,
+            statuslist_jwt_jwks_url=None,
+            verify_statuslist_sig=False
+        )
+    except Exception as e:
+        token_status_list_result = str(e)
+    logging.info("lookup status list result = %s", token_status_list_result)
 
+    
     # Token count logging for diagnostics
     tokens = enc.encode(content)
     logging.info("Token count: %s", len(tokens))
@@ -644,6 +656,9 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
     {comment_3}
     {comment_4}
 
+    ### token status list lookup
+    {token_status_list_result}
+    
     ### Output style
     {instr}
 
@@ -778,7 +793,15 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str, provider: st
     Returns:
         str: A markdown-formatted compliance report generated using OpenAI
     """
-
+    
+    # take draft depending on @context
+    if "https://www.w3.org/ns/credentials/v2" in vc.get("@context"):
+        draft = "2.0"
+        logging.warning("Draft has been updated to 2.0")
+    elif "https://www.w3.org/2018/credentials/v1" in vc.get("@context"):
+        draft = "1.1"
+        logging.warning("Draft has been updated to 1.1")
+    
     # Load the appropriate specification contenif not presentation_definition:
     # still analyze the request and return it
     try:
