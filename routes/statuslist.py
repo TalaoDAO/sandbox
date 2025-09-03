@@ -105,7 +105,7 @@ def issuer_bitstring_status_list(list_id):
         status_list_token = f.read()
         headers = {
             'Cache-Control': 'no-store',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/vc+jwt'
         }
         return Response(status_list_token, headers=headers)
     except Exception:
@@ -179,7 +179,7 @@ def sign_status_list_bitstring_credential(lst, list_id, mode):  # for sd-jwt
     key = jwk.JWK(**key)
     kid = key.get('kid') if key.get('kid') else key.thumbprint()
     header = {
-        "typ": "statuslist+json",
+        "typ": "JWT", #"statuslist+json",
         "alg": alg(key),
         "kid":  kid,
     }
@@ -198,6 +198,7 @@ def sign_status_list_bitstring_credential(lst, list_id, mode):  # for sd-jwt
                 "id": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id + "#list",
                 "type": "BitstringStatusList",
                 "statusPurpose": "revocation",
+                "statusSize": 1,
                 "encodedList": lst
             }
         },
@@ -218,21 +219,29 @@ def set_bit(v, index, x):
         v |= mask         # If x was True, set the bit indicated by the mask.
     return v
 
+def _ensure_frame_size(frame: bytearray, index: int) -> bytearray:
+    needed_bytes = (index // 8) + 1
+    if needed_bytes > len(frame):
+        frame.extend(b"\x00" * (needed_bytes - len(frame)))
+    return frame
+
 
 def set_status_list_frame(frame, index, status, standard):
     frame = bytearray(frame)
-    index_byte = int(index/8)
+    frame = _ensure_frame_size(frame, index)  # NEW
+    index_byte = index // 8                    # use integer division
     index_bit = index % 8
     if standard == "w3c_bitstring":
-        index_bit = 7 - index_bit
+        index_bit = 7 - index_bit  # MSB-first within byte
     elif standard == "ietf":
-        pass
+        pass  # LSB-first within byte
     else:
         logging.error("wrong standard")
     actual_byte = frame[index_byte]
     new_byte = set_bit(actual_byte, index_bit, status)
     frame[index_byte] = new_byte
     return frame
+
 
 
 def issuer_status_list_api(mode):
@@ -321,6 +330,8 @@ def update_status_list_bitstring_file(list_id, index, status, mode):
         f = open(listname, "r")
         status_list_token = f.read()
         lst = get_payload_from_token(status_list_token)['vc']['credentialSubject']["encodedList"]
+        if lst and lst[0] in ("u", "U"):
+            lst = lst[1:]
         lst += "=" * ((4 - len(lst) % 4) % 4)
         lst = base64.urlsafe_b64decode(lst)
         old_frame = gzip.decompress(lst)
@@ -350,5 +361,5 @@ def generate_ietf_lst(frame):
 
 def generate_w3c_bitstring_lst(frame):
     compressed = gzip.compress(frame, compresslevel=9)
-    c = base64.urlsafe_b64encode(compressed)
-    return c.decode().replace("=", "")
+    b64 = base64.urlsafe_b64encode(compressed).decode().rstrip("=")
+    return "u" + b64
