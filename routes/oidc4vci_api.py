@@ -1640,7 +1640,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
             'id':  mode.server + 'sandbox/issuer/bitstringstatuslist/1#' + index,
             'type': 'BitstringStatusListEntry',
             'statusPurpose': 'revocation',
-            'statusListIndex': int(index),
+            'statusListIndex': index,
             'statusListCredential':  mode.server + 'sandbox/issuer/bitstringstatuslist/1'
         }
         
@@ -1651,7 +1651,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
             'id':  mode.server + 'sandbox/issuer/bitstringstatuslist/1#' + index,
             'type': 'BitstringStatusListEntry',
             'statusPurpose': 'revocation',
-            'statusListIndex': int(index),
+            'statusListIndex': index,
             'statusListCredential':  mode.server + 'sandbox/issuer/bitstringstatuslist/1'
         }
     else:
