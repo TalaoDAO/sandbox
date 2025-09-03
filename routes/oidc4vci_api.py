@@ -1634,7 +1634,16 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
         
         if issuer_id in ["cejjvswuep", "ooroomolyd"]:  # expiration date test 3 
             credential['expirationDate'] = (datetime.now() + timedelta(minutes=1)).replace(microsecond=0).isoformat() + 'Z'
-    
+
+        index = str(randint(0, 99999))
+        credential['credentialStatus'] = {
+            'id':  mode.server + 'sandbox/issuer/bitstringstatuslist/1#' + index,
+            'type': 'BitstringStatusListEntry',
+            'statusPurpose': 'revocation',
+            'statusListIndex': int(index),
+            'statusListCredential':  mode.server + 'sandbox/issuer/bitstringstatuslist/1'
+        }
+        
     elif format in ['jwt_vc_json', 'jwt_vc']:     # jwt_vc format is used for ebsi V3 only with draft 10/11
         credential = clean_jwt_vc_json(credential)
         index = str(randint(0, 99999))
