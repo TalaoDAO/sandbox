@@ -792,7 +792,7 @@ def oidc4vc_login_qrcode(red, mode):
     
     # QRCode preparation with authorization_request_displayed
     if verifier_data.get('request_uri_parameter_supported') or verifier_data['profile'] in ["HAIP", "POTENTIAL"]: # request uri as jwt
-        red.setex("request_uri_" + stream_id, QRCODE_LIFE, json.dumps(request_as_jwt))
+        red.setex("request_uri_" + stream_id, QRCODE_LIFE, request_as_jwt)
         authorization_request_displayed = { 
             "client_id": client_id,
             "request_uri": mode.server + "verifier/wallet/request_uri/" + stream_id 
@@ -862,7 +862,7 @@ def oidc4vc_request_uri(stream_id, red):
     https://www.rfc-editor.org/rfc/rfc9101.html
     """
     try:
-        payload = red.get("request_uri_" + stream_id).decode().replace('"', '')
+        payload = red.get("request_uri_" + stream_id).decode()
     except Exception:
         return jsonify("Request timeout"), 408
     headers = { 

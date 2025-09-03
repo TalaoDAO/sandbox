@@ -139,7 +139,7 @@ def authorization_error(error, error_description, stream_id, red, state):
     }
     # front channel follow up
     if not stream_id:
-        return jsonify(resp)
+        return urlencode(resp)
     front_publish(stream_id, red, error=error, error_description=error_description)
     if state:
         resp['state'] = state

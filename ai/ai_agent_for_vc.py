@@ -401,6 +401,8 @@ def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str,
         str: Result of analysis or error message.
     """
     logging.info("VC received = %s", vc)
+    if not vc:
+        return "Invalid VC."
 
     # 1. SD-JWT: starts with base64 segment and uses '~' delimiter
     if "~" in vc and "." in vc.split("~")[0]:
