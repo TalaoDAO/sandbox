@@ -439,21 +439,6 @@ def _safe_get_json(url: str, timeout: int = 10) -> Dict[str, Any]:
     return r.json()
 
 
-def _safe_get_text(url: str, timeout: int = 10) -> requests.Response:
-    if not url.lower().startswith(("https://", "http://")):
-        raise ValueError("Only http(s) schemes are allowed for external fetches")
-    headers = {"Accept": "application/oauth-authz-req+jwt, text/plain;q=0.5, */*;q=0.1"}
-    r = requests.get(url, headers=headers, timeout=timeout)
-    r.raise_for_status()
-    return r
-
-
-
-def _content_type_is_authz_req_jwt(value: Optional[str]) -> bool:
-    # Accept "application/oauth-authz-req+jwt" with optional parameters (charset=..., etc.)
-    if not value:
-        return False
-    return value.split(";")[0].strip().lower() == "application/oauth-authz-req+jwt"
 
 
 def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider: str) -> str:
@@ -728,6 +713,13 @@ def analyze_jwt_vc(token, draft, device, model, provider):
         with open("./dataset/vcdm/1.1.txt", "r") as fallback:
             draft = "1.1"
             content = fallback.read()
+            
+    # Load the appropriate Bitstring status list specification
+    try:
+        with open(f"./dataset/bsl/1.txt", "r") as f:
+            content += "#\n\n" + f.read()
+    except FileNotFoundError:
+        logging.warning("BSL specs not found")
 
     # Token count logging for diagnostics
     tokens = enc.encode(content)
@@ -796,6 +788,14 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str, provider: st
         with open("./dataset/vcdm/1.1.txt", "r", encoding="utf-8") as fallback:
             content = fallback.read()
             draft = "1.1"
+    
+    # Load the appropriate Bitstring status list specification
+    try:
+        with open(f"./dataset/bsl/1.txt", "r") as f:
+            content += "#\n\n" + f.read()
+        logging.warning("BSL specs merged")
+    except FileNotFoundError:
+        logging.warning("BSL specs not found")
 
     # Token count logging for diagnostics
     tokens = enc.encode(content)
