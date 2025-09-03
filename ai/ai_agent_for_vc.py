@@ -24,6 +24,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from typing import Any, Dict, Optional, Tuple
 from dataclasses import dataclass
 import tsl # token statys list
+import bsl
 
 # Load API keys
 with open("keys.json", "r") as f:
@@ -819,6 +820,17 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str, provider: st
         logging.warning("BSL specs merged")
     except FileNotFoundError:
         logging.warning("BSL specs not found")
+        
+        
+    # JSON-LD Bitstring status list lookup
+    try:
+        bistring_status_list_result = bsl.check_bitstring_status_jsonld(
+            vc,
+            preferred_purpose="revocation",
+            require_proof=False )
+    except Exception as e:
+        bistring_status_list_result = str(e)
+    logging.info("lookup bitstring status list result = %s", bistring_status_list_result)
 
     # Token count logging for diagnostics
     tokens = enc.encode(content)
@@ -836,6 +848,9 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str, provider: st
 
 --- VC Data for Analysis ---
 JSON-LD VC : {json.dumps(vc, indent=2)}
+
+### token status list lookup
+{bistring_status_list_result}
 
 ### Output style
 {instr}
