@@ -736,6 +736,17 @@ def analyze_jwt_vc(token, draft, device, model, provider):
             content += "#\n\n" + f.read()
     except FileNotFoundError:
         logging.warning("BSL specs not found")
+        
+    # JSON-LD Bitstring status list lookup
+    try:
+        bistring_status_list_result = bsl.check_bitstring_status_jsonld(
+            token,
+            preferred_purpose="revocation",
+            require_proof=False)
+    except Exception as e:
+        bistring_status_list_result = str(e)
+    logging.info("lookup bitstring status list result = %s", bistring_status_list_result)
+
 
     # Token count logging for diagnostics
     tokens = enc.encode(content)
@@ -759,7 +770,10 @@ VC Payload: {json.dumps(jwt_payload, indent=2)}
 --- Comments ---
     {comment_1}
     {comment_2}
-    
+
+### token status list lookup
+{bistring_status_list_result}
+
 ### Output style
 {instr}
 
