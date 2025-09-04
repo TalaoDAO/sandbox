@@ -627,7 +627,7 @@ def qrcode():
 
 # OpenAI tools for website
 @app.route('/ai/vc', methods=['GET', 'POST'])
-def vc():
+async def vc():
     if  request.method == 'GET':
         with open("openai_counter.json", "r") as f:
             counter = json.load(f)
@@ -651,7 +651,7 @@ def vc():
         else:
             provider = "gemini"
             
-        report = ai_agent_for_vc.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "Website Analyze VC", model, provider)
+        report = await ai_agent_for_vc.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "Website Analyze VC", model, provider)
         print("report = ", report)
         if outfmt == 'json':
             input = {
@@ -708,7 +708,7 @@ def qrcode_wallet():
 
 # OpenAI tools for wallet
 @app.route('/ai/wallet/vc', methods=['POST'])
-def vc_wallet():
+async def vc_wallet():
     api_key = request.headers.get("Api-Key")
     if api_key not in ai_api_keys:
         return jsonify({"error": "access denied"}), 403
@@ -720,7 +720,7 @@ def vc_wallet():
     except Exception:
         return jsonify({"error": "invalid base64 format"}), 400
     try:
-        report = ai_agent_for_vc.process_vc_format(vc_str, "8", "1.1", "wallet VC", "pro", "gemini")
+        report = await ai_agent_for_vc.process_vc_format(vc_str, "8", "1.1", "wallet VC", "pro", "gemini")
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
@@ -818,7 +818,7 @@ def analyze_wallet_qrcode():
 # /api/analyze-vc
 # ---------------------------
 @app.route('/api/analyze-vc', methods=['POST'])
-def api_analyze_vc():
+async def api_analyze_vc():
     """
     Analyze a Verifiable Credential (VC) with the AI agent and return a report.
 
@@ -859,7 +859,7 @@ def api_analyze_vc():
 
     # Run the AI agent
     try:
-        report = ai_agent_for_vc.process_vc_format(
+        report = await ai_agent_for_vc.process_vc_format(
             vc_str,
             sdjwtvc_draft,
             vcdm_draft,

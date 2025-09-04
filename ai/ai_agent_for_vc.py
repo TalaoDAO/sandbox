@@ -25,6 +25,8 @@ from typing import Any, Dict, Optional, Tuple
 from dataclasses import dataclass
 import tsl # token statys list
 import bsl
+import didkit
+
 
 # Load API keys
 with open("keys.json", "r") as f:
@@ -393,7 +395,7 @@ def extract_SAN_DNS(pem_certificate):
         return "Error: no SAN extension found in the x509 certificate."
 
 
-def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str, model: str, provider: str):
+async def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str, model: str, provider: str):
     """
     Detect the format of a Verifiable Credential (VC) and route to the correct analysis function.
     Args:
@@ -417,7 +419,7 @@ def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str,
     try:
         vc_json = json.loads(vc)
         if "@context" in vc_json and "type" in vc_json:
-            return analyze_jsonld_vc(vc_json, vcdm_draft, device, model, provider)
+            return await analyze_jsonld_vc(vc_json, vcdm_draft, device, model, provider)
     except Exception as e:
         return "Invalid JSON. Cannot parse input. " + str(e)
 
@@ -797,7 +799,7 @@ VC Payload: {json.dumps(jwt_payload, indent=2)}
     return response + ADVICE + mention
 
 
-def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str, provider: str) -> str:
+async def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str, provider: str) -> str:
     """
     Analyze a Verifiable Presentation (VP) in JSON-LD format and return a structured report.
 
@@ -845,7 +847,19 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str, provider: st
     except Exception as e:
         bistring_status_list_result = str(e)
     logging.info("lookup bitstring status list result = %s", bistring_status_list_result)
-
+    
+    
+    # json_ld proof check
+    if draft == "1.1":
+        try:
+            check_signature_result = await didkit.verify_credential(json.dumps(vc), '{}')
+        except Exception as e:
+            check_signature_result = str(e)
+    else:
+        check_signature_result = "Proof has not been checked."
+    logging.info("check signature proof =%s", check_signature_result)
+        
+        
     # Token count logging for diagnostics
     tokens = enc.encode(content)
     # still analyze the request and return it
@@ -862,6 +876,9 @@ def analyze_jsonld_vc(vc: str, draft: str, device: str, model: str, provider: st
 
 --- VC Data for Analysis ---
 JSON-LD VC : {json.dumps(vc, indent=2)}
+
+### Proof check
+{check_signature_result}
 
 ### token status list lookup
 {bistring_status_list_result}
