@@ -29,7 +29,7 @@ from routes import saas4ssi
 from routes import oidc4vp_api, oidc4vp_console
 from routes import oidc4vci_api, oidc4vci_console
 from routes import oauth_api
-from routes import wallet
+from routes import wallet, report_issue
 
 
 # for testing purpose
@@ -75,12 +75,13 @@ app.config['SESSION_FILE_THRESHOLD'] = 100
 app.config['SECRET_KEY'] = "sandbox" + mode.password
 app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["jpeg", "jpg", "png", "gif"]
 
-# OIDC4VC issuer and verfier
+# OIDC4VC issuer and verifier
 oidc4vp_console.init_app(app, red, mode)
 oidc4vp_api.init_app(app, red, mode)
 oidc4vci_console.init_app(app, red, mode)
 oidc4vci_api.init_app(app, red, mode)
 oauth_api.init_app(app, red, mode)
+report_issue.init_app(app, red, mode)
 
 #OIDC4VC web wallet
 wallet.init_app(app, red, mode)
@@ -614,8 +615,13 @@ def qrcode():
                 mimetype="application/json; charset=utf-8",
                 headers={"X-Content-Type-Options": "nosniff"}
             )
-        
-        return render_template("ai_report.html", back="/ai/qrcode", report= "\n\n" + report, model=model.capitalize())
+        report_hash = oidc4vc.hash(report)
+        report_data = {
+            "report": report,
+            "request": request.form
+        }
+        red.setex(report_hash, 10000, json.dumps(report_data))
+        return render_template("ai_report.html", back="/ai/qrcode", report= "\n\n" + report, model=model.capitalize(), report_hash=report_hash)
 
 
 
@@ -665,7 +671,13 @@ def vc():
                 mimetype="application/json; charset=utf-8",
                 headers={"X-Content-Type-Options": "nosniff"}
             )
-        return render_template("ai_report.html", back="/ai/vc", report= "\n\n" + report, model=model.capitalize())
+        report_hash = oidc4vc.hash(report)
+        report_data = {
+            "report": report,
+            "request": request.form
+        }
+        red.setex(report_hash, 10000, json.dumps(report_data))
+        return render_template("ai_report.html", back="/ai/vc", report= "\n\n" + report, model=model.capitalize(), report_hash=report_hash)
     
 
 # OpenAI tools for wallet

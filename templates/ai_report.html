@@ -50,7 +50,7 @@
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
     .card-header { padding: 1.25rem 1.25rem 0 1.25rem; }
     .card-body { padding: 1.25rem; }
-    .card-footer { padding: 1rem 1.25rem; border-top: 1px solid var(--border); background: #fafafa; border-radius: 0 0 14px 14px; }
+    .card-footer { padding: 1rem 1.25rem; border-top: 1px solid var(--border); background: #fafafa; border-radius: 0 0 14px 14px; display:flex; justify-content:space-between; align-items:center; gap:.75rem; flex-wrap:wrap;}
 
     h1 { margin: 0; color: var(--primary); text-align: center; }
     p.muted { color: var(--muted); font-size: .95rem; }
@@ -59,7 +59,7 @@
     .toolbar { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: space-between; align-items: center; margin: .5rem 0 1rem; }
     .toolbar-left, .toolbar-right { display: flex; gap: .5rem; align-items: center; }
     .btn { appearance: none; border: 1px solid var(--border); background: #fff; color: var(--primary);
-      padding: .55rem .8rem; border-radius: 10px; font-weight: 600; cursor: pointer; }
+      padding: .55rem .8rem; border-radius: 10px; font-weight: 600; cursor: pointer; text-decoration:none; }
     .btn:hover { border-color: #cbd5e1; }
     .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
     .btn.icon { display: inline-flex; align-items: center; gap: .45rem; }
@@ -190,8 +190,15 @@
       </div>
 
       <div class="card-footer">
-        <p class="muted">Use this report for diagnostics only. Always cross-check cryptographic results against your conformance suite.</p>
-      </div>
+  <p class="muted" style="margin:0;">
+    Found something unclear, incorrect, or missing?  
+    Use <strong>Report an Issue</strong> to share feedback.  
+    Your input directly helps us improve the validation model and provide better services.
+  </p>
+  <a id="issueBtn" class="btn primary icon" href="/report/report-issue/{{report_hash}}?back={{back}}">🐞 Report an Issue</a>
+</div>
+
+     
     </section>
   </main>
 
@@ -294,6 +301,8 @@
         }
       });
     });
+
+    
   </script>
 </body>
 </html>

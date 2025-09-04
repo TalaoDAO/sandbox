@@ -341,9 +341,11 @@ def verifier_callback3():
 
         # Extract vcsd_jwt
         vcsd_jwt = vcsd[0]
-        vcsd_jwt_header = oidc4vc.get_header_from_token(vcsd_jwt)
-        vcsd_jwt_payload = oidc4vc.get_payload_from_token(vcsd_jwt)
-
+        try:
+            vcsd_jwt_header = oidc4vc.get_header_from_token(vcsd_jwt)
+            vcsd_jwt_payload = oidc4vc.get_payload_from_token(vcsd_jwt)
+        except Exception:
+            continue
         # Extract kb-jwt if it exists
         if vcsd[-1]:
             kb_jwt = vcsd[-1]

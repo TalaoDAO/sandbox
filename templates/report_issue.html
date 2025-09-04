@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Report an Issue – VALIDATORS</title>
+  <link rel="icon" href="/static/img/altmeIcon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #172554;
+      --accent: #0057FF;
+      --bg: #f6f7fb;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --card: #ffffff;
+      --success: #0a7f3f;
+      --warn: #b45309;
+      --error: #b91c1c;
+      --prose-max: 78ch;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    header {
+      min-height: 64px; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center;
+      background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.05);
+    }
+    .logo a { color: var(--primary); text-decoration: none; font-family: Orbitron, sans-serif; letter-spacing: .5px; }
+    nav a { color: var(--primary); text-decoration: none; font-weight: 600; }
+    nav a:hover { color: var(--accent); }
+    .container { max-width: 960px; margin: 2.5rem auto; padding: 0 1rem; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+    .card-header { padding: 1.25rem 1.25rem 0 1.25rem; }
+    .card-body { padding: 1.25rem; }
+    .card-footer { padding: 1rem 1.25rem; border-top: 1px solid var(--border); background: #fafafa; border-radius: 0 0 14px 14px; }
+    h1 { margin: 0; color: var(--primary); text-align: center; }
+    p.muted { color: var(--muted); font-size: .95rem; }
+    .btn { appearance: none; border: 1px solid var(--border); background: #fff; color: var(--primary);
+      padding: .55rem .8rem; border-radius: 10px; font-weight: 600; cursor: pointer; text-decoration:none; }
+    .btn:hover { border-color: #cbd5e1; }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn.icon { display: inline-flex; align-items: center; gap: .45rem; }
+
+    form { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    form .full { grid-column: 1 / -1; }
+    label { font-weight: 600; font-size: .92rem; color: var(--primary); }
+    input[type="text"], input[type="email"], textarea, select {
+      width: 100%; padding: .6rem .7rem; border: 1px solid var(--border); border-radius: 10px; background: #fff;
+      font: inherit; color: var(--text);
+    }
+    textarea { min-height: 140px; resize: vertical; }
+    .help { font-size: .85rem; color: var(--muted); margin-top: .25rem; }
+    .row { display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; }
+    .pill { display:inline-block; padding:.25rem .6rem; border:1px solid var(--border); border-radius:9999px; color:var(--muted); font-size:.85rem; }
+
+    /* Comments list */
+    .comments { margin-top: 1rem; }
+    .comment { border:1px solid var(--border); border-radius:12px; padding: .75rem .9rem; background:#fff; }
+    .comment + .comment { margin-top: .65rem; }
+    .comment .meta { font-size:.85rem; color:var(--muted); margin-bottom:.35rem; }
+    .comment .title { font-weight:700; color:var(--primary); }
+
+ /* Footer */
+    footer { text-align: center; padding: 2rem; color: var(--muted); }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 720px) {
+      form { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <strong><a href="/">VALIDATORS</a></strong>
+    </div>
+    <nav class="nav">
+      <a id="backLink" href="{{back}}" class="btn icon">← Back</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="card-header">
+        <h1>Report an Issue</h1>
+        <p class="muted" style="text-align:center;">Help us improve this validation report. Share inaccuracies, missing details, or bugs. Please avoid personal data.</p>
+      </div>
+      <div class="card-body">
+        <form action="/report/report-issue/{{report_hash}}?back={{back}}" method="post">
+
+          <div>
+            <label for="issueType">Issue type</label>
+            <select name="issue_type" id="issueType" required>
+              <option value="Inaccuracy">Inaccuracy</option>
+              <option value="Missing information">Missing information</option>
+              <option value="Bug / UI">Bug / UI</option>
+              <option value="Performance">Performance</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="severity">Severity</label>
+            <select name="severity" id="severity" required>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="Critical">Critical</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="name">Your name (optional)</label>
+            <input type="text" id="name" name="name" placeholder="Jane Doe" />
+          </div>
+
+          <div>
+            <label for="email">Email (optional)</label>
+            <input type="email" id="email" name="email" placeholder="you@example.com" />
+          </div>
+
+          <div class="full">
+            <label for="title">Short title</label>
+            <input type="text" id="title" name="title" placeholder="Brief summary of the issue" required />
+          </div>
+
+          <div class="full">
+            <label for="details">Details</label>
+            <textarea id="details" name="details" placeholder="Explain clearly what is wrong, what you expected, and how to reproduce it." ></textarea>
+            <div class="help">Max 2000 characters.</div>
+          </div>
+
+        
+
+          <div class="full row">
+            <button type="submit" class="btn primary icon">📨 Submit</button>
+            <span class="pill" id="contextPill" hidden></span>
+          </div>
+        </form>
+        <div id="thankYouMsg" class="muted" style="display:none; margin-top:1rem; text-align:center; font-weight:600; color:var(--success);">
+          ✅ Thank you for your feedback !
+        </div>
+
+        
+
+      
+      </div>
+      <div class="card-footer">
+        <p class="muted">We review comments periodically. For sensitive disclosures, please email <a href="mailto:contact@talao.io">contact@talao.io</a>.</p>
+      </div>
+    </section>
+  </main>
+
+
+
+  <footer>
+    <p>Contact us at <a href="mailto:contact@talao.io">contact@talao.io</a> · <a href="https://www.linkedin.com/company/79104266">LinkedIn</a></p>
+    <p><a href="https://altme.io/privacy">Privacy Policy</a> · <a href="https://altme.io/cgu">Terms</a></p>
+    <p>© 2025 Web3 Digital Wallet - All rights reserved</p>
+
+  </footer>
+  
+
+  <script>
+    // Back link from query param (or fallback to /)
+    const params = new URLSearchParams(window.location.search);
+    const back = params.get('back') || '/';
+    const backLink = document.getElementById('backLink');
+    if (backLink) backLink.href = back;
+
+    // Show small context pill if we have model or preview
+    const model = params.get('model');
+    const preview = params.get('preview');
+    const pill = document.getElementById('contextPill');
+    const chunks = [];
+    if (model) chunks.push('Model: ' + model);
+    if (preview) chunks.push('Preview: ' + preview);
+    if (chunks.length) {
+      pill.textContent = chunks.join(' • ');
+      pill.hidden = false;
+    }
+
+    // Simple client-side limit for details
+    const details = document.getElementById('details');
+    details?.addEventListener('input', () => {
+      if (details.value.length > 2000) {
+        details.value = details.value.slice(0, 2000);
+      }
+    });
+  
+</script>  
+<script>
+
+  // Submit via fetch, show "Thank you" immediately, then redirect after 5s
+  const form = document.querySelector("form");
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById("thankYouMsg");
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Submitting…"; }
+
+    try {
+      await fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+        headers: { "X-Requested-With": "fetch" }
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
+    // Show thank you immediately
+    if (msg) msg.style.display = "block";
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "📨 Submit"; }
+
+    // Redirect after 3 seconds
+    setTimeout(() => {
+      window.location.href = "{{back}}";
+    }, 3000);
+  });
+</script>
+
+
+</body>
+</html>
