@@ -84,7 +84,7 @@ def issuer_status_list(list_id):
         f = open(listname, "r")
         status_list_token = f.read()
         headers = {
-            'Cache-Control': 'no-store',
+            'Cache-Control': 'public, max-age=86400',
             'Content-Type': 'application/statuslist+jwt'
         }
         logging.info("status list token = %s", status_list_token)
@@ -104,7 +104,7 @@ def issuer_bitstring_status_list(list_id):
         f = open(listname, "r")
         status_list_token = f.read()
         headers = {
-            'Cache-Control': 'no-store',
+            'Cache-Control': 'public, max-age=86400',
             'Content-Type': 'application/vc+jwt'
         }
         return Response(status_list_token, headers=headers)
@@ -165,9 +165,10 @@ def sign_status_list_token(lst, list_id, mode):  # for sd-jwt
             "lst": lst
         },
         "sub": mode.server + "issuer/statuslist/" + list_id,
-        #  "exp": round(datetime.timestamp(datetime.now())) + 365*24*60*60,
         "iss": mode.server + "issuer/statuslist",
-        "ttl": 86400  # 1 day
+        "ttl": 86400,
+        "exp": round(datetime.timestamp(datetime.now())) + 24*60*60
+
     }
     token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
     token.make_signed_token(key)
@@ -179,7 +180,7 @@ def sign_status_list_bitstring_credential(lst, list_id, mode):  # for sd-jwt
     key = jwk.JWK(**key)
     kid = key.get('kid') if key.get('kid') else key.thumbprint()
     header = {
-        "typ": "JWT", #"statuslist+json",
+        "typ": "application/vc+jwt", #"statuslist+json",
         "alg": alg(key),
         "kid":  kid,
     }
@@ -188,7 +189,8 @@ def sign_status_list_bitstring_credential(lst, list_id, mode):  # for sd-jwt
         "jti": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id,
         "vc": {
             "@context": [
-                "https://www.w3.org/ns/credentials/v2"
+                "https://www.w3.org/ns/credentials/v2",
+                "https://www.w3.org/ns/credentials/status/v1"
             ],
             "id": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id,
             "type": ["VerifiableCredential", "BitstringStatusListCredential"],
@@ -199,7 +201,8 @@ def sign_status_list_bitstring_credential(lst, list_id, mode):  # for sd-jwt
                 "type": "BitstringStatusList",
                 "statusPurpose": "revocation",
                 "statusSize": 1,
-                "encodedList": lst
+                "encodedList": lst,
+                "ttl": 86400000  # 1 day, in ms
             }
         },
         "sub": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id,
@@ -335,6 +338,9 @@ def update_status_list_bitstring_file(list_id, index, status, mode):
         lst += "=" * ((4 - len(lst) % 4) % 4)
         lst = base64.urlsafe_b64decode(lst)
         old_frame = gzip.decompress(lst)
+        if len(old_frame) < 16384:
+            old_frame = bytearray(old_frame)  # make mutable
+            old_frame.extend(b"\x00" * (16384 - len(old_frame)))
         logging.info("Existing frame loaded")
     except Exception:
         old_frame = bytearray(16384)

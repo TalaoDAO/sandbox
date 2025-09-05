@@ -20,9 +20,8 @@ import oidc4vc
 from jwcrypto import jwk, jwt
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-from typing import Any, Dict, Optional, Tuple
 from dataclasses import dataclass
-
+from typing import Optional, Tuple, Any, Dict, List
 
 # Load API keys
 with open("keys.json", "r") as f:
@@ -285,7 +284,7 @@ def attribution(mode: str, spec_label: str, draft: str, provider: str) -> str:
         return base + f"\nTip: 💡Switch to *Escalation* for deeper checks when results are uncertain."
     elif mode == "pro":
         return base + "\nSpec references included per finding. Always verify cryptographic operations with your conformance suite."
-    return base + f"\Tip: 💡Switch to *Pro* for deeper checks and explicit links to specifications."
+    return base + f"\nTip: 💡Switch to *Pro* for deeper checks and explicit links to specifications."
 
 
 def base64url_decode(input_str):
@@ -454,7 +453,6 @@ def _safe_get_text(url: str, timeout: int = 10) -> requests.Response:
     return r
 
 
-
 def _content_type_is_authz_req_jwt(value: Optional[str]) -> bool:
     # Accept "application/oauth-authz-req+jwt" with optional parameters (charset=..., etc.)
     if not value:
@@ -469,11 +467,16 @@ def b64url_no_pad_decode(s: str) -> bytes:
     return base64.urlsafe_b64decode(s)
 
 
-def get_verifier_request(qrcode: str, draft: str) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]], str]:
+def get_verifier_request(qrcode: str, draft: str) -> Tuple[
+    Optional[Dict[str, Any]],    # authorization_request
+    Optional[Dict[str, Any]],    # presentation_definition or dcql
+    str,                         # response_type ("vp_token", "id_token", or "unknown")
+    Optional[List[Dict[str, Any]]]]:  # transaction_data (or None)
+
     """
     Parse a Verifier authorization request from a QR (OIDC4VP).
     Returns: (authorization_request_dict, presentation_definition_or_dcql, comment)
-    - If a fatal problem occurs, (None, None, "Error: ...") is returned.
+    - If a fatal problem occurs, (None, None, "Error: ...", None) is returned.
     """
     comments: list[str] = []
     try:

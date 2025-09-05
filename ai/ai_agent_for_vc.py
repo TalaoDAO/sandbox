@@ -289,7 +289,7 @@ def attribution(mode: str, spec_label: str, draft: str, provider: str) -> str:
         return base + f"\nTip: 💡Switch to *Escalation* for deeper checks when results are uncertain."
     elif mode == "pro":
         return base + "\nSpec references included per finding. Always verify cryptographic operations with your conformance suite."
-    return base + f"\Tip: 💡Switch to *Pro* for deeper checks and explicit links to specifications."
+    return base + f"\nTip: 💡Switch to *Pro* for deeper checks and explicit links to specifications."
 
 
 def base64url_decode(input_str):
