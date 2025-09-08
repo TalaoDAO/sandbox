@@ -39,6 +39,7 @@ from routes import web_display_VP
 from routes import waltid_server
 from routes import mosip_issuer
 from routes import statuslist
+from routes import generate_attestation
 
 
 API_LIFE = 5000
@@ -102,6 +103,7 @@ sess.init_app(app)
 qrcode = QRcode(app)
 Mobility(app)
 
+generate_attestation.init_app(app)
 
 @app.errorhandler(403)
 def page_abort(e):

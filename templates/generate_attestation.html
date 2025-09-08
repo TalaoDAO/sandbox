@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Generate VC Type Metadata</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{ --google-blue:#1a73e8; --google-blue-dark:#1558b0; --surface:#ffffff; --border:#e3e3e3;
+           --text:#202124; --subtext:#5f6368; --bg:#f8f9fa; --ok:#166534; --err:#991b1b; }
+    body { margin:0; background:#f7f9fc; color:#333; font-family: Arial, sans-serif; }
+    .section { max-width:1200px; margin:4rem auto; padding:0 2rem; }
+
+    .card { width:100%; max-width:1100px; margin:0 auto; background:var(--surface); border:1px solid var(--border);
+            border-radius:12px; box-shadow:0 6px 24px rgba(0,0,0,.06); overflow:hidden; }
+    .card-header { display:flex; align-items:center; gap:.75rem; padding:1rem 1.25rem; border-bottom:1px solid var(--border); }
+    .app-mark { width:28px; height:28px; border-radius:6px; background:var(--google-blue); display:inline-flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:.95rem; }
+    .title { margin:0; font-size:1rem; font-weight:700; font-family:'Roboto', system-ui, -apple-system, Segoe UI, Arial, sans-serif; }
+    .subtitle { margin:0; font-size:.9rem; color:var(--subtext); font-weight:400; font-family:'Roboto', system-ui, -apple-system, Segoe UI, Arial, sans-serif; }
+
+     header {
+      min-height: 64px; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center;
+      background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.05);
+    }
+    
+    .card-body { padding:1.25rem; display:grid; gap:1rem; }
+    .grid { display:grid; grid-template-columns: 1fr; gap:1rem; }
+    .row { display:grid; gap:.5rem; }
+    label { font-weight:600; color:#1f2937; }
+    input[type="text"], input[type="file"], textarea, input[type="url"] {
+      width:100%; padding:.7rem .85rem; border:1px solid var(--border); border-radius:8px;
+      font-size:.95rem; background:#fff;
+    }
+    textarea { min-height:180px; resize:vertical; }
+
+    .lang-list { display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:.5rem .75rem; margin-top:.25rem; }
+    .check { display:inline-flex; align-items:center; gap:.5rem; font-size:.95rem; color:#374151; }
+
+    .actions { display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; }
+    .primary-btn, .secondary-btn, .ghost-btn {
+      appearance:none; border:none; cursor:pointer; text-decoration:none;
+      padding:.8rem 1rem; border-radius:8px; font-weight:600; display:inline-flex; align-items:center; gap:.5rem;
+      font-family:'Roboto', system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+    }
+    .primary-btn { background:var(--google-blue); color:#fff; }
+    .primary-btn:hover { background:var(--google-blue-dark); }
+    .secondary-btn { background:#edf2ff; color:#1f3b8a; border:1px solid #c7d2fe; }
+    .ghost-btn { background:transparent; color:#111827; border:1px dashed var(--border); }
+
+    .note { color:var(--subtext); font-size:.9rem; }
+
+    /* Editor */
+    .editor-wrap { display:grid; gap:.5rem; }
+    .editor-status { font-size:.85rem; color:var(--subtext); }
+    .editor-ok { color: var(--ok); font-weight:600; }
+    .editor-err { color: var(--err); font-weight:600; }
+    .editor {
+      width:100%; height:520px; border:1px solid var(--border); border-radius:12px; padding:.75rem .9rem;
+      background:#0b1020; color:#e6edf3; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:.92rem; line-height:1.4; tab-size:2; white-space:pre; overflow:auto;
+    }
+
+    /* Footer */
+    footer { text-align: center; padding: 2rem; color: var(--muted); }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    .overlay { position:fixed; inset:0; background:rgba(255,255,255,.7); backdrop-filter: blur(2px);
+               display:none; align-items:center; justify-content:center; z-index:50; }
+    .spinner { width:46px; height:46px; border-radius:999px; border:4px solid #d1d5db; border-top-color:var(--google-blue);
+               animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .mode-switch { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
+    .mode-switch label { font-weight:500; }
+    .hidden { display:none !important; }
+
+    @media (prefers-color-scheme: dark) {
+      :root { --surface:#1f1f1f; --border:#2a2a2a; --text:#e8eaed; --subtext:#9aa0a6; --bg:#0f1113; }
+      input[type="text"], input[type="file"], textarea, input[type="url"] { background:#151617; color:#e8eaed; }
+      .secondary-btn { background:#0f172a; color:#cbd5e1; border:1px solid #334155; }
+      .ghost-btn { color:#cbd5e1; border-color:#334155; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <strong><a href="/">VALIDATORS</a></strong>
+    </div>
+    <nav class="nav">
+      <a href="/documentation/generate_attestation" target="_blank" rel="noopener">Explain ?</a>
+    </nav>
+  </header>
+
+  <main class="section">
+    <h1 style="text-align:center; margin:0 0 .5rem 0;">Generate VC Type Metadata</h1>
+    <p class="note" style="text-align:center; margin:0 0 1.25rem 0;">
+      Choose your input: upload a JSON Schema <em>or</em> describe the attestation. You can review & edit the generated VC Type Metadata before saving.
+    </p>
+
+    <article class="card" role="form" aria-labelledby="form-title" aria-describedby="form-desc">
+      <header class="card-header">
+        <div class="app-mark" aria-hidden="true">C</div>
+        <div>
+          <h2 class="title" id="form-title">VC Type Builder</h2>
+          <p class="subtitle" id="form-desc">Provide a schema or a description, pick languages, then generate.</p>
+        </div>
+      </header>
+
+      <section class="card-body">
+        <form id="attestation-form" class="grid" autocomplete="off" enctype="multipart/form-data">
+          <div class="row">
+            <label for="vct">VCT (URL or URN)</label>
+            <input id="vct" name="vct" type="text" required
+                   placeholder="https://issuer.example.com/vct/your-credential"
+                   value={{vct}} />
+            <p class="note">This identifies the credential type.</p>
+          </div>
+
+          <div class="row">
+            <div class="mode-switch" role="radiogroup" aria-label="Input mode">
+              <label class="check"><input type="radio" name="input_mode" value="schema" id="mode-schema"> Upload JSON Schema</label>
+              <label class="check"><input type="radio" name="input_mode" value="description" id="mode-description" checked> Describe Attestation</label>
+            </div>
+          </div>
+
+          <div class="row" id="schema-row" class="hidden" style="display:none;">
+            <label for="schema_file">JSON Schema (.json)</label>
+            <input id="schema_file" name="schema_file" type="file" accept=".json,application/json" />
+            <p class="note">If provided, the schema will be used directly to build the VC Type Metadata.</p>
+          </div>
+
+          <div class="row" id="desc-row">
+            <label for="description">Attestation description</label>
+            <textarea id="description" name="description" placeholder="e.g. An employment attestation proving a person works for ACME...&#10;- employeeId&#10;- fullName&#10;- address: street, locality, region, postalCode, country"></textarea>
+            <p class="note">Free text or bullet list. We’ll infer a JSON Schema from this.</p>
+          </div>
+
+          <div class="row">
+            <label>Display style (applies to all languages)</label>
+            <div style="display:grid; gap:.5rem;">
+              <div style="display:grid; gap:.35rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                <div>
+                  <label for="bg_color">Background color</label>
+                  <input id="bg_color" name="bg_color" type="color" value="#3584e4" />
+                </div>
+                <div>
+                  <label for="text_color">Text color</label>
+                  <input id="text_color" name="text_color" type="color" value="#e6edf3" />
+                </div>
+              </div>
+              <div>
+                <label for="logo_uri">Logo URL (optional)</label>
+                <input id="logo_uri" name="logo_uri" type="url" placeholder="https://issuer.example.com/assets/logo.png" />
+                <p class="note">Rendered using rendering method <code>simple</code>. You can leave any field empty.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <label>Languages (select one or more)</label>
+            <div class="lang-list" role="group" aria-label="Languages">
+                {% set langs = [
+                ("bg","Български"),
+                ("cs","Čeština"),
+                ("da","Dansk"),
+                ("de","Deutsch"),
+                ("et","Eesti"),
+                ("el","Ελληνικά"),
+                ("en","English"),
+                ("es","Español"),
+                ("fr","Français"),
+                ("ga","Gaeilge"),
+                ("hr","Hrvatski"),
+                ("it","Italiano"),
+                ("lv","Latviešu"),
+                ("lt","Lietuvių"),
+                ("hu","Magyar"),
+                ("mt","Malti"),
+                ("nl","Nederlands"),
+                ("pl","Polski"),
+                ("pt","Português"),
+                ("ro","Română"),
+                ("sk","Slovenčina"),
+                ("sl","Slovenščina"),
+                ("fi","Suomi"),
+                ("sv","Svenska"),
+                ("ja","日本語"),
+                ("hi","हिन्दी")
+                ] %}
+
+              {% for code, label in langs %}
+                <label class="check">
+                  <input type="checkbox" name="languages" value="{{code}}" {% if code in ['en','fr'] %}checked{% endif %} />
+                  {{label}}
+                </label>
+              {% endfor %}
+            </div>
+            <div class="actions" style="margin-top:.25rem;">
+              <button type="button" class="ghost-btn" id="select-all">Select all</button>
+              <button type="button" class="ghost-btn" id="clear-all">Clear all</button>
+            </div>
+            <p class="note">We recommend including English plus your target locales.</p>
+          </div>
+
+          <div class="row">
+            <label class="check"><input type="checkbox" id="use-llm" name="use_llm" checked /> Try using LLM (falls back automatically)</label>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="primary-btn" id="generate-btn">Generate Metadata</button>
+            <button type="button" class="secondary-btn" id="format-btn" disabled>Format</button>
+            <button type="button" class="secondary-btn" id="validate-btn" disabled>Validate</button>
+            <button type="button" class="ghost-btn" id="reset-btn" disabled>Reset to Server Result</button>
+            <button type="button" class="secondary-btn" id="copy-btn" disabled>Copy</button>
+            <button type="button" class="primary-btn" id="download-btn" disabled>Save JSON to Desktop</button>
+            <span id="status" class="note editor-status"></span>
+          </div>
+
+          <div class="row editor-wrap" id="editor-wrap" style="display:none;">
+            <label for="editor">Editable JSON</label>
+            <div id="editor" class="editor" contenteditable="true" spellcheck="false" aria-multiline="true" aria-label="Editable JSON"></div>
+            <span id="editor-msg" class="note"></span>
+          </div>
+        </form>
+      </section>
+    </article>
+  </main>
+
+  <div class="overlay" id="overlay" aria-live="polite" aria-busy="true">
+    <div style="display:flex; flex-direction:column; align-items:center; gap:.75rem;">
+      <div class="spinner" aria-hidden="true"></div>
+      <div style="font-family: ui-monospace, Menlo, Consolas, monospace;">Generating… please wait</div>
+    </div>
+  </div>
+ <footer>
+      <p>Contact us at <a href="mailto:contact@talao.io">contact@talao.io</a> · <a href="https://www.linkedin.com/company/79104266">LinkedIn</a></p>
+      <p><a href="https://altme.io/privacy">Privacy Policy</a> · <a href="https://altme.io/cgu">Terms</a></p>
+      <p>© 2025 Web3 Digital Wallet - All rights reserved</p>
+
+    </footer>
+
+  <script>
+    const form = document.getElementById('attestation-form');
+    const overlay = document.getElementById('overlay');
+    const editorWrap = document.getElementById('editor-wrap');
+    const editor = document.getElementById('editor');
+    const status = document.getElementById('status');
+    const editorMsg = document.getElementById('editor-msg');
+
+    const downloadBtn = document.getElementById('download-btn');
+    const formatBtn = document.getElementById('format-btn');
+    const validateBtn = document.getElementById('validate-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const copyBtn = document.getElementById('copy-btn');
+
+    const selectAllBtn = document.getElementById('select-all');
+    const clearAllBtn = document.getElementById('clear-all');
+
+    const modeSchema = document.getElementById('mode-schema');
+    const modeDescription = document.getElementById('mode-description');
+    const schemaRow = document.getElementById('schema-row');
+    const descRow = document.getElementById('desc-row');
+    const schemaFile = document.getElementById('schema_file');
+
+    function setMode(mode) {
+      const bySchema = mode === 'schema';
+      schemaRow.style.display = bySchema ? 'block' : 'none';
+      descRow.style.display = bySchema ? 'none' : 'grid';
+      if (bySchema) {
+        document.getElementById('description').value = '';
+      } else {
+        schemaFile.value = '';
+      }
+    }
+    modeSchema.addEventListener('change', () => setMode('schema'));
+    modeDescription.addEventListener('change', () => setMode('description'));
+
+    let lastBlobUrl = null;
+    let lastFilename = null;
+    let serverJsonText = '';
+
+    function showOverlay(on) { overlay.style.display = on ? 'flex' : 'none'; }
+    function enableEditorTools(on) {
+      formatBtn.disabled = !on;
+      validateBtn.disabled = !on;
+      resetBtn.disabled = !on;
+      copyBtn.disabled = !on;
+      downloadBtn.disabled = !on;
+      editorWrap.style.display = on ? 'grid' : 'none';
+    }
+    function setStatus(text, ok=null) {
+      status.textContent = text || '';
+      status.classList.remove('editor-ok','editor-err');
+      if (ok === true) status.classList.add('editor-ok');
+      if (ok === false) status.classList.add('editor-err');
+    }
+    function getEditorText() { return editor.innerText.replace(/\u00A0/g, ' '); }
+    function setEditorText(txt) { editor.textContent = txt; }
+    function makeDownload(text, filename) {
+      if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
+      const blob = new Blob([text], { type: 'application/json;charset=utf-8' });
+      lastBlobUrl = URL.createObjectURL(blob);
+      lastFilename = filename;
+      downloadBtn.disabled = false;
+    }
+
+    selectAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('input[name="languages"]').forEach(cb => cb.checked = true);
+    });
+    clearAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('input[name="languages"]').forEach(cb => cb.checked = false);
+    });
+
+    formatBtn.addEventListener('click', () => {
+      try {
+        const parsed = JSON.parse(getEditorText());
+        const pretty = JSON.stringify(parsed, null, 2);
+        setEditorText(pretty);
+        setStatus('Formatted ✓', true);
+        editorMsg.textContent = '';
+        if (lastFilename) makeDownload(pretty, lastFilename);
+      } catch (e) {
+        setStatus('Invalid JSON — cannot format', false);
+        editorMsg.textContent = e.message;
+      }
+    });
+    validateBtn.addEventListener('click', () => {
+      try {
+        JSON.parse(getEditorText());
+        setStatus('JSON is valid ✓', true);
+        editorMsg.textContent = '';
+      } catch (e) {
+        setStatus('Invalid JSON', false);
+        editorMsg.textContent = e.message;
+      }
+    });
+    resetBtn.addEventListener('click', () => {
+      setEditorText(serverJsonText);
+      setStatus('Reset to server result', null);
+      editorMsg.textContent = '';
+      if (lastFilename) makeDownload(serverJsonText, lastFilename);
+    });
+    copyBtn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(getEditorText()); setStatus('Copied ✓', true); }
+      catch { setStatus('Copy failed', false); }
+    });
+    downloadBtn.addEventListener('click', () => {
+      if (!lastBlobUrl) return;
+      const a = document.createElement('a');
+      a.href = lastBlobUrl;
+      a.download = lastFilename || 'vc_type_metadata.json';
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      enableEditorTools(false);
+      setStatus(''); editorMsg.textContent = '';
+      showOverlay(true);
+
+      const data = new FormData(form);
+
+      const langs = Array.from(document.querySelectorAll('input[name="languages"]:checked')).map(i => i.value);
+      if (langs.length === 0) langs.push('en');
+      Array.from(data.getAll('languages')).forEach(() => data.delete('languages'));
+      langs.forEach(l => data.append('languages', l));
+
+      const mode = modeSchema.checked ? 'schema' : 'description';
+      data.set('input_mode', mode);
+
+      try {
+        const resp = await fetch('/attestation/api/generate', { method: 'POST', body: data });
+        const text = await resp.text();
+        if (!resp.ok) throw new Error(text || 'Server error');
+        const json = JSON.parse(text);
+
+        const full = JSON.stringify(json, null, 2);
+        serverJsonText = full;
+        setEditorText(full);
+        enableEditorTools(true);
+
+        const vct = (data.get('vct') || 'vc_type').toString()
+          .split('/').pop().split('.').pop().replace(/[^a-z0-9_-]/gi,'_');
+        const ts = new Date().toISOString().replace(/[:.]/g,'-');
+        const filename = `vct_${vct}_${langs.join('-')}_${ts}.json`;
+        makeDownload(full, filename);
+
+        setStatus(`Result ready for ${langs.join(', ')} — you can edit before saving.`, true);
+      } catch (err) {
+        alert('Failed to generate metadata. Please check your inputs and try again.\n' + err.message);
+        console.error(err);
+        setStatus('Generation failed', false);
+      } finally {
+        showOverlay(false);
+      }
+    });
+
+    let changeTimer;
+    editor.addEventListener('input', () => {
+      clearTimeout(changeTimer);
+      changeTimer = setTimeout(() => {
+        const text = getEditorText();
+        if (lastFilename) makeDownload(text, lastFilename);
+        try { JSON.parse(text); setStatus('Draft is valid ✓', true); editorMsg.textContent = ''; }
+        catch (e) { setStatus('Draft has JSON errors (you can still save)', false); editorMsg.textContent = e.message; }
+      }, 250);
+    });
+  </script>
+</body>
+</html>
