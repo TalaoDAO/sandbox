@@ -642,13 +642,15 @@ def get_issuer_data(qrcode, draft):
         try:
             credential_offer = requests.get(credential_offer_uri, timeout=10).json()
         except Exception:
-            credential_offer = "Error: The credential offer is not available"
+            credential_offer = "Error: The credential offer is not available through the URI endpoint"
+            return credential_offer, None, None
     else:
         try:
             credential_offer = json.loads(result.get('credential_offer', '{}'))
         except Exception:
             credential_offer = "Error: The credential offer is not a correct JSON structure"
-
+            return credential_offer, None, None
+        
     issuer = credential_offer.get('credential_issuer')
     issuer_metadata_url = f"{issuer}/.well-known/openid-credential-issuer"
     logging.info("AI Agent call for QR code diagnostic. issuer = %s", issuer)
