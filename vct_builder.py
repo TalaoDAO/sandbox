@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import logging
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
@@ -58,6 +59,99 @@ try:
 except Exception:
     keys = {}
 
+# ---------------------------------------------------------------------------
+# snake_case + EUDI/OIDC canonicalization
+# ---------------------------------------------------------------------------
+
+SDJWT_ENVELOPE = {"iss","sub","aud","jti","iat","nbf","exp","vct","cnf","typ"}
+
+EUDI_ADDRESS_PROPS: Dict[str, Dict[str, Any]] = {
+    "street_address": {"type": "string"},
+    "locality": {"type": "string"},
+    "region": {"type": "string"},
+    "postal_code": {"type": "string"},
+    "country": {"type": "string"},
+}
+
+def _to_snake(s: str) -> str:
+    s = re.sub(r"[ \-]+", "_", s or "")
+    s = re.sub(r"(?<=[a-z0-9])([A-Z])", r"_\1", s)
+    s = s.lower()
+    return re.sub(r"__+", "_", s).strip("_")
+
+def _canonical_key(key: str) -> str:
+    if key in SDJWT_ENVELOPE:
+        return key
+    k = _to_snake(key)
+    synonyms = {
+        # person names
+        "firstname": "given_name",
+        "first_name": "given_name",
+        "givenname": "given_name",
+        "lastname": "family_name",
+        "last_name": "family_name",
+        "surname": "family_name",
+        "middlename": "middle_name",
+        # birth
+        "birth_date": "date_of_birth",
+        "date_of_birth": "date_of_birth",
+        "dob": "date_of_birth",
+        "birth_place": "place_of_birth",
+        "birthplace": "place_of_birth",
+        # contact
+        "phone": "phone_number",
+        "mobile": "phone_number",
+        "mobile_phone_number": "phone_number",
+        "email_address": "email",
+        # address
+        "street": "street_address",
+        "streetaddress": "street_address",
+        "postalcode": "postal_code",
+        # nationality
+        "nationality": "nationalities",
+    }
+    return synonyms.get(k, k)
+
+def _normalize_schema_node(node: Any) -> Any:
+    """Recursively normalize JSON Schema node keys to snake_case + EUDI spellings."""
+    if not isinstance(node, dict):
+        return node
+    t = node.get("type")
+
+    if isinstance(node.get("enum"), list):
+        node["enum"] = [str(v) for v in node["enum"]]
+
+    if t == "object" and isinstance(node.get("properties"), dict):
+        new_props: Dict[str, Any] = {}
+        for raw_key, sub in node["properties"].items():
+            key = _canonical_key(raw_key)
+            sub_norm = _normalize_schema_node(sub)
+
+            if key == "address" and isinstance(sub_norm, dict):
+                sub_props = dict(sub_norm.get("properties") or {})
+                sub_props = { _canonical_key(k2): _normalize_schema_node(v2) for k2, v2 in sub_props.items() }
+                # ensure standard address subfields exist if address is present
+                for k2, v2 in EUDI_ADDRESS_PROPS.items():
+                    sub_props.setdefault(k2, v2.copy())
+                sub_norm["type"] = "object"
+                sub_norm["additionalProperties"] = sub_norm.get("additionalProperties", False)
+                sub_norm["properties"] = sub_props
+
+            new_props[key] = sub_norm
+        node["properties"] = new_props
+
+        if isinstance(node.get("required"), list):
+            node["required"] = [_canonical_key(r) for r in node["required"] if isinstance(r, str)]
+
+    elif t == "array" and isinstance(node.get("items"), dict):
+        node["items"] = _normalize_schema_node(node["items"])
+
+    return node
+
+# ---------------------------------------------------------------------------
+# LLM plumbing
+# ---------------------------------------------------------------------------
+
 def _build_llm_client(cfg: Optional[LLMConfig]) -> Optional[Any]:
     if cfg is None:
         return None
@@ -110,9 +204,12 @@ def _invoke_llm_json(client: Any, system_text: str, user_payload: Any, *, phase:
         logger.warning("LLM %s invocation failed: %s", phase, e)
         return None
 
+# ---------------------------------------------------------------------------
+# Utilities & parsing
+# ---------------------------------------------------------------------------
+
 def _slug(s: str) -> str:
-    import re as _re
-    return _re.sub(r"[^a-z0-9]+", "_", (s or "").lower()).strip("_")
+    return re.sub(r"[^a-z0-9]+", "_", (s or "").lower()).strip("_")
 
 def parse_quick_description(text: str) -> Dict[str, Any]:
     sections: List[Dict[str, Any]] = []
@@ -136,6 +233,10 @@ def parse_quick_description(text: str) -> Dict[str, Any]:
         sections.append(current)
     return {"sections": sections}
 
+# ---------------------------------------------------------------------------
+# Property inference (LLM + heuristics)
+# ---------------------------------------------------------------------------
+
 def _llm_props_from_text(description: str, *, client: Optional[Any]) -> Tuple[Dict[str, Any], List[str]]:
     if client is None:
         return {}, []
@@ -144,8 +245,11 @@ def _llm_props_from_text(description: str, *, client: Optional[Any]) -> Tuple[Di
         "prompt": (
             "From the free-form description below, infer BUSINESS claims as JSON Schema fragments (Draft 2020-12).\n"
             "- Do NOT include envelope claims (iss, vct, cnf, iat, nbf, exp, aud, sub, jti, typ).\n"
-            "- Prefer simple primitives; use object for naturally nested concepts (address with street/locality/region/postalCode/country).\n"
-            "- Use camelCase; create objects for top-level groups (e.g., EmployeeID with name/address).\n"
+            "- Prefer simple primitives; use object for naturally nested concepts (e.g. address with street_address/locality/region/postal_code/country).\n"
+            "- Use snake_case for property names.\n"
+            "- If the description concerns a NATURAL PERSON identity, prefer official EUDI PID / SD-JWT VC names, e.g.:\n"
+            "  given_name, family_name, birthdate, nationalities, place_of_birth{country|region|locality},\n"
+            "  address{street_address|locality|region|postal_code|country}, email, phone_number.\n"
             "Return ONLY JSON with: properties (object), required (array)."
         ),
         "description": description,
@@ -157,35 +261,64 @@ def _llm_props_from_text(description: str, *, client: Optional[Any]) -> Tuple[Di
     req = data.get("required") or []
     if not isinstance(props, dict) or not isinstance(req, list):
         return {}, []
-    logger.info("LLM props extracted: %d top-level fields", len(props))
-    return props, [x for x in req if isinstance(x, str)]
+    # normalize the LLM fragment
+    frag = {"type": "object", "properties": props, "required": req}
+    frag = _normalize_schema_node(frag)
+    props_n = frag.get("properties", {})
+    req_n = [x for x in frag.get("required", []) if isinstance(x, str)]
+    logger.info("LLM props extracted: %d top-level fields", len(props_n))
+    return props_n, req_n
 
 def _heuristic_props_from_text(text: str) -> Tuple[Dict[str, Any], List[str]]:
     props: Dict[str, Any] = {}
     req: List[str] = []
     t = (text or "").lower()
 
-    if "address" in t:
+    # EUDI/OIDC-style address
+    if any(w in t for w in ("address", "resident", "residence")):
         props["address"] = {
             "type": "object",
             "additionalProperties": False,
-            "properties": {
-                "street": {"type": "string"},
-                "locality": {"type": "string"},
-                "region": {"type": "string"},
-                "postalCode": {"type": "string"},
-                "country": {"type": "string"},
-            },
+            "properties": dict(EUDI_ADDRESS_PROPS),
         }
-    for k in ["name","email","phone","employeeId","department","organizationId","birthDate"]:
-        if k.lower() in t and k not in props:
-            props[k] = {"type": "string"}
+
+    # Identity basics (EUDI spellings)
+    identity_candidates = [
+        ("given_name", ["given name","firstname","first name","given_name"]),
+        ("family_name", ["family name","surname","last name","family_name","lastname"]),
+        ("date_of_birth", ["birthdate","date of birth","dob","birth date","birth_date"]),
+        ("nationalities", ["nationality","nationalities"]),
+        ("email", ["email","email address","email_address"]),
+        ("phone_number", ["phone","mobile","phone number","mobile phone","mobile_phone_number"]),
+    ]
+    for key, needles in identity_candidates:
+        if any(n in t for n in needles) and key not in props:
+            if key == "nationalities":
+                props[key] = {"type": "array", "items": {"type": "string"}, "minItems": 1}
+            else:
+                props[key] = {"type": "string"}
+
+    # Place of birth
+    if any(w in t for w in ("place of birth", "birth place", "place_of_birth")):
+        props.setdefault("place_of_birth", {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {"country":{"type":"string"}, "region":{"type":"string"}, "locality":{"type":"string"}},
+        })
+
     if not props:
         props["description"] = {"type": "string"}
-    logger.info("Heuristic props extracted: %d top-level fields", len(props))
-    return props, req
 
-SDJWT_ENVELOPE = {"iss","sub","aud","jti","iat","nbf","exp","vct","cnf","typ"}
+    # normalize the heuristic fragment (future-proof)
+    frag = _normalize_schema_node({"type": "object", "properties": props, "required": req})
+    props_n = frag.get("properties", {})
+    req_n = list(frag.get("required", []))
+    logger.info("Heuristic props extracted: %d top-level fields", len(props_n))
+    return props_n, req_n
+
+# ---------------------------------------------------------------------------
+# Schema assembly
+# ---------------------------------------------------------------------------
 
 def generate_sdjwt_vc_schema(
     description: str,
@@ -232,14 +365,25 @@ def generate_sdjwt_vc_schema(
     if not props:
         if looks_bulleted:
             for sec in seed.get("sections", []):
-                title = _slug(sec.get("title"))
-                fields = [ _slug(x) for x in sec.get("fields", []) if _slug(x) ]
+                title = _canonical_key(_to_snake(sec.get("title")))
+                fields = [ _canonical_key(_to_snake(x)) for x in sec.get("fields", []) if _to_snake(x) ]
                 if fields:
-                    props[title] = {
-                        "type": "object",
-                        "additionalProperties": False,
-                        "properties": { f: {"type":"string"} for f in fields },
-                    }
+                    # Special-case address group to ensure EUDI shape
+                    if title == "address":
+                        sub_props = dict(EUDI_ADDRESS_PROPS)
+                        for f in fields:
+                            sub_props.setdefault(f, {"type": "string"})
+                        props[title] = {
+                            "type": "object",
+                            "additionalProperties": False,
+                            "properties": sub_props,
+                        }
+                    else:
+                        props[title] = {
+                            "type": "object",
+                            "additionalProperties": False,
+                            "properties": { f: {"type":"string"} for f in fields },
+                        }
                 elif title:
                     props[title] = {"type": "string"}
             logger.info("Schema: using deterministic bullet-to-schema mapping")
@@ -247,13 +391,23 @@ def generate_sdjwt_vc_schema(
             props, _ = _heuristic_props_from_text(description)
             logger.info("Schema: using heuristic free-text mapping")
 
+    # Normalize and merge (enforce snake_case + EUDI spellings)
+    norm_props: Dict[str, Any] = {}
+    props = _normalize_schema_node({"type": "object", "properties": props}).get("properties", {})
     for k, v in (props or {}).items():
         if k in SDJWT_ENVELOPE:
             continue
-        schema["properties"][k] = v or {"type":"string"}
+        nk = _canonical_key(k)
+        nv = _normalize_schema_node(v or {"type": "string"})
+        norm_props[nk] = nv or {"type": "string"}
+    schema["properties"].update(norm_props)
 
     schema["required"] = ["iss","vct","iat","cnf"]
     return schema
+
+# ---------------------------------------------------------------------------
+# Metadata helpers
+# ---------------------------------------------------------------------------
 
 def _collect_leaf_paths(prefix: List[str], node: Mapping[str, Any]) -> List[List[str]]:
     t = node.get("type")
@@ -281,9 +435,8 @@ def _business_leaf_paths(schema: Mapping[str, Any]) -> List[List[str]]:
     return out
 
 def _titleize(key: str) -> str:
-    import re as _re
-    s = _re.sub(r"[_\-]+", " ", key)
-    s = _re.sub(r"(?<!^)(?=[A-Z])", " ", s)
+    s = re.sub(r"[_\-]+", " ", key)
+    s = re.sub(r"(?<!^)(?=[A-Z])", " ", s)
     return s.strip().replace("  ", " ").title()
 
 def _llm_labels_for_paths(description: str, paths: List[List[str]], *, client: Optional[Any], languages: List[str]) -> Optional[List[Dict[str, Any]]]:
@@ -368,6 +521,10 @@ def _apply_simple_rendering_to_display(display: List[Dict[str, Any]], simple_ren
     for entry in display:
         entry.setdefault("rendering", {})["simple"] = sr
 
+# ---------------------------------------------------------------------------
+# Public: build full VCT metadata
+# ---------------------------------------------------------------------------
+
 def generate_vc_type_metadata(
     description: str,
     *,
@@ -441,6 +598,10 @@ def generate_vc_type_metadata(
 
     return type_md
 
+# ---------------------------------------------------------------------------
+# Public: derive metadata from an existing schema
+# ---------------------------------------------------------------------------
+
 def _ensure_mapping_schema(schema: Union[str, Mapping[str, Any], Dict[str, Any]]) -> Dict[str, Any]:
     if isinstance(schema, str):
         try:
@@ -476,6 +637,8 @@ def generate_vc_type_metadata_from_schema(
     client = _ensure_llm(cfg, use_llm=use_llm, require_llm=require_llm, phase="type_metadata")
 
     schema_obj = _ensure_mapping_schema(schema)
+    # normalize incoming schema to snake_case/EUDI before deriving paths
+    schema_obj = _normalize_schema_node(schema_obj)
 
     paths = _business_leaf_paths(schema_obj)
     labels = _llm_labels_for_paths(description, paths, client=client, languages=langs) or _fallback_labels(paths, languages=langs)
@@ -522,6 +685,7 @@ def generate_vc_type_metadata_from_schema(
 
     return type_md
 
+# Convenience wrapper
 def generate_sdjwt_vc_schema_from_description(
     description: str,
     *,
@@ -548,10 +712,13 @@ if __name__ == "__main__":
             "employee": {
                 "type": "object",
                 "properties": {
-                    "name": {"type": "string"},
-                    "email": {"type": "string"}
+                    "given_name": {"type": "string"},
+                    "postal_code": {"type": "string"},
+                    "address": {"type": "object", "properties": {"street": {"type":"string"}}}
                 }
             }
         }
     }
-    print(json.dumps(generate_vc_type_metadata_from_schema(demo_schema, vct=VCT, cfg=cfg, use_llm=False, languages=["en","es"], simple_rendering={"background_color":"#0b1020","text_color":"#e6edf3","logo":{"uri":"https://issuer.example.com/logo.png"}}), indent=2))
+    # Demo: normalization in action
+    from copy import deepcopy
+    print(json.dumps(generate_vc_type_metadata_from_schema(deepcopy(demo_schema), vct=VCT, cfg=cfg, use_llm=False, languages=["en","fr"]), indent=2))
