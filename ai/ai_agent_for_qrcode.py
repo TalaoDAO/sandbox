@@ -635,6 +635,7 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[
 
 def get_issuer_data(qrcode, draft):
     # Retrieve issuer, metadata and authorization server data from a credential offer QR code
+    comment = ""
     parse_result = urlparse(qrcode)
     result = {k: v[0] for k, v in parse_qs(parse_result.query).items()}
 
@@ -655,10 +656,30 @@ def get_issuer_data(qrcode, draft):
     issuer_metadata_url = f"{issuer}/.well-known/openid-credential-issuer"
     logging.info("AI Agent call for QR code diagnostic. issuer = %s", issuer)
     try:
-        issuer_metadata = requests.get(issuer_metadata_url, timeout=10).json()
-    except Exception:
-        issuer_metadata = "Error: Issuer metadata are not available"
-
+        resp = requests.get(issuer_metadata_url, timeout=10)
+        content_type = (resp.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+        # If server returns a JWT (common in drafts >=15)
+        if content_type in ("application/jwt", "text/plain"):
+            logging.info("signed metadata as jwt")
+            comment = "Info : the issuer metadata are signed"
+            issuer_metadata = get_payload_from_token(resp.text.strip())
+            for k in {"iat", "sub", "exp", "iss"}:
+                issuer_metadata.pop(k, None)
+        else:
+            logging.info("metadata as json")
+            comment = "Info : the issuer metadata are not signed"
+            issuer_metadata = resp.json() 
+            if "signed_metadata" in issuer_metadata: # draft 15
+                comment = "Info : the issuer signed metadata have been passed in the json metadata"
+                issuer_metadata = get_payload_from_token(issuer_metadata.get("signed_metadata"))
+                for k in {"iat", "sub", "exp", "iss"}:
+                    issuer_metadata.pop(k, None)
+    except Exception as e:
+        logging.info("error : %s", str(e))
+        issuer_metadata = "Error: Issuer metadata are not available" + str(e)
+    logging.info("Issuer metadata = %s", issuer_metadata)
+    
+    # authorization server metadata
     try:
         authorization_server = issuer_metadata.get("authorization_servers", [issuer])[0]
     except Exception:
@@ -679,7 +700,7 @@ def get_issuer_data(qrcode, draft):
         authorization_server_metadata = requests.get(authorization_server_url, timeout=10).json()
     except Exception:
         authorization_server_metadata = "Error: The authorization server metadata are not available or the draft " + draft + " is not correct ? "
-    return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
+    return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata), comment
 
 
 def analyze_issuer_qrcode(qrcode, draft, profile, device, model, provider):
@@ -688,7 +709,7 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model, provider):
     if not draft:
         draft = "13"
 
-    credential_offer, issuer_metadata, authorization_server_metadata = get_issuer_data(qrcode, draft)
+    credential_offer, issuer_metadata, authorization_server_metadata, comment = get_issuer_data(qrcode, draft)
 
     try:
         f = open("./dataset/oidc4vci/" + draft + ".md", "r")
@@ -747,6 +768,10 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model, provider):
     --- Profile Constraints ---
     {profile}
 
+    --- Comment ---
+    {comment}
+    
+    
     --- Credential Offer ---
     {credential_offer}
 
