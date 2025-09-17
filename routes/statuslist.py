@@ -167,7 +167,7 @@ def sign_status_list_token(lst, list_id, mode):  # for sd-jwt
         "sub": mode.server + "issuer/statuslist/" + list_id,
         "iss": mode.server + "issuer/statuslist",
         "ttl": 86400,
-        "exp": round(datetime.timestamp(datetime.now())) + 24*60*60
+        #"exp": round(datetime.timestamp(datetime.now())) + 365*24*60*60
 
     }
     token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
@@ -206,7 +206,7 @@ def sign_status_list_bitstring_credential(lst, list_id, mode):  # for sd-jwt
             }
         },
         "sub": mode.server + "sandbox/issuer/bitstringstatuslist/" + list_id,
-        "exp": round(datetime.timestamp(datetime.now())) + 365*24*60*60,
+        #"exp": round(datetime.timestamp(datetime.now())) + 365*24*60*60,
         "iss": mode.server + "sandbox/issuer/statuslist",
     }
     token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
