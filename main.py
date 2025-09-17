@@ -598,6 +598,7 @@ def qrcode():
             provider = "gemini"
                 
         report = ai_agent_for_qrcode.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profile, 'Website Analyze QR code', model, provider)
+        logging.info("report = %s", report)
         
         if outfmt == 'json':
             input = {
@@ -654,7 +655,7 @@ async def vc():
             provider = "gemini"
             
         report = await ai_agent_for_vc.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "Website Analyze VC", model, provider)
-        print("report = ", report)
+        logging.info("report = %s", report)
         if outfmt == 'json':
             input = {
                 "kind": "VC analysis",
