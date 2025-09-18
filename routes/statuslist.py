@@ -120,6 +120,11 @@ def issuer_statuslist(mode):
         return render_template("statuslist.html")
     else:
         index = request.form['index']
+        try:
+            _ = int(index)
+        except:
+            print("input error")
+            return redirect("/issuer/statuslist")
         if request.form["button"] == "active":
             update_status_list_token_file(1, int(index), False, mode)
             logging.info("active index = %s", index)

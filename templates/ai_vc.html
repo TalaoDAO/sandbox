@@ -219,8 +219,8 @@
             <label for="sdjwtvc_version">IETF SD-JWT VC Draft</label>
             <div>
               <select id="sdjwtvc_version" name="sdjwtvc_draft">
-                {% for i in range(7, 11) %}
-                <option value="{{ i }}" {% if i == 10 %}selected{% endif %}>Draft {{ i }}</option>
+                {% for i in range(7, 12) %}
+                <option value="{{ i }}" {% if i == 11 %}selected{% endif %}>Draft {{ i }}</option>
                 {% endfor %}
               </select>
               <small class="muted">Used for SD-JWT VC token analysis.</small>

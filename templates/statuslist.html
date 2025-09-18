@@ -28,7 +28,8 @@
     <div>
     <center>
         <div>
-          <div><label style="color:#050505"; >Status list index   </label><input type="text" required name="index"></div>
+          <div><label style="color:#050505"; >Status list index   </label><input   pattern="^[0-9]{1,6}$"
+       title="1–6 characters. numbers only." type="text" required name="index"></div>
         </div>
         <br>
         <div><button  style="background-color:#b7b4be;"name="button" value="revoke" type="submit">Revoke credential</button></div>
