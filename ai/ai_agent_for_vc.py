@@ -78,6 +78,25 @@ gemini_model_flash = ChatGoogleGenerativeAI(
     #temperature=0
 )
 
+# call VCT registry
+def trigger_generation(issuer: str, publish: bool = True, llm: bool = True) -> dict:
+    API_URL = "https:vc-registry.com/vct/registry/api/generate_from_issuer"
+    headers = {
+        "Content-Type": "application/json",
+        "X-API-Key": keys.get("generate_vct_from_issuer_key"),
+    }
+    payload = {
+        "issuer": issuer,   # or use "issuers": ["url1", "url2"]
+        "publish": publish,
+        "llm": llm,
+    }
+    try:
+        resp = requests.post(API_URL, headers=headers, data=json.dumps(payload), timeout=30)
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        logging.error("call to registry = %s ", str(e))
+
 
 def get_llm_client(mode, provider):
     logging.info("mode = %s", mode)
@@ -471,7 +490,9 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
     kid = jwt_header.get("kid")
 
     if not iss:
-        comment_1 = "Error: iss is missing"
+        comment_1 = "Warning: iss is missing. iss is optional"
+    elif iss.startswith("https://"):
+        trigger_generation(iss)  # call VCT registry
 
     # check signature of the sd-jwt
     if x5c_list := jwt_header.get('x5c'):

@@ -74,6 +74,25 @@ gemini_model_flash = ChatGoogleGenerativeAI(
 )
 
 
+def trigger_generation(issuer: str, publish: bool = True, llm: bool = True) -> dict:
+    API_URL = "https:vc-registry.com/vct/registry/api/generate_from_issuer"
+    headers = {
+        "Content-Type": "application/json",
+        "X-API-Key": keys.get("generate_vct_from_issuer_key"),
+    }
+    payload = {
+        "issuer": issuer,   # or use "issuers": ["url1", "url2"]
+        "publish": publish,
+        "llm": llm,
+    }
+    try:
+        resp = requests.post(API_URL, headers=headers, data=json.dumps(payload), timeout=30)
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        logging.error("call to registry = %s ", str(e))
+
+
 def get_llm_client(mode, provider):
     logging.info("mode = %s", mode)
     logging.info("provider = %s", provider)
@@ -388,8 +407,7 @@ def extract_SAN_DNS(pem_certificate):
         return dns_names
     except x509.ExtensionNotFound:
         return "Error: no SAN extension found in the x509 certificate."
-
-
+    
 
 def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model, provider):
     
@@ -653,6 +671,10 @@ def get_issuer_data(qrcode, draft):
             return credential_offer, None, None
         
     issuer = credential_offer.get('credential_issuer')
+    
+    # generate VCT in registry
+    trigger_generation(issuer)
+    
     issuer_metadata_url = f"{issuer}/.well-known/openid-credential-issuer"
     logging.info("AI Agent call for QR code diagnostic. issuer = %s", issuer)
     try:
