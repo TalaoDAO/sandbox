@@ -88,6 +88,7 @@ def trigger_generation(issuer: str, publish: bool = True, llm: bool = True) -> d
     try:
         resp = requests.post(API_URL, headers=headers, data=json.dumps(payload), timeout=30)
         resp.raise_for_status()
+        logging.info("Call to registry")
         return resp.json()
     except Exception as e:
         logging.error("call to registry = %s ", str(e))
