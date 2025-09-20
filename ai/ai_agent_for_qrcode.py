@@ -75,7 +75,7 @@ gemini_model_flash = ChatGoogleGenerativeAI(
 
 
 def trigger_generation(issuer: str, publish: bool = True, llm: bool = True) -> dict:
-    API_URL = "https:vc-registry.com/vct/registry/api/generate_from_issuer"
+    API_URL = "https://vc-registry.com/vct/registry/api/generate_from_issuer"
     headers = {
         "Content-Type": "application/json",
         "X-API-Key": keys.get("generate_vct_from_issuer_key"),
