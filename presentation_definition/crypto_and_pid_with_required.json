@@ -1,0 +1,64 @@
+{
+    "id": "pid_with_crypto",
+    "input_descriptors": [
+        {
+            "id": "pid_credential",
+            "name": "Proof of Identity",
+            "purpose": "Prove user first nama and family name",
+            "format": {
+                "dc+sd-jwt": {
+                    "dc-jwt_alg_values": [
+                        "ES256"
+                    ],
+                    "kb-jwt_alg_values": [
+                        "ES256"
+                    ]
+                }
+            },
+            "constraints": {
+                "limit_disclosure": "required",
+                "fields": [
+                    {
+                        "path": [
+                            "$.family_name"
+                        ]
+                    },
+                    {
+                        "path": [
+                            "$.given_name"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "blockchain-ownership",
+            "name": "Proof of Blockchain Account Ownership",
+            "purpose": "Prove control of blockchain account used for payment",
+            "format": {
+                "dc+sd-jwt": {
+                    "dc-jwt_alg_values": [
+                        "ES256K"
+                    ],
+                    "kb-jwt_alg_values": [
+                        "ES256"
+                    ]
+                }
+            },
+            "constraints": {
+                "fields": [
+                    {
+                        "path": [
+                            "$.blockchain_network"
+                        ]
+                    },
+                    { 
+                        "path": [
+                            "$.wallet_address"
+                        ] 
+                    }
+                ]
+            }
+        }
+    ]
+}
