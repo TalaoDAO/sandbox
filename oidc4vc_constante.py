@@ -56,7 +56,8 @@ predefined_presentation_uri_list = {
     'presentation_definition/custom_employee': 'Employee Dentsu',
     'presentation_definition/pid_with_nested_claim': 'PID with nested claim ',
     'presentation_definition/mosip_ldp_vp': 'Mosip for university ',
-    'presentation_definition/any_sd_jwt': 'Any '
+    'presentation_definition/any_sd_jwt': 'Any ',
+    'presentation_definition/crypto_and_pid_with_required': 'Stable coin transfer with PID'
 }
 
 oidc4vc_profile_list = {

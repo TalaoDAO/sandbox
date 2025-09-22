@@ -591,7 +591,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
     else:
         comment_2 = "Error: kid or x5c or jwk is missing in the header"
         
-    # VCT 
+    # vct and vct#integrity 
     vct_json = {}
     if vct and vct.startswith("http"):
         try:
@@ -599,7 +599,6 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
             resp.raise_for_status()
             vct_json = resp.json()
             logging.info("vct JSON fetched successfully")
-            
             if not integrity:
                 comment_5 = "Warning: vct is available but vct#integrity is not provided"
             else:
@@ -629,7 +628,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
     logging.info("comment 2 = %s", comment_2)
     logging.info("comment 3 = %s", comment_3)
     logging.info("comment 4 = %s", comment_4)
-    logging.info("comment 5 = %s", comment_5)
+    logging.info("comment 5 = %s", comment_5) # vct
 
     # Decode Key Binding JWT (KB-JWT) if present
     if is_kb_jwt:
