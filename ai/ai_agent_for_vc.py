@@ -487,19 +487,12 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
 
     # Decode SD-JWT header and payload
     jwt_header = get_header_from_token(sd_jwt)
-    print("sd_jwt = ", sd_jwt)
     jwt_payload = get_payload_from_token(sd_jwt)
-    
-    print("jwt_payload = ", jwt_payload)
     iss = jwt_payload.get("iss")
     kid = jwt_header.get("kid")
-    
-    vct = jwt_payload.get("vct")
-    
+    vct = jwt_payload.get("vct")    
     integrity = jwt_payload.get("vct#integrity")
     
-    print("integrity = ", integrity)
-
     if not iss:
         comment_1 = "Warning: iss is missing. iss is optional"
     elif iss.startswith("https://"):
