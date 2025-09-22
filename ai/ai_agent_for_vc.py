@@ -483,12 +483,22 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
     comment_2 = ""
     comment_3 = ""
     comment_4 = ""
+    comment_5 = ""
 
     # Decode SD-JWT header and payload
     jwt_header = get_header_from_token(sd_jwt)
+    print("sd_jwt = ", sd_jwt)
     jwt_payload = get_payload_from_token(sd_jwt)
+    
+    print("jwt_payload = ", jwt_payload)
     iss = jwt_payload.get("iss")
     kid = jwt_header.get("kid")
+    
+    vct = jwt_payload.get("vct")
+    
+    integrity = jwt_payload.get("vct#integrity")
+    
+    print("integrity = ", integrity)
 
     if not iss:
         comment_1 = "Warning: iss is missing. iss is optional"
@@ -587,7 +597,25 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
             comment_2 = "Error: 'iss' is missing or improperly formatted."
     else:
         comment_2 = "Error: kid or x5c or jwk is missing in the header"
-
+        
+    # VCT 
+    vct_json = {}
+    if vct and vct.startswith("http"):
+        try:
+            resp = requests.get(vct, timeout=8)
+            resp.raise_for_status()
+            vct_json = resp.json()
+            logging.info("vct JSON fetched successfully")
+            
+            if not integrity:
+                comment_5 = "Warning: vct is available but vct#integrity is not provided"
+            else:
+                comment_5 = "Info: vct and vct#integrity have been uploaded"
+        except requests.exceptions.RequestException as e:
+            comment_5 = f"Error: could not fetch vct ({e})"
+        except ValueError as e:
+            comment_5 = f"Error: invalid JSON in vct ({e})"
+            
     # Determine whether the last part is a Key Binding JWT (assumed to be a JWT if it contains 2 dots)
     is_kb_jwt = vcsd[-1].count('.') == 2
 
@@ -608,6 +636,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
     logging.info("comment 2 = %s", comment_2)
     logging.info("comment 3 = %s", comment_3)
     logging.info("comment 4 = %s", comment_4)
+    logging.info("comment 5 = %s", comment_5)
 
     # Decode Key Binding JWT (KB-JWT) if present
     if is_kb_jwt:
@@ -680,6 +709,10 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
     {comment_2}
     {comment_3}
     {comment_4}
+    {comment_5}
+    
+    ### vct and vct#integrity
+    { vct_json}
 
     ### token status list lookup
     {token_status_list_result}

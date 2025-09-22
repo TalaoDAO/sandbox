@@ -206,7 +206,7 @@ def hash(text):
 def sd(data):
     unsecured = copy.deepcopy(data)
     payload = {'_sd': []}
-    disclosed_claims = ['status', 'status_list', 'idx', 'uri', 'vct', 'iat', 'nbf', 'aud', 'iss', 'exp', '_sd_alg', 'cnf']
+    disclosed_claims = ['status', 'status_list', 'idx', 'uri', 'vct', 'iat', 'nbf', 'aud', 'iss', 'exp', '_sd_alg', 'cnf', 'vct#integrity']
     _disclosure = ""
     disclosure_list = unsecured.get("disclosure", [])
     for claim in [attribute for attribute in unsecured.keys()]:
