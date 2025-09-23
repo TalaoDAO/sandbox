@@ -663,13 +663,13 @@ def get_issuer_data(qrcode, draft):
             credential_offer = requests.get(credential_offer_uri, timeout=10).json()
         except Exception:
             credential_offer = "Error: The credential offer is not available through the URI endpoint"
-            return credential_offer, None, None
+            return credential_offer, None, None, comment
     else:
         try:
             credential_offer = json.loads(result.get('credential_offer', '{}'))
         except Exception:
             credential_offer = "Error: The credential offer is not a correct JSON structure"
-            return credential_offer, None, None
+            return credential_offer, None, None, comment
         
     issuer = credential_offer.get('credential_issuer')
     
@@ -710,7 +710,7 @@ def get_issuer_data(qrcode, draft):
             authorization_server = credential_offer["grants"]["authorization_code"]["authorization_server"]
         except Exception:
             authorization_server_metadata = "Error: The authorization server is not found not"
-            return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata)
+            return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata), comment
 
     logging.info("authorization server = %s", authorization_server)
 
