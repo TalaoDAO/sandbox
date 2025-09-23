@@ -486,13 +486,20 @@ def b64url_no_pad_decode(s: str) -> bytes:
     return base64.urlsafe_b64decode(s)
 
 
-def get_verifier_request(qrcode: str, draft: str) -> Tuple[
-    Optional[Dict[str, Any]],    # authorization_request
-    Optional[Dict[str, Any]],    # presentation_definition or dcql
-    str,                         # response_type ("vp_token", "id_token", or "unknown")
-    Optional[List[Dict[str, Any]]]]:  # transaction_data (or None)
+def get_verifier_request(qrcode: str, draft: str) -> Tuple[str, str, str, List[dict]]:
+    """Get and analyze the verifier request.
 
-    """
+    Returns:
+        Tuple[str, str, str, List[dict]]: request, transaction_id, comments, transaction_data
+    
+
+    def get_verifier_request(qrcode: str, draft: str) -> Tuple[
+        Optional[Dict[str, Any]],    # authorization_request
+        Optional[Dict[str, Any]],    # presentation_definition or dcql
+        str,                         # response_type ("vp_token", "id_token", or "unknown")
+        Optional[List[Dict[str, Any]]]]:  # transaction_data (or None)
+
+    
     Parse a Verifier authorization request from a QR (OIDC4VP).
     Returns: (authorization_request_dict, presentation_definition_or_dcql, comment)
     - If a fatal problem occurs, (None, None, "Error: ...", None) is returned.
@@ -633,11 +640,11 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[
             if k not in pd:
                 comments.append(f"Error: '{k}' is missing in presentation Definition.")
 
-    elif request.get("response_type") not in ["vp_token", "vp_token id_token", "id_token vp_token"]: 
-        comments.append("Error: No Presentation Definition / DCQL parameter found.")
-        
     elif request.get("response_type") == "id_token":
         comments.append("Info: It is an Id_token request wihout Presentation Definition or DCQL parameter.")
+    
+    elif request.get("response_type") not in ["vp_token", "vp_token id_token", "id_token vp_token"]: 
+        comments.append("Error: No Presentation Definition / DCQL parameter found.")
     
     else:
         comments.append("Error: No Presentation Definition / DCQL parameter found.")
