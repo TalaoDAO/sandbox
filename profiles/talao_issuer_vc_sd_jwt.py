@@ -236,7 +236,7 @@ TALAO_ISSUER = {
                     "EdDSA",
                     "RS256",
                 ],
-                "vct": "eu.europa.ec.eudi.pid.1",
+                "vct": "https://vc-registry.com/vct/registry/publish/_rOPa737ozNN-OBdTqc5YAFGQ8PKLUp_0n7CpulXcm8",
                 "display": [
                     {
                         "name": "Personal ID",
@@ -254,7 +254,7 @@ TALAO_ISSUER = {
             },
             "EmailPass": {
                 "format": "vc+sd-jwt",
-                "vct": "talao:issuer:emailpass:1",
+                "vct": "https://vc-registry.com/vct/registry/publish/mv-PvJ9tUWXzcG_Vk_AEzKpiCTLqe8y-Uo1m89WID7c",
                 "scope": "EmailPass_scope",
                 "cryptographic_binding_methods_supported": ["did", "jwk"],
                 "credential_signing_alg_values_supported": [
@@ -289,7 +289,7 @@ TALAO_ISSUER = {
             "PhoneProof": {
                 "format": "vc+sd-jwt",
                 "scope": "PhoneProof_scope",
-                "vct": "talao:issuer:phoneproof:1",
+                "vct": "https://vc-registry.com/vct/registry/publish/04mHy3S5qyUuMj6SUi2npMBlmQwABa2Z9buxGnMWzvY",
                 "claims": {
                     "phone": {
                         "mandatory": True,
