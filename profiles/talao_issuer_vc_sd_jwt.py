@@ -242,13 +242,21 @@ TALAO_ISSUER = {
                         "name": "Personal ID",
                         "locale": "en-US",
                         "background_color": "#1a73e8",
-                        "text_color": "#FFFFFF"
+                        "text_color": "#FFFFFF",
+                        "background_image": {
+                            "uri": "https://talao.co/image/server/pid.png",
+                            "alt_text": "PID background image"
+                        }
                     },
                     {
                         "name": "Personal ID",
                         "locale": "fr-FR",
                         "background_color": "#1a73e8",
-                        "text_color": "#FFFFFF"
+                        "text_color": "#FFFFFF",
+                        "background_image": {
+                            "uri": "https://talao.co/image/server/pid.png",
+                            "alt_text": "PID background image"
+                        }
                     }
                 ],
             },
@@ -270,6 +278,10 @@ TALAO_ISSUER = {
                         "locale": "en-GB",
                         "background_color": "#1a73e8",
                         "text_color": "#FFFFFF",
+                        "background_image": {
+                            "uri": "https://talao.co/image/server/email-proof.png",
+                            "alt_text": "PID background image"
+                        }
                     },
                     {
                         "name": "Preuve d'adresse email",
@@ -277,6 +289,10 @@ TALAO_ISSUER = {
                         "locale": "fr-FR",
                         "background_color": "#1a73e8",
                         "text_color": "#FFFFFF",
+                        "background_image": {
+                            "uri": "https://talao.co/image/server/email-proof.png",
+                            "alt_text": "PID background image"
+                        }
                     }
                 ],
                 "claims": {
@@ -317,12 +333,20 @@ TALAO_ISSUER = {
                         "locale": "en-GB",
                         "background_color": "#1a73e8",
                         "text_color": "#FFFFFF",
+                        "background_image": {
+                            "uri": "https://talao.co/image/server/phone-proof.png",
+                            "alt_text": "PID background image"
+                        }
                     },
                     {
                         "name": "Preuve de numéro de téléphone",
                         "locale": "fr-FR",
                         "background_color": "#1a73e8",
                         "text_color": "#FFFFFF",
+                        "background_image": {
+                            "uri": "https://talao.co/image/server/phone-proof.png",
+                            "alt_text": "PID background image"
+                        }
                     }
                 ],
             },
