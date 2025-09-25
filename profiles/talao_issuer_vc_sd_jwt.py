@@ -267,12 +267,16 @@ TALAO_ISSUER = {
                     {
                         "name": "Proof of Email",
                         "description": "Proof of email",
-                        "locale": "en-GB"
+                        "locale": "en-GB",
+                        "background_color": "#14107c",
+                        "text_color": "#FFFFFF",
                     },
                     {
                         "name": "Preuve d'adresse email",
                         "description": "Preuve d'adresse email",
-                        "locale": "fr-FR"
+                        "locale": "fr-FR",
+                        "background_color": "#14107c",
+                        "text_color": "#FFFFFF",
                     }
                 ],
                 "claims": {
@@ -310,11 +314,15 @@ TALAO_ISSUER = {
                 "display": [
                     {
                         "name": "Proof of phone number",
-                        "locale": "en-GB"
+                        "locale": "en-GB",
+                          "background_color": "#14107c",
+                        "text_color": "#FFFFFF",
                     },
                     {
                         "name": "Preuve de numéro de téléphone",
-                        "locale": "fr-FR"
+                        "locale": "fr-FR",
+                          "background_color": "#14107c",
+                        "text_color": "#FFFFFF",
                     }
                 ],
             },
