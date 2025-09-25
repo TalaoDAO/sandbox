@@ -46,7 +46,7 @@ TALAO_ISSUER = {
                         "background_color": "#ed7b76",
                         "text_color": "#FFFFFF",
                         "background_image": {
-                            "uri": "",
+                            "uri": "https://talao.co/image/server/over18-proof.png",
                             "alt_text": "Over18 Proof background image"
                         }
                     }
