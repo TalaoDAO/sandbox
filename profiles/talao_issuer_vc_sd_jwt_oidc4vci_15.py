@@ -52,7 +52,7 @@ TALAO_ISSUER = {
                     "background_color": "#ed7b76",
                     "text_color": "#FFFFFF",
                     "background_image": {
-                        "uri": "https://talao.co/image/server/etherum-proof.png",
+                        "uri": "https://talao.co/image/server/ethereum-proof.png",
                         "alt_text": "Crypto Account Proof background image"
                     }
                 }
