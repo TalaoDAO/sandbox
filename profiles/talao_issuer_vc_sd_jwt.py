@@ -13,10 +13,45 @@ TALAO_ISSUER = {
             "EmailPass",
             "PhoneProof",
             "Pid",
+            "Over18",
             "AgeProof",
             "CryptoAccountProof"
         ],
         "credential_configurations_supported": {
+            "Over18": {
+                "format": "vc+sd-jwt",
+                "scope": "Over18_scope",
+                "claims": {
+                    "age_over_18": {
+                        "value_type": "bool",
+                        "display": [
+                            {
+                                "name": "Over 18", "locale": "en-US"
+                            },
+                        ]
+                    }
+                },
+                "cryptographic_binding_methods_supported": ["did", "jwk"],
+                "credential_signing_alg_values_supported": [
+                    "ES256K",
+                    "ES256",
+                    "EdDSA",
+                    "RS256",
+                ],
+                "vct": "https://doc.wallet-provider.io/vc_type#binanceassociatedaddress",
+                "display": [
+                    {
+                        "name": "Age Over18",
+                        "locale": "en-US",
+                        "background_color": "#ed7b76",
+                        "text_color": "#FFFFFF",
+                        "background_image": {
+                            "uri": "",
+                            "alt_text": "Over18 Proof background image"
+                        }
+                    }
+                ]
+            },
             "CryptoAccountProof": {
                 "format": "vc+sd-jwt",
                 "scope": "CryptoAccountProof_scope",
