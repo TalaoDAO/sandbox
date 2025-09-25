@@ -14,9 +14,50 @@ TALAO_ISSUER = {
         "PhoneProof",
         "Pid",
         "AgeProof",
-        "EmployeeBadge"
+        "EmployeeBadge",
+        "CryptoAccountProof"
     ],
     "credential_configurations_supported": {
+        "CryptoAccountProof": {
+            "format": "dc+sd-jwt",
+            "scope": "CryptoAccountProof_scope",
+            "order": [
+                "blockchain_network",
+                "wallet_address"
+            ],
+            "claims": {
+                    "blockchain_network": {
+                        "value_type": "string",
+                        "display": [{"name": "Blockchain", "locale": "en-US"},
+                                    {"name": "Blockchain", "locale": "fr-FR"}]
+                    },
+                    "wallet_address": {
+                        "value_type": "string",
+                        "display": [{"name": "Address", "locale": "en-US"},
+                                    {"name": "Adresse", "locale": "fr-FR"}]
+                    }
+                },
+            "cryptographic_binding_methods_supported": ["did", "jwk"],
+            "credential_signing_alg_values_supported": [
+                "ES256K",
+                "ES256",
+                "EdDSA",
+                "RS256",
+            ],
+            "vct": "https://doc.wallet-provider.io/vc_type#binanceassociatedaddress",
+            "display": [
+                {
+                    "name": "Crypto Account Proof",
+                    "locale": "en-US",
+                    "background_color": "#ed7b76",
+                    "text_color": "#FFFFFF",
+                    "background_image": {
+                        "uri": "https://talao.co/image/server/etherum-proof.png",
+                        "alt_text": "Crypto Account Proof background image"
+                    }
+                }
+            ]
+        },
         "AgeProof": {
             "format": "dc+sd-jwt",
             "scope": "AgeProof_scope",
@@ -90,7 +131,7 @@ TALAO_ISSUER = {
                     "background_color": "#14107c",
                     "text_color": "#FFFFFF",
                 }
-            ],
+            ]
         },
         "Pid": {
             "format": "dc+sd-jwt",
@@ -206,16 +247,24 @@ TALAO_ISSUER = {
                 {
                     "name": "Personal ID",
                     "locale": "en-US",
-                    "background_color": "#14107c",
+                    "background_color": "#1a73e8",
                     "text_color": "#FFFFFF",
+                    "background_image": {
+                        "uri": "https://talao.co/image/server/pid.png",
+                        "alt_text": "PID background image"
+                    }
                 },
                 {
                     "name": "Personal ID",
                     "locale": "fr-FR",
-                    "background_color": "#14107c",
+                    "background_color": "#1a73e8",
                     "text_color": "#FFFFFF",
+                    "background_image": {
+                        "uri": "https://talao.co/image/server/pid.png",
+                        "alt_text": "PID background image"
+                    }
                 }
-            ],
+            ]
         },
         "EmailPass": {
             "format": "dc+sd-jwt",
@@ -231,12 +280,24 @@ TALAO_ISSUER = {
                 {
                     "name": "Proof of Email",
                     "description": "Proof of email",
-                    "locale": "en-GB"
+                    "locale": "en-GB",
+                    "background_color": "#1a73e8",
+                    "text_color": "#FFFFFF",
+                    "background_image": {
+                        "uri": "https://talao.co/image/server/email-proof.png",
+                        "alt_text": "Proof of email background image"
+                    }
                 },
                 {
                     "name": "Preuve d'adresse email",
                     "description": "Preuve d'adresse email",
-                    "locale": "fr-FR"
+                    "locale": "fr-FR",
+                    "background_color": "#1a73e8",
+                    "text_color": "#FFFFFF",
+                    "background_image": {
+                        "uri": "https://talao.co/image/server/email-proof.png",
+                        "alt_text": "Proof of email background image"
+                    }
                 }
             ],
             "claims": [
@@ -274,11 +335,23 @@ TALAO_ISSUER = {
             "display": [
                 {
                     "name": "Proof of phone number",
-                    "locale": "en-GB"
+                    "locale": "en-GB",
+                    "background_color": "#1a73e8",
+                    "text_color": "#FFFFFF",
+                    "background_image": {
+                        "uri": "https://talao.co/image/server/phone-proof.png",
+                        "alt_text": "Proof of phone background image"
+                    }
                 },
                 {
                     "name": "Preuve de numéro de téléphone",
-                    "locale": "fr-FR"
+                    "locale": "fr-FR",
+                    "background_color": "#1a73e8",
+                    "text_color": "#FFFFFF",
+                    "background_image": {
+                        "uri": "https://talao.co/image/server/phone-proof.png",
+                        "alt_text": "Proof of phone background image"
+                    }
                 }
             ]
         },

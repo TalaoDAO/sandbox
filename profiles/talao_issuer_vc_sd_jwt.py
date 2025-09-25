@@ -14,22 +14,23 @@ TALAO_ISSUER = {
             "PhoneProof",
             "Pid",
             "AgeProof",
-            "BinanceCryptoAccount"
+            "CryptoAccountProof"
         ],
         "credential_configurations_supported": {
-            "BinanceCryptoAccount": {
+            "CryptoAccountProof": {
                 "format": "vc+sd-jwt",
-                "scope": "BinanceCryptoAccount_scope",
+                "scope": "CryptoAccountProof_scope",
                 "order": [
-                    "blockchain"
+                    "blockchain_network",
+                    "wallet_address"
                 ],
                 "claims": {
-                        "blockchain": {
+                        "blockchain_network": {
                             "value_type": "string",
                             "display": [{"name": "Blockchain", "locale": "en-US"},
                                         {"name": "Blockchain", "locale": "fr-FR"}]
                         },
-                        "address": {
+                        "wallet_address": {
                             "value_type": "string",
                             "display": [{"name": "Address", "locale": "en-US"},
                                         {"name": "Adresse", "locale": "fr-FR"}]
@@ -49,6 +50,10 @@ TALAO_ISSUER = {
                         "locale": "en-US",
                         "background_color": "#ed7b76",
                         "text_color": "#FFFFFF",
+                        "background_image": {
+                            "uri": "https://talao.co/image/server/etherum-proof.png",
+                            "alt_text": "Crypto Account Proof background image"
+                        }
                     }
                 ],
             },
@@ -258,7 +263,7 @@ TALAO_ISSUER = {
                             "alt_text": "PID background image"
                         }
                     }
-                ],
+                ]
             },
             "EmailPass": {
                 "format": "vc+sd-jwt",
@@ -280,7 +285,7 @@ TALAO_ISSUER = {
                         "text_color": "#FFFFFF",
                         "background_image": {
                             "uri": "https://talao.co/image/server/email-proof.png",
-                            "alt_text": "PID background image"
+                            "alt_text": "Proof of email background image"
                         }
                     },
                     {
@@ -291,7 +296,7 @@ TALAO_ISSUER = {
                         "text_color": "#FFFFFF",
                         "background_image": {
                             "uri": "https://talao.co/image/server/email-proof.png",
-                            "alt_text": "PID background image"
+                            "alt_text": "Proof of email background image"
                         }
                     }
                 ],
@@ -335,7 +340,7 @@ TALAO_ISSUER = {
                         "text_color": "#FFFFFF",
                         "background_image": {
                             "uri": "https://talao.co/image/server/phone-proof.png",
-                            "alt_text": "PID background image"
+                            "alt_text": "Proof of phone background image"
                         }
                     },
                     {
@@ -345,10 +350,10 @@ TALAO_ISSUER = {
                         "text_color": "#FFFFFF",
                         "background_image": {
                             "uri": "https://talao.co/image/server/phone-proof.png",
-                            "alt_text": "PID background image"
+                            "alt_text": "Proof of phone background image"
                         }
                     }
-                ],
+                ]
             },
         },
         "grant_types_supported": [

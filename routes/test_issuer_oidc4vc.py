@@ -545,20 +545,26 @@ def test_13(mode):
     }
     with open('./verifiable_credentials/Pid.json', 'r') as f:
         pid = json.loads(f.read())
-    with open('./verifiable_credentials/binance_sdjwt.json', 'r') as f:
-        crypto_account = json.loads(f.read())
+    
+        
+    crypto_account = {
+        "vct": "https://doc.wallet-provider.io/vc_type#binanceassociatedaddress",
+        "blockchain_network": "ethereum",
+        "wallet_address": "0x167D424Cbe78740DA87D66928db04c914A66080C",
+        "disclosure": ["blockchain_network", "wallet_address"]
+    }
 
     data = { 
         "issuer_id": issuer_id,
         "vc": {
             "Pid": pid,
-            "BinanceCryptoAccount": crypto_account
+            "CryptoAccountProof": crypto_account
         },
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
         "credential_type": [
             'Pid',
-            'BinanceCryptoAccount'],
+            'CryptoAccountProof'],
         "user_pin_required": False,
         "user_pin": "ABCD",
         "input_mode": "text",
