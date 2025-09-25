@@ -924,6 +924,15 @@ def show_markdown_page(page):
 
 
 
+@app.route('/image/server/<filename>', methods=['GET'])
+def serve_static(filename: str):
+    try:
+        return send_file('./static/img/' + filename, download_name=filename)
+    except FileNotFoundError:
+        logging.error(filename+" not found")
+        return jsonify("not found"), 404
+    
+
 # MAIN entry point for test
 if __name__ == '__main__':
     # info release
