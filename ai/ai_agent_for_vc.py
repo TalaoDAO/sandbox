@@ -484,6 +484,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
     comment_3 = ""
     comment_4 = ""
     comment_5 = ""
+    comment_6 = ""
 
     # Decode SD-JWT header and payload
     jwt_header = get_header_from_token(sd_jwt)
@@ -494,13 +495,16 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
     integrity = jwt_payload.get("vct#integrity")
     
     if not iss:
-        comment_1 = "Info: iss is missing. iss is optional"
+        comment_1 = "Info: no iss"
     elif iss.startswith("https://"):
         trigger_generation(iss)  # call VCT registry
 
     # check signature of the sd-jwt
     if x5c_list := jwt_header.get('x5c'):
-        comment_1 = verify_issuer_matches_cert(iss, x5c_list)
+        if not iss:
+            comment_1 = "Info: no iss but iss is not mandatory with X509"
+        else:
+            comment_1 = verify_issuer_matches_cert(iss, x5c_list)
         comment_4 = oidc4vc.verify_x5c_chain(x5c_list)
         try:
             # Extract the first certificate (leaf cert) from the x5c list
@@ -587,7 +591,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
             except Exception as e:
                 comment_2 = f"Error: Failed to fetch or parse issuer metadata: {e}"
         else:
-            comment_2 = "Info: 'iss' is not present as it is an optional claim."
+            comment_2 = "Error: 'iss' is missing."
     else:
         comment_2 = "Error: kid or x5c or jwk is missing in the header"
         
@@ -609,7 +613,11 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
             comment_5 = f"Error: invalid JSON in vct ({e})"
             
     # Determine whether the last part is a Key Binding JWT (assumed to be a JWT if it contains 2 dots)
-    is_kb_jwt = vcsd[-1].count('.') == 2
+    is_kb_jwt = vcsd[-1].count('.') == 2 
+    if len(vcsd) == 1:
+        comment_6 = "Error: tilde is missing at the end of the sd-jwt vc when there is no KB"
+        is_kb_jwt = False
+    
 
     # Disclosures are everything between vcsd[1] and vcsd[-2] if KB is present, otherwise vcsd[1:]
     disclosure_parts = vcsd[1:-1] if is_kb_jwt else vcsd[1:]
@@ -629,6 +637,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
     logging.info("comment 3 = %s", comment_3)
     logging.info("comment 4 = %s", comment_4)
     logging.info("comment 5 = %s", comment_5) # vct
+    logging.info("comment 6 = %s", comment_6) # KB
 
     # Decode Key Binding JWT (KB-JWT) if present
     if is_kb_jwt:
@@ -702,6 +711,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
     {comment_3}
     {comment_4}
     {comment_5}
+    {comment_6}
     
     ### vct and vct#integrity
     { vct_json}
