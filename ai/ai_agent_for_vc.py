@@ -494,7 +494,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
     integrity = jwt_payload.get("vct#integrity")
     
     if not iss:
-        comment_1 = "Warning: iss is missing. iss is optional"
+        comment_1 = "Info: iss is missing. iss is optional"
     elif iss.startswith("https://"):
         trigger_generation(iss)  # call VCT registry
 
@@ -587,7 +587,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
             except Exception as e:
                 comment_2 = f"Error: Failed to fetch or parse issuer metadata: {e}"
         else:
-            comment_2 = "Error: 'iss' is missing or improperly formatted."
+            comment_2 = "Info: 'iss' is not present as it is an optional claim."
     else:
         comment_2 = "Error: kid or x5c or jwk is missing in the header"
         
@@ -635,7 +635,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
         kb_header = get_header_from_token(vcsd[-1])
         kb_payload = get_payload_from_token(vcsd[-1])
     else:
-        kb_header = kb_payload = "No Key Binding JWT"
+        kb_header = kb_payload = "Info: No Key Binding JWT, this sd-jwt vc comes from a wallet storage"
 
     # Load the appropriate SD-JWT VC specification content based on draft
     try:
