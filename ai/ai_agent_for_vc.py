@@ -752,6 +752,12 @@ def analyze_jwt_vc(token, draft, device, model, provider):
     
     kid = jwt_header.get("kid")
     iss = jwt_payload.get("iss")
+    typ = jwt_header.get("typ")
+    
+    # Security check
+    if typ in ["dc+sd-jwt", "vc+sd-jwt"]:
+        logging.warning("VC analyze is redirected to sd-jwt process")
+        return analyze_sd_jwt_vc(token, draft, device, model, provider)
     
     comment_1 = ""
     comment_2 = ""
