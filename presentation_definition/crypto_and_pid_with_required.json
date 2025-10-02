@@ -13,6 +13,14 @@
                     "kb-jwt_alg_values": [
                         "ES256"
                     ]
+                },
+                "vc+sd-jwt": {
+                    "dc-jwt_alg_values": [
+                        "ES256"
+                    ],
+                    "kb-jwt_alg_values": [
+                        "ES256"
+                    ]
                 }
             },
             "constraints": {
