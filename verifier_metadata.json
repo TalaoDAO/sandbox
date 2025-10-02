@@ -32,18 +32,6 @@
                 "ES256K",
                 "EdDSA"
             ]
-        },
-        "dc+sd-jwt": {
-            "sd-jwt_alg_values": [
-                "ES256",
-                "ES256K",
-                "EdDSA"
-            ],
-            "kb-jwt_alg_values": [
-                "ES256",
-                "ES256K",
-                "EdDSA"
-            ]
         }
     }
 }
