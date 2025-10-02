@@ -21,12 +21,13 @@
                 "fields": [
                     {
                         "path": [
-                            "$.vct"
-                        ],
-                        "filter": {
-                            "type": "string",
-                            "const": "eu.europa.ec.eudi.pid.1"
-                        }
+                        "$.family_name"
+                        ]
+                    },
+                    {
+                        "path": [
+                        "$.given_name"
+                        ]
                     }
                 ]
             }

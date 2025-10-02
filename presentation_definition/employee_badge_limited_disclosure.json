@@ -22,15 +22,6 @@
                 "fields": [
                         {
                             "path": [
-                                "$.vct"
-                            ],
-                            "filter": {
-                                "type": "string",
-                                "const": "urn:eu.europa.ec.eudi:employee_badge:1"
-                            }
-                        },
-                        {
-                            "path": [
                                 "$.family_name"
                             ],
                             "optional": true

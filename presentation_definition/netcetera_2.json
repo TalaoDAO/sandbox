@@ -22,15 +22,6 @@
         "fields": [
           {
             "path": [
-              "$.vct"
-            ],
-            "filter": {
-              "type": "string",
-              "const": "eu.europa.ec.eudi.pid.1"
-            }
-          },
-          {
-            "path": [
               "$.family_name"
             ]
           },
