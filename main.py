@@ -925,6 +925,7 @@ def show_markdown_page(page):
 
 
 @app.route('/image/server/<filename>', methods=['GET'])
+@app.route('/server/image/<filename>', methods=['GET'])
 def serve_static(filename: str):
     try:
         return send_file('./static/img/' + filename, download_name=filename)

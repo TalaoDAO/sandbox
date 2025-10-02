@@ -548,7 +548,7 @@ def test_13(mode):
     
         
     crypto_account = {
-        "vct": "https://doc.wallet-provider.io/vc_type#binanceassociatedaddress",
+        "vct": "https://vc-registry.com/vct/registry/publish/8fea907addad50a185d8b0aef9c0cdbcf60db8d05b895f9acc6d96acfe5fd954",
         "blockchain_network": "ethereum",
         "wallet_address": "0x167D424Cbe78740DA87D66928db04c914A66080C",
         "disclosure": ["blockchain_network", "wallet_address"]
