@@ -38,7 +38,7 @@
             "purpose": "Prove control of blockchain account used for payment",
             "format": {
                 "dc+sd-jwt": {
-                    "dc-jwt_alg_values": [
+                    "sd-jwt_alg_values": [
                         "ES256K"
                     ],
                     "kb-jwt_alg_values": [
