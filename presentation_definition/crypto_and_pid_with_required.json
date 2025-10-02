@@ -8,7 +8,7 @@
             "format": {
               
                 "vc+sd-jwt": {
-                    "dc-jwt_alg_values": [
+                    "sd-jwt_alg_values": [
                         "ES256"
                     ],
                     "kb-jwt_alg_values": [
