@@ -348,6 +348,7 @@ def verifier_callback3(red):
         try:
             vcsd_jwt_header = oidc4vc.get_header_from_token(vcsd_jwt)
             vcsd_jwt_payload = oidc4vc.get_payload_from_token(vcsd_jwt)
+            print()
         except Exception:
             continue
         # Extract kb-jwt if it exists
@@ -360,6 +361,7 @@ def verifier_callback3(red):
             len_vcsd = len(vcsd)
 
         # Decode disclosures
+        disclosure = ""
         for i in range(1, len_vcsd):
             _disclosure = vcsd[i]
             _disclosure += "=" * ((4 - len(_disclosure) % 4) % 4)  # Fix base64 padding
@@ -368,6 +370,7 @@ def verifier_callback3(red):
                 disclosure += "\r\n" + decoded
             except Exception as e:
                 disclosure += f"\r\n[Error decoding disclosure: {str(e)}]"
+        print(disclosure)
         vp_token.append({
             "vcsd_jwt_header": json.dumps(vcsd_jwt_header, indent=4),
             "vcsd_jwt_payload": json.dumps(vcsd_jwt_payload, indent=4),
