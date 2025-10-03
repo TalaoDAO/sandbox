@@ -933,6 +933,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
             response = request.form
         
         vp_token = response.get('vp_token')
+        print("vp_token from payload = ", vp_token)
         id_token = response.get('id_token')
         presentation_submission = response.get('presentation_submission')
         
