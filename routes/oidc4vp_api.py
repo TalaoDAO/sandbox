@@ -215,7 +215,7 @@ def oidc4vc_authorize(red, mode):
             elif code_wallet_data['vp_format'] in ["vc+sd-jwt", "dc+sd-jwt"]:
                 id_token = code_wallet_data['vp_token_payload']
                 try:
-                    json.loads(id_token)
+                    id_token = json.loads(id_token)
                     if isinstance(id_token, list):
                         id_token = id_token[0]
                 except Exception:
