@@ -30,7 +30,7 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/verifier/callback',  view_func=verifier_callback, methods=['GET'])   
     app.add_url_rule('/sandbox/verifier/callback2',  view_func=verifier_callback2, methods=['GET'], defaults={'mode': mode})   
     app.add_url_rule('/sandbox/verifier/callback2_1',  view_func=verifier_callback2_1, methods=['GET'])
-    app.add_url_rule('/sandbox/verifier/callback3',  view_func=verifier_callback3, methods=['GET'])
+    app.add_url_rule('/sandbox/verifier/callback3',  view_func=verifier_callback3, methods=['GET'], defaults={'red': red})
 
     
     # Test
@@ -301,7 +301,7 @@ def verifier_callback():
     return jsonify(request.args)
 
 
-def verifier_callback3():
+def verifier_callback3(red):
     # Check for error in request
     print("callback 3 is called")
     if request.args.get("error"):
@@ -309,6 +309,9 @@ def verifier_callback3():
 
     # Extract tokens
     token = request.args.get("id_token")
+    if not token:
+        token = red.get(request.args.get("id_token_urn"))
+        
     presentation_submission = request.args.get("presentation_submission")
 
     # Fallback for wallet-specific token
