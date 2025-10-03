@@ -135,9 +135,12 @@ def oidc4vc_jwks():
 
 def b64url_no_pad_decode(s: str) -> bytes:
     # Add back the missing padding if needed
-    padding_needed = (4 - len(s) % 4) % 4
-    s += "=" * padding_needed
-    return base64.urlsafe_b64decode(s)
+    try:
+        padding_needed = (4 - len(s) % 4) % 4
+        s += "=" * padding_needed
+        return base64.urlsafe_b64decode(s)
+    except:
+        return base64.urlsafe_b64decode(s)
 
 # For customer app
 def oidc4vc_openid_configuration(mode):
