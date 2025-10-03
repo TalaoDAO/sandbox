@@ -936,11 +936,12 @@ async def oidc4vc_response_endpoint(stream_id, red):
     # get id_token, vp_token and presentation_submission
     if access:
         if request.form.get('response'):
+            wallet_raw =  request.form.get('response')
             wallet_response = oidc4vc.get_payload_from_token(request.form['response'])
             logging.info("direct_post.jwt, JARM mode")
         else:
             logging.info("direct_post")
-            wallet_response = request.form
+            wallet_raw = wallet_response = request.form
         
         vp_token = wallet_response.get('vp_token')
         id_token = wallet_response.get('id_token')
@@ -1200,7 +1201,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
     
     # data sent to application
     wallet_data = json.dumps({
-                    "raw": wallet_response,
+                    "raw": wallet_raw,
                     "access": access,
                     "detailed_response": json.dumps(detailed_response),
                     "vp_token_payload": vp_token_payload, # jwt_vp payload or json-ld 

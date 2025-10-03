@@ -311,7 +311,6 @@ def verifier_callback3(red):
         token = red.get(request.args.get("id_token_urn")).decode()
     
     raw = red.get(request.args.get("raw_urn")).decode()
-    print("raw = ", raw)
     presentation_submission = request.args.get("presentation_submission")
 
     # Fallback for wallet-specific token
