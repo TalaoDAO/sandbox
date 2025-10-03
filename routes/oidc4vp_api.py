@@ -224,6 +224,7 @@ def oidc4vc_authorize(red, mode):
                 "presentation_submission": json.dumps(code_wallet_data['presentation_submission']) 
             }
             redirect_url = code_data['redirect_uri'] + sep + urlencode(resp)
+            logging.info("redirect url = %s", redirect_url)
             return redirect(redirect_url)
 
         else:
@@ -933,7 +934,6 @@ async def oidc4vc_response_endpoint(stream_id, red):
             response = request.form
         
         vp_token = response.get('vp_token')
-        print("vp_token from payload = ", vp_token)
         id_token = response.get('id_token')
         presentation_submission = response.get('presentation_submission')
         
