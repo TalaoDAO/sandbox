@@ -961,6 +961,8 @@ async def oidc4vc_response_endpoint(stream_id, red):
                 vp = json.dumps(vp)
             if vp[:1] == "{":
                 return "ldp_" + type
+            elif isinstance(vp, list):
+                return "array of sd-jwt vc"
             elif len(vp.split("~")) > 1:
                 return "vc+sd-jwt"
             else:

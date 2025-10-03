@@ -303,6 +303,7 @@ def verifier_callback():
 
 def verifier_callback3():
     # Check for error in request
+    print("callback 3 is called")
     if request.args.get("error"):
         return jsonify(request.args)
 
