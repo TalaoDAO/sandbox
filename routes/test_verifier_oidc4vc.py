@@ -370,7 +370,6 @@ def verifier_callback3(red):
                 disclosure += "\r\n" + decoded
             except Exception as e:
                 disclosure += f"\r\n[Error decoding disclosure: {str(e)}]"
-        print(disclosure)
         vp_token.append({
             "vcsd_jwt_header": json.dumps(vcsd_jwt_header, indent=4),
             "vcsd_jwt_payload": json.dumps(vcsd_jwt_payload, indent=4),

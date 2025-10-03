@@ -1,215 +1,367 @@
 <!DOCTYPE html>
-<!-- verifier_qrcode_test.html-->
-<html  style="background-color: {{ page_background_color }} ">
+<!-- verifier_qrcode_test.html -->
+<html style="background-color: {{ page_background_color }}">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
     <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='./img/3D.ico') }}"/>
-    <title>{{application_name}}</title>
-    <link rel = "stylesheet" type= "text/css" href= "{{ url_for('static', filename='bootstrap.min.css') }}">
+    <title>{{ application_name }}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+
     <style>
-      /* Style pour l'overlay d'attente */
-      #wait-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
+      :root {
+        --page-bg: {{ page_background_color }};
+        --page-fg: {{ page_text_color }};
+        --muted: rgba(255,255,255,0.8);
+      }
+
+      body {
+        color: var(--page-fg);
+        background: var(--page-bg);
+      }
+      .page-wrap { max-width: 1100px; }
+
+      .muted { opacity: 0.85; }
+
+      .card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+      }
+
+      .badge-soft {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.12);
+      }
+
+      .code-area {
         width: 100%;
-        height: 100%;
-        background: rgba(255, 255, 255, 0.8);
-        display: none; /* caché par défaut */
-        justify-content: center;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        background: rgba(0,0,0,0.35);
+        color: #f5f5f5;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 10px;
+        padding: 0.75rem 0.9rem;
+        resize: vertical;
+        white-space: pre;
+        overflow: auto;
+      }
+      .code-area.wrap { white-space: pre-wrap; word-break: break-word; }
+
+      .code-toolbar {
+        display: flex;
+        gap: .5rem;
         align-items: center;
-        flex-direction: column;
+        justify-content: flex-end;
+        margin-bottom: .5rem;
+      }
+
+      .nav-tabs .nav-link {
+        border-top-left-radius: .75rem;
+        border-top-right-radius: .75rem;
+      }
+      .nav-pills .nav-link {
+        border-radius: 999px;
+        padding: .35rem .85rem;
+      }
+
+      .qrcard {
+        border-radius: 14px;
+        background-color: {{ qrcode_background_color }};
+      }
+
+      /* Wait overlay */
+      #wait-overlay {
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.55);
+        display: none; /* hidden by default */
+        justify-content: center; align-items: center; flex-direction: column;
         z-index: 9999;
+        color: #fff;
       }
-      
       #wait-overlay .spinner {
-        border: 8px solid #f3f3f3;
-        border-top: 8px solid #3498db;
+        border: 8px solid rgba(255,255,255,0.25);
+        border-top: 8px solid #fff;
         border-radius: 50%;
-        width: 80px;
-        height: 80px;
+        width: 80px; height: 80px;
         animation: spin 1s linear infinite;
-        margin-bottom: 20px;
+        margin-bottom: 18px;
       }
-      
       @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); }
       }
-      </style>
+
+      @media (max-width: 576px) {
+        .code-area { max-height: 45vh; }
+      }
+    </style>
   </head>
   <body>
-    <font color="{{page_text_color}}"> 
+    <div class="container page-wrap mt-4">
 
-        <div id="content_desktop" class="d-none d-sm-block mt-5" style=" background-color: {{page_background_color}} ">
-          
+      <!-- Header -->
+      <header class="text-center my-4">
+        <h1 class="mt-3">{{ page_title }}</h1>
+        <p class="lead muted">{{ page_subtitle }}</p>
+        <p class="mt-2">{{ page_description }}</p>
+      </header>
+
+      <!-- Main Tabs -->
+      <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="qr-tab" data-toggle="tab" href="#qr" role="tab" aria-controls="qr" aria-selected="true">QR &amp; Wallet</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="links-tab" data-toggle="tab" href="#links" role="tab" aria-controls="links" aria-selected="false">Links</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="encdec-tab" data-toggle="tab" href="#encdec" role="tab" aria-controls="encdec" aria-selected="false">Encoded / Decoded</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="requri-tab" data-toggle="tab" href="#requri" role="tab" aria-controls="requri" aria-selected="false">Request URI</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="meta-tab" data-toggle="tab" href="#meta" role="tab" aria-controls="meta" aria-selected="false">Metadata</a>
+        </li>
+      </ul>
+
+      <div class="tab-content pt-3" id="mainTabsContent">
+
+        <!-- QR & Wallet -->
+        <div class="tab-pane fade show active" id="qr" role="tabpanel" aria-labelledby="qr-tab">
           <div class="row">
-            <div class="col-sm-12 my-auto">
-            
-
-          <div class="text-center mt-5">
-            <h1 class="mt-5">{{page_title}}</h1>
-            <h3 class="mt-5">{{page_subtitle}}</h3>
-            
-            <div class="row">
-              <div class="col-6 offset-3">
-                <h5 class="mt-5">{{page_description}}</h5>
-              </div>
-            </div>
-          </div>  
-
-            <div class="row d-flex justify-content-center mt-5">
-
-            <div class="col-3">
-              <div class="text-center">
-                  <div class="card shadow border-dark " style="border-radius: 4%; background-color: {{qrcode_background_color}} ">
-                    <img id="qrcode" class="card-img-top p-4" src="{{ qrcode(url) }}">
-                  </div>
-              </div>
-              <div id="wait-overlay">
-                <div class="spinner"></div>
-                <div><strong>Please wait...</strong></div>
-              </div>
-              <br>
-            <form action="/verifier/wallet?code={{code}}" method="POST">
-              <div class="text-center">
-              <div class="form-group col-4 offset-4"><select class="custom-select form-select-lg mb-3" aria-label=".form-select-lg example" name="prefix"  >
-              <option class="optionForm" value="altme-openid-vc://">altme-openid-vc://</option>
-              <option class="optionForm" value="https://app.altme.io/app/download/authorize">https://app.altme.io/app/download/authorize</option>
-              <option class="optionForm" value="talao-openid-vc://">talao-openid-vc://</option>
-              <option class="optionForm" value="https://app.talao.co/app/download/authorize">https://app.talao.co/app/download/authorize</option>
-              <option class="optionForm" value="openid-vc://">openid-vc://</option>
-              <option class="optionForm" value="openid4vp://">openid4vp://</option>
-              <option class="optionForm" value="openid://">openid://</option>
-              <option class="optionForm" value="siopv2://">siopv2://</option>
-            </select></div>
-            <div class="text-center">
-
-                <div class="col"><button style="background-color: #09060f;"  class="btn btn-primary btn-sm" name="button" value="update" type="submit">Refresh</button></div>
-            </div>
-          </div>
-              </form>
-            </div>
-
-          </div>
-              <div class="text-center mt-5">
-              <h2>QR code encoded</h2><br>
-              <textarea rows="10" cols="150">{{url}}</textarea>
-              </div>
-
-              <div class="text-center mt-5">
-                <h2>QR code decoded</h2><br>
-                <textarea rows="15" cols="150">{{url_json|safe}}</textarea>
-
-                
-                <div class="text-center mt-5">
-                  <h2>Altme wallet universal link</h2><br>
-                  <textarea rows="5" cols="150">{{deeplink_altme|safe}}</textarea>
-                  </div></div>
-
-
-
-                <div class="text-center mt-5">
-                  <h2>request_uri endpoint</h2><br>
-                  <textarea rows="20" cols="150">{{request_uri|safe}}</textarea>
-                  </div>
-
-                  <div class="text-center mt-5">
-                    <h2>request_uri header</h2><br>
-                    <textarea rows="10" cols="150">{{request_uri_header|safe}}</textarea>
-                    </div>
-
-                  <div class="text-center mt-5">
-                    <h2>request_uri payload</h2><br>
-                    <textarea rows="20" cols="150">{{request_uri_payload|safe}}</textarea>
-                    </div>
-
-
-                <div class="text-center mt-5">
-                  <h2>presentation_definition</h2><br>
-                  <textarea rows="20" cols="150">{{presentation_definition|safe}}</textarea>
-                  </div>
-
-                <div class="text-center mt-5">
-                <h2>client_metadata</h2><br>
-                <textarea rows="10" cols="150">{{client_metadata|safe}}</textarea>
+            <div class="col-md-5 mb-3">
+              <div class="card p-3 text-center">
+                <div class="qrcard border-dark shadow">
+                  <img id="qrcode" class="card-img-top p-4" src="{{ qrcode(url) }}" alt="QR code">
                 </div>
+                <div class="mt-3 small muted">Scan with a compatible wallet</div>
+              </div>
+            </div>
+            <div class="col-md-7 mb-3">
+              <div class="card p-3">
+                <form action="/verifier/wallet?code={{ code }}" method="POST" class="mb-2">
+                  <div class="form-group">
+                    <label for="prefix" class="mb-1">Wallet link prefix</label>
+                    <select id="prefix" class="custom-select form-select-lg" name="prefix">
+                      <option value="altme-openid-vc://">altme-openid-vc://</option>
+                      <option value="https://app.altme.io/app/download/authorize">https://app.altme.io/app/download/authorize</option>
+                      <option value="talao-openid-vc://">talao-openid-vc://</option>
+                      <option value="https://app.talao.co/app/download/authorize">https://app.talao.co/app/download/authorize</option>
+                      <option value="openid-vc://">openid-vc://</option>
+                      <option value="openid4vp://">openid4vp://</option>
+                      <option value="openid://">openid://</option>
+                      <option value="siopv2://">siopv2://</option>
+                    </select>
+                  </div>
+                  <div class="d-flex justify-content-end">
+                    <button style="background-color: #09060f;" class="btn btn-primary btn-sm" name="button" value="update" type="submit">Refresh</button>
+                  </div>
+                </form>
 
-            
-                <div class="text-center mt-5">
-                <h2>transaction_data</h2><br>
-                <textarea rows="10" cols="150">{{transaction_data|safe}}</textarea>
+                <div class="code-toolbar">
+                  <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                  <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
                 </div>
+                <label class="mb-1">QR code URL (encoded)</label>
+                <textarea rows="8" class="code-area wrap" readonly>{{ url }}</textarea>
 
-
-              {% if back_button  %}
-              <div class="text-center mt-5">
-                <button  onclick="goBack()" class="btn btn-outline-secondary mt-2">Back to configurator</button>
-              </div>  
-              {% endif %}
-           
-          </div>
+                {% if back_button %}
+                <div class="text-center mt-4">
+                  <button onclick="goBack()" class="btn btn-outline-secondary">Back to configurator</button>
+                </div>
+                {% endif %}
+              </div>
+            </div>
           </div>
         </div>
-        
-        
 
-        <div id="content_smartphone" class="d-block d-sm-none" style="height: 100vh; background-color: {{page_background_color}} "> 
-          <div class="row h-100">
-            <div class="col-sm-12 my-auto">
-            
-                    <div class="text-center mt-5 ">
-                      <h2>{{page_title}}</h2>
-                      <h4 class="mt-4">Clic to present</h4>
-                        <div class ="mt-4">
-                          Altme weblink<br>
-                        <a href="{{deeplink_altme}}" class="bg-transparent " style="text-decoration: none;"><img src="/static/img/AltMe.png"  style="width: 75px;"></a>
-                          <br><br><br>
-                          Talao weblink<br>
-                          <a href="{{deeplink_talao}}" class="bg-transparent " style="text-decoration: none;"><img src="/static/img/talao_icon.png"  style="width: 150px;"></a>
-                          <br><br><br>
-                          Deeplink<br>
-                        <a href="{{url}}" class="bg-transparent" style="text-decoration: none;"><img src="/static/img/7.png"  style="width: 200px;"></a>
-
-                        <div class="mt-5"><h6 class="text-secondary"><a href={{landing_page_url}}>{{landing_page_url}} </a></h6></div>
-                  </div>
-                  </div>
-                  </div>
-                  </div>
-           
+        <!-- Links -->
+        <div class="tab-pane fade" id="links" role="tabpanel" aria-labelledby="links-tab">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <div class="card p-3 text-center">
+                <div class="mb-2">Altme universal link</div>
+                <a href="{{ deeplink_altme }}" class="btn btn-outline-light">
+                  <img src="/static/img/AltMe.png" alt="Altme" style="width: 28px; margin-right: 8px;"> Open Altme
+                </a>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="card p-3 text-center">
+                <div class="mb-2">Talao universal link</div>
+                <a href="{{ deeplink_talao }}" class="btn btn-outline-light">
+                  <img src="/static/img/talao_icon.png" alt="Talao" style="width: 28px; margin-right: 8px;"> Open Talao
+                </a>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="card p-3 text-center">
+                <div class="mb-2">Direct deeplink</div>
+                <a href="{{ url }}" class="btn btn-outline-light">
+                  <img src="/static/img/7.png" alt="Deeplink" style="width: 28px; margin-right: 8px;"> Open Deeplink
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="text-center mt-3">
+            <small class="muted">Landing page: <a href="{{ landing_page_url }}">{{ landing_page_url }}</a></small>
+          </div>
         </div>
 
+        <!-- Encoded / Decoded -->
+        <div class="tab-pane fade" id="encdec" role="tabpanel" aria-labelledby="encdec-tab">
+          <div class="card p-3 mb-3">
+            <div class="code-toolbar">
+              <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+              <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+            </div>
+            <h5 class="mb-2">QR code (encoded)</h5>
+            <textarea rows="10" class="code-area wrap" readonly>{{ url }}</textarea>
+          </div>
 
-    
+          <div class="card p-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h5 class="mb-0">QR code (decoded JSON)</h5>
+              <span class="badge badge-soft badge-pill">len {{ url_json|length }}</span>
+            </div>
+            <div class="code-toolbar">
+              <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+              <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+            </div>
+            <textarea rows="16" class="code-area wrap" readonly>{{ url_json|safe }}</textarea>
+          </div>
+        </div>
+
+        <!-- Request URI -->
+        <div class="tab-pane fade" id="requri" role="tabpanel" aria-labelledby="requri-tab">
+          <ul class="nav nav-pills mb-3" id="requri-pills" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="requri-endpoint-tab" data-toggle="tab" href="#requri-endpoint" role="tab">Endpoint</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="requri-header-tab" data-toggle="tab" href="#requri-header" role="tab">Header</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="requri-payload-tab" data-toggle="tab" href="#requri-payload" role="tab">Payload</a>
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="requri-endpoint" role="tabpanel">
+              <div class="code-toolbar">
+                <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+              </div>
+              <textarea rows="12" class="code-area wrap" readonly>{{ request_uri|safe }}</textarea>
+            </div>
+
+            <div class="tab-pane fade" id="requri-header" role="tabpanel">
+              <div class="code-toolbar">
+                <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+              </div>
+              <textarea rows="10" class="code-area wrap" readonly>{{ request_uri_header|safe }}</textarea>
+            </div>
+
+            <div class="tab-pane fade" id="requri-payload" role="tabpanel">
+              <div class="code-toolbar">
+                <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+              </div>
+              <textarea rows="16" class="code-area wrap" readonly>{{ request_uri_payload|safe }}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metadata -->
+        <div class="tab-pane fade" id="meta" role="tabpanel" aria-labelledby="meta-tab">
+          <div class="card p-3 mb-3">
+            <h5 class="mb-2">presentation_definition</h5>
+            <div class="code-toolbar">
+              <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+              <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+            </div>
+            <textarea rows="16" class="code-area wrap" readonly>{{ presentation_definition|safe }}</textarea>
+          </div>
+
+          <div class="card p-3 mb-3">
+            <h5 class="mb-2">client_metadata</h5>
+            <div class="code-toolbar">
+              <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+              <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+            </div>
+            <textarea rows="12" class="code-area wrap" readonly>{{ client_metadata|safe }}</textarea>
+          </div>
+
+          <div class="card p-3">
+            <h5 class="mb-2">transaction_data</h5>
+            <div class="code-toolbar">
+              <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+              <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+            </div>
+            <textarea rows="12" class="code-area wrap" readonly>{{ transaction_data|safe }}</textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <footer class="text-center my-5 muted">
+        <small>&copy; {{ application_name }}</small>
+      </footer>
+    </div>
+
+    <!-- Wait overlay -->
+    <div id="wait-overlay">
+      <div class="spinner"></div>
+      <div><strong>Please wait…</strong></div>
+    </div>
+
+    <!-- Scripts -->
     <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
 
-      <script>      
-                function goBack() {  window.history.back();}
-      </script>
-   
-      <script>
-        var source = new EventSource('/verifier/wallet/stream');
-        source.onmessage = function (event) {
+    <script>
+      function copySiblingTextarea(btn) {
+        const ta = btn.closest('.card, .tab-pane, .code-toolbar')?.querySelector('textarea');
+        if (!ta) return;
+        ta.select();
+        ta.setSelectionRange(0, 999999); // iOS
+        const ok = document.execCommand('copy');
+        btn.textContent = ok ? 'Copied!' : 'Copy failed';
+        setTimeout(() => (btn.textContent = 'Copy'), 1400);
+        ta.setSelectionRange(0, 0);
+        ta.blur();
+      }
+      function toggleWrap(btn) {
+        const ta = btn.closest('.card, .tab-pane, .code-toolbar')?.querySelector('textarea');
+        if (!ta) return;
+        ta.classList.toggle('wrap');
+        btn.textContent = ta.classList.contains('wrap') ? 'No wrap' : 'Wrap lines';
+      }
+      function goBack() { window.history.back(); }
+
+      // SSE: show wait overlay while wallet is processing, then redirect
+      var source = new EventSource('/verifier/wallet/stream');
+      source.onmessage = function (event) {
+        try {
           const result = JSON.parse(event.data);
-          if (result.stream_id == '{{stream_id}}') {
-            if (result.followup == "wait") {
-              // Afficher l'overlay d'attente
+          if (result.stream_id == '{{ stream_id }}') {
+            if (result.followup === "wait") {
               document.getElementById('wait-overlay').style.display = 'flex';
-        
-              var x = document.getElementById("qrcode");
-              if (x) {
-                x.setAttribute("src", "/static/img/wait.jpeg");
-              }
+              var img = document.getElementById("qrcode");
+              if (img) img.setAttribute("src", "/static/img/wait.jpeg");
             } else {
-              // Rediriger si prêt
               window.location.href = '/verifier/wallet/followup?stream_id=' + result.stream_id;
             }
           }
-        };
-        </script>
-      </font>
+        } catch (e) { /* ignore parse errors */ }
+      };
+    </script>
   </body>
 </html>

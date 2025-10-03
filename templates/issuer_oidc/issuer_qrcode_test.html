@@ -1,172 +1,318 @@
 <!DOCTYPE html>
-<!-- issuer_qrcode_test.html  -->
-
-<html style="background-color: {{ page_background_color }} ">
+<!-- issuer_qrcode_test.html -->
+<html style="background-color: {{ page_background_color }}">
   <head>
-   
-    <meta charset="utf-8">
-   <meta name="viewport" content="width=300px, initial-scale=1, maximum-scale=1">  
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
     <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='./img/3D.ico') }}"/>
-    <title>{{company_name}}</title>
-    <link rel = "stylesheet" type= "text/css" href= "{{ url_for('static', filename='bootstrap.min.css') }}">
+    <title>{{ company_name }}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+
+    <style>
+      :root {
+        --page-bg: {{ page_background_color }};
+        --page-fg: {{ page_text_color }};
+      }
+      body {
+        color: var(--page-fg);
+        background: var(--page-bg);
+      }
+      .page-wrap { max-width: 1100px; }
+
+      .muted { opacity: .85; }
+
+      .card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+      }
+
+      .badge-soft {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.12);
+      }
+
+      .qrcard { border-radius: 14px; background-color: {{ qrcode_background_color }}; }
+
+      .code-area {
+        width: 100%;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        background: rgba(0,0,0,0.35);
+        color: #f5f5f5;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 10px;
+        padding: 0.75rem 0.9rem;
+        resize: vertical;
+        white-space: pre;
+        overflow: auto;
+      }
+      .code-area.wrap { white-space: pre-wrap; word-break: break-word; }
+
+      .code-toolbar {
+        display: flex;
+        gap: .5rem;
+        align-items: center;
+        justify-content: flex-end;
+        margin-bottom: .5rem;
+      }
+
+      .nav-tabs .nav-link {
+        border-top-left-radius: .75rem;
+        border-top-right-radius: .75rem;
+      }
+      .nav-pills .nav-link {
+        border-radius: 999px;
+        padding: .35rem .85rem;
+      }
+
+      /* Wait overlay */
+      #wait-overlay {
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.55);
+        display: none;
+        justify-content: center; align-items: center; flex-direction: column;
+        z-index: 9999;
+        color: #fff;
+        text-align: center;
+        padding: 1rem;
+      }
+      #wait-overlay .spinner {
+        border: 8px solid rgba(255,255,255,0.25);
+        border-top: 8px solid #fff;
+        border-radius: 50%;
+        width: 80px; height: 80px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 18px;
+      }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+      @media (max-width: 576px) { .code-area { max-height: 45vh; } }
+    </style>
   </head>
-  <body >
+  <body>
+    <div class="container page-wrap mt-4">
+      <!-- Header -->
+      <header class="text-center my-4">
+        <h1 class="mt-3">{{ page_title }}</h1>
+        <p class="lead muted">{{ page_subtitle }}</p>
+        <p class="mt-2">
+          <span class="badge badge-soft badge-pill">deferred VC number = {{ issuer_state }}</span>
+        </p>
+      </header>
 
+      <!-- Main Tabs -->
+      <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="qr-tab" data-toggle="tab" href="#qr" role="tab" aria-controls="qr" aria-selected="true">QR &amp; Wallet</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="links-tab" data-toggle="tab" href="#links" role="tab" aria-controls="links" aria-selected="false">Links</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="enc-tab" data-toggle="tab" href="#enc" role="tab" aria-controls="enc" aria-selected="false">Encoded / Offer</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="cfg-tab" data-toggle="tab" href="#cfg" role="tab" aria-controls="cfg" aria-selected="false">Configurations</a>
+        </li>
+      </ul>
 
-        <div id="content_desktop" class="d-none d-sm-block" style="background-color: {{page_background_color}} " >
-         
-          <div class="text-center">
-         
-            <h1 class="mt-5">{{page_title}}</h1><br>
-            <h5>deferred VC number = {{issuer_state}}</h5>
-
-            <h3>{{page_subtitle}}</h3><br>
-            <div class="row">
-              <div class="col-6 offset-3">
-               
+      <div class="tab-content pt-3" id="mainTabsContent">
+        <!-- QR & Wallet -->
+        <div class="tab-pane fade show active" id="qr" role="tabpanel" aria-labelledby="qr-tab">
+          <div class="row">
+            <div class="col-md-5 mb-3">
+              <div class="card p-3 text-center">
+                <div class="qrcard border-dark shadow">
+                  <img id="qrcode" class="card-img-top p-4" src="{{ qrcode(url) }}" alt="QR code">
+                </div>
+                <div class="mt-3 small muted">Scan with a compatible wallet</div>
               </div>
             </div>
-          </div> 
+            <div class="col-md-7 mb-3">
+              <div class="card p-3">
+                <div class="code-toolbar">
+                  <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                  <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+                </div>
+                <label class="mb-1">QR code URL (encoded)</label>
+                <textarea rows="10" class="code-area wrap" readonly>{{ url|safe }}</textarea>
 
-
-          <div class="row d-flex justify-content-center ">    
-            <div class="col-3">
-
-              <div class="text-center border-radius: 20%">
-                
-                <div class="card shadow border-dark mt-2 " style="border-radius: 4%; background-color: {{qrcode_background_color}} ">
-                <img id="qrcode" class="card-img-top p-3 " src="{{ qrcode(url) }}">
-                </div>             
+                {% if back_button %}
+                <div class="text-center mt-4">
+                  <button onclick="goBack()" class="btn btn-outline-secondary">Back to configurator</button>
+                </div>
+                {% endif %}
               </div>
-            
-            </div>  
-          </div>  
-
-          <div class="text-center mt-5">
-            <h2>QR code url encoded</h2><br>
-          <textarea rows="10" cols="150">{{url|safe}}</textarea>
+            </div>
           </div>
-
-          <div class="text-center mt-5">
-            <h2>Offer</h2><br>
-          <textarea rows="30" cols="150">{{url_data|safe}}</textarea>
-          </div>
-          
-          <div class="text-center mt-5">
-            <h2>Altme wallet universal link </h2><br>
-            <textarea rows="10" cols="150">{{deeplink_altme}}</textarea>
-          </div>
-
-         
-
-
-
-          <div class="text-center mt-5">
-            <h2>OpenID credential issuer configuration</h2><br>
-          <textarea rows="30" cols="150">{{openid_credential_configuration|safe}}</textarea>
-          </div>
-
-         
-          <div class="text-center mt-5">
-            <h2>OAuth Authorization Server configuration</h2><br>
-          <textarea rows="30" cols="150">{{oauth_authorization_server|safe}}</textarea>
-          </div>
-
-          <div class="text-center mt-5">
-            <h2>OpenId configuration</h2><br>
-          <textarea rows="30" cols="150">{{openid_configuration|safe}}</textarea>
-          </div>
-
-          {% if back_button  %}
-          <div class="text-center mt-5">
-            <button  onclick="goBack()" class="btn btn-outline-secondary mt-2">Back to configurator</button>
-          </div>  
-          {% endif %}
         </div>
-        
-        
-          
-        <div id="content_smartphone" class="d-block d-sm-none " style="background-color: {{page_background_color}}" > 
-          
-          <br><br><br>
-          <div class="mt-3">
-            <div class="text-center">
-              <h1 class="mt-3">{{page_title}}</h1><br>
-              <h3>{{page_subtitle}}</h3>
 
-              <div class="row mt-5">
-                <did class="col-10 offset-1" >
-
-                <div class="card shadow border-dark mt-2 " style="border-radius: 10%; background-color: {{qrcode_background_color}} ">
-
-                  <div class="row mt-3">
-                    <div class="col-10 offset-1">
-                  <div class="my-2">
-                    <h5>Choose your preferred wallet</h5>
-                  </div>
-                  </div>
-                  </div>
-                    <div class="row">
-                      <div class="col mt-3">
-                        <br>
-                        <a href="{{deeplink_altme}}" class="bg-transparent" style="text-decoration: none;"><img src="/static/img/AltMe.png"  style="width: 50px;"></a>      
-                      </div>
-                  
-                      <div class="col mt-3">       
-                        <a href="{{deeplink_talao}}" class="bg-transparent" style="text-decoration: none;"><img src="/static/img/talao.png"  style="width: 110px;"></a>
-                        
-                      </div>
-                    </div>
-
-                    
-
-                    <div class="row">
-                      <div class="col my-3">       
-                        <a href="{{url}}" class="bg-transparent" style="text-decoration: none;"><img src="/static/img/openid.jpeg"  style="width: 120px;"></a>
-                        <h6>openid-credential-offer://</h6>
-                      </div>
-                    </div>
-
-                </div>
-                </div>
+        <!-- Links -->
+        <div class="tab-pane fade" id="links" role="tabpanel" aria-labelledby="links-tab">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <div class="card p-3 text-center">
+                <div class="mb-2">Altme universal link</div>
+                <a href="{{ deeplink_altme }}" class="btn btn-outline-light">
+                  <img src="/static/img/AltMe.png" alt="Altme" style="width: 28px; margin-right: 8px;"> Open Altme
+                </a>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="card p-3 text-center">
+                <div class="mb-2">Talao universal link</div>
+                <a href="{{ deeplink_talao }}" class="btn btn-outline-light">
+                  <img src="/static/img/talao.png" alt="Talao" style="width: 110px; margin-right: 8px; vertical-align: -6px;"> Open Talao
+                </a>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="card p-3 text-center">
+                <div class="mb-2">Direct credential-offer link</div>
+                <a href="{{ url }}" class="btn btn-outline-light">
+                  <img src="/static/img/openid.jpeg" alt="OpenID" style="width: 24px; margin-right: 8px;"> openid-credential-offer://
+                </a>
               </div>
             </div>
           </div>
-          
+        </div>
 
-       
+        <!-- Encoded / Offer -->
+        <div class="tab-pane fade" id="enc" role="tabpanel" aria-labelledby="enc-tab">
+          <div class="card p-3 mb-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h5 class="mb-0">QR code URL (encoded)</h5>
+              <span class="badge badge-soft badge-pill">len {{ url|length }}</span>
+            </div>
+            <div class="code-toolbar">
+              <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+              <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+            </div>
+            <textarea rows="10" class="code-area wrap" readonly>{{ url|safe }}</textarea>
+          </div>
+
+          <div class="card p-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h5 class="mb-0">Offer</h5>
+              <span class="badge badge-soft badge-pill">len {{ url_data|length }}</span>
+            </div>
+            <div class="code-toolbar">
+              <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+              <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+            </div>
+            <textarea rows="18" class="code-area wrap" readonly>{{ url_data|safe }}</textarea>
+          </div>
+        </div>
+
+        <!-- Configurations -->
+        <div class="tab-pane fade" id="cfg" role="tabpanel" aria-labelledby="cfg-tab">
+          <ul class="nav nav-pills mb-3" id="cfg-pills" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="cfg-oci-tab" data-toggle="tab" href="#cfg-oci" role="tab">OpenID Credential Issuer</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="cfg-oauth-tab" data-toggle="tab" href="#cfg-oauth" role="tab">OAuth Authorization Server</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="cfg-oidc-tab" data-toggle="tab" href="#cfg-oidc" role="tab">OpenID configuration</a>
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="cfg-oci" role="tabpanel">
+              <div class="code-toolbar">
+                <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+              </div>
+              <textarea rows="16" class="code-area wrap" readonly>{{ openid_credential_configuration|safe }}</textarea>
+            </div>
+
+            <div class="tab-pane fade" id="cfg-oauth" role="tabpanel">
+              <div class="code-toolbar">
+                <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+              </div>
+              <textarea rows="16" class="code-area wrap" readonly>{{ oauth_authorization_server|safe }}</textarea>
+            </div>
+
+            <div class="tab-pane fade" id="cfg-oidc" role="tabpanel">
+              <div class="code-toolbar">
+                <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+              </div>
+              <textarea rows="16" class="code-area wrap" readonly>{{ openid_configuration|safe }}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="text-center my-5 muted">
+        <small>&copy; {{ company_name }}</small>
+      </footer>
+    </div>
+
+    <!-- Wait overlay -->
+    <div id="wait-overlay">
+      <div class="spinner"></div>
+      <div><strong>Please wait…</strong></div>
+    </div>
+
+    <!-- Scripts -->
     <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
- 
-    <!-- issuer_qrcode_test.html -->
-      <script>
-        var source = new EventSource('/sandbox/ebsi/issuer_stream');
-        source.onmessage = function (event) {
-        const data = JSON.parse(event.data)
-        if (data.stream_id == '{{stream_id}}'){
-          if (data.error){
-            window.location.href = '/sandbox/ebsi/issuer_followup/{{stream_id}}?error=' + data.error + '&error_description=' + data.error_description;
-          }
-          else {
-            if (data.followup == "wait"){
-              var x = document.getElementById("qrcode");
-              var v = x.getAttribute("src");
-              v = "/static/img/wait.jpeg";
-              x.setAttribute("src", v);	
-            }
-            else {
-              window.location.href='/sandbox/ebsi/issuer_followup/{{stream_id}}' ; 
-            }
-          }
-        };
-      }
-      </script>
-      
-      
-    
-     
 
-      </font>
+    <script>
+      function copySiblingTextarea(btn) {
+        const ta = btn.closest('.card, .tab-pane, .code-toolbar')?.querySelector('textarea');
+        if (!ta) return;
+        ta.select();
+        ta.setSelectionRange(0, 999999); // iOS
+        const ok = document.execCommand('copy');
+        btn.textContent = ok ? 'Copied!' : 'Copy failed';
+        setTimeout(() => (btn.textContent = 'Copy'), 1400);
+        ta.setSelectionRange(0, 0);
+        ta.blur();
+      }
+      function toggleWrap(btn) {
+        const ta = btn.closest('.card, .tab-pane, .code-toolbar')?.querySelector('textarea');
+        if (!ta) return;
+        ta.classList.toggle('wrap');
+        btn.textContent = ta.classList.contains('wrap') ? 'No wrap' : 'Wrap lines';
+      }
+      function goBack() { window.history.back(); }
+
+      // SSE flow (preserved from your original file):
+      // - listen to /sandbox/ebsi/issuer_stream
+      // - if stream_id matches and 'wait', show overlay + swap QR to /static/img/wait.jpeg
+      // - on error: redirect to issuer_followup with details
+      // - otherwise: redirect to issuer_followup
+      var source = new EventSource('/sandbox/ebsi/issuer_stream');
+      source.onmessage = function (event) {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.stream_id == '{{stream_id}}') {
+            if (data.error) {
+              window.location.href = '/sandbox/ebsi/issuer_followup/{{stream_id}}?error=' +
+                encodeURIComponent(data.error) +
+                '&error_description=' + encodeURIComponent(data.error_description || '');
+            } else {
+              if (data.followup == "wait") {
+                const overlay = document.getElementById('wait-overlay');
+                if (overlay) overlay.style.display = 'flex';
+                var x = document.getElementById("qrcode");
+                if (x) x.setAttribute("src", "/static/img/wait.jpeg");
+              } else {
+                window.location.href = '/sandbox/ebsi/issuer_followup/{{stream_id}}';
+              }
+            }
+          }
+        } catch (e) { /* ignore parse errors */ }
+      };
+    </script>
   </body>
 </html>
