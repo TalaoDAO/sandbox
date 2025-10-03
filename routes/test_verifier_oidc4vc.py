@@ -305,13 +305,13 @@ def verifier_callback3(red):
     # Check for error in request
     if request.args.get("error"):
         return jsonify(request.args)
-    print(request.args)
     # Extract tokens
     token = request.args.get("id_token")
     if token in [None, 'None']:
-        token = red.get(request.args.get("id_token_urn"))
-    print("token received in callback = ", token)
-        
+        token = red.get(request.args.get("id_token_urn")).decode()
+    
+    raw = red.get(request.args.get("raw_urn")).decode()
+    print("raw = ", raw)
     presentation_submission = request.args.get("presentation_submission")
 
     # Fallback for wallet-specific token
@@ -379,7 +379,7 @@ def verifier_callback3(red):
     # Render final report
     return render_template(
         'verifier_oidc/vcsd_jwt_test.html',
-        raw=token,
+        raw=raw,
         presentation_submission=json.dumps(presentation_submission, indent=4),
         vp_token=vp_token
     )

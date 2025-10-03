@@ -221,7 +221,12 @@ def oidc4vc_authorize(red, mode):
                 vp = code_wallet_data['vp_token_payload'].get('vp')
                 logging.info(" code_wallet_data['vp_token_payload'] = %s", code_wallet_data['vp_token_payload'])
                 id_token_for_app = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
+            
+            raw_urn = str(uuid.uuid1())
+            red.setex(raw_urn, 1000, json.dumps(code_wallet_data.get('raw')))
+            
             resp = {
+                "raw_urn": raw_urn,
                 "id_token": id_token_for_app,
                 "id_token_urn": urn,
                 "wallet_id_token": code_wallet_data['id_token'],
@@ -931,15 +936,15 @@ async def oidc4vc_response_endpoint(stream_id, red):
     # get id_token, vp_token and presentation_submission
     if access:
         if request.form.get('response'):
-            response = oidc4vc.get_payload_from_token(request.form['response'])
+            wallet_response = oidc4vc.get_payload_from_token(request.form['response'])
             logging.info("direct_post.jwt, JARM mode")
         else:
             logging.info("direct_post")
-            response = request.form
+            wallet_response = request.form
         
-        vp_token = response.get('vp_token')
-        id_token = response.get('id_token')
-        presentation_submission = response.get('presentation_submission')
+        vp_token = wallet_response.get('vp_token')
+        id_token = wallet_response.get('id_token')
+        presentation_submission = wallet_response.get('presentation_submission')
         
         if vp_token and not presentation_submission:
             presentation_submission_status = "Not received"
@@ -999,7 +1004,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
         else:
             response_format = "ok"
         
-        state = response.get('id_token')
+        state = wallet_response.get('id_token')
 
     if access:
         nonce = data['pattern'].get('nonce')
@@ -1195,6 +1200,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
     
     # data sent to application
     wallet_data = json.dumps({
+                    "raw": wallet_response,
                     "access": access,
                     "detailed_response": json.dumps(detailed_response),
                     "vp_token_payload": vp_token_payload, # jwt_vp payload or json-ld 
