@@ -37,7 +37,7 @@
             "name": "Proof of Blockchain Account Ownership",
             "purpose": "Prove control of blockchain account used for payment",
             "format": {
-                "dc+sd-jwt": {
+                "vc+sd-jwt": {
                     "sd-jwt_alg_values": [
                         "ES256K"
                     ],
