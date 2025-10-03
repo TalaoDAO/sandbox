@@ -209,24 +209,21 @@ def oidc4vc_authorize(red, mode):
                 redirect_uri = code_data['redirect_uri']
                 session.clear()
                 return redirect(redirect_uri + sep + urlencode(resp)) 
+            urn = None
             if code_wallet_data['vp_format'] == 'ldp_vp':
                 vp = code_wallet_data['vp_token_payload']
-                id_token = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
+                id_token_for_app = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
             elif code_wallet_data['vp_format'] in ["vc+sd-jwt", "dc+sd-jwt"]:
-                id_token = code_wallet_data['vp_token_payload']
-                try:
-                    id_token = json.loads(id_token)
-                    if isinstance(id_token, list):
-                        id_token = id_token[0]
-                except Exception:
-                    pass
+                id_token_for_app = None
+                urn = str(uuid.uuid1())
+                red.setex(urn, 1000, code_wallet_data['vp_token_payload'])
             else:
                 vp = code_wallet_data['vp_token_payload'].get('vp')
                 logging.info(" code_wallet_data['vp_token_payload'] = %s", code_wallet_data['vp_token_payload'])
-                id_token = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
-            
+                id_token_for_app = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
             resp = {
-                "id_token": id_token,
+                "id_token": id_token_for_app,
+                "id_token_urn": urn,
                 "wallet_id_token": code_wallet_data['id_token'],
                 "presentation_submission": json.dumps(code_wallet_data['presentation_submission']) 
             }
