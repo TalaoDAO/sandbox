@@ -214,9 +214,12 @@ def oidc4vc_authorize(red, mode):
                 id_token = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
             elif code_wallet_data['vp_format'] in ["vc+sd-jwt", "dc+sd-jwt"]:
                 id_token = code_wallet_data['vp_token_payload']
-                print("id token type is ", type(id_token))
-                if isinstance(id_token, list):
-                    id_token = id_token[0]
+                try:
+                    json.loads(id_token)
+                    if isinstance(id_token, list):
+                        id_token = id_token[0]
+                except Exception:
+                    pass
             else:
                 vp = code_wallet_data['vp_token_payload'].get('vp')
                 logging.info(" code_wallet_data['vp_token_payload'] = %s", code_wallet_data['vp_token_payload'])
