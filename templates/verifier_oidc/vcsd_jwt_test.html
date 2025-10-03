@@ -1,102 +1,315 @@
 <!DOCTYPE html>
-<!-- op_ebsi_verifier_qrcopde2-->
-<html  style="background-color: {{ page_background_color }} ">
+<!-- op_ebsi_verifier_qrcopde2 -->
+<html style="background-color: {{ page_background_color }}">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1" />
     <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='./img/3D.ico') }}"/>
-    <title>{{application_name}}</title>
-    <link rel = "stylesheet" type= "text/css" href= "{{ url_for('static', filename='bootstrap.min.css') }}">
+    <title>{{ application_name }}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
     <script type="module" src="https://md-block.verou.me/md-block.js"></script>
+
+    <style>
+      :root {
+        --page-bg: {{ page_background_color }};
+        --page-fg: {{ page_text_color }};
+      }
+
+      body {
+        color: var(--page-fg);
+        background: var(--page-bg);
+      }
+
+      .page-wrap {
+        max-width: 1100px;
+      }
+
+      .muted {
+        opacity: 0.8;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+      }
+
+      .code-area {
+        width: 100%;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        background: rgba(0,0,0,0.35);
+        color: #f5f5f5;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 10px;
+        padding: 0.75rem 0.9rem;
+        resize: vertical;
+        white-space: pre;
+        overflow: auto;
+      }
+
+      .code-area.wrap {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .code-toolbar {
+        display: flex;
+        gap: .5rem;
+        align-items: center;
+        justify-content: flex-end;
+        margin-bottom: .5rem;
+      }
+
+      .badge-soft {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.12);
+      }
+
+      .sticky-controls {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--page-bg);
+        padding: .75rem .75rem 0 .75rem;
+      }
+
+      .nav-pills .nav-link {
+        border-radius: 999px;
+        padding: .35rem .85rem;
+      }
+
+      .nav-tabs .nav-link {
+        border-top-left-radius: .75rem;
+        border-top-right-radius: .75rem;
+      }
+
+      .form-control::selection,
+      textarea::selection {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      /* Ensure long JWTs don’t blow up layout on small screens */
+      @media (max-width: 576px) {
+        .code-area {
+          max-height: 45vh;
+        }
+      }
+    </style>
   </head>
   <body>
-    <font color="{{page_text_color}}"> 
+    <div id="content_desktop" class="mt-4">
+      <div class="container page-wrap">
 
-        <div id="content_desktop" class="d-none d-sm-block mt-5" style=" background-color: {{page_background_color}} ">
-          
-          <div class="row">
-            <div class="col-sm-12 my-auto">
-            
+        <!-- Header -->
+        <header class="text-center my-4">
+          <h1 class="mt-4">SD-JWT OIDC4VP testing</h1>
+          <p class="lead muted">{{ page_subtitle }}</p>
+          <p class="mt-3">{{ page_description }}</p>
+        </header>
 
-          <div class="text-center mt-5">
-            <h1 class="mt-5">SD-JWT OIDC4VP testing</h1>
-            <h3 class="mt-5">{{page_subtitle}}</h3>
-            
-            <div class="row">
-              <div class="col-6 offset-3">
-                <h5 class="mt-5">{{page_description}}</h5>
+        <!-- Top-level tabs -->
+        <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" id="raw-tab" data-toggle="tab" href="#raw" role="tab" aria-controls="raw" aria-selected="true">RAW data</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="ps-tab" data-toggle="tab" href="#ps" role="tab" aria-controls="ps" aria-selected="false">Presentation submission</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="vp-tab" data-toggle="tab" href="#vp" role="tab" aria-controls="vp" aria-selected="false">
+              VP Tokens
+              <span class="badge badge-soft badge-pill ml-1">{{ vp_token|length }}</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="tab-content pt-3" id="mainTabsContent">
+
+          <!-- RAW -->
+          <div class="tab-pane fade show active" id="raw" role="tabpanel" aria-labelledby="raw-tab">
+            <div class="card p-3">
+              <div class="code-toolbar">
+                <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
               </div>
+              <textarea rows="18" class="code-area wrap" readonly>{{ raw }}</textarea>
             </div>
-          </div>  
-
-            <div class="row d-flex justify-content-center mt-5">
-
-            
-
           </div>
 
-          <div class="text-center mt-5">
-
-            <div class="text-center mt-5"> 
-              <h2>Report</h2><br>
-              <textarea id="myTextArea" type="text" rows="20" cols="150">{{report}}</textarea> 
-              <br><br>
-              </div><br>
-
-
-            <h2>RAW data</h2><br>
-            <textarea rows="20" cols="150">{{raw}}</textarea>
-            </div>
-
-            <div class="text-center mt-5">
-            <h2>Presentation submission</h2><br>
-            <textarea rows="20" cols="150">{{presentation_submission}}</textarea>
-            </div>
-
-
-              <div class="text-center mt-5">
-              <h2>Issuer signed JWT header</h2><br>
-              <textarea rows="5" cols="150">{{vcsd_jwt_header}}</textarea>
+          <!-- Presentation submission -->
+          <div class="tab-pane fade" id="ps" role="tabpanel" aria-labelledby="ps-tab">
+            <div class="card p-3">
+              <div class="code-toolbar">
+                <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
               </div>
+              <textarea rows="18" class="code-area wrap" readonly>{{ presentation_submission }}</textarea>
+            </div>
+          </div>
 
-              <div class="text-center mt-5">
-                <h2>Issuer signed JWT payload</h2><br>
-                <textarea rows="25" cols="150">{{vcsd_jwt_payload}}</textarea>
-                </div>
+          <!-- VP Tokens -->
+          <div class="tab-pane fade" id="vp" role="tabpanel" aria-labelledby="vp-tab">
 
-              <div class="text-center mt-5">
-                <h2>Disclosures</h2><br>
-                <textarea rows="5" cols="150">{{disclosure|safe}}</textarea>
-              </div>
-                
-                <div class="text-center mt-5">
-                  <h2>Key Binding JWT header</h2><br>
-                  <textarea rows="5" cols="150">{{kbjwt_header|safe}}</textarea>
-                </div>
-
-                <div class="text-center mt-5">
-                    <h2>Key Binding JWT payload</h2><br>
-                    <textarea rows="7" cols="150">{{kbjwt_payload|safe}}</textarea>
+            <!-- Sticky controls -->
+            <div class="sticky-controls card">
+              <div class="p-3">
+                <div class="form-row align-items-center">
+                  <div class="col-sm-6 mb-2">
+                    <input id="vpSearch" type="text" class="form-control" placeholder="Filter VPs (e.g. by index or text)…" oninput="filterVPs()">
                   </div>
-
-                 
-        
+                  <div class="col-sm-6 mb-2 text-sm-right text-left">
+                    <button class="btn btn-sm btn-outline-light mr-2" onclick="expandAll()">Expand all</button>
+                    <button class="btn btn-sm btn-outline-light" onclick="collapseAll()">Collapse all</button>
+                  </div>
                 </div>
-        <br>
-        <br>
-           
-          </div>
+              </div>
+            </div>
+
+            <div id="vpAccordion" class="mt-3">
+              {% for vp in vp_token %}
+              {% set i = loop.index %}
+              <div class="card mb-3 vp-card" data-index="{{ i }}">
+                <div class="card-header" id="heading{{ i }}">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                      <button class="btn btn-link text-left p-0" data-toggle="collapse" data-target="#collapse{{ i }}" aria-expanded="false" aria-controls="collapse{{ i }}">
+                        <strong>VP #{{ i }}</strong>
+                      </button>
+                      <span class="badge badge-soft badge-pill ml-2">Header {{ vp["vcsd_jwt_header"]|length }}</span>
+                      <span class="badge badge-soft badge-pill ml-1">Payload {{ vp["vcsd_jwt_payload"]|length }}</span>
+                      <span class="badge badge-soft badge-pill ml-1">Disclosures {{ vp["disclosure"]|length }}</span>
+                    </div>
+                    <div class="d-none d-sm-block muted small">Click to expand</div>
+                  </div>
+                </div>
+
+                <div id="collapse{{ i }}" class="collapse" aria-labelledby="heading{{ i }}" data-parent="#vpAccordion">
+                  <div class="card-body">
+
+                    <!-- Inner pills for this VP -->
+                    <ul class="nav nav-pills mb-3" id="vp{{ i }}-pills" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="vp{{ i }}-h-tab" data-toggle="tab" href="#vp{{ i }}-h" role="tab">SD-JWT header</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" id="vp{{ i }}-p-tab" data-toggle="tab" href="#vp{{ i }}-p" role="tab">SD-JWT payload</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" id="vp{{ i }}-d-tab" data-toggle="tab" href="#vp{{ i }}-d" role="tab">Disclosures</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" id="vp{{ i }}-kh-tab" data-toggle="tab" href="#vp{{ i }}-kh" role="tab">KB JWT header</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" id="vp{{ i }}-kp-tab" data-toggle="tab" href="#vp{{ i }}-kp" role="tab">KB JWT payload</a>
+                      </li>
+                    </ul>
+
+                    <div class="tab-content" id="vp{{ i }}-content">
+
+                      <div class="tab-pane fade show active" id="vp{{ i }}-h" role="tabpanel">
+                        <div class="code-toolbar">
+                          <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                          <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+                        </div>
+                        <textarea rows="6" class="code-area" readonly>{{ vp["vcsd_jwt_header"] }}</textarea>
+                      </div>
+
+                      <div class="tab-pane fade" id="vp{{ i }}-p" role="tabpanel">
+                        <div class="code-toolbar">
+                          <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                          <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+                        </div>
+                        <textarea rows="16" class="code-area" readonly>{{ vp["vcsd_jwt_payload"] }}</textarea>
+                      </div>
+
+                      <div class="tab-pane fade" id="vp{{ i }}-d" role="tabpanel">
+                        <div class="code-toolbar">
+                          <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                          <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+                        </div>
+                        <!-- Use textarea to preserve raw disclosure content exactly -->
+                        <textarea rows="8" class="code-area" readonly>{{ vp["disclosure"] }}</textarea>
+                      </div>
+
+                      <div class="tab-pane fade" id="vp{{ i }}-kh" role="tabpanel">
+                        <div class="code-toolbar">
+                          <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                          <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+                        </div>
+                        <textarea rows="6" class="code-area" readonly>{{ vp["kbjwt_header"] }}</textarea>
+                      </div>
+
+                      <div class="tab-pane fade" id="vp{{ i }}-kp" role="tabpanel">
+                        <div class="code-toolbar">
+                          <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
+                          <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
+                        </div>
+                        <textarea rows="10" class="code-area" readonly>{{ vp["kbjwt_payload"] }}</textarea>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
           </div>
         </div>
-        
 
+        <footer class="text-center my-5 muted">
+          <small>&copy; {{ application_name }}</small>
+        </footer>
+      </div>
+    </div>
 
-       
+    <!-- Scripts -->
     <script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
- 
-    
-      </font>
+
+    <script>
+      function copySiblingTextarea(btn) {
+        const ta = btn.closest('.card, .tab-pane, .code-toolbar').querySelector('textarea');
+        if (!ta) return;
+        ta.select();
+        ta.setSelectionRange(0, 999999); // iOS
+        const ok = document.execCommand('copy');
+        btn.textContent = ok ? 'Copied!' : 'Copy failed';
+        setTimeout(() => (btn.textContent = 'Copy'), 1400);
+        // Deselect text
+        ta.setSelectionRange(0, 0);
+        ta.blur();
+      }
+
+      function toggleWrap(btn) {
+        const ta = btn.closest('.card, .tab-pane, .code-toolbar').querySelector('textarea');
+        if (!ta) return;
+        ta.classList.toggle('wrap');
+        btn.textContent = ta.classList.contains('wrap') ? 'No wrap' : 'Wrap lines';
+      }
+
+      function filterVPs() {
+        const q = (document.getElementById('vpSearch').value || '').toLowerCase();
+        document.querySelectorAll('.vp-card').forEach(card => {
+          // Match index badge and visible text in header
+          const idx = (card.getAttribute('data-index') || '').toLowerCase();
+          const headerText = card.querySelector('.card-header').innerText.toLowerCase();
+          const match = !q || idx.includes(q) || headerText.includes(q);
+          card.style.display = match ? '' : 'none';
+        });
+      }
+
+      function expandAll() {
+        $('#vpAccordion .collapse').collapse('show');
+      }
+      function collapseAll() {
+        $('#vpAccordion .collapse').collapse('hide');
+      }
+    </script>
   </body>
 </html>

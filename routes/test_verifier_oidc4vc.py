@@ -303,14 +303,14 @@ def verifier_callback():
 
 def verifier_callback3(red):
     # Check for error in request
-    print("callback 3 is called")
     if request.args.get("error"):
         return jsonify(request.args)
-
+    print(request.args)
     # Extract tokens
     token = request.args.get("id_token")
-    if not token:
+    if token in [None, 'None']:
         token = red.get(request.args.get("id_token_urn"))
+    print("token received in callback = ", token)
         
     presentation_submission = request.args.get("presentation_submission")
 
@@ -340,6 +340,7 @@ def verifier_callback3(red):
     kbjwt_payload = "No KB"
 
     # Process each vp_token
+    vp_token = []
     for token in vp_tokens:
         vcsd = token.split("~")
 
@@ -368,22 +369,19 @@ def verifier_callback3(red):
                 disclosure += "\r\n" + decoded
             except Exception as e:
                 disclosure += f"\r\n[Error decoding disclosure: {str(e)}]"
-
-    # Placeholder analysis report
-    #ia_analyze = process_vc_format(token, "8", "1.1", "sandbox verifier test")
-    ia_analyze = "IA Agent is inactive"
-
+        vp_token.append({
+            "vcsd_jwt_header": json.dumps(vcsd_jwt_header, indent=4),
+            "vcsd_jwt_payload": json.dumps(vcsd_jwt_payload, indent=4),
+            "disclosure": disclosure,
+            "kbjwt_header": json.dumps(kbjwt_header, indent=4),
+            "kbjwt_payload": json.dumps(kbjwt_payload, indent=4) 
+        })
     # Render final report
     return render_template(
         'verifier_oidc/vcsd_jwt_test.html',
         raw=token,
         presentation_submission=json.dumps(presentation_submission, indent=4),
-        vcsd_jwt_header=json.dumps(vcsd_jwt_header, indent=4),
-        vcsd_jwt_payload=json.dumps(vcsd_jwt_payload, indent=4),
-        disclosure=disclosure,
-        kbjwt_header=json.dumps(kbjwt_header, indent=4),
-        kbjwt_payload=json.dumps(kbjwt_payload, indent=4),
-        report=ia_analyze
+        vp_token=vp_token
     )
 
 def verifier_callback2(mode):

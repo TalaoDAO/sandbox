@@ -713,9 +713,13 @@ def test_18(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     issuer_id = issuer_test(18, mode)
     client_secret = issuer_test(18, mode, secret = True)
-    offer = ["EmployeeBadge"]
+    offer = ["EmployeeBadge", "Pid"]
+    
     with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
-        credential = json.loads(f.read())
+        EmployeeBadge = json.loads(f.read())
+    
+    with open('./verifiable_credentials/Pid.json', 'r') as f:
+        Pid = json.loads(f.read())
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
@@ -723,7 +727,8 @@ def test_18(mode):
     data = { 
         "issuer_id": issuer_id,
         "vc": {
-            "EmployeeBadge": credential,
+            "EmployeeBadge": EmployeeBadge,
+            "Pid": Pid
         },
         "issuer_state": "test18",
         "credential_type": offer,

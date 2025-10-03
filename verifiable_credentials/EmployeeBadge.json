@@ -1,5 +1,5 @@
 {
-    "vct": "urn:eu.europa.ec.eudi:employee_badge:1",
+    "vct": "https://vc-registry.com/vct/registry/publish/8-kFXbNRvOz3vT0XYqvDPrPBJvRsbDDHoNAtoSqyQc0",
     "employee": {
         "employeeId": "12346",
         "jobTitle": "Software Engineer",
