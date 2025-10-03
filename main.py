@@ -117,6 +117,7 @@ def error_500(e):
         message.message("Error 500 on sandbox", 'thierry.thevenet@talao.io', str(e), mode)
     except Exception:
         pass
+    logging.error(str(e))
     return redirect(mode.server + '/sandbox')
 
 
