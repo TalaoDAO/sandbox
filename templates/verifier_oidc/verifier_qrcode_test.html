@@ -119,13 +119,13 @@
           <a class="nav-link" id="links-tab" data-toggle="tab" href="#links" role="tab" aria-controls="links" aria-selected="false">Links</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" id="encdec-tab" data-toggle="tab" href="#encdec" role="tab" aria-controls="encdec" aria-selected="false">Encoded / Decoded</a>
+          <a class="nav-link" id="encdec-tab" data-toggle="tab" href="#encdec" role="tab" aria-controls="encdec" aria-selected="false">Request</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" id="requri-tab" data-toggle="tab" href="#requri" role="tab" aria-controls="requri" aria-selected="false">Request URI</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" id="meta-tab" data-toggle="tab" href="#meta" role="tab" aria-controls="meta" aria-selected="false">Metadata</a>
+          <a class="nav-link" id="meta-tab" data-toggle="tab" href="#meta" role="tab" aria-controls="meta" aria-selected="false">Details and Metadata</a>
         </li>
       </ul>
 
@@ -220,13 +220,13 @@
               <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
               <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
             </div>
-            <h5 class="mb-2">QR code (encoded)</h5>
+            <h5 class="mb-2">QR code URL-encoded</h5>
             <textarea rows="10" class="code-area wrap" readonly>{{ url }}</textarea>
           </div>
 
           <div class="card p-3">
             <div class="d-flex align-items-center justify-content-between mb-2">
-              <h5 class="mb-0">QR code (decoded JSON)</h5>
+              <h5 class="mb-0">QR code decoded</h5>
               <span class="badge badge-soft badge-pill">len {{ url_json|length }}</span>
             </div>
             <div class="code-toolbar">

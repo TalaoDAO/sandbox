@@ -113,10 +113,10 @@
           <a class="nav-link" id="links-tab" data-toggle="tab" href="#links" role="tab" aria-controls="links" aria-selected="false">Links</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" id="enc-tab" data-toggle="tab" href="#enc" role="tab" aria-controls="enc" aria-selected="false">Encoded / Offer</a>
+          <a class="nav-link" id="enc-tab" data-toggle="tab" href="#enc" role="tab" aria-controls="enc" aria-selected="false">Offer</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" id="cfg-tab" data-toggle="tab" href="#cfg" role="tab" aria-controls="cfg" aria-selected="false">Configurations</a>
+          <a class="nav-link" id="cfg-tab" data-toggle="tab" href="#cfg" role="tab" aria-controls="cfg" aria-selected="false">Metadata</a>
         </li>
       </ul>
 
@@ -185,7 +185,7 @@
         <div class="tab-pane fade" id="enc" role="tabpanel" aria-labelledby="enc-tab">
           <div class="card p-3 mb-3">
             <div class="d-flex align-items-center justify-content-between mb-2">
-              <h5 class="mb-0">QR code URL (encoded)</h5>
+              <h5 class="mb-0">Credential Offer URL-encoded</h5>
               <span class="badge badge-soft badge-pill">len {{ url|length }}</span>
             </div>
             <div class="code-toolbar">
@@ -197,7 +197,7 @@
 
           <div class="card p-3">
             <div class="d-flex align-items-center justify-content-between mb-2">
-              <h5 class="mb-0">Offer</h5>
+              <h5 class="mb-0">Credential Offer Decoded</h5>
               <span class="badge badge-soft badge-pill">len {{ url_data|length }}</span>
             </div>
             <div class="code-toolbar">
@@ -212,13 +212,13 @@
         <div class="tab-pane fade" id="cfg" role="tabpanel" aria-labelledby="cfg-tab">
           <ul class="nav nav-pills mb-3" id="cfg-pills" role="tablist">
             <li class="nav-item">
-              <a class="nav-link active" id="cfg-oci-tab" data-toggle="tab" href="#cfg-oci" role="tab">OpenID Credential Issuer</a>
+              <a class="nav-link active" id="cfg-oci-tab" data-toggle="tab" href="#cfg-oci" role="tab">Issuer</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" id="cfg-oauth-tab" data-toggle="tab" href="#cfg-oauth" role="tab">OAuth Authorization Server</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" id="cfg-oidc-tab" data-toggle="tab" href="#cfg-oidc" role="tab">OpenID configuration</a>
+              <a class="nav-link" id="cfg-oidc-tab" data-toggle="tab" href="#cfg-oidc" role="tab">OpenID configuration (deprecated)</a>
             </li>
           </ul>
 
@@ -228,7 +228,7 @@
                 <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
                 <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
               </div>
-              <textarea rows="16" class="code-area wrap" readonly>{{ openid_credential_configuration|safe }}</textarea>
+              <textarea rows="30" class="code-area wrap" readonly>{{ openid_credential_configuration|safe }}</textarea>
             </div>
 
             <div class="tab-pane fade" id="cfg-oauth" role="tabpanel">
@@ -236,7 +236,7 @@
                 <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
                 <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
               </div>
-              <textarea rows="16" class="code-area wrap" readonly>{{ oauth_authorization_server|safe }}</textarea>
+              <textarea rows="30" class="code-area wrap" readonly>{{ oauth_authorization_server|safe }}</textarea>
             </div>
 
             <div class="tab-pane fade" id="cfg-oidc" role="tabpanel">
@@ -244,7 +244,7 @@
                 <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
                 <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
               </div>
-              <textarea rows="16" class="code-area wrap" readonly>{{ openid_configuration|safe }}</textarea>
+              <textarea rows="30" class="code-area wrap" readonly>{{ openid_configuration|safe }}</textarea>
             </div>
           </div>
         </div>
