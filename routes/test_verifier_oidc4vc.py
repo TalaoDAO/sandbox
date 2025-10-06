@@ -277,12 +277,13 @@ def verifier_test_12(mode):
 
 
 def verifier_test_13(mode):
+    authorization_details = '%7B%22type%22%3A%22evm.erc20_transfer%22%2C%22credential_ids%22%3A%5B%22pid_credential%22%5D%2C%22chain_id%22%3A1%2C%22asset%22%3A%7B%22symbol%22%3A%22TALAO%22%2C%22address%22%3A%220x1D4cCC31dAB6EA20f461d329a0562C1c58412515%22%2C%22decimals%22%3A18%7D%2C%22amount%22%3A%225000000000000000000%22%2C%22recipient%22%3A%220x03817255659dc455079df516c5271b4046b2065b%22%2C%22rpc%22%3A%7B%22method%22%3A%22eth_sendTransaction%22%2C%22params%22%3A%5B%7B%22to%22%3A%220x1D4cCC31dAB6EA20f461d329a0562C1c58412515%22%2C%22value%22%3A%220x0%22%2C%22data%22%3A%220xa9059cbb00000000000000000000000003817255659dc455079df516c5271b4046b2065b0000000000000000000000000000000000000000000000004563918244f40000%22%7D%5D%7D%2C%22order_id%22%3A%2216805%22%2C%22ui_hints%22%3A%7B%22title%22%3A%22This%20is%20a%20test%20for%20an%20ERC20%20transfer%22%2C%22subtitle%22%3A%22Cypto%20%20paiement%22%2C%22purpose%22%3A%22Transfer%205%20TALAO%20to%20Pizza%20Shop%22%7D%2C%22eip681%22%3A%22ethereum%3A0x1D4cCC31dAB6EA20f461d329a0562C1c58412515%401/transfer%3Faddress%3D0x03817255659dc455079df516c5271b4046b2065b%26uint256%3D5000000000000000000%22%7D'
     session['verified'] = False
     if mode.myenv == 'aws':
         client_id = "mnpqhqqrlw"
     else:
         client_id = "nyudzjxuhj"
-    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
+    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&authorization_details=" + authorization_details + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
     return redirect(url)
 
 
