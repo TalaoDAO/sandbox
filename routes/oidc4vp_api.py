@@ -858,7 +858,7 @@ def oidc4vc_login_qrcode(red, mode):
         url_json=unquote(url),
         presentation_definition=json.dumps(presentation_definition, indent=4),
         client_metadata=json.dumps(wallet_metadata, indent=4),
-        transaction_data=json.dumps(transaction_data),
+        transaction_data=json.dumps(transaction_data, indent = 4),
         deeplink_altme=deeplink_altme,
         stream_id=stream_id,
         title=verifier_data.get('title', "None"),
