@@ -986,14 +986,15 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
                 return "jwt_" + type + "_json"
         
         vp_format = format(vp_token)   
-        logging.info("VP format = %s", vp_format)   
+        logging.info("vp format =  %s", vp_format)
+        logging.info("VP format = %s", vp_format)
         if vp_token and presentation_submission:
             logging.info('vp token received = %s', vp_token)
             vp_format_presentation_submission = presentation_submission["descriptor_map"][0]["format"]
             logging.info("VP format from presentation submission = %s", vp_format_presentation_submission)
-            if vp_format not in ["vc+sd-jwt", "dc+sd-jwt", "ldp_vp", "jwt_vp_json", "jwt_vp", "jwt_vp_json-ld"]:
+            if vp_format not in ["array of sd-jwt vc", "vc+sd-jwt", "dc+sd-jwt", "ldp_vp", "jwt_vp_json", "jwt_vp", "jwt_vp_json-ld"]:
                 logging.error("vp format unknown")
-                access = False
+                #access = False
             elif vp_format_presentation_submission == "jwt_vp" and vp_format == "jwt_vp_json":
                 pass
             elif vp_format != vp_format_presentation_submission:
@@ -1147,19 +1148,6 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
             else:
                 aud_status = "failed in vp_token aud"
                 access = False
-    
-    #  check profile compliance
-    if access:
-        if verifier_data['profile'] == 'DEFAULT' and vp_token:
-            if vp_format != 'ldp_vp':
-                logging.warning("wrong VP type for profile DEFAULT")
-                access = False
-            elif vp_sub[:12] != 'did:key:z6Mk':
-                logging.warning("wrong key for profile DEFAULT")
-            else:
-                logging.info('Profile DEFAULT is respected')
-        else:
-            pass
         
     status_code = 200 if access else 400
     
