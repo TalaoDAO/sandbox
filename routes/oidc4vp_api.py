@@ -931,6 +931,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
             "error_description": request.form.get('error_description')
         }
         logging.warning("wallet response error = %s", json.dumps(response_data, indent=4))
+        wallet_raw = None
         access = False
     
     # get id_token, vp_token and presentation_submission
@@ -1211,8 +1212,10 @@ async def oidc4vc_response_endpoint(stream_id, red):
                     "presentation_submission": presentation_submission
                     })
     red.setex(stream_id + "_wallet_data", CODE_LIFE, wallet_data)
-    event_data = json.dumps({"stream_id": stream_id})
-    red.publish('api_oidc4vc_verifier', event_data)
+    event_data = json.dumps({
+        "stream_id": stream_id,
+        "followup": "next"})
+    red.publish('api_oidc4vc_verifier', json.dumps(event_data))
     return jsonify(response), status_code
 
 
