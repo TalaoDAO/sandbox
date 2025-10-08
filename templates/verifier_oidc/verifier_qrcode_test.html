@@ -265,7 +265,7 @@
                 <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
                 <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
               </div>
-              <textarea rows="10" class="code-area wrap" readonly>{{ request_uri_header|safe }}</textarea>
+              <textarea rows="20" class="code-area wrap" readonly>{{ request_uri_header|safe }}</textarea>
             </div>
 
             <div class="tab-pane fade" id="requri-payload" role="tabpanel">
@@ -273,7 +273,7 @@
                 <button class="btn btn-sm btn-outline-light" onclick="copySiblingTextarea(this)">Copy</button>
                 <button class="btn btn-sm btn-outline-light" onclick="toggleWrap(this)">Wrap lines</button>
               </div>
-              <textarea rows="16" class="code-area wrap" readonly>{{ request_uri_payload|safe }}</textarea>
+              <textarea rows="30" class="code-area wrap" readonly>{{ request_uri_payload|safe }}</textarea>
             </div>
           </div>
         </div>
