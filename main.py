@@ -29,7 +29,7 @@ from routes import saas4ssi
 from routes import oidc4vp_api, oidc4vp_console
 from routes import oidc4vci_api, oidc4vci_console
 from routes import oauth_api
-from routes import wallet, report_issue
+from routes import wallet, report_issue, crypto_transfer
 
 
 # for testing purpose
@@ -97,6 +97,7 @@ test_verifier_oidc4vc.init_app(app, red, mode)
 statuslist.init_app(app, red, mode)
 waltid_server.init_app(app, red, mode)
 mosip_issuer.init_app(app, red, mode)
+crypto_transfer.init_app(app, red, mode)
 
 sess = Session()
 sess.init_app(app)
