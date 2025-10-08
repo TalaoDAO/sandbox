@@ -61,8 +61,7 @@ def init_app(app, red, mode):
     app.add_url_rule('/verifier/wallet/followup',  view_func=oidc4vc_login_followup, methods=['GET'], defaults={'red': red})
     app.add_url_rule('/verifier/wallet/stream',  view_func=oidc4vc_login_stream, defaults={ 'red': red})
     
-    app.add_url_rule('/wallet/followup_for_wallet',  view_func=followup_for_wallet, defaults={ 'red': red, "mode": mode})
-
+    #app.add_url_rule('/wallet/followup_for_wallet',  view_func=followup_for_wallet, defaults={ 'red': red, "mode": mode})
     
     return
     
@@ -1195,12 +1194,12 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
         }
         logging.info("Access denied")
     else:
-        if verifier_id in ["cfjiehhlkn", "frrrgvvtdt"]:
-            response = {
-                "redirect_uri": mode.server + "/wallet/followup_for_wallet?response_code=12345",
-            }
-        else:
-            response = "{}"
+        #if verifier_id in ["cfjiehhlkn", "frrrgvvtdt"]:
+        #    response = {
+        #        "redirect_uri": mode.server + "/wallet/followup_for_wallet?response_code=12345",
+        #    }
+        #else:
+        response = "{}"
     
     # follow up
     if id_token:
@@ -1281,6 +1280,6 @@ def oidc4vc_login_stream(red):
                 "X-Accel-Buffering": "no"}
     return Response(login_event_stream(red), headers=headers)
 
-
-def followup_for_wallet(red, mode):
-    return render_template("verifier/followup_wallet.html", message="Success, your payment has been received", response_code=request.args.get("response_code", "None"))
+# TODO
+#def followup_for_wallet(red, mode):
+#    return render_template("verifier/followup_wallet.html", message="Success, your payment has been received", response_code=request.args.get("response_code", "None"))
