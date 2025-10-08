@@ -75,7 +75,7 @@ def _build_and_launch(mode):
     ui_icon_uri = request.form.get('ui_icon_uri') or None
     ui_purpose  = request.form.get('ui_purpose') or None
     
-    if chain_id == 11155111 and token_symbol in["USDC", "TALAO"]:
+    if chain_id == 11155111 and token_symbol in["USDT", "TALAO"]:
         flash("Token not supported on Sepolia", "warning")
         return redirect('/crypto_transfer')
     
