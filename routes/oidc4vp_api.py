@@ -908,9 +908,11 @@ async def oidc4vc_response_endpoint(stream_id, red):
     id_token = vp_token = None
     presentation_submission = None
     
-    event_data = json.dumps({
-        "stream_id": stream_id,
-        "followup": "wait"})
+    event_data = json.dumps(
+        {
+            "stream_id": stream_id,
+            "followup": "wait"
+        })
     red.publish('api_oidc4vc_verifier', event_data)
 
     try:
@@ -1215,7 +1217,7 @@ async def oidc4vc_response_endpoint(stream_id, red):
     event_data = json.dumps({
         "stream_id": stream_id,
         "followup": "next"})
-    red.publish('api_oidc4vc_verifier', json.dumps(event_data))
+    red.publish('api_oidc4vc_verifier', event_data)
     return jsonify(response), status_code
 
 
