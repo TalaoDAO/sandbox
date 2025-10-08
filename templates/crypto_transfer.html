@@ -18,7 +18,7 @@
       body { color: var(--page-fg); background: var(--page-bg); }
       .page-wrap { max-width: 1100px; }
       .muted { opacity: var(--muted); }
-  .flashes { margin: 1rem 0; color: green; font-weight: bold; }
+      .flashes { margin: 1rem 0; color: green; font-weight: bold; }
       .card {
         background: var(--card-bg);
         border: 1px solid var(--card-border);
@@ -26,13 +26,11 @@
         overflow: hidden;
         box-shadow: 0 6px 24px rgba(0,0,0,0.04);
       }
-
       .badge-soft {
         background: #f3f4f6;
         border: 1px solid #e5e7eb;
         color: #374151;
       }
-
       .code-area {
         width: 100%;
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -47,7 +45,6 @@
         white-space: pre-wrap;
         word-break: break-word;
       }
-
       .form-control, .custom-select { background: #ffffff; color: #111827; border: 1px solid #d1d5db; }
       .form-control:focus, .custom-select:focus { background: #ffffff; color: #111827; border-color: #9ca3af; box-shadow: none; }
       .custom-control-label { cursor: pointer; }
@@ -62,30 +59,41 @@
       </header>
 
       {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <div class="flashes">
-        {% for message in messages %}
-          <p>{{ message }}</p>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
+        {% if messages %}
+          <div class="flashes">
+            {% for message in messages %}
+              <p>{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
 
       <div class="row">
         <div class="col-lg-8 offset-2 mb-3">
           <div class="card p-3">
             <h5 class="mb-3">Transfer details</h5>
-            <form method="post" action="/sandbox/verifier/crypto_transfer/build" id="transferForm">
 
+            <form method="post" action="/sandbox/verifier/crypto_transfer/build" id="transferForm">
               <div class="form-row">
                 <div class="form-group col-md-6">
-                  <label class="small d-block mb-2">Network</label>
+                  <label class="small d-block mb-2">Protocol & Network</label>
+
+                  <!-- NEW: OIDC4VP Draft switch -->
+                  <div class="custom-control custom-switch mb-2">
+                    <input type="checkbox" class="custom-control-input" id="above23" name="above_23" {% if above_23 %}checked{% endif %}>
+                    <label class="custom-control-label" for="above23">
+                      OIDC4VP Draft ≥ 23 <span class="muted">(off = below 23)</span>
+                    </label>
+                  </div>
+
+                  <!-- Existing: Network switch -->
                   <div class="custom-control custom-switch">
                     <input type="checkbox" class="custom-control-input" id="useSepolia" name="use_sepolia" {% if use_sepolia %}checked{% endif %}>
                     <label class="custom-control-label" for="useSepolia">
                       Sepolia testnet <span class="muted">(off = Ethereum mainnet)</span>
                     </label>
                   </div>
+
                   <input type="hidden" name="chain_id" id="chainIdInput" value="{{ 11155111 if use_sepolia else 1 }}">
                 </div>
 
@@ -94,8 +102,8 @@
                   <select class="custom-select" id="tokenSymbol" name="token_symbol" required>
                     <option value="" selected>— Choose —</option>
                     <option value="USDC">USDC</option>
-                    <option value="USDT">USDT (Mainet only)</option>
-                    <option value="TALAO">TALAO (Mainet only)</option>
+                    <option value="USDT">USDT (Mainnet only)</option>
+                    <option value="TALAO">TALAO (Mainnet only)</option>
                   </select>
                 </div>
               </div>
@@ -144,8 +152,6 @@
             </form>
           </div>
         </div>
-
-       
       </div>
 
       <footer class="text-center my-5 muted">
@@ -165,6 +171,7 @@
         useSepolia.addEventListener('change', setChain);
         setChain();
       }
+      // (No extra JS needed for above_23; backend can branch on presence of the checkbox)
     </script>
   </body>
 </html>

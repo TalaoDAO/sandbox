@@ -61,8 +61,11 @@ def _build_and_launch(mode):
     # Read minimal inputs
     token_symbol = (request.form.get('token_symbol') or '').strip().upper()
     chain_id = 11155111 if request.form.get('use_sepolia') else 1
+    draft = 23 if request.form.get('above_23') else 20
     recipient = (request.form.get('recipient') or '').strip()
     human_amount = (request.form.get('human_amount') or '').strip()
+    
+    print("draft = ", draft)
 
     # Optional UI fields
     order_id    = request.form.get('order_id') or None
@@ -106,14 +109,18 @@ def _build_and_launch(mode):
         ), 400
 
     authorization_details = out["authorization_detail"]
-
-    # Use same client_id/redirect pattern as test 14
-    # (see test_verifier_oidc4vc.py verifier_test_14)  # client ids differ by env
-    if mode.myenv == 'aws':
-        client_id = "cfjiehhlkn"
+    
+    if draft == 20:
+        if mode.myenv == 'aws':
+            client_id = "mnpqhqqrlw"
+        else:
+            client_id = "nyudzjxuhj"
     else:
-        client_id = "frrrgvvtdt"
-        
+        if mode.myenv == 'aws':
+            client_id = "cfjiehhlkn"
+        else:
+            client_id = "frrrgvvtdt"
+            
     launch_url = (
         mode.server +
         "sandbox/verifier/app/authorize?client_id=" + client_id +
