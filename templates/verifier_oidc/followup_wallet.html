@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<!-- followup_wallet.html (mobile-only, no Bootstrap) -->
+<html lang="en">
+  <head>
+    {% include 'head.html' %}
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{{ application_name }} — Follow-up</title>
+    <style>
+      :root{
+        --bg: #0b0b10;
+        --fg: #f7f7fb;
+        --muted: #b8b8c7;
+        --card: rgba(255,255,255,0.06);
+        --card-border: rgba(255,255,255,0.12);
+        --accent: #6aa2ff;  /* info */
+        --accent-strong: #2f7bff;
+        --success: #20c997;
+        --error: #ff5d5d;
+        --radius: 16px;
+        --shadow: 0 8px 32px rgba(0,0,0,0.35);
+      }
+      @media (prefers-color-scheme: light) {
+        :root{
+          --bg: #f6f7fb;
+          --fg: #0f1222;
+          --muted: #576074;
+          --card: #ffffff;
+          --card-border: rgba(15,18,34,0.08);
+          --shadow: 0 10px 30px rgba(10,12,22,0.06);
+        }
+      }
+
+      /* Layout (phone-first) */
+      html, body { height: 100%; }
+      body{
+        margin: 0;
+        color: var(--fg);
+        background:
+          radial-gradient(1200px 600px at 50% -10%, rgba(106,162,255,0.18), transparent 60%),
+          linear-gradient(180deg, var(--bg), var(--bg));
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
+        -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+      }
+
+      .screen{
+        min-height: 100svh;
+        padding: calc(20px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));
+        display: grid;
+        place-items: center;
+      }
+
+      .card{
+        width: min(92vw, 460px);
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 22px 18px;
+        backdrop-filter: blur(8px);
+        animation: fadeIn .45s ease-out both;
+      }
+
+      .header{
+        display: grid;
+        grid-template-columns: 64px 1fr;
+        gap: 14px;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
+      .icon{
+        width: 64px; height: 64px; border-radius: 50%;
+        display: grid; place-items: center;
+        background: linear-gradient(145deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04));
+        border: 1px solid var(--card-border);
+      }
+      .icon.success{ outline: 3px solid color-mix(in oklab, var(--success) 28%, transparent); }
+      .icon.error  { outline: 3px solid color-mix(in oklab, var(--error) 34%, transparent); }
+      .icon.info   { outline: 3px solid color-mix(in oklab, var(--accent) 28%, transparent); }
+
+      .title{
+        margin: 0;
+        font-size: 1.25rem;
+        line-height: 1.2;
+        font-weight: 700;
+        letter-spacing: .2px;
+      }
+      .subtitle{
+        margin: 4px 0 0 0;
+        font-size: .95rem;
+        color: var(--muted);
+      }
+
+      .message{
+        margin: 14px 0 4px;
+        padding: 14px 12px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid var(--card-border);
+        font-size: .98rem;
+        line-height: 1.35;
+        word-break: break-word;
+      }
+
+      .actions{
+        margin-top: 14px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .btn{
+        -webkit-tap-highlight-color: transparent;
+        cursor: pointer;
+        user-select: none;
+        border: 0;
+        border-radius: 14px;
+        padding: 14px 16px;
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: .2px;
+        transition: transform .08s ease, box-shadow .2s ease, background-color .2s ease, opacity .2s ease;
+      }
+      .btn:active { transform: translateY(1px) scale(.99); }
+
+      .btn-primary{
+        background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 88%, #fff 0%), var(--accent-strong));
+        color: #fff;
+        box-shadow: 0 6px 18px color-mix(in oklab, var(--accent) 35%, transparent);
+      }
+      .btn-primary.success{ background: linear-gradient(180deg, color-mix(in oklab, var(--success) 90%, #fff 0%), var(--success)); box-shadow: 0 6px 18px color-mix(in oklab, var(--success) 35%, transparent); }
+      .btn-primary.error  { background: linear-gradient(180deg, color-mix(in oklab, var(--error) 90%, #fff 0%), var(--error));   box-shadow: 0 6px 18px color-mix(in oklab, var(--error) 35%, transparent); }
+
+      .btn-ghost{
+        background: transparent;
+        color: var(--fg);
+        border: 1px solid var(--card-border);
+      }
+
+      .hint{
+        margin-top: 12px;
+        text-align: center;
+        font-size: .85rem;
+        color: var(--muted);
+      }
+
+      @keyframes fadeIn{
+        from{ opacity: 0; transform: translateY(6px); }
+        to  { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Compact phones */
+      @media (max-width: 360px){
+        .header{ grid-template-columns: 56px 1fr; }
+        .icon{ width:56px; height:56px; }
+        .title{ font-size:1.1rem; }
+      }
+    </style>
+  </head>
+  <body>
+  
+
+    <main class="screen">
+      <section class="card" role="status" aria-live="polite">
+        
+
+        <div class="message">{{ message }}</div>
+
+                <div class="message">response_code: {{ message }}</div>
+
+        <div class="actions">
+          <button class="btn btn-ghost" type="button" onclick="goBack()">Back</button>
+          <button
+            class="btn btn-primary {{ status }}"
+            type="button"
+            onclick="window.location.reload()"
+            aria-label="Reload the page"
+          >
+            Reload
+          </button>
+        </div>
+
+        <p class="hint">If you just finished in your wallet, reload to fetch the latest status.</p>
+      </section>
+    </main>
+
+    <script>
+      function goBack(){
+        if (history.length > 1) history.back();
+        else window.location.href = '/';
+      }
+    </script>
+  </body>
+</html>

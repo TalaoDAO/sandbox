@@ -52,10 +52,6 @@ def _form(mode):
     return render_template(
         'crypto_transfer.html',
         company_name='Web3IDPay',
-        page_background_color='#ffffff',
-        page_text_color='#111827',
-        page_title='EUDI Wallet — ERC-20 Transfer',
-        page_subtitle='Compose authorization_details and call Talao sandbox (OIDC4VP)',
         use_sepolia=False,
         decoded_json='',
         launch_url=''
@@ -83,7 +79,6 @@ def _build_and_launch(mode):
         flash("Not a valid ethereum address", "warning")
         return redirect('/crypto_transfer')
 
-
     try:
         token_address, token_decimals = _lookup_token(token_symbol, chain_id)
 
@@ -105,11 +100,6 @@ def _build_and_launch(mode):
         # Re-render the form with the error
         return render_template(
             'crypto_transfer.html',
-            company_name='Web3IDPay',
-            page_background_color='#ffffff',
-            page_text_color='#111827',
-            page_title='EUDI Wallet — ERC-20 Transfer',
-            page_subtitle='Compose authorization_details and call Talao sandbox (OIDC4VP)',
             use_sepolia=(chain_id == 11155111),
             decoded_json=f'Error: {str(e)}',
             launch_url=''
@@ -123,7 +113,7 @@ def _build_and_launch(mode):
         client_id = "cfjiehhlkn"
     else:
         client_id = "frrrgvvtdt"
-
+        
     launch_url = (
         mode.server +
         "sandbox/verifier/app/authorize?client_id=" + client_id +
