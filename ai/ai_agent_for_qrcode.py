@@ -602,10 +602,11 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[str, str, str, List[d
     
     # transaction data
     if request.get("transaction_data"):
+        transaction_data = []
         for td in request.get("transaction_data"):
             transaction_data.append(json.loads(b64url_no_pad_decode(td)))
     else:
-        transaction_data = ""
+        transaction_data = None
 
     # presentation_definition_uri
     if (pd_uri := request.get("presentation_definition_uri")):
@@ -893,6 +894,10 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model, provider):
 
     mention = attribution(model, "OIDC4VP", draft, provider)
 
+    if transaction_data:
+        transaction_data_str = json.dumps(transaction_data)
+    else:
+        transaction_data_str = "No transaction data"
 
     st = style_for(model)
     instr = style_instructions(st, domain="oidc4vp", draft=draft)
@@ -925,7 +930,7 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model, provider):
     {json.dumps(presentation_definition, indent=2)}
     
     --- Transaction Data ---
-    {json.dumps(transaction_data)}
+    {transaction_data_str}
 
     ### Output style
 {instr}
