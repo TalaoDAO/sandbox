@@ -309,7 +309,7 @@ def verifier_callback3(red):
     # Extract tokens
     token = request.args.get("id_token")
     if token in [None, 'None']:
-        token = red.get(request.args.get("id_token_urn")).decode()
+        token = red.get(request.args.get("vp_token_urn")).decode()
     
     raw = red.get(request.args.get("raw_urn")).decode()
     presentation_submission = request.args.get("presentation_submission")

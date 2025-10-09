@@ -384,13 +384,17 @@ def extract_san_domains_and_uris(cert):
         return [], []
 
 
-def verify_issuer_matches_cert(issuer, x5c_list, token="vc"):
+def verify_issuer_matches_cert(issuer, x5c_list, draft, token="vc"):
     cert = load_leaf_cert_from_x5c(x5c_list)
     dns_names, uris = extract_san_domains_and_uris(cert)
 
-    match_dns = issuer in dns_names
-    match_uri = issuer in uris
-    
+    if int(draft) < 23:
+        match_dns = issuer in dns_names
+        match_uri = issuer in uris
+    else:
+        match_dns = issuer.split(":")[1] in dns_names
+        match_uri = issuer.split(":")[1] in uris
+        
     subject = "Issuer" if token == "vc" else "client_id"
     if match_dns or match_uri:
         return f"Info: {subject} matches SAN DNS or URI in certificate."
@@ -545,7 +549,7 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[str, str, str, List[d
                 comments.append("Warning: iss is missing")
             # check signature of the request jwt
             if x5c_list := header.get('x5c'):
-                comments.append(verify_issuer_matches_cert(iss, x5c_list, token="request_jwt"))
+                comments.append(verify_issuer_matches_cert(iss, x5c_list, draft, token="request_jwt"))
                 comments.append(oidc4vc.verify_x5c_chain(x5c_list))
                 try:
                     # Extract the first certificate (leaf cert) from the x5c list

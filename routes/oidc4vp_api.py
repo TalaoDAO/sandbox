@@ -82,11 +82,12 @@ def oidc4vc_build_id_token(client_id, sub, nonce, vp, mode):
         "alg": "RS256"
     }
     # https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+    now = int(datetime.timestamp(datetime.now()))
     payload = {
         "iss": mode.server + 'sandbox/verifier/app',
-        "iat": datetime.timestamp(datetime.now()),
+        "iat": now,
         "aud": client_id,
-        "exp": datetime.timestamp(datetime.now()) + 1000,
+        "exp": now + 1000,
         "sub": sub,
     }
     if nonce:
@@ -219,7 +220,7 @@ def oidc4vc_authorize(red, mode):
             elif code_wallet_data['vp_format'] in ["vc+sd-jwt", "dc+sd-jwt"]:
                 id_token_for_app = None
                 urn = str(uuid.uuid1())
-                red.setex(urn, 1000, code_wallet_data['vp_token_payload'])
+                red.setex(urn, 1000, json.dumps(code_wallet_data['vp_token_payload']))
             else:
                 vp = code_wallet_data['vp_token_payload'].get('vp')
                 logging.info(" code_wallet_data['vp_token_payload'] = %s", code_wallet_data['vp_token_payload'])
@@ -231,7 +232,7 @@ def oidc4vc_authorize(red, mode):
             resp = {
                 "raw_urn": raw_urn,
                 "id_token": id_token_for_app,
-                "id_token_urn": urn,
+                "vp_token_urn": urn,
                 "wallet_id_token": code_wallet_data['id_token'],
                 "presentation_submission": json.dumps(code_wallet_data['presentation_submission']) 
             }
@@ -509,10 +510,9 @@ def build_jwt_request(key, kid, iss, aud, request, client_id_scheme=None, client
         token.make_signed_token(signer_key)
         return token.serialize()
     else:
-        token = base64.urlsafe_b64encode(json.dumps(header).encode()).decode()
-        token += '.'
-        token += base64.urlsafe_b64encode(json.dumps(payload).encode()).decode()
-        return token
+        header_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).decode().rstrip("=")
+        payload_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip("=")
+        return f"{header_b64}.{payload_b64}."
 
 
 def wallet_metadata_uri(verifier_id, red):
@@ -834,7 +834,7 @@ def oidc4vc_login_qrcode(red, mode):
         request_uri_jwt = r.content.decode()
     except Exception:
         request_uri_jwt = ""
-
+        
     deeplink_altme = mode.deeplink_altme + 'app/download/authorize?' + urlencode(authorization_request_displayed)
     logging.info("weblink for same device flow = %s", deeplink_altme)
     qrcode_page = verifier_data.get('verifier_landing_page_style')
@@ -845,8 +845,8 @@ def oidc4vc_login_qrcode(red, mode):
         return jsonify("This QR code is too big, use request uri")
 
     try:
-        request_uri_header = json.dumps(oidc4vc.get_header_from_token(request_uri_jwt), indent=4)
-        request_uri_payload = json.dumps(oidc4vc.get_payload_from_token(request_uri_jwt), indent=4)
+        request_uri_header = json.dumps(oidc4vc.get_header_from_token(request_as_jwt), indent=4)
+        request_uri_payload = json.dumps(oidc4vc.get_payload_from_token(request_as_jwt), indent=4)
     except Exception as e:
         logging.warning("token decryption problem = %s", str(e))
         request_uri_header = ""
@@ -945,6 +945,7 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
             wallet_raw =  request.form.get('response')
             wallet_response = oidc4vc.get_payload_from_token(request.form['response'])
             logging.info("direct_post.jwt, JARM mode")
+            logging.info("response = %s", wallet_raw)
         else:
             logging.info("direct_post")
             wallet_raw = wallet_response = request.form
@@ -971,39 +972,40 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
         else:
             id_token_status = "Not received"
         
+        # normelize vp_token as an array of dict (ldp_vc) or str (other formats)
+        if isinstance(vp_token, dict): # json-ld alone
+            vp_token = [json.dumps(vp_token)]
+        elif isinstance(vp_token, list):
+            pass
+        else:
+            try:
+                vp_token = json.loads(vp_token)
+                if not isinstance(vp_token, list):
+                    vp_token = [vp_token]
+            except Exception:
+                vp_token = [vp_token]
+        
         def format(vp, type="vp"):
             if not vp:
-                return "No vp token"
-            elif isinstance(vp, dict):
+                return
+            if isinstance(vp, dict):
                 vp = json.dumps(vp)
             if vp[:1] == "{":
                 return "ldp_" + type
-            elif isinstance(vp, list):
-                return "array"
             elif len(vp.split("~")) > 1:
                 return "vc+sd-jwt"
             else:
                 return "jwt_" + type + "_json"
         
-        vp_format = format(vp_token)
-        if not vp_format:
-            access = False
-        logging.info("vp format =  %s", vp_format)
-        
         if vp_token and presentation_submission:
             logging.info('vp token received = %s', vp_token)
-            if not isinstance(vp_token, list):
-                vp_token_list = [vp_token]
-            else:
-                vp_token_list = vp_token
-            
             # check presentation submission format vs VP format
             i = 0
-            for vp in vp_token_list:
+            for vp in vp_token:
                 vp_format_presentation_submission = presentation_submission["descriptor_map"][i]["format"]
-                logging.info("VP format from presentation submission for vp # %s = %s", i, vp_format_presentation_submission)
+                logging.info("VP format from presentation submission for vp # %s = %s", str(i), vp_format_presentation_submission)
                 if format(vp) not in ["vc+sd-jwt", "dc+sd-jwt", "ldp_vp", "jwt_vp_json", "jwt_vp", "jwt_vp_json-ld"]:
-                    logging.error("vp format of vp # %s not supported", i)
+                    logging.error("vp format of vp # %s not supported", str(i))
                     #access = False
                 elif vp_format_presentation_submission == "jwt_vp" and format(vp) == "jwt_vp_json":
                     pass
@@ -1018,7 +1020,7 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
             vp_token_status = "Not received"
         
         if not id_token and not vp_token:
-            response_format = "invalid request format",
+            response_format = "invalid request format"
             access = False
         else:
             response_format = "ok"
@@ -1078,89 +1080,96 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
                 
     # check vp_token signature
     if access and vp_token:
-        if vp_format in ["jwt_vp", "jwt_vp_json"]:
-            if len(vp_token.split("~")) > 1: # sd_jwt
-                vp_token = vp_token.split("~")[0]
-            try:
-                oidc4vc.verif_token(vp_token)
-                vp_token_status = "ok"
-                vp_token_payload = oidc4vc.get_payload_from_token(vp_token)
-            except Exception as e:
-                vp_token_status = "signature check failed"
-                access = False
-                logging.warning("signature check failed %s", str(e))
-        elif vp_format == "array":
-            pass
-        elif vp_format in ["vc+sd-jwt", "dc+sd-jwt"]:
-            vcsd_jwt = vp_token.split("~")
-            nb_disclosure = len(vcsd_jwt)
-            logging.info("nb of disclosure = %s", nb_disclosure - 2 )
-            disclosure = []
-            for i in range(1, nb_disclosure-1):
-                _disclosure = vcsd_jwt[i]
-                _disclosure += "=" * ((4 - len(_disclosure) % 4) % 4)
+        i = 0
+        for vp in vp_token:
+            if format(vp) in ["jwt_vp", "jwt_vp_json"]:
+                vp_format = "jwt_vp_json"
+                if len(vp.split("~")) > 1: # sd_jwt
+                    token = vp.split("~")[0]
                 try:
-                    logging.info("disclosure #%s = %s", i, base64.urlsafe_b64decode(_disclosure.encode()).decode())
-                    disc = base64.urlsafe_b64decode(_disclosure.encode()).decode()
-                    disclosure.append(disc)
-                except Exception:
-                    print("i = ", i)
-                    print("_disclosure = ", _disclosure)
-            logging.info("vp token signature not checked yet")
-            vp_token_payload = vp_token
-        else: # ldp_vp
-            verifyResult = json.loads(await didkit.verify_presentation(vp_token, "{}"))
-            vp_token_status = verifyResult
-            vp_token_payload = json.loads(vp_token)
+                    oidc4vc.verif_token(token)
+                    vp_token_status += "ok for vp #" + str(i)
+                    vp_token_payload = oidc4vc.get_payload_from_token(token)
+                except Exception as e:
+                    vp_token_status += "signature check failed for vp #" + str(i)
+                    access = False
+                    logging.warning("signature check failed %s", str(e))
+            elif format(vp) in ["vc+sd-jwt", "dc+sd-jwt"]:
+                vp_format = "vc+sd-jwt"
+                vcsd_jwt = vp.split("~")
+                nb_disclosure = len(vcsd_jwt)
+                logging.info("nb of disclosure = %s", nb_disclosure - 2 )
+                disclosure = []
+                for j in range(1, nb_disclosure-1):
+                    _disclosure = vcsd_jwt[j]
+                    _disclosure += "=" * ((4 - len(_disclosure) % 4) % 4)
+                    try:
+                        logging.info("disclosure #%s = %s", i, base64.urlsafe_b64decode(_disclosure.encode()).decode())
+                        disc = base64.urlsafe_b64decode(_disclosure.encode()).decode()
+                        disclosure.append(disc)
+                    except Exception:
+                        print("j = ", j)
+                        print("_disclosure = ", _disclosure)
+                logging.info("vp token signature not checked yet")
+                vp_token_payload = vp
+            else: # ldp_vp
+                vp_format = "ldp_vp"
+                if isinstance(vp, dict):
+                    vp = json.dumps(vp)
+                verifyResult = json.loads(await didkit.verify_presentation(vp, "{}"))
+                vp_token_status = verifyResult
+                vp_token_payload = vp
 
     # check types of vc
     if access and vp_token:
-        vc_format = ""
-        if vp_format in ["jwt_vp", "jwt_vp_json"]:
-            vc_list = oidc4vc.get_payload_from_token(vp_token)['vp']["verifiableCredential"]
-            for vc in vc_list:
-                vc_format += " " + format(vc, type="vc")
-        elif vp_format in ["vc+sd-jwt", "dc+sd-jwt", "array"]:
-            vc_format = "vc+sd-jwt"
-        else:
-            vc_list = json.loads(vp_token)["verifiableCredential"]
-            if isinstance(vc_list, dict):
-                vc_list = [vc_list]
-            for vc in vc_list:
-                vc_format += " " + format(vc, type="vc")
+        for vp in vp_token:
+            vc_format = ""
+            if format(vp) in ["jwt_vp", "jwt_vp_json"]:
+                vc_list = oidc4vc.get_payload_from_token(vp)['vp']["verifiableCredential"]
+                for vc in vc_list:
+                    vc_format += " " + format(vc, type="vc")
+            elif vp_format in ["vc+sd-jwt", "dc+sd-jwt", "array"]:
+                vc_format = "vc+sd-jwt"
+            else:
+                vc_list = json.loads(vp)["verifiableCredential"]
+                if isinstance(vc_list, dict):
+                    vc_list = [vc_list]
+                for vc in vc_list:
+                    vc_format += " " + format(vc, type="vc")
 
     # check nonce and aud in vp_token
     if access and vp_token:
-        if vp_format == "ldp_vp":
-            vp_sub = json.loads(vp_token)['holder']
-            if json.loads(vp_token)['proof'].get('challenge') == nonce:
-                nonce_status = "ok"
+        for vp in vp_token:
+            if format(vp) == "ldp_vp":
+                vp_sub = json.loads(vp)['holder']
+                if json.loads(vp)['proof'].get('challenge') == nonce:
+                    nonce_status = "ok"
+                else:
+                    nonce_status = "failed in vp_token for challenge "
+                    access = False
+                if json.loads(vp)['proof'].get('domain') == data['client_id']:
+                    aud_status = "ok"
+                else:
+                    aud_status = "failed in vp_token for domain "
+                    access = False
+            elif format(vp) in ["vc+sd-jwt", "dc+sd-jwt"]:
+                logging.info("nonce and aud not tested with sd-jwt")
             else:
-                nonce_status = "failed in vp_token for challenge "
-                access = False
-            if json.loads(vp_token)['proof'].get('domain') == data['client_id']:
-                aud_status = "ok"
-            else:
-                aud_status = "failed in vp_token for domain "
-                access = False
-        elif vp_format in ["vc+sd-jwt", "dc+sd-jwt", "array"]:
-            logging.info("nonce and aud not tested with sd-jwt")
-        else:
-            try:
-                vp_sub = vp_token_payload['iss']
-            except Exception:
-                logging.error("iss is missiong in vp_token")
-                vp_sub = vp_token_payload['sub']
-            if oidc4vc.get_payload_from_token(vp_token)['nonce'] == nonce:
-                nonce_status = "ok"
-            else:
-                nonce_status = "failed in vp_token nonce "
-                access = False
-            if oidc4vc.get_payload_from_token(vp_token)['aud'] == data['client_id']:
-                aud_status = "ok"
-            else:
-                aud_status = "failed in vp_token aud"
-                access = False
+                try:
+                    vp_sub = vp_token_payload['iss']
+                except Exception:
+                    logging.error("iss is missiong in vp_token")
+                    vp_sub = vp_token_payload['sub']
+                if oidc4vc.get_payload_from_token(vp)['nonce'] == nonce:
+                    nonce_status = "ok"
+                else:
+                    nonce_status = "failed in vp_token nonce "
+                    access = False
+                if oidc4vc.get_payload_from_token(vp)['aud'] == data['client_id']:
+                    aud_status = "ok"
+                else:
+                    aud_status = "failed in vp_token aud"
+                    access = False
         
     status_code = 200 if access else 400
     
@@ -1195,11 +1204,6 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
         }
         logging.info("Access denied")
     else:
-        #if verifier_id in ["cfjiehhlkn", "frrrgvvtdt"]:
-        #    response = {
-        #        "redirect_uri": mode.server + "/wallet/followup_for_wallet?response_code=12345",
-        #    }
-        #else:
         response = "{}"
     
     # follow up
@@ -1216,7 +1220,7 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
                     "raw": wallet_raw,
                     "access": access,
                     "detailed_response": json.dumps(detailed_response),
-                    "vp_token_payload": vp_token_payload, # jwt_vp payload or json-ld 
+                    "vp_token_payload": vp_token, # jwt_vp payload or json-ld 
                     "vp_format": vp_format,
                     "sub": sub,
                     "id_token": id_token,
