@@ -601,10 +601,11 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[str, str, str, List[d
         return None, None, "Error: malformed authorization request", None
     
     # transaction data
-    transaction_data = []
     if request.get("transaction_data"):
         for td in request.get("transaction_data"):
             transaction_data.append(json.loads(b64url_no_pad_decode(td)))
+    else:
+        transaction_data = ""
 
     # presentation_definition_uri
     if (pd_uri := request.get("presentation_definition_uri")):
