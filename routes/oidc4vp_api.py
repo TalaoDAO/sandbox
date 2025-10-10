@@ -71,7 +71,7 @@ def convert_jwt2jsonld_vc(vc):
     return payload.get('vc')
 
 
-def oidc4vc_build_id_token(client_id, sub, nonce, vp, mode):
+def oidc4vc_build_id_token(client_id, sub, nonce, mode):
     """
     Build an Id_token for application 
     """
@@ -81,7 +81,6 @@ def oidc4vc_build_id_token(client_id, sub, nonce, vp, mode):
         "kid": RSA_KEY_DICT['kid'],
         "alg": "RS256"
     }
-    # https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
     now = int(datetime.timestamp(datetime.now()))
     payload = {
         "iss": mode.server + 'sandbox/verifier/app',
@@ -92,42 +91,6 @@ def oidc4vc_build_id_token(client_id, sub, nonce, vp, mode):
     }
     if nonce:
         payload['nonce'] = nonce
-    if vp:
-        if vp.get("vc+sd-jwt"):
-            payload['vc+sd-jwt'] = vp["vc+sd-jwt"]
-            vc_list = []
-        elif vp.get("dc+sd-jwt"):
-            payload['dc+sd-jwt'] = vp["dc+sd-jwt"]
-            vc_list = []
-        elif isinstance(vp['verifiableCredential'], dict):
-            vc_list = [vp['verifiableCredential']]
-        else:
-            vc_list = vp['verifiableCredential']
-        # https://www.iana.org/assignments/jwt/jwt.xhtml
-        for vc in vc_list:
-            if isinstance(vc, str):
-                vc = convert_jwt2jsonld_vc(vc)
-                if not vc: return
-            if 'EmailPass' in vc['type'] :
-                payload['email'] = vc['credentialSubject']['email']
-            elif 'PhoneProof' in vc['type']:
-                payload['phone'] = vc['credentialSubject']['phone']
-            elif 'VerifiableId'in vc['type']:
-                payload['given_name'] = vc['credentialSubject'].get('firstName')
-                payload['family_name'] = vc['credentialSubject'].get('familyName')
-                payload['birthdate'] = vc['credentialSubject'].get('dateOfBirth')
-                if vc['credentialSubject'].get('placeOfBirth'):
-                    payload['birthplace'] = vc['credentialSubject'].get('placeOfBirth')
-                if vc['credentialSubject'].get('gender'):
-                    payload['gender'] = vc['credentialSubject'].get('gender')
-            elif 'Over18' in vc['type']:
-                payload['is_over_18'] = True
-            elif 'Over15' in vc['type']:
-                payload['is_over_15'] = True
-            else:
-                logging.info("VC type not supported in id_token")
-            
-    logging.info("ID Token payload = %s", payload)
     token = jwt.JWT(header=header, claims=payload, algs=["RS256"])
     token.make_signed_token(verifier_key)
     return token.serialize()
@@ -143,7 +106,7 @@ def b64url_no_pad_decode(s: str) -> bytes:
         padding_needed = (4 - len(s) % 4) % 4
         s += "=" * padding_needed
         return base64.urlsafe_b64decode(s)
-    except:
+    except Exception:
         return base64.urlsafe_b64decode(s)
 
 # For customer app
@@ -176,11 +139,15 @@ id_token -> implicit flow
 
 def oidc4vc_authorize(red, mode):
     """ 
-    code_wallet_data = 
-        {
-            "vp_token_payload",: xxxxx
-            "sub": xxxxxx,
-            "presentation_submission": "xxx"
+    code_wallet_data = {
+            "raw": raw data received from wallet,
+            "access": access,
+            "detailed_response": ....
+            "vp_token": vp_token received
+            "vp_format": vp_format,
+            "sub": sub,
+            "id_token": id_token (siopv2 id_token)
+            "presentation_submission": presentation_submission
         }
     """
     logging.info("authorization endpoint request  = %s", request.args)
@@ -215,16 +182,14 @@ def oidc4vc_authorize(red, mode):
                 return redirect(redirect_uri + sep + urlencode(resp)) 
             urn = None
             if code_wallet_data['vp_format'] == 'ldp_vp':
-                vp = code_wallet_data['vp_token_payload']
-                id_token_for_app = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
+                id_token_for_app = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], mode)
             elif code_wallet_data['vp_format'] in ["vc+sd-jwt", "dc+sd-jwt"]:
                 id_token_for_app = None
                 urn = str(uuid.uuid1())
-                red.setex(urn, 1000, json.dumps(code_wallet_data['vp_token_payload']))
+                red.setex(urn, 1000, json.dumps(code_wallet_data['vp_token']))
             else:
-                vp = code_wallet_data['vp_token_payload'].get('vp')
-                logging.info(" code_wallet_data['vp_token_payload'] = %s", code_wallet_data['vp_token_payload'])
-                id_token_for_app = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], vp, mode)
+                logging.info(" code_wallet_data['vp_token'] = %s", code_wallet_data['vp_token'])
+                id_token_for_app = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], mode)
             
             raw_urn = str(uuid.uuid1())
             red.setex(raw_urn, 1000, json.dumps(code_wallet_data.get('raw')))
@@ -341,9 +306,8 @@ def oidc4vc_token(red, mode):
     try:
         token = request.headers['Authorization']
         token = token.split(" ")[1]
-        token = base64.b64decode(token).decode()
-        client_secret = token.split(":")[1]
-        client_id = token.split(":")[0]
+        userpass = base64.b64decode(token).decode()
+        client_id, client_secret = userpass.split(":", 1)
         logging.info('Authentication client_secret_basic')
     except Exception:
         try:
@@ -390,13 +354,13 @@ def oidc4vc_token(red, mode):
         logging.error("redis get problem to get code_wallet_data")
         return manage_error("invalid_grant")
     if code_wallet_data['vp_format'] == 'ldp_vp':
-        vp = code_wallet_data['vp_token_payload']
-        id_token = oidc4vc_build_id_token(client_id, code_wallet_data['sub'], data['nonce'], vp, mode)
+        #vp = code_wallet_data['vp_token']
+        id_token = oidc4vc_build_id_token(client_id, code_wallet_data['sub'], data['nonce'], mode)
     elif code_wallet_data['vp_format'] in ['vc+sd-jwt', "dc+sd-jwt"]:
-        id_token = code_wallet_data['vp_token_payload']
+        id_token = code_wallet_data['vp_token']
     else:
-        vp = code_wallet_data['vp_token_payload'].get('vp')
-        id_token = oidc4vc_build_id_token(client_id, code_wallet_data['sub'], data['nonce'], vp, mode)
+        #vp = code_wallet_data['vp_token'].get('vp')
+        id_token = oidc4vc_build_id_token(client_id, code_wallet_data['sub'], data['nonce'], mode)
     logging.info('id_token and access_token sent to client from token endpoint')
     access_token = str(uuid.uuid1())
     endpoint_response = {
@@ -411,7 +375,7 @@ def oidc4vc_token(red, mode):
         json.dumps({
             "client_id": client_id,
             "sub": code_wallet_data['sub'],
-            "vp_token_payload": code_wallet_data['vp_token_payload']
+            "vp_token": code_wallet_data['vp_token']
         })
     )
     headers = {
@@ -452,9 +416,9 @@ def oidc4vc_userinfo(red):
         wallet_data = json.loads(red.get(access_token + '_wallet_data').decode())
         payload = {
             "sub": wallet_data['sub'],
-            "vp_token_payload": wallet_data["vp_token_payload"]
+            "vp_token": wallet_data["vp_token"]
         }
-        payload.update(oidc4vc.decode_sd_jwt(wallet_data["vp_token_payload"]))
+        payload.update(oidc4vc.decode_sd_jwt(wallet_data["vp_token"]))
         headers = {
             "Cache-Control": "no-store",
             "Pragma": "no-cache",
@@ -895,21 +859,23 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
     
     # prepare the verifier response to wallet
     response_format = "Unknown"
-    vc_format = "Unknown"
     state_status = 'unknown'
     vp_format = "Unknown"
     presentation_submission_status = "Unknown"
-    vp_token_status = "Unknown"
+    vp_token_status = []
     id_token_status = "Unknown"
     aud_status = "unknown"
     nonce_status = "Unknown"
     subject_syntax_type = "DID"
-    vp_token_payload = {}
+    vp_token = {}
     id_token_payload = {}
     access = True
     qrcode_status = "Unknown"
     id_token = vp_token = None
     presentation_submission = None
+    nonce = ""
+    state = "No state received"
+    wallet_sub = "https://self-issued.me/v2"
     
     event_data = json.dumps(
         {
@@ -945,10 +911,12 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
             wallet_raw =  request.form.get('response')
             wallet_response = oidc4vc.get_payload_from_token(request.form['response'])
             logging.info("direct_post.jwt, JARM mode")
+            wallet_sub = wallet_response.get("sub")
             logging.info("response = %s", wallet_raw)
         else:
             logging.info("direct_post")
             wallet_raw = wallet_response = request.form
+            wallet_sub = request.form.get("aud")
         
         vp_token = wallet_response.get('vp_token')
         id_token = wallet_response.get('id_token')
@@ -985,9 +953,9 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
             except Exception:
                 vp_token = [vp_token]
         
-        def format(vp, type="vp"):
+        def format(vp, type="vp") -> str:
             if not vp:
-                return
+                return ""
             if isinstance(vp, dict):
                 vp = json.dumps(vp)
             if vp[:1] == "{":
@@ -1020,12 +988,12 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
             vp_token_status = "Not received"
         
         if not id_token and not vp_token:
-            response_format = "invalid request format"
+            response_format = "invalid response format"
             access = False
         else:
-            response_format = "ok"
+            response_format = "response format is correct"
         
-        state = wallet_response.get('id_token')
+        state = wallet_response.get('state', "No state received")
 
     if access:
         nonce = data['pattern'].get('nonce')
@@ -1079,6 +1047,7 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
                 id_token_status += " id token sub != iss"   
                 
     # check vp_token signature
+    vp_format = ""
     if access and vp_token:
         i = 0
         for vp in vp_token:
@@ -1086,12 +1055,13 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
                 vp_format = "jwt_vp_json"
                 if len(vp.split("~")) > 1: # sd_jwt
                     token = vp.split("~")[0]
+                else:
+                    continue
                 try:
                     oidc4vc.verif_token(token)
-                    vp_token_status += "ok for vp #" + str(i)
-                    vp_token_payload = oidc4vc.get_payload_from_token(token)
+                    vp_token_status.append("ok for vp #" + str(i))
                 except Exception as e:
-                    vp_token_status += "signature check failed for vp #" + str(i)
+                    vp_token_status.append("signature check failed for vp #" + str(i))
                     access = False
                     logging.warning("signature check failed %s", str(e))
             elif format(vp) in ["vc+sd-jwt", "dc+sd-jwt"]:
@@ -1108,84 +1078,55 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
                         disc = base64.urlsafe_b64decode(_disclosure.encode()).decode()
                         disclosure.append(disc)
                     except Exception:
-                        print("j = ", j)
-                        print("_disclosure = ", _disclosure)
+                        logging.info("j = %s", j)
+                        logging.info("_disclosure = %s", _disclosure)
                 logging.info("vp token signature not checked yet")
-                vp_token_payload = vp
             else: # ldp_vp
                 vp_format = "ldp_vp"
                 if isinstance(vp, dict):
                     vp = json.dumps(vp)
                 verifyResult = json.loads(await didkit.verify_presentation(vp, "{}"))
-                vp_token_status = verifyResult
-                vp_token_payload = vp
-
-    # check types of vc
-    if access and vp_token:
-        for vp in vp_token:
-            vc_format = ""
-            if format(vp) in ["jwt_vp", "jwt_vp_json"]:
-                vc_list = oidc4vc.get_payload_from_token(vp)['vp']["verifiableCredential"]
-                for vc in vc_list:
-                    vc_format += " " + format(vc, type="vc")
-            elif vp_format in ["vc+sd-jwt", "dc+sd-jwt", "array"]:
-                vc_format = "vc+sd-jwt"
-            else:
-                vc_list = json.loads(vp)["verifiableCredential"]
-                if isinstance(vc_list, dict):
-                    vc_list = [vc_list]
-                for vc in vc_list:
-                    vc_format += " " + format(vc, type="vc")
+                vp_token_status.append(verifyResult)
 
     # check nonce and aud in vp_token
     if access and vp_token:
         for vp in vp_token:
             if format(vp) == "ldp_vp":
-                vp_sub = json.loads(vp)['holder']
-                if json.loads(vp)['proof'].get('challenge') == nonce:
+                if isinstance(vp, str):
+                    vp = json.loads(vp)
+                wallet_sub = vp['holder']
+                if vp['proof'].get('challenge') == nonce:
                     nonce_status = "ok"
                 else:
                     nonce_status = "failed in vp_token for challenge "
                     access = False
-                if json.loads(vp)['proof'].get('domain') == data['client_id']:
+                if vp['proof'].get('domain') == data['client_id']:
                     aud_status = "ok"
                 else:
                     aud_status = "failed in vp_token for domain "
                     access = False
-            elif format(vp) in ["vc+sd-jwt", "dc+sd-jwt"]:
-                logging.info("nonce and aud not tested with sd-jwt")
             else:
-                try:
-                    vp_sub = vp_token_payload['iss']
-                except Exception:
-                    logging.error("iss is missiong in vp_token")
-                    vp_sub = vp_token_payload['sub']
-                if oidc4vc.get_payload_from_token(vp)['nonce'] == nonce:
-                    nonce_status = "ok"
-                else:
-                    nonce_status = "failed in vp_token nonce "
-                    access = False
-                if oidc4vc.get_payload_from_token(vp)['aud'] == data['client_id']:
-                    aud_status = "ok"
-                else:
-                    aud_status = "failed in vp_token aud"
-                    access = False
+                vp_token_payload = oidc4vc.get_payload_from_token(vp)
+                if not vp_token_payload.get("nonce"):
+                    nonce_status = "nonce is missing"
+                if not vp_token_payload.get("nonce"):
+                    aud_status = "aud is missing"
         
     status_code = 200 if access else 400
-    
-    try:
-        state_status = state
-    except Exception:
-        state_status = "Unknown"
+        
+    if id_token:
+        sub = id_token_payload.get('sub')
+    else:
+        sub = wallet_sub
         
     detailed_response = {
+        "status_code": status_code,
         "wallet_error_response": request.form.get('error'),
         "wallet_error_description_response": request.form.get('error_description'),
-        "created": datetime.timestamp(datetime.now()),
+        "created": int(datetime.timestamp(datetime.now())),
         "qrcode_status": qrcode_status,
-        "state": state_status,
+        "state": state,
         "vp format": vp_format,
-        "vc format": vc_format,
         "subject_syntax_type": subject_syntax_type,
         "presentation_submission_status": presentation_submission_status,
         "nonce_status": nonce_status,
@@ -1193,7 +1134,7 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
         "response_format": response_format,
         "id_token_status": id_token_status,
         "vp_token_status": vp_token_status,
-        "status_code": status_code,
+        "sub": sub
     }
     logging.info("response detailed = %s", json.dumps(detailed_response, indent=4))
 
@@ -1204,23 +1145,16 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
         }
         logging.info("Access denied")
     else:
-        response = "{}"
+        response = {"access": "success"}
     
-    # follow up
-    if id_token:
-        sub = id_token_payload.get('sub')
-    else:
-        try:
-            sub = vp_sub
-        except Exception:
-            sub = "Error"
+    
     
     # data sent to application
     wallet_data = json.dumps({
                     "raw": wallet_raw,
                     "access": access,
                     "detailed_response": json.dumps(detailed_response),
-                    "vp_token_payload": vp_token, # jwt_vp payload or json-ld 
+                    "vp_token": vp_token, # jwt_vp payload or json-ld 
                     "vp_format": vp_format,
                     "sub": sub,
                     "id_token": id_token,
@@ -1265,6 +1199,8 @@ def oidc4vc_login_followup(red):
             'error_description': stream_id_wallet_data['detailed_response']
         }
         session['verified'] = False
+    
+    # success exit
     else:
         session['verified'] = True
         red.setex(code + "_wallet_data", CODE_LIFE, json.dumps(stream_id_wallet_data))
