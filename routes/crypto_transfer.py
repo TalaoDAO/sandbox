@@ -43,6 +43,8 @@ TOKENS = {
     'ethereum:sepolia': {
         # Verified: Circle USDC (Sepolia)
         'USDC':  { 'kind': 'erc20', 'address': '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', 'decimals': 6 },  # :contentReference[oaicite:2]{index=2}
+        'EURC':  { 'kind': 'erc20', 'address': '0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4', 'decimals': 6 },  # :contentReference[oaicite:2]{index=2}
+     
         'ETH':   { 'kind': 'native' }
     },
 
