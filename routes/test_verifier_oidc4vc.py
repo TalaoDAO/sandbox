@@ -308,10 +308,13 @@ def verifier_callback3(red):
         return jsonify(request.args)
     # Extract tokens
     token = request.args.get("id_token")
-    if token in [None, 'None']:
-        token = red.get(request.args.get("vp_token_urn")).decode()
+    try:
+        if token in [None, 'None']:
+            token = red.get(request.args.get("vp_token_urn")).decode()
+        raw = red.get(request.args.get("raw_urn")).decode()
+    except Exception:
+        return jsonify({"error": "timeout"})
     
-    raw = red.get(request.args.get("raw_urn")).decode()
     presentation_submission = request.args.get("presentation_submission")
 
     # Fallback for wallet-specific token
@@ -394,8 +397,6 @@ def verifier_callback3(red):
                     pass
                 blockchain_explorer = explorer + kbjwt_payload.get("blockchain_data_transaction", "")
                 print("Blockchain transaction URL = ", blockchain_explorer)
-        else:
-            print("No blockchain transaction data")
     #blockchain_explorer = "https://etherscan.io/tx/0xf9423fa82fec28dfeed6110d4416d98dc4926cb7d75432ce8c161b1814050658"
     
     return render_template(
