@@ -48,6 +48,7 @@
       .form-control, .custom-select { background: #ffffff; color: #111827; border: 1px solid #d1d5db; }
       .form-control:focus, .custom-select:focus { background: #ffffff; color: #111827; border-color: #9ca3af; box-shadow: none; }
       .custom-control-label { cursor: pointer; }
+      .help { font-size: .85rem; opacity: .75; }
     </style>
   </head>
   <body>
@@ -55,7 +56,7 @@
       <!-- Header -->
       <header class="text-center my-4">
         <h1 class="mt-3">Generate OIDC4VP crypto payment request</h1>
-        <p class="lead muted">Select a token, set the amount and recipient, and launch the verifier request</p>
+        <p class="lead muted">Choose a network, then a token available on that network. Set amount & recipient and launch.</p>
       </header>
 
       {% with messages = get_flashed_messages() %}
@@ -78,7 +79,7 @@
                 <div class="form-group col-md-6">
                   <label class="small d-block mb-2">Protocol & Network</label>
 
-                  <!-- NEW: OIDC4VP Draft switch -->
+                  <!-- OIDC4VP Draft switch (unchanged) -->
                   <div class="custom-control custom-switch mb-2">
                     <input type="checkbox" class="custom-control-input" id="above23" name="above_23" {% if above_23 %}checked{% endif %}>
                     <label class="custom-control-label" for="above23">
@@ -86,24 +87,42 @@
                     </label>
                   </div>
 
-                  <!-- Existing: Network switch -->
-                  <div class="custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="useSepolia" name="use_sepolia" {% if use_sepolia %}checked{% endif %}>
-                    <label class="custom-control-label" for="useSepolia">
-                      Sepolia testnet <span class="muted">(off = Ethereum mainnet)</span>
-                    </label>
-                  </div>
+                  <!-- NEW: Network picker -->
+                  <label class="small mb-1">Network</label>
+                  <select class="custom-select" id="networkSelect" required>
+                    <optgroup label="Ethereum">
+                      <option value="ethereum:mainnet">Ethereum — Mainnet</option>
+                      <option value="ethereum:sepolia">Ethereum — Sepolia (testnet)</option>
+                    </optgroup>
+                    <optgroup label="Polygon">
+                      <option value="polygon:mainnet">Polygon PoS — Mainnet</option>
+                      <option value="polygon:amoy">Polygon PoS — Amoy (testnet)</option>
+                    </optgroup>
+                    <optgroup label="Etherlink (EVM L2)">
+                      <option value="etherlink:mainnet">Etherlink — Mainnet</option>
+                      <option value="etherlink:testnet">Etherlink — Testnet</option>
+                    </optgroup>
+                    <optgroup label="Tezos">
+                      <option value="tezos:mainnet">Tezos — Mainnet</option>
+                      <option value="tezos:ghostnet">Tezos — Ghostnet (testnet)</option>
+                    </optgroup>
+                  </select>
 
-                  <input type="hidden" name="chain_id" id="chainIdInput" value="{{ 11155111 if use_sepolia else 1 }}">
+                  <!-- Hidden fields posted to backend -->
+                  <input type="hidden" name="network_key" id="networkKey">
+                  <input type="hidden" name="chain_type" id="chainType">
+                  <input type="hidden" name="chain_id" id="chainIdInput">
+                  <input type="hidden" name="token_kind" id="tokenKind">
                 </div>
 
                 <div class="form-group col-md-6">
-                  <label class="small">Token</label>
+                  <label class="small d-flex align-items-center">
+                    Token
+                    <span id="tokenHelp" class="help ml-2"></span>
+                  </label>
                   <select class="custom-select" id="tokenSymbol" name="token_symbol" required>
                     <option value="" selected>— Choose —</option>
-                    <option value="USDC">USDC</option>
-                    <option value="USDT">USDT (Mainnet only)</option>
-                    <option value="TALAO">TALAO (Mainnet only)</option>
+                    <!-- options populated dynamically -->
                   </select>
                 </div>
               </div>
@@ -114,8 +133,9 @@
                   <input type="text" class="form-control" name="human_amount" id="humanAmount" placeholder="0.0" required>
                 </div>
                 <div class="form-group col-md-6">
-                  <label class="small">Recipient (EOA)</label>
+                  <label class="small">Recipient (address)</label>
                   <input type="text" class="form-control" name="recipient" id="recipient" placeholder="0x…" required>
+                  <div class="help" id="recipientHelp">EVM: 0x… • Tezos: tz1… / KT1…</div>
                 </div>
               </div>
 
@@ -163,15 +183,120 @@
     <script src="{{ url_for('static', filename='bs-init.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     <script>
-      // Network toggle → chainId
-      const useSepolia = document.getElementById('useSepolia');
-      const chainIdInput = document.getElementById('chainIdInput');
-      if (useSepolia) {
-        const setChain = () => chainIdInput.value = useSepolia.checked ? '11155111' : '1';
-        useSepolia.addEventListener('change', setChain);
-        setChain();
+      // Registry: networks and tokens actually available on each.
+      // NOTE: Native coins are shown but this demo backend only builds ERC-20 on EVM.
+      const REGISTRY = {
+        'ethereum:mainnet': {
+          type: 'evm', chainId: 1,
+          tokens: [
+     //       { symbol: 'ETH',  label: 'ETH (native)', kind: 'native' },
+            { symbol: 'USDC', label: 'USDC', kind: 'erc20' },
+            { symbol: 'USDT', label: 'USDT', kind: 'erc20' },
+            { symbol: 'TALAO', label: 'TALAO (mainnet only)', kind: 'erc20' }
+          ]
+        },
+        'ethereum:sepolia': {
+          type: 'evm', chainId: 11155111,
+          tokens: [
+     //       { symbol: 'ETH',  label: 'ETH (native)', kind: 'native' },
+            { symbol: 'USDC', label: 'USDC (Circle test)', kind: 'erc20' }
+          ]
+        },
+        'polygon:mainnet': {
+          type: 'evm', chainId: 137,
+          tokens: [
+      //      { symbol: 'MATIC', label: 'MATIC (native)', kind: 'native' },
+            { symbol: 'USDC',  label: 'USDC (native)', kind: 'erc20' },
+            { symbol: 'USDT',  label: 'USDT', kind: 'erc20' }
+          ]
+        },
+        'polygon:amoy': {
+          type: 'evm', chainId: 80002,
+          tokens: [
+   //         { symbol: 'MATIC', label: 'MATIC (native)', kind: 'native' },
+            { symbol: 'USDC',  label: 'USDC (testnet)', kind: 'erc20' }
+          ]
+        },
+        'etherlink:mainnet': {
+          type: 'evm', chainId: 42793,
+          tokens: [
+            { symbol: 'XTZ', label: 'XTZ (native)', kind: 'native' }
+          ]
+        },
+        'etherlink:testnet': {
+          type: 'evm', chainId: 128123,
+          tokens: [
+            { symbol: 'XTZ', label: 'XTZ (native)', kind: 'native' }
+          ]
+        },
+        'tezos:mainnet': {
+          type: 'tezos', network: 'mainnet',
+          tokens: [
+            { symbol: 'XTZ', label: 'XTZ (native)', kind: 'native' }
+          ]
+        },
+        'tezos:ghostnet': {
+          type: 'tezos', network: 'ghostnet',
+          tokens: [
+            { symbol: 'XTZ', label: 'XTZ (native)', kind: 'native' }
+          ]
+        }
+      };
+
+      const networkSelect = document.getElementById('networkSelect');
+      const tokenSelect   = document.getElementById('tokenSymbol');
+      const tokenHelp     = document.getElementById('tokenHelp');
+      const chainType     = document.getElementById('chainType');
+      const chainIdInput  = document.getElementById('chainIdInput');
+      const tokenKind     = document.getElementById('tokenKind');
+      const networkKey    = document.getElementById('networkKey');
+      const recipient     = document.getElementById('recipient');
+      const recipientHelp = document.getElementById('recipientHelp');
+
+      function refreshForNetwork() {
+        const key = networkSelect.value;
+        const cfg = REGISTRY[key];
+
+        // Hidden fields for backend
+        networkKey.value = key;
+        chainType.value = cfg.type;
+        chainIdInput.value = (cfg.type === 'evm') ? String(cfg.chainId) : '';
+
+        // Recipient placeholder/help
+        if (cfg.type === 'evm') {
+          recipient.placeholder = '0x…';
+          recipientHelp.textContent = 'EVM: 0x… • Tezos: tz1… / KT1…';
+        } else {
+          recipient.placeholder = 'tz1… / KT1…';
+          recipientHelp.textContent = 'Tezos only: tz1… / tz2… / tz3… or KT1…';
+        }
+
+        // Rebuild token options
+        tokenSelect.innerHTML = '<option value="">— Choose —</option>';
+        cfg.tokens.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t.symbol;
+          opt.textContent = t.label || t.symbol;
+          opt.dataset.kind = t.kind;
+          tokenSelect.appendChild(opt);
+        });
+
+        tokenHelp.textContent = cfg.type === 'evm'
+          ? '(ERC-20 supported in this demo; native shown for completeness)'
+          : '(Tezos shown for completeness; this demo builds EVM ERC-20 only)';
+        tokenKind.value = '';
       }
-      // (No extra JS needed for above_23; backend can branch on presence of the checkbox)
+
+      function onTokenChange() {
+        const selected = tokenSelect.options[tokenSelect.selectedIndex];
+        tokenKind.value = selected?.dataset?.kind || '';
+      }
+
+      networkSelect.addEventListener('change', refreshForNetwork);
+      tokenSelect.addEventListener('change', onTokenChange);
+      // init defaults
+      networkSelect.value = 'ethereum:mainnet';
+      refreshForNetwork();
     </script>
   </body>
 </html>
