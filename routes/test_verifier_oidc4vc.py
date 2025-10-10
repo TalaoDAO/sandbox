@@ -341,6 +341,7 @@ def verifier_callback3(red):
 
     # Process each vp_token
     vp_token = []
+    blockchain_explorer = ""
     for token in vp_tokens:
         vcsd = token.split("~")
 
@@ -378,12 +379,31 @@ def verifier_callback3(red):
             "kbjwt_header": json.dumps(kbjwt_header, indent=4),
             "kbjwt_payload": json.dumps(kbjwt_payload, indent=4) 
         })
-    # Render final report
+        if kbjwt_payload.get("blockchain_data_transaction"):
+            if nonce := vcsd_jwt_payload.get("nonce"):
+                transaction_data = json.loads(red.get(nonce).decode())[0] # only first one of the array
+                transaction_data_decoded = base64.urlsafe_b64decode(transaction_data.encode()).decode()
+                transaction_data_json = json.loads(transaction_data_decoded)
+                chain_id = transaction_data_json["chain_id"]
+                explorer = "https://etherscan.io/tx/"
+                if chain_id == 1:
+                    pass
+                elif chain_id == 11155111:
+                    explorer = "https://sepolia.etherscan.io/txt/"
+                else:
+                    pass
+                blockchain_explorer = explorer + kbjwt_payload.get("blockchain_data_transaction", "")
+                print("Blockchain transaction URL = ", blockchain_explorer)
+        else:
+            print("No blockchain transaction data")
+    #blockchain_explorer = "https://etherscan.io/tx/0xf9423fa82fec28dfeed6110d4416d98dc4926cb7d75432ce8c161b1814050658"
+    
     return render_template(
         'verifier_oidc/vcsd_jwt_test.html',
         raw=raw,
         presentation_submission=json.dumps(presentation_submission, indent=4),
-        vp_token=vp_token
+        vp_token=vp_token,
+        blockchain_explorer=blockchain_explorer
     )
 
 def verifier_callback2(mode):

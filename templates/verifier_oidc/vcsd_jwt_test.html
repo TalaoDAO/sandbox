@@ -125,6 +125,11 @@
               <span class="badge badge-soft badge-pill ml-1">{{ vp_token|length }}</span>
             </a>
           </li>
+          {% if blockchain_explorer %}
+           <li class="nav-item">
+            <a class="nav-link" href="{{blockchain_explorer}}">Blockchain Transaction</a>
+          </li>
+          {% endif %}
         </ul>
 
         <div class="tab-content pt-3" id="mainTabsContent">

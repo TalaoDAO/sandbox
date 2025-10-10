@@ -753,6 +753,7 @@ def oidc4vc_login_qrcode(red, mode):
         authorization_request["transaction_data"] = [json.loads(code_data)["transaction_data"]]
         for td in authorization_request["transaction_data"]:
             transaction_data.append(json.loads(b64url_no_pad_decode(td).decode()))
+        red.setex(nonce, 1000, json.dumps(transaction_data))    
         
     # manage request_uri as jwt
     if verifier_data.get('client_id_scheme') == "redirect_uri":
