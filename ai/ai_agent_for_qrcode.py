@@ -758,7 +758,7 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model, provider):
         draft = "13"
     
     if profile == "HAIP":
-        f = open("./dataset/haip/3.md", "r")
+        f = open("./dataset/haip/final_1.0.md", "r")
         haip = f.read()
         f.close()
         haip = clean_md(haip)
