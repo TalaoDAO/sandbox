@@ -383,7 +383,7 @@ def verifier_callback3(red):
             "kbjwt_payload": json.dumps(kbjwt_payload, indent=4) 
         })
         try:
-            blockchain_hashes = kbjwt_payload.get("blockchain_transaction_hash")[0]
+            blockchain_hashes = kbjwt_payload.get("blockchain_transaction_hash")
         except Exception:
             blockchain_hashes = None
                         
