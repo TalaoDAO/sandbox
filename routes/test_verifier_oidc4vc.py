@@ -382,10 +382,14 @@ def verifier_callback3(red):
             "kbjwt_header": json.dumps(kbjwt_header, indent=4),
             "kbjwt_payload": json.dumps(kbjwt_payload, indent=4) 
         })
+        print("type = ", type(kbjwt_payload.get("blockchain_transaction_hash")))
         try:
             blockchain_hash = kbjwt_payload.get("blockchain_transaction_hash")[0]
         except Exception:
             blockchain_hash = None
+            
+        print("blockchain hash = ", blockchain_hash)
+            
         if blockchain_hash:
             if nonce := vcsd_jwt_payload.get("nonce"):
                 transaction_data = json.loads(red.get(nonce).decode())[0] # only first one of the array
@@ -399,7 +403,7 @@ def verifier_callback3(red):
                     explorer = "https://sepolia.etherscan.io/txt/"
                 else:
                     pass
-                blockchain_explorer = explorer + kbjwt_payload.get("blockchain_data_transaction", "")
+                blockchain_explorer = explorer + blockchain_hash
                 print("Blockchain transaction URL = ", blockchain_explorer)
     #blockchain_explorer = "https://etherscan.io/tx/0xf9423fa82fec28dfeed6110d4416d98dc4926cb7d75432ce8c161b1814050658"
     
