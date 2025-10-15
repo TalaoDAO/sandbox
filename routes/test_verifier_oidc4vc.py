@@ -383,24 +383,27 @@ def verifier_callback3(red):
             "kbjwt_payload": json.dumps(kbjwt_payload, indent=4) 
         })
         try:
-            blockchain_hash = kbjwt_payload.get("blockchain_transaction_hash")[0]
+            blockchain_hashes = kbjwt_payload.get("blockchain_transaction_hash")[0]
         except Exception:
-            blockchain_hash = None
+            blockchain_hashes = None
                         
-        if blockchain_hash:
+        if blockchain_hashes:
+            # get nonce to look for chain_id
             if nonce := kbjwt_payload.get("nonce"):
-                transaction_data = json.loads(red.get(nonce).decode())[0] # only first one of the array
-                transaction_data_decoded = base64.urlsafe_b64decode(transaction_data.encode()).decode()
+                data = json.loads(red.get(nonce).decode())
+                transaction_data_decoded = base64.urlsafe_b64decode(data.get('transaction_data').encode()).decode()
                 transaction_data_json = json.loads(transaction_data_decoded)
-                chain_id = transaction_data_json["chain_id"]
-                explorer = "https://etherscan.io/tx/"
-                if chain_id == 1:
-                    pass
-                elif chain_id == 11155111:
-                    explorer = "https://sepolia.etherscan.io/txt/"
-                else:
-                    pass
-                blockchain_transaction_list.append(explorer + blockchain_hash)
+                chain_id = transaction_data_json.get("chain_id")
+                print("chain_id = ", chain_id)
+                for transaction in blockchain_hashes: 
+                    explorer = "https://etherscan.io/tx/"
+                    if chain_id == 1:
+                        pass
+                    elif chain_id == 11155111:
+                        explorer = "https://sepolia.etherscan.io/txt/"
+                    else:
+                        pass
+                    blockchain_transaction_list.append(explorer + transaction)
     
     print("Blockchain transaction URL list = ", blockchain_transaction_list)
                 
