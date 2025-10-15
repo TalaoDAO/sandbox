@@ -390,12 +390,8 @@ def verifier_callback3(red):
         if blockchain_hashes:
             # get nonce to look for chain_id
             if nonce := kbjwt_payload.get("nonce"):
-                _data = json.loads(red.get(nonce).decode())
-                print("data = ", _data)
-                transaction_data_decoded = base64.urlsafe_b64decode(_data.get('transaction_data').encode()).decode()
-                transaction_data_json = json.loads(transaction_data_decoded)
-                print("trasanction data ", transaction_data_json)
-                chain_id = transaction_data_json.get("chain_id")
+                transaction_data = json.loads(red.get(nonce).decode())[0] # the first one
+                chain_id = transaction_data.get("chain_id")
                 print("chain_id = ", chain_id)
                 for transaction in blockchain_hashes: 
                     explorer = "https://etherscan.io/tx/"
