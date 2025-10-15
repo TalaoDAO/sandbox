@@ -344,7 +344,7 @@ def verifier_callback3(red):
 
     # Process each vp_token
     vp_token = []
-    blockchain_explorer = ""
+    blockchain_transaction_list = []
     for token in vp_tokens:
         vcsd = token.split("~")
 
@@ -400,8 +400,9 @@ def verifier_callback3(red):
                     explorer = "https://sepolia.etherscan.io/txt/"
                 else:
                     pass
-                blockchain_explorer = explorer + blockchain_hash
-                print("Blockchain transaction URL = ", blockchain_explorer)
+                blockchain_transaction_list.append(explorer + blockchain_hash)
+    
+    print("Blockchain transaction URL list = ", blockchain_transaction_list)
                 
     #blockchain_explorer = "https://etherscan.io/tx/0xf9423fa82fec28dfeed6110d4416d98dc4926cb7d75432ce8c161b1814050658"
     
@@ -410,7 +411,7 @@ def verifier_callback3(red):
         raw=raw,
         presentation_submission=json.dumps(presentation_submission, indent=4),
         vp_token=vp_token,
-        blockchain_explorer=blockchain_explorer
+        blockchain_transaction_list=blockchain_transaction_list
     )
 
 def verifier_callback2(mode):

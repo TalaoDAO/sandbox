@@ -125,10 +125,13 @@
               <span class="badge badge-soft badge-pill ml-1">{{ vp_token|length }}</span>
             </a>
           </li>
-          {% if blockchain_explorer %}
+          {% if blockchain_transaction_list %}
+          {% for t in blockchain_transaction_list %}
+           {% set i = loop.index %}
            <li class="nav-item">
-            <a class="nav-link" href="{{blockchain_explorer}}">Blockchain Transaction</a>
+            <a class="nav-link" href="{{t}}">Blockchain Transaction #{{i}}</a>
           </li>
+          {% endfor %}
           {% endif %}
         </ul>
 
