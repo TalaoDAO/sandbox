@@ -23,11 +23,7 @@
     "disclosure": []
     },
 
-    "nationalities": [
-      "DE",
-      "IT",
-      {"disclosure": []}
-    ],
+    "nationalities": ["FR"],
     "age_over_12": true,
     "age_over_14": true,
     "age_over_16": true,

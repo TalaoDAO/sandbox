@@ -382,7 +382,11 @@ def verifier_callback3(red):
             "kbjwt_header": json.dumps(kbjwt_header, indent=4),
             "kbjwt_payload": json.dumps(kbjwt_payload, indent=4) 
         })
-        if kbjwt_payload.get("blockchain_data_transaction"):
+        try:
+            blockchain_hash = kbjwt_payload.get("blockchain_transaction_hash")[0]
+        except Exception:
+            blockchain_hash = None
+        if blockchain_hash:
             if nonce := vcsd_jwt_payload.get("nonce"):
                 transaction_data = json.loads(red.get(nonce).decode())[0] # only first one of the array
                 transaction_data_decoded = base64.urlsafe_b64decode(transaction_data.encode()).decode()
