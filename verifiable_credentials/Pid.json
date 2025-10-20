@@ -1,39 +1,28 @@
 {
-  "vct": "https://vc-registry.com/vct/registry/publish/a3443caa260f21aa4754c8f38957cdaa1c7e732307d164aa0b29d3b4800cef7d",
-
+  "vct": "eu.europa.ec.eudi.pcd.1",
   "given_name": "Patrick",
   "family_name": "Doe",
+  "second_family_name": "Doe-Paul",
+  "second_given_name": "Junior",
   "birth_date": "2000-12-01",
   "birth_place": "DE",
-
-  "address": { 
-    "formatted": "123 Via Appia, Rome, 00100 Lazio, Italy",        
-    "street_address": "123 Via Appia",
-    "locality": "Rome",
-    "region": "Lazio",
-    "postal_code": "00100",
-    "country": "IT",
-    "disclosure" : []
-    },
-
-  "place_of_birth": { 
-    "locality": "Leipzig",
-    "region": "Saxony",
-    "country": "DE",
-    "disclosure": []
-    },
-
-    "nationalities": ["FR"],
-    "age_over_12": true,
-    "age_over_14": true,
-    "age_over_16": true,
-    "age_over_18": true,
-    "age_over_21": true,
-    "age_over_65": false,
-
-    "sex": 1,
-    "issuing_country": "DE",
-    "issuing_authority": "DE",
+  "phone": "+326567656565",
+  "email_address": "josh.doe@gamil.com",
+  "street_address": "123 Via Appia",
+  "city_address": "Rome",
+  "region": "Lazio",
+  "postal_code": "00100",
+  "country_address": "IT",
+  "nationalities": ["FR"],
+  "age_over_12": true,
+  "age_over_14": true,
+  "age_over_16": true,
+  "age_over_18": true,
+  "age_over_21": true,
+  "age_over_65": false,
+  "sex": 1,
+  "issuing_country": "DE",
+  "issuing_authority": "DE",
 
   
     "disclosure": []

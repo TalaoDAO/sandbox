@@ -383,16 +383,15 @@ def verifier_callback3(red):
             "kbjwt_payload": json.dumps(kbjwt_payload, indent=4) 
         })
         try:
-            blockchain_hashes = kbjwt_payload.get("blockchain_transaction_hash")
+            blockchain_hashes = kbjwt_payload.get("blockchain_transaction_hash") or kbjwt_payload.get("blockchain_transaction_hashes")
         except Exception:
             blockchain_hashes = None
                         
         if blockchain_hashes:
-            # get nonce to look for chain_id
             if nonce := kbjwt_payload.get("nonce"):
-                transaction_data = json.loads(red.get(nonce).decode())[0] # the first one
+                # get nonce to look for chain_id
+                transaction_data = json.loads(red.get(nonce).decode())[0] # the first one considering we use the same chain for all transactions
                 chain_id = transaction_data.get("chain_id")
-                print("chain_id = ", chain_id)
                 for transaction in blockchain_hashes: 
                     explorer = "https://etherscan.io/tx/"
                     if chain_id == 1:
@@ -400,7 +399,7 @@ def verifier_callback3(red):
                     elif chain_id == 11155111:
                         explorer = "https://sepolia.etherscan.io/txt/"
                     else:
-                        pass
+                        pass  #TODO
                     blockchain_transaction_list.append(explorer + transaction)
     
     print("Blockchain transaction URL list = ", blockchain_transaction_list)
