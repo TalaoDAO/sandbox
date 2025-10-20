@@ -725,7 +725,7 @@ async def vc_wallet():
     except Exception:
         return jsonify({"error": "invalid base64 format"}), 400
     try:
-        report = await ai_agent_for_vc.process_vc_format(vc_str, "8", "1.1", "wallet VC", "pro", "gemini")
+        report = await ai_agent_for_vc.process_vc_format(vc_str, "12", "1.1", "wallet VC", "pro", "gemini")
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500

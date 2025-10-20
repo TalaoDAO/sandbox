@@ -232,11 +232,11 @@ def spec_url_oidc4vp(draft: str) -> str:
 
 
 def spec_url_sdjwtvc(draft: str) -> str:
-    d = {"7": "07", "8": "08", "9": "09", "10": "10"}
+    d = {"7": "07", "8": "08", "9": "09", "10": "10", "11": "11", "12": "11"}
     try:
         specs = f"https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-{d[draft]}.html"
     except Exception:
-        specs = "https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-10.html"
+        specs = "https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-11.html"
     logging.info("SD-JWT VC specs = %s", specs)
     return specs
 
@@ -651,9 +651,9 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
         with open(f"./dataset/sdjwtvc/{draft}.txt", "r") as f:
             content = f.read()
     except FileNotFoundError:
-        with open("./dataset/sdjwtvc/9.txt", "r") as fallback:
+        with open("./dataset/sdjwtvc/11.txt", "r") as fallback:
             content = fallback.read()
-            draft = "9"
+            draft = "11"
     
     # Load the appropriate SD-JWT specification (Draft 22)
     try:
