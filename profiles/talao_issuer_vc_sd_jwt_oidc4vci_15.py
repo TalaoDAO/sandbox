@@ -136,17 +136,6 @@ TALAO_ISSUER = {
         "Pid": {
             "format": "dc+sd-jwt",
             "scope": "Pid_scope",
-            "order": [
-                "given_name",
-                "family_name",
-                "birthdate",
-                "address",
-                "gender",
-                "place_of_birth",
-                "nationalities",
-                "issuing_country",
-                "issuing_authority"
-            ],
             "claims": [
                 {
                     "path": ["given_name"],

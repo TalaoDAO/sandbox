@@ -518,7 +518,7 @@ def test_12(mode):
     data = { 
         "issuer_id": issuer_id,
         "vc": {
-            "EudiPid": credential_1,
+            "Pid": credential_1,
             "EmployeeBadge": credential_2
         }, 
         "issuer_state": "test12",
