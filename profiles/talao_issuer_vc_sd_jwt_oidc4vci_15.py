@@ -242,27 +242,19 @@ TALAO_ISSUER = {
                 "EdDSA",
                 "RS256",
             ],
-            "vct": "eu.europa.ec.eudi.pid.1",
+            "vct": "eu.europa.ec.eudi.pcd.1",
             "display": [
                 {
                     "name": "Personal ID",
                     "locale": "en-US",
                     "background_color": "#1a73e8",
-                    "text_color": "#FFFFFF",
-                    "background_image": {
-                        "uri": "https://talao.co/image/server/pid.png",
-                        "alt_text": "PID background image"
-                    }
+                    "text_color": "#FFFFFF"
                 },
                 {
                     "name": "Personal ID",
                     "locale": "fr-FR",
                     "background_color": "#1a73e8",
-                    "text_color": "#FFFFFF",
-                    "background_image": {
-                        "uri": "https://talao.co/image/server/pid.png",
-                        "alt_text": "PID background image"
-                    }
+                    "text_color": "#FFFFFF"
                 }
             ]
         },
