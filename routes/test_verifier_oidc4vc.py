@@ -398,6 +398,10 @@ def verifier_callback3(red):
                         pass
                     elif chain_id == 11155111:
                         explorer = "https://sepolia.etherscan.io/tx/"
+                    elif chain_id == 137:
+                        explorer = "https://polygonscan.com/tx/"
+                    elif chain_id == 80002:
+                        explorer = "https://amoy.polygonscan.com/tx/"
                     else:
                         pass  #TODO
                     blockchain_transaction_list.append(explorer + transaction)

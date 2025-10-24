@@ -127,6 +127,9 @@
         <li class="nav-item">
           <a class="nav-link" id="meta-tab" data-toggle="tab" href="#meta" role="tab" aria-controls="meta" aria-selected="false">Details and Metadata</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" id="transaction-tab" data-toggle="tab" href="#transaction" role="tab" aria-controls="transaction" aria-selected="false">Transaction Data</a>
+        </li>
       </ul>
 
       <div class="tab-content pt-3" id="mainTabsContent">
@@ -297,6 +300,12 @@
             </div>
             <textarea rows="30" class="code-area wrap" readonly>{{ client_metadata|safe }}</textarea>
           </div>
+
+         
+        </div>
+
+         <!-- transaction data -->
+        <div class="tab-pane fade" id="transaction" role="tabpanel" aria-labelledby="transaction-tab">
 
           <div class="card p-3">
             <h5 class="mb-2">transaction_data</h5>
