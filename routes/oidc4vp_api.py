@@ -816,11 +816,10 @@ def oidc4vc_login_qrcode(red, mode):
         logging.warning("token decryption problem = %s", str(e))
         request_uri_header = ""
         request_uri_payload = ""
-        
+            
     return render_template(
         qrcode_page,
         url=url,
-        rpc = transaction_data[0].get('rpc', "None"),
         request_uri=request_uri_jwt,
         request_uri_header=request_uri_header,
         request_uri_payload=request_uri_payload,
