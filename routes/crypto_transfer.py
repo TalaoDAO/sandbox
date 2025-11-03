@@ -166,9 +166,9 @@ def _build_and_launch(mode):
             recipient=recipient,
             human_amount=human_amount,
             credential_ids=["pid_credential"],
-            order_id=order_id,
-            title=ui_title,
-            subtitle=ui_subtitle,
+            #order_id=order_id,
+            #title=ui_title,
+            #subtitle=ui_subtitle,
             icon_uri=ui_icon_uri,
             purpose=ui_purpose
         )
