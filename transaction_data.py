@@ -125,11 +125,11 @@ if __name__ == '__main__':
         "0x03817255659dc455079df516c5271b4046b2065b",  # wallet account to transfer
         "5.0",  # 5 TALAO token
         credential_ids = ["pid_credential"],
-        order_id = "#16805",
-        title = "Crypto paiement",
-        subtitle = "This is a test for an ERC20 transfer",
-        icon_uri = "https://tse2.mm.bing.net/th/id/OIP.HuWlmd3ArMTueqVP01jpiAHaFj?pid=Api&P=0&h=180",
-        purpose = "Transfer 5 TALAO token to Pizza Shop"
+        #order_id = "#16805",
+        #title = "Crypto paiement",
+        #subtitle = "This is a test for an ERC20 transfer",
+        icon_uri="https://talao.co/server/image/pizza.jpeg",
+        purpose="Pay to Pizza Shop"
     )
 
     print(json.dumps(out, indent=4))

@@ -397,7 +397,7 @@ def verify_issuer_matches_cert(issuer, x5c_list, draft, token="vc"):
             match_uri = issuer.split(":")[1] in uris
         except Exception:
             return f"Error: {issuer} is not correctly formatted for this OIDC4VP Draft."
-         
+
     subject = "Issuer" if token == "vc" else "client_id"
     if match_dns or match_uri:
         return f"Info: {subject} matches SAN DNS or URI in certificate."
