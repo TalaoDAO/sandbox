@@ -1,6 +1,6 @@
 from profiles import insurer, bank, gouv, test, talao_issuer_jwt_vc_json, talao_issuer_vc_sd_jwt
 from profiles import talao_issuer_jwt_vc_json_ld, documentation, talao_issuer_ldp_vc, talao_issuer_vc_sd_jwt_oidc4vp_23
-from profiles import digital_credential_marketplace, talao_issuer_vc_sd_jwt_oidc4vci_15
+from profiles import digital_credential_marketplace, talao_issuer_vc_sd_jwt_oidc4vci_15, dc_sd_jwt_vc_final
 
 
 profile = {
@@ -16,6 +16,7 @@ profile = {
     "TALAO_ISSUER_SD_JWT_VC_OIDC4VCI_15": talao_issuer_vc_sd_jwt_oidc4vci_15.TALAO_ISSUER,
     "TALAO_ISSUER_LDP_VC": talao_issuer_ldp_vc.TALAO_ISSUER,
     "TALAO_MARKETPLACE": digital_credential_marketplace.TALAO_ISSUER,
+    "FINAL": dc_sd_jwt_vc_final.FINAL,
     "EBSI-V3": {
         "oidc4vciDraft": "10",
         "siopv2Draft": "12",

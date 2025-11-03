@@ -321,8 +321,9 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
         header['kid'] = kid
     
     # clean subject key jwk
-    subject_key.pop('use', None)
-    subject_key.pop('alg', None)
+    if subject_key:
+        subject_key.pop('use', None)
+        subject_key.pop('alg', None)
     
     if unsecured.get('status'): 
         payload['status'] = unsecured['status']

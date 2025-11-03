@@ -582,15 +582,13 @@ def test_14(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     issuer_id = issuer_test(14, mode)
     client_secret = issuer_test(14, mode, secret = True)
-   
-    vc = 'InsuranceNaturalPerson'
-    with open('./verifiable_credentials/' + vc + '.jsonld', 'r') as f:
-        credential = json.loads(f.read())
-    credential['id'] = "urn:uuid:" + str(uuid.uuid4())
-    credential['issuanceDate'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-    credential['issued'] = datetime.now().replace(microsecond=0).isoformat() + "Z"
-    credential['validFrom'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
-    credential['expirationDate'] =  (datetime.now().replace(microsecond=0) + timedelta(days= 365)).isoformat() + "Z"
+    credential = {
+        "vct": "urn:ai-agent:ownership:0001",
+        "owner_name": "Talao",
+        "owner_website": "https://talao.io/",
+        "disclosure": ["owner_name", "owner_website"]
+    }
+    vc = 'AgentOwnership'
     
     headers = {
         'Content-Type': 'application/json',

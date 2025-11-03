@@ -1,10 +1,3 @@
-"""
-
-issuance https://dutchblockchaincoalition.github.io/CompanyPassport/technical/issuance
-
-"""
-
-
 
 import base64
 from flask import Flask, request, jsonify, render_template, redirect, session
