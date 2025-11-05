@@ -582,12 +582,9 @@ def test_14(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     issuer_id = issuer_test(14, mode)
     client_secret = issuer_test(14, mode, secret = True)
-    credential = {
-        "vct": "urn:ai-agent:ownership:0001",
-        "owner_name": "Talao",
-        "owner_website": "https://talao.io/",
-        "disclosure": ["owner_name", "owner_website"]
-    }
+    credential = {"vct": "urn:ai-agent:ownership:0001"}
+    credential.update(agent_credential)
+    
     vc = 'AgentOwnership'
     
     headers = {
@@ -596,7 +593,7 @@ def test_14(mode):
     }
     data = { 
         "issuer_id": issuer_id,
-        "vc": {vc: credential}, 
+        "vc": {vc: agent_credential}, 
         "issuer_state": str(uuid.uuid1()),
         "credential_type": vc,
         "pre-authorized_code": True,
@@ -887,3 +884,38 @@ def build_credential(vc):
 def webhook():
     print("webhook reçu = ", request.json)
     return jsonify('ok')
+
+agent_credential= {
+    "provider": {
+        "id": "did:web:acme-ai.example",
+        "legalName": "Acme Artificial Intelligence GmbH",
+        "brandName": "Acme AI",
+        "website": "https://acme-ai.example",
+        "jurisdiction": "DE",
+        "registration": {
+        "authority": "DE-BER",
+        "number": "HRB 123456"
+        },
+        "contacts": {
+            "generalEmail": "info@acme-ai.example",
+            "securityEmail": "security@acme-ai.example"
+        },
+        "compliance": {
+            "iso27001": True,
+            "soc2": "type2",
+            "euAIActProviderCategory": "provider"
+        }
+    },
+    "agent": {
+        "description": "BOT model with LLM support customized for CRM Saas application.",
+        "models": [
+            {
+                "name": "helpbot-text-v3",
+                "version": "3.2",
+                "publisher": "Acme AI",
+                "modality": "text"
+            }
+        ]
+    },
+    "disclosure": ["all"]
+}
