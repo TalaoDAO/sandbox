@@ -942,17 +942,18 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
             id_token_status = "Not received"
         
         # normelize vp_token as an array of dict (ldp_vc) or str (other formats)
-        if isinstance(vp_token, dict): # json-ld alone
-            vp_token = [json.dumps(vp_token)]
-        elif isinstance(vp_token, list):
-            pass
-        else:
-            try:
-                vp_token = json.loads(vp_token)
-                if not isinstance(vp_token, list):
+        if vp_token:
+            if isinstance(vp_token, dict): # json-ld alone
+                vp_token = [json.dumps(vp_token)]
+            elif isinstance(vp_token, list):
+                pass
+            else:
+                try:
+                    vp_token = json.loads(vp_token)
+                    if not isinstance(vp_token, list):
+                        vp_token = [vp_token]
+                except Exception:
                     vp_token = [vp_token]
-            except Exception:
-                vp_token = [vp_token]
         
         def format(vp, type="vp") -> str:
             if not vp:
@@ -1049,6 +1050,7 @@ async def oidc4vc_response_endpoint(stream_id, red, mode):
                 
     # check vp_token signature
     vp_format = ""
+    print("vp token = ", vp_token)
     if access and vp_token:
         i = 0
         for vp in vp_token:
