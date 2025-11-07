@@ -715,6 +715,7 @@ def test_18(mode):
     
     with open('./verifiable_credentials/Pid.json', 'r') as f:
         Pid = json.loads(f.read())
+        
     headers = {
         'Content-Type': 'application/json',
         'X-API-KEY': client_secret
@@ -886,6 +887,8 @@ def webhook():
     return jsonify('ok')
 
 agent_credential= {
+    "name": "AgentOwnership",
+    "description": "This is the AI Agent description provided by the Agent builder",
     "provider": {
         "id": "did:web:acme-ai.example",
         "legalName": "Acme Artificial Intelligence GmbH",

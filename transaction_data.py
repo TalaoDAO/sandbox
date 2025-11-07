@@ -133,3 +133,18 @@ if __name__ == '__main__':
     )
 
     print(json.dumps(out, indent=4))
+    
+    
+    out = build_evm_erc20_transfer_transaction_data(
+        "USDT",
+        "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        6,
+        1,
+        "0x03817255659dc455079df516c5271b4046b2065b",  # wallet account to transfer
+        "95.0",  # 95 USD
+        credential_ids = ["over18"],
+        icon_uri="https://talao.co/server/image/whisky.png",
+        purpose="Buy The Yamazaki - Distiller's Réserve "
+    )
+
+    print(json.dumps(out, indent=4))

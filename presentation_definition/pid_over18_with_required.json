@@ -1,0 +1,32 @@
+{
+  "id": "over18",
+  "input_descriptors": [
+    {
+      "id": "over18",
+      "format": {
+        "vc+sd-jwt": {
+          "sd-jwt_alg_values": [
+            "ES256",
+            "ES256K",
+            "EdDSA"
+          ],
+          "kb-jwt_alg_values": [
+            "ES256",
+            "ES256K",
+            "EdDSA"
+          ]
+        }
+      },
+      "constraints": {
+        "limit_disclosure": "required",
+        "fields": [
+          {
+            "path": [
+              "$.age_over_18"
+            ]
+                    }
+                ]
+            }
+        }
+    ]
+}

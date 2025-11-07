@@ -267,12 +267,13 @@ def verifier_test_11(mode):
 
 
 def verifier_test_12(mode):
+    authorization_details = "%7B%22type%22%3A%22evm.erc20_transfer%22%2C%22credential_ids%22%3A%5B%22over18%22%5D%2C%22chain_id%22%3A1%2C%22asset%22%3A%7B%22symbol%22%3A%22USDT%22%2C%22address%22%3A%220xdAC17F958D2ee523a2206206994597C13D831ec7%22%2C%22decimals%22%3A6%7D%2C%22amount%22%3A%2295000000%22%2C%22recipient%22%3A%220x03817255659dc455079df516c5271b4046b2065b%22%2C%22rpc%22%3A%7B%22method%22%3A%22eth_sendTransaction%22%2C%22params%22%3A%5B%7B%22to%22%3A%220xdAC17F958D2ee523a2206206994597C13D831ec7%22%2C%22value%22%3A%220x0%22%2C%22data%22%3A%220xa9059cbb00000000000000000000000003817255659dc455079df516c5271b4046b2065b0000000000000000000000000000000000000000000000000000000005a995c0%22%7D%5D%7D%2C%22ui_hints%22%3A%7B%22icon_uri%22%3A%22https%3A//talao.co/server/image/whisky.png%22%2C%22purpose%22%3A%22BuyThe%20Yamazaki%20-%20Distiller%27s%20R%5Cu00e9serve%20%22%7D%2C%22eip681%22%3A%22ethereum%3A0xdAC17F958D2ee523a2206206994597C13D831ec7%401/transfer%3Faddress%3D0x03817255659dc455079df516c5271b4046b2065b%26uint256%3D95000000%22%7D"
     session['verified'] = False
     if mode.myenv == 'aws':
         client_id = "woxvjqkbrb"
     else:
         client_id = "fzqtmovhto"
-    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
+    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&authorization_details=" + authorization_details + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
     return redirect(url)
 
 

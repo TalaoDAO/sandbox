@@ -59,7 +59,9 @@ predefined_presentation_uri_list = {
     'presentation_definition/any_sd_jwt': 'Any ',
     'presentation_definition/crypto_and_pid_with_required_draft_20': 'Stable coin transfer with PID Draft 20',
     'presentation_definition/crypto_and_pid_with_required_draft_23': 'Stable coin transfer with PID Draft 23',
-      'presentation_definition/crypto_and_pid_with_required': 'Stable coin transfer with PID deprecated'
+    'presentation_definition/crypto_and_pid_with_required': 'Stable coin transfer with PID',
+    'presentation_definition/pid_over18_with_required': 'Over18 proof in PID',
+
 }
 
 oidc4vc_profile_list = {
