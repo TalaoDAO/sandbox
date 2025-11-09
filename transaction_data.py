@@ -144,7 +144,7 @@ if __name__ == '__main__':
         "95.0",  # 95 USD
         credential_ids = ["over18"],
         icon_uri="https://talao.co/server/image/whisky.png",
-        purpose="Buy The Yamazaki - Distiller's Réserve "
+        purpose="Buy The Yamazaki - Distiller's Reserve "
     )
 
     print(json.dumps(out, indent=4))

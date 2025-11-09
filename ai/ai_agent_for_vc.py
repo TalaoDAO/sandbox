@@ -399,7 +399,7 @@ def verify_issuer_matches_cert(issuer, x5c_list, token="vc"):
     subject = "Issuer" if token == "vc" else "client_id"
     if match_dns or match_uri:
         return f"Info: {subject} matches SAN DNS or URI in certificate."
-    return (f"Error: {subject} does NOT match SAN DNS or URI in certificate. "
+    return (f"Warning: {subject} does NOT match SAN DNS or URI in certificate. "
             f"SAN DNS in certificate = {dns_names} but {subject.lower()} = {issuer}")
 
 def extract_SAN_DNS(pem_certificate):
