@@ -581,9 +581,7 @@ def test_13(mode):
 def test_14(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     issuer_id = issuer_test(14, mode)
-    client_secret = issuer_test(14, mode, secret = True)
-    credential = {"vct": "urn:ai-agent:ownership:0001"}
-    credential.update(agent_credential)
+    client_secret = issuer_test(14, mode, secret=True)
     
     vc = 'AgentOwnership'
     
@@ -887,6 +885,7 @@ def webhook():
     return jsonify('ok')
 
 agent_credential= {
+    "vct": "urn:ai-agent:ownership:0001",
     "name": "AgentOwnership",
     "description": "This is the AI Agent description provided by the Agent builder",
     "provider": {

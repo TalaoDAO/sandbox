@@ -428,7 +428,7 @@ async def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device
         return "Invalid VC."
 
     # 1. SD-JWT: starts with base64 segment and uses '~' delimiter
-    if "~" in vc and "." in vc.split("~")[0]:
+    if "~" in vc and "." in vc.split("~")[0] and "@context" not in vc:
         return analyze_sd_jwt_vc(vc, sdjwtvc_draft, device, model, provider)
 
     # 2. JWT VC (compact JWT): 3 base64 parts separated by dots
@@ -439,7 +439,6 @@ async def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device
     try:
         vc_json = json.loads(vc)
         if "@context" in vc_json and "type" in vc_json:
-            print("yes it is a json")
             return await analyze_jsonld_vc(vc_json, vcdm_draft, device, model, provider)
     except Exception as e:
         return "Invalid JSON. Cannot parse input. " + str(e)
