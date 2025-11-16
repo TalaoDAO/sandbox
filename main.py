@@ -40,7 +40,7 @@ from routes import waltid_server
 from routes import mosip_issuer
 from routes import statuslist
 from routes import generate_attestation
-
+from routes import issue_agent_credential
 
 API_LIFE = 5000
 #ACCESS_TOKEN_LIFE = 1000
@@ -105,6 +105,7 @@ qrcode = QRcode(app)
 Mobility(app)
 
 generate_attestation.init_app(app)
+issue_agent_credential.init_app(app, red, mode)
 
 @app.errorhandler(403)
 def page_abort(e):

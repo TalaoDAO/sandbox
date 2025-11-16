@@ -605,6 +605,33 @@ def test_14(mode):
     return redirect(qrcode)
 
 
+agent_credential= {
+    "vct": "urn:ai-agent:ownership:0001",
+    "name": "AgentOwnership",
+    "description": "Proof of ownership of an AI Agent",
+    "provider": {
+        "id": "did:web:talao.io",
+        "legalName": "Web3 Digital Wallet",
+        "brandName": "Talao",
+        "website": "https://talao.io",
+        "jurisdiction": "FR",
+        "contacts": "contact@talao.io"
+    },
+    "agent": {
+        "description": "Demo for testing purpose.",
+        "models": [
+            {
+                "name": "Demo 1",
+                "version": "1.0",
+                "publisher": "Web3 Digital Wallet",
+                "modality": "text",
+                "model": "gpt-4.1"
+            }
+        ]
+    },
+    "disclosure": ["all"]
+}
+ 
 def test_15(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     issuer_id = issuer_test(15, mode)
@@ -883,41 +910,3 @@ def build_credential(vc):
 def webhook():
     print("webhook reçu = ", request.json)
     return jsonify('ok')
-
-agent_credential= {
-    "vct": "urn:ai-agent:ownership:0001",
-    "name": "AgentOwnership",
-    "description": "This is the AI Agent description provided by the Agent builder",
-    "provider": {
-        "id": "did:web:acme-ai.example",
-        "legalName": "Acme Artificial Intelligence GmbH",
-        "brandName": "Acme AI",
-        "website": "https://acme-ai.example",
-        "jurisdiction": "DE",
-        "registration": {
-        "authority": "DE-BER",
-        "number": "HRB 123456"
-        },
-        "contacts": {
-            "generalEmail": "info@acme-ai.example",
-            "securityEmail": "security@acme-ai.example"
-        },
-        "compliance": {
-            "iso27001": True,
-            "soc2": "type2",
-            "euAIActProviderCategory": "provider"
-        }
-    },
-    "agent": {
-        "description": "BOT model with LLM support customized for CRM Saas application.",
-        "models": [
-            {
-                "name": "helpbot-text-v3",
-                "version": "3.2",
-                "publisher": "Acme AI",
-                "modality": "text"
-            }
-        ]
-    },
-    "disclosure": ["all"]
-}

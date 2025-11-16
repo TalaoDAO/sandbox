@@ -297,7 +297,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
         payload['cnf'] = {"kid": wallet_did}
     
     # Calculate selective disclosure 
-    if "all" in unsecured.get("disclosure"):
+    if unsecured and "all" in unsecured.get("disclosure", []):
         _payload = unsecured
         _payload.pop("disclosure")
         _disclosure = ""
