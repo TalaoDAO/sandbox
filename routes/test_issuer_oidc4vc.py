@@ -457,7 +457,7 @@ def test_10(mode):
         "credential_type":  ['Pid'],
         "pre-authorized_code": True,
         "callback": mode.server + 'sandbox/issuer/callback',
-        "user_pin_required": False,
+        "user_pin_required": True,
         "user_pin": "123456",
         "input_length": 6,
         "input_mode": "numeric"
@@ -625,7 +625,7 @@ agent_credential= {
                 "version": "1.0",
                 "publisher": "Web3 Digital Wallet",
                 "modality": "text",
-                "model": "gpt-4.1"
+                "model": "gpt-5.1"
             }
         ]
     },

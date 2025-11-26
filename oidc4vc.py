@@ -462,7 +462,10 @@ def resolve_did(vm) -> dict:
                 break
             except Exception:
                 pass
-        did_document = r.json()['didDocument']
+        did_document = r.json().get('didDocument')
+        if not did_document:
+            logging.warning("DID Document not found")
+            return
     try:
         vm_list = did_document['verificationMethod']
     except Exception:

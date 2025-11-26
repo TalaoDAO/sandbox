@@ -39,7 +39,7 @@
                 </div>             
               </div>
 
-               <form class="text-center" action="/issuer/{{issuer_id}}/redirect" method="post">
+               <form class="text-center" action="/issuer/{{issuer_id}}/redirect" method="get">
                   <input hidden type="text" name="arg_for_web_wallet" value="{{arg_for_web_wallet}}">
                   <input size="30" type="text" name="web_wallet_url" placeholder="Web wallet URL">
                   <button id="submitDeffered" type="submit">GO</button>
@@ -152,6 +152,7 @@
             window.location.href = '/sandbox/ebsi/issuer_followup/{{stream_id}}?error=' + data.error + '&error_description=' + data.error_description;
           }
           else {
+          await delay(15000);
             window.location.href='/sandbox/ebsi/issuer_followup/{{stream_id}}' ; 
           }
         };

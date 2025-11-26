@@ -629,8 +629,11 @@ def oidc_issuer_qrcode_value(issuer_id, stream_id, red, mode):
 
 # Issuer sends the offer to the web wallet credential offer endpoint
 def issuer_web_wallet_redirect(issuer_id, red, mode):
-    arg_for_web_wallet = request.form['arg_for_web_wallet']
-    web_wallet_url = request.form['web_wallet_url'].rstrip("/")
+    arg_for_web_wallet = request.args['arg_for_web_wallet']
+    web_wallet_url = request.args['web_wallet_url'].rstrip("/")
+    
+    print("arg for web wallet = ", arg_for_web_wallet)
+    print("web wallet url = ", web_wallet_url)
 
     try:
         wallet_config_url = web_wallet_url + '/.well-known/openid-configuration'
@@ -638,7 +641,7 @@ def issuer_web_wallet_redirect(issuer_id, red, mode):
         wallet_credential_offer_endpoint = wallet_config.get('credential_offer_endpoint') or web_wallet_url
     except Exception:
         wallet_credential_offer_endpoint = web_wallet_url
-
+    
     redirect_uri = wallet_credential_offer_endpoint + "?" + arg_for_web_wallet
     logging.info("redirect_uri to web wallet = %s", redirect_uri)
     return redirect(redirect_uri)
@@ -1252,48 +1255,66 @@ async def issuer_credential(issuer_id, red, mode):
 
     # check proof if it exists depending on type of proof
     wallet_identifier = 'did'
-    if proof := result.get('proof'):
+    if int(issuer_profile['oidc4vciDraft']) < 16:
+        proof = result.get('proof')
         proof_type = proof['proof_type']
+    else:
+        proof = result.get('proofs')
+        proof_type = "jwt"
+    
+    wallet_jwk = []
+    wallet_identifier = []
+    wallet_did = []
+    print("proof = ", proof)
+    if proof:
         if proof_type == 'jwt':
-            jwt_proof = proof.get('jwt')
-            proof_header = oidc4vc.get_header_from_token(jwt_proof)
-            proof_payload = oidc4vc.get_payload_from_token(jwt_proof)
-            logging.info('Proof header = %s', json.dumps(proof_header, indent=4))
-            logging.info('Proof payload = %s', json.dumps(proof_payload, indent=4))
-            if not proof_payload.get('nonce'):
-                return Response(**manage_error('invalid_proof', 'c_nonce is missing', red, mode, request=request, stream_id=stream_id, status=403))
-            try:
-                oidc4vc.verif_token(jwt_proof)
-                logging.info('proof is validated')
-            except ValueError as e:
-                logging.error(f"Proof verification failed: {e}")
-                #return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id, status=403))
-            if not red.get(proof_payload['nonce']):
-                logging.error('nonce does not exist')
-            else:
-                logging.info('nonce exists')
-            
-            if proof_header.get('jwk'):  # used for HAIP
-                wallet_jwk = proof_header.get('jwk')
-                wallet_identifier = 'jwk_thumbprint'
-                wallet_did = access_token_data['client_id']
-            else:
-                wallet_identifier = 'did'
-                wallet_jwk = oidc4vc.resolve_did(proof_header.get('kid'))
-                wallet_did = proof_header.get('kid').split("#")[0]
+            jwt_proof = proof.get('jwt') # maybe an array
+            if isinstance(jwt_proof, str):
+                jwt_proof = [jwt_proof]
+            nb_proof = len(jwt_proof)
+            logging.info("proof number = %s", nb_proof)
+            i = 0 
+            for proof in jwt_proof:
+                proof_header = oidc4vc.get_header_from_token(proof)
+                proof_payload = oidc4vc.get_payload_from_token(proof)
+                logging.info('Proof header = %s', json.dumps(proof_header, indent=4))
+                logging.info('Proof payload = %s', json.dumps(proof_payload, indent=4))
+                if not proof_payload.get('nonce'):
+                    return Response(**manage_error('invalid_proof', 'c_nonce is missing', red, mode, request=request, stream_id=stream_id, status=403))
+                try:
+                    oidc4vc.verif_token(proof)
+                    logging.info('proof is validated')
+                except ValueError as e:
+                    logging.error(f"Proof verification failed: {e}")
+                    logging.warning("BUT ISSUANCE IS STILL ONGOING")
+                    #return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id, status=403))
+                if not red.get(proof_payload['nonce']):
+                    logging.error('nonce does not exist')
+                else:
+                    logging.info('nonce exists')
+                
+                if proof_header.get('jwk'):  # used for HAIP
+                    wallet_jwk.append(proof_header.get('jwk'))
+                    wallet_identifier.append('jwk_thumbprint')
+                    wallet_did.append(access_token_data['client_id'])
+                else:
+                    wallet_identifier.append('did')
+                    wallet_jwk.append(oidc4vc.resolve_did(proof_header.get('kid')))
+                    wallet_did.append(proof_header.get('kid').split("#")[0])
 
-            if access_token_data['client_id'] and proof_payload.get("iss"):
-                if proof_payload.get("iss") != access_token_data['client_id']:
-                    logging.error('iss %s of proof of key is different from client_id %s', proof_payload.get("iss") ,access_token_data['client_id'] )
-                    return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
-        
-        elif proof_type == 'ldp_vp':
-            wallet_identifier = 'did'
-            wallet_jwk = None
+                if access_token_data['client_id'] and proof_payload.get("iss"):
+                    if proof_payload.get("iss") != access_token_data['client_id']:
+                        logging.error('iss %s of proof of key is different from client_id %s', proof_payload.get("iss") ,access_token_data['client_id'] )
+                        return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red, mode, request=request, stream_id=stream_id))
+                
+        elif proof_type in ['ldp_vp', 'di_vp']:
+            nb_proof = 1
+            wallet_identifier = ['did']
+            wallet_jwk = [None]
             proof = result['proof']['ldp_vp']
             proof = json.dumps(proof) if isinstance(proof, dict) else proof
             proof_check = await didkit.verify_presentation(proof, '{}')
-            wallet_did = json.loads(proof).get('holder')
+            wallet_did = [json.loads(proof).get('holder')]
             logging.info('ldp_vp proof check  = %s', proof_check)
             if access_token_data['client_id'] and wallet_did and wallet_did != access_token_data['client_id']:
                 logging.warning('iss %s of proof of key is different from client_id %s', wallet_did, access_token_data['client_id'] )
@@ -1301,12 +1322,13 @@ async def issuer_credential(issuer_id, red, mode):
         else:
             return Response(**manage_error('invalid_proof', 'Proof type not supported', red, mode, request=request, stream_id=stream_id))
     else:
+        nb_proof = 1
         logging.warning('No proof available -> Bearer credential, wallet_did = client_id')
-        wallet_jwk = None
+        wallet_jwk = [None]
         if vc_format == 'ldp_vc':
             return Response(**manage_error('invalid_proof', 'No proof with ldp_vc format is not supported', red, mode, request=request, stream_id=stream_id))
         else:
-            wallet_did = access_token_data['client_id']
+            wallet_did = [access_token_data['client_id']]
         
     logging.info('wallet_did = %s', wallet_did)
     logging.info('wallet_identifier = %s', wallet_identifier)
@@ -1417,38 +1439,38 @@ async def issuer_credential(issuer_id, red, mode):
         return Response(**manage_error('unsupported_credential_type', 'Credential is not found for this credential identifier', red, mode, request=request, stream_id=stream_id,))
 
     # sign_credential(credential, wallet_did, issuer_id, c_nonce, format, issuer, mode, duration=365, wallet_jwk=None, wallet_identifier=None):
-    credential_signed = await sign_credential(
-        credential,
-        wallet_did,
-        issuer_id,
-        access_token_data.get('c_nonce', 'nonce'),
-        vc_format,
-        mode.server + 'issuer/' + issuer_id,  # issuer
-        mode,
-        wallet_jwk=wallet_jwk,
-        wallet_identifier=wallet_identifier,
-        draft=int(issuer_profile['oidc4vciDraft']) 
-    )
-    logging.info('credential signed sent to wallet = %s', credential_signed)
-    if not credential_signed:
-        return Response(**manage_error('internal_error', 'Credential signing error', red, mode, request=request, stream_id=stream_id,))
-
+    credential_signed = []
+    for i in range(nb_proof):
+        credential_signed.append(await sign_credential(
+            credential,
+            wallet_did[i],
+            issuer_id,
+            access_token_data.get('c_nonce', 'nonce'),
+            vc_format,
+            mode.server + 'issuer/' + issuer_id,  # issuer
+            mode,
+            wallet_jwk=wallet_jwk[i],
+            wallet_identifier=wallet_identifier,
+            draft=int(issuer_profile['oidc4vciDraft']) 
+        ))
+        logging.info('credential signed sent to wallet = %s', credential_signed)
+        if not credential_signed:
+            return Response(**manage_error('internal_error', 'Credential signing error', red, mode, request=request, stream_id=stream_id,))
+    
     # send event to front to go forward callback and send credential to wallet
     front_publish(access_token_data['stream_id'], red)
 
     # Transfer VC
     c_nonce = str(uuid.uuid1())
     if int(issuer_profile['oidc4vciDraft']) >= 15:
-        payload = {
-            "credentials": [
-                {
-                    "credential":  credential_signed
-                }
-            ]
-        }
+        payload = {"credentials": []}
+        for i in range(nb_proof):
+            payload["credentials"].append({
+                "credential": credential_signed[i]
+            })
     else:
         payload = {
-            'credential': credential_signed,  # string or json depending on the format
+            'credential': credential_signed[0],  # string or json depending on the format
             'c_nonce': c_nonce,
             'c_nonce_expires_in': C_NONCE_LIFE,
         }
