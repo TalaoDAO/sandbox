@@ -317,7 +317,7 @@
                 var x = document.getElementById("qrcode");
                 if (x) x.setAttribute("src", "/static/img/wait.jpeg");
               } else {
-                  await delay(20000);
+                await delay(20000);
                 window.location.href = '/sandbox/ebsi/issuer_followup/{{stream_id}}';
               }
             }

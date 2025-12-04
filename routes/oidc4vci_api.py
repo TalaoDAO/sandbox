@@ -1265,7 +1265,6 @@ async def issuer_credential(issuer_id, red, mode):
     wallet_jwk = []
     wallet_identifier = []
     wallet_did = []
-    print("proof = ", proof)
     if proof:
         if proof_type == 'jwt':
             jwt_proof = proof.get('jwt') # maybe an array
@@ -1277,13 +1276,13 @@ async def issuer_credential(issuer_id, red, mode):
             for proof in jwt_proof:
                 proof_header = oidc4vc.get_header_from_token(proof)
                 proof_payload = oidc4vc.get_payload_from_token(proof)
-                logging.info('Proof header = %s', json.dumps(proof_header, indent=4))
-                logging.info('Proof payload = %s', json.dumps(proof_payload, indent=4))
+                logging.info('Proof header = %s', json.dumps(proof_header, indent=2))
+                logging.info('Proof payload = %s', json.dumps(proof_payload, indent=2))
                 if not proof_payload.get('nonce'):
                     return Response(**manage_error('invalid_proof', 'c_nonce is missing', red, mode, request=request, stream_id=stream_id, status=403))
                 try:
                     oidc4vc.verif_token(proof)
-                    logging.info('proof is validated')
+                    logging.info('proof %s is validated', str(i))
                 except ValueError as e:
                     logging.error(f"Proof verification failed: {e}")
                     logging.warning("BUT ISSUANCE IS STILL ONGOING")
@@ -1313,7 +1312,10 @@ async def issuer_credential(issuer_id, red, mode):
             wallet_jwk = [None]
             proof = result['proof']['ldp_vp']
             proof = json.dumps(proof) if isinstance(proof, dict) else proof
-            proof_check = await didkit.verify_presentation(proof, '{}')
+            try:
+                proof_check = await didkit.verify_presentation(proof, '{}') # VCDM 1.1
+            except Exception:
+                logging.waring("ldp_vp proof has not been checked")
             wallet_did = [json.loads(proof).get('holder')]
             logging.info('ldp_vp proof check  = %s', proof_check)
             if access_token_data['client_id'] and wallet_did and wallet_did != access_token_data['client_id']:
@@ -1326,7 +1328,7 @@ async def issuer_credential(issuer_id, red, mode):
         logging.warning('No proof available -> Bearer credential, wallet_did = client_id')
         wallet_jwk = [None]
         if vc_format == 'ldp_vc':
-            return Response(**manage_error('invalid_proof', 'No proof with ldp_vc format is not supported', red, mode, request=request, stream_id=stream_id))
+            return Response(**manage_error('invalid_proof', 'Crypto binding in ldp_vc format is required', red, mode, request=request, stream_id=stream_id))
         else:
             wallet_did = [access_token_data['client_id']]
         
