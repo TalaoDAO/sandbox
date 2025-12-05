@@ -1246,7 +1246,7 @@ async def issuer_credential(issuer_id, red, mode):
                 return Response(**manage_error('invalid_request', 'Invalid request format, type  is missing for jwt_vc_json', red, mode, request=request, stream_id=stream_id))
     elif int(issuer_profile['oidc4vciDraft']) >= 15:
         if vc_format:
-            return Response(**manage_error('invalid_request', 'Invalid request format, format is no more supported', red, mode, request=request, stream_id=stream_id))
+            logging.warning("format is no more supported for OIDC4VCI Draft > 15")
         credential_configuration_id = result.get('credential_configuration_id')
         
     # check types fo deprecated draft
@@ -1341,8 +1341,11 @@ async def issuer_credential(issuer_id, red, mode):
     credential_type = None
     if int(issuer_profile['oidc4vciDraft']) >= 15:
         credential_type = credential_configuration_id
-        vc_format = issuer_profile['credential_configurations_supported'][credential_type]["format"]
-    
+        try:
+            vc_format = issuer_profile['credential_configurations_supported'][credential_type]["format"]
+        except Exception as e:
+            return Response(**manage_error('unsupported_format', 'format not found in credential issuer metadata', red, mode, request=request, stream_id=stream_id))
+            
     elif int(issuer_profile['oidc4vciDraft']) in [13, 14]:
         credentials_supported = list(issuer_profile['credential_configurations_supported'].keys())
         if vc_format in ['dc+sd-jwt', 'vc+sd-jwt'] and result.get('vct'):  # vc+sd-jwt'

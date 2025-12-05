@@ -118,12 +118,12 @@ def build_evm_erc20_transfer_transaction_data(
 
 if __name__ == '__main__':
     out = build_evm_erc20_transfer_transaction_data(
-        "TALAO",
-        "0x1D4cCC31dAB6EA20f461d329a0562C1c58412515",
-        18,
+        "USDC",
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        6,
         1,
         "0x03817255659dc455079df516c5271b4046b2065b",  # wallet account to transfer
-        "5.0",  # 5 TALAO token
+        "10.0",  # USDC token
         credential_ids = ["pid_credential"],
         #order_id = "#16805",
         #title = "Crypto paiement",
