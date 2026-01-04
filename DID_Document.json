@@ -2,8 +2,10 @@
     "@context": [
         "https://www.w3.org/ns/did/v1",
         {
+            "publicKeyJwk": {
             "@id": "https://w3id.org/security#publicKeyJwk",
             "@type": "@json"
+            }
         }
     ],
     "id": "did:web:talao.co",

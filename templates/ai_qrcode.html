@@ -290,7 +290,7 @@
                 
                 {% for i in range(18, 31) %}
                   <option value="{{ i }}"
-                    {% if i == 18 %} selected {% endif %}>
+                    {% if i == 30 %} selected {% endif %}>
                     {{ draft_labels.get(i, "Draft " ~ i) }}
                   </option>
                 {% endfor %}
@@ -308,7 +308,7 @@
                 
                 {% for i in range(11, 19) %}
                   <option value="{{ i }}"
-                    {% if i == 13 %} selected {% endif %}>
+                    {% if i == 18 %} selected {% endif %}>
                     {{ draft_labels.get(i, "Draft " ~ i) }}
                   </option>
                 {% endfor %}

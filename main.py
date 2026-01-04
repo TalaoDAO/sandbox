@@ -537,7 +537,8 @@ def well_known_did():
     DID_Document = json.load(open('DID_Document.json', 'r'))
     headers = {
         "Content-Type": "application/did+ld+json",
-        "Cache-Control": "no-cache"
+        "Cache-Control": "no-cache",
+        "Access-Control-Allow-Origin": "*"  # helps browser-based resolvers
     }
     return Response(json.dumps(DID_Document), headers=headers)
 

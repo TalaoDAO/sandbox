@@ -1644,6 +1644,9 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
             kid = issuer_vm
         else:
             kid = thumbprint(issuer_key)
+        print("wallet identifier = ", wallet_identifier)
+        print("wallet_did = ", wallet_did)
+        print('wallet jwk =', wallet_jwk)
 
         return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk, wallet_did, wallet_identifier, kid, x5c=x5c, draft=draft)
     elif format in ['ldp_vc', 'jwt_vc_json-ld']:

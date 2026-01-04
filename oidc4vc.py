@@ -291,7 +291,7 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
         "_sd_alg": "sha-256",
     }
     
-    if wallet_identifier == "jwk_thumbprint":
+    if wallet_identifier == "jwk_thumbprint" or "jwk_thumbprint" in wallet_identifier:
         payload['cnf'] = {"jwk": subject_key}
     else:
         payload['cnf'] = {"kid": wallet_did}
