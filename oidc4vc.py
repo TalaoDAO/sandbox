@@ -4,7 +4,6 @@ import base58  # type: ignore
 import json
 from datetime import datetime, timezone
 import logging
-import math
 import hashlib
 from random import randbytes
 import x509_attestation
@@ -14,6 +13,8 @@ import base64
 from cryptography import x509
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric import rsa, ec, ed25519, padding
+from typing import Any, Dict
+
 """
 https://ec.europa.eu/digital-building-blocks/wikis/display/EBSIDOC/EBSI+DID+Method
 VC/VP https://ec.europa.eu/digital-building-blocks/wikis/display/EBSIDOC/E-signing+and+e-sealing+Verifiable+Credentials+and+Verifiable+Presentations
@@ -57,36 +58,66 @@ alg value https://www.rfc-editor.org/rfc/rfc7518#page-6
         raise Exception("Curve not supported")
     return json.loads(key.export(private_key=True))
 
-
-def alg(key):
-    key = json.loads(key) if isinstance(key, str) else key
-    if key['kty'] == 'EC':
-        if key['crv'] in ['secp256k1', 'P-256K']:
-            key['crv'] = 'secp256k1'
-            return 'ES256K'
-        elif key['crv'] == 'P-256':
-            return 'ES256'
-        elif key['crv'] == 'P-384':
-            return 'ES384'
-        elif key['crv'] == 'P-521':
-            return 'ES512'
-        else:
-            raise Exception("Curve not supported")
-    elif key['kty'] == 'RSA':
-        return 'RS256'
-    elif key['kty'] == 'OKP':
-        return 'EdDSA'
+def alg(key) -> str:
+    """
+    Return the JOSE 'alg' for a given JWK.
+    Accepts:
+      - dict JWK
+      - JSON string containing a JWK
+      - jwcrypto.jwk.JWK instance
+    """
+    # Normalize input type
+    if hasattr(key, "export") and callable(getattr(key, "export")):
+        # jwcrypto.jwk.JWK -> dict
+        key_dict = key.export(as_dict=True)
+    elif isinstance(key, str):
+        key_dict = json.loads(key)
+    elif isinstance(key, dict):
+        key_dict = key
     else:
-        raise Exception("Key type not supported")
+        raise TypeError(f"Unsupported key type: {type(key).__name__}")
 
+    kty = key_dict.get("kty")
+    if not kty:
+        raise ValueError("Missing 'kty' in JWK")
 
-def resolve_wallet_did_ebsi_v3(did) -> str:
-    a = did.split('did:key:z')[1]
-    b = base58.b58decode(a.encode())
-    try:
-        return b.split(b'\xd1\xd6\x03')[1].decode()
-    except Exception:
-        return
+    if kty == "EC":
+        crv = key_dict.get("crv")
+        if not crv:
+            raise ValueError("Missing 'crv' in EC JWK")
+
+        # Normalize common aliases without mutating input
+        crv_norm = {
+            "P-256K": "secp256k1",
+            "secp256k1": "secp256k1",
+            "P-256": "P-256",
+            "P-384": "P-384",
+            "P-521": "P-521",
+        }.get(crv)
+
+        if crv_norm == "secp256k1":
+            return "ES256K"
+        if crv_norm == "P-256":
+            return "ES256"
+        if crv_norm == "P-384":
+            return "ES384"
+        if crv_norm == "P-521":
+            return "ES512"
+
+        raise ValueError(f"Unsupported EC curve: {crv}")
+
+    if kty == "RSA":
+        return "RS256"
+
+    if kty == "OKP":
+        crv = key_dict.get("crv")
+        if not crv:
+            raise ValueError("Missing 'crv' in OKP JWK")
+        if crv == "Ed25519":
+            return "EdDSA"
+        raise ValueError(f"Unsupported OKP curve for EdDSA: {crv}")
+
+    raise ValueError(f"Unsupported JWK kty: {kty}")
 
 
 def generate_wallet_did_ebsiv3(key):
@@ -109,7 +140,7 @@ def generate_wallet_did_ebsiv3(key):
     else:
         logging.error("Curve not supported")
         return
-    data = json.dumps(jwk).replace(" ", "").encode()
+    data = json.dumps(jwk, separators=(",", ":"), sort_keys=True).encode("utf-8")
     prefix = b'\xd1\xd6\x03'
     return "did:key:z" + base58.b58encode(prefix + data).decode()
 
@@ -135,13 +166,15 @@ def sign_jwt_vc(vc, kid, issuer_key, nonce, iss, jti, sub):
         'kid': kid,
         'alg': alg(issuer_key)
     }
+    
+    now = int(datetime.now(timezone.utc).timestamp())
 
     payload = {
         'iss': iss,
         'nonce': nonce,
-        'iat': math.floor(datetime.timestamp(datetime.now())),
-        'nbf': math.floor(datetime.timestamp(datetime.now())),
-        'exp': math.floor(datetime.timestamp(datetime.now())) + 365*24*60*60, 
+        'iat': now,
+        'nbf': now,
+        'exp': now + 365*24*60*60, 
         'jti': jti
     }
     if sub:
@@ -170,13 +203,13 @@ def sign_jwt_vp(vc, audience, holder_vm, holder_did, nonce, vp_id, holder_key):
         "kid": holder_vm,
         "jwk": pub_key(holder_key),
     }
-    iat = round(datetime.timestamp(datetime.now()))
+    now = int(datetime.now(timezone.utc).timestamp())
     payload = {
         #  "iat": iat,
         "jti": vp_id,
-        "nbf": iat,
+        "nbf": now,
         "aud": audience,
-        "exp": iat + 1000,
+        "exp": now + 1000,
         "sub": holder_did,
         "iss": holder_did,
         "vp": {
@@ -284,10 +317,11 @@ def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_i
         issuer = "https://talao.co" 
 
     subject_key = json.loads(subject_key) if isinstance(subject_key, str) else subject_key
+    now = int(datetime.now(timezone.utc).timestamp())
     payload = {
         'iss': issuer,
-        'iat': math.ceil(datetime.timestamp(datetime.now())),
-        'exp': math.ceil(datetime.timestamp(datetime.now())) + duration,
+        'iat': now,
+        'exp': now + duration,
         "_sd_alg": "sha-256",
     }
     
@@ -346,11 +380,12 @@ def build_pre_authorized_code(key, wallet_did, issuer_did, issuer_vm, nonce):
         "alg": alg(key),
         "kid": issuer_vm,
     }
+    now = int(datetime.now(timezone.utc).timestamp())
     payload = {
-        "iat": round(datetime.timestamp(datetime.now())),
+        "iat": now,
         "client_id": wallet_did,
         "aud": issuer_did,
-        "exp": round(datetime.timestamp(datetime.now())) + 1000,
+        "exp": now + 1000,
         "sub": wallet_did,
         "iss": issuer_did,
         "nonce": nonce
@@ -360,40 +395,140 @@ def build_pre_authorized_code(key, wallet_did, issuer_did, issuer_vm, nonce):
     return token.serialize()
 
 
-def public_key_multibase_to_jwk(public_key_multibase: str):
+
+
+def _multibase_base58btc_decode(mb: str) -> bytes:
+    # did:key uses multibase; base58btc is indicated by leading "z"
+    if not mb or mb[0] != "z":
+        raise ValueError("Unsupported multibase (expected base58btc starting with 'z').")
+    return base58.b58decode(mb[1:])
+
+
+def _varint_decode(buf: bytes, offset: int = 0):
     """
-    Convert a publicKeyMultibase (Base58 encoded) into JWK format.
-    Supports only secp256k1 and Ed25519 keys (Base58-btc encoding).
+    Unsigned varint decode (multicodec prefixes are varints).
+    Returns (value, new_offset).
     """
-    if not public_key_multibase.startswith("z"):
-        raise ValueError("Only Base58-btc encoding (starting with 'z') is supported.")
-    # Decode Base58 (removing "z" prefix)
-    decoded_bytes = base58.b58decode(public_key_multibase[1:])
-    # Identify the key type based on prefix
-    if decoded_bytes[:2] == b'\x04\x88':  # secp256k1 key
-        key_data = decoded_bytes[2:]
-        curve = "secp256k1"
-    elif decoded_bytes[:2] == b'\xed\x01':  # Ed25519 key
-        key_data = decoded_bytes[2:]
-        curve = "Ed25519"
+    value = 0
+    shift = 0
+    i = offset
+    while True:
+        if i >= len(buf):
+            raise ValueError("Truncated varint")
+        b = buf[i]
+        i += 1
+        value |= (b & 0x7F) << shift
+        if (b & 0x80) == 0:
+            return value, i
+        shift += 7
+        if shift > 63:
+            raise ValueError("Varint too long")
+
+
+def _ec_point_to_jwk(curve: str, pub_bytes: bytes):
+    """
+    pub_bytes is a SEC1-encoded point (did:key spec uses compressed points for p256/secp256k1).
+    """
+    if curve == "P-256":
+        pub = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), pub_bytes)
+        size = 32
+    elif curve == "secp256k1":
+        pub = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256K1(), pub_bytes)
+        size = 32
     else:
-        raise ValueError("Unsupported key type.")
-    # Convert to JWK format
-    if curve == "secp256k1":
-        x, y = key_data[:32], key_data[32:]
-        jwk = {
-            "kty": "EC",
-            "crv": "secp256k1",
-            "x": base64.urlsafe_b64encode(x).decode().rstrip("="),
-            "y": base64.urlsafe_b64encode(y).decode().rstrip("=")
-        }
-    elif curve == "Ed25519":
-        jwk = {
-            "kty": "OKP",
-            "crv": "Ed25519",
-            "x": base64.urlsafe_b64encode(key_data).decode().rstrip("=")
-        }
+        raise ValueError(f"Unsupported EC curve: {curve}")
+
+    nums = pub.public_numbers()
+    return {
+        "kty": "EC",
+        "crv": curve,
+        "x": _b64url(nums.x.to_bytes(size, "big")),
+        "y": _b64url(nums.y.to_bytes(size, "big")),
+    }
+
+
+def _validate_supported_jwk(jwk):
+    """
+    Enforce: only Ed25519, P-256, secp256k1 public keys.
+    """
+    if not isinstance(jwk, dict):
+        raise ValueError("Invalid JWK: not an object")
+
+    kty = jwk.get("kty")
+    crv = jwk.get("crv")
+
+    if kty == "OKP":
+        if crv != "Ed25519":
+            raise ValueError(f"Unsupported OKP curve: {crv}")
+        if "x" not in jwk:
+            raise ValueError("Invalid Ed25519 JWK: missing 'x'")
+        return {"kty": "OKP", "crv": "Ed25519", "x": jwk["x"]}
+
+    if kty == "EC":
+        if crv not in ("P-256", "secp256k1"):
+            raise ValueError(f"Unsupported EC curve: {crv}")
+        if "x" not in jwk or "y" not in jwk:
+            raise ValueError("Invalid EC JWK: missing 'x'/'y'")
+        return {"kty": "EC", "crv": crv, "x": jwk["x"], "y": jwk["y"]}
+
+    raise ValueError(f"Unsupported JWK kty: {kty}")
+
+
+
+def resolve_did_key(did_or_kid: str):
+    """
+    Resolve did:key locally for:
+        - Ed25519 (multicodec 0xED)
+        - P-256   (multicodec 0x1200)
+        - secp256k1 (multicodec 0xE7)
+        - EBSI did:key profile: jwk_jcs-pub (multicodec 0xEB51)
+    """
+    if not did_or_kid.startswith("did:key:"):
+        raise ValueError("Not a did:key identifier")
+
+    did = did_or_kid.split("#", 1)[0]
+    mb = did[len("did:key:") :]
+    return public_key_multibase_to_jwk(mb)
+
+
+
+def public_key_multibase_to_jwk(mb):
+    decoded = _multibase_base58btc_decode(mb)
+    multicodec_value, off = _varint_decode(decoded, 0)
+    raw = decoded[off:]
+    jwk: Dict[str, Any]
+
+    # Standard did:key types
+    if multicodec_value == 0xED:  # ed25519-pub
+        if len(raw) != 32:
+            raise ValueError(f"invalidPublicKeyLength: Ed25519 expected 32, got {len(raw)}")
+        jwk = {"kty": "OKP", "crv": "Ed25519", "x": _b64url(raw)}
+
+    elif multicodec_value == 0x1200:  # p256-pub (compressed point, 33 bytes)
+        if len(raw) != 33:
+            raise ValueError(f"invalidPublicKeyLength: P-256 expected 33, got {len(raw)}")
+        jwk = _ec_point_to_jwk("P-256", raw)
+
+    elif multicodec_value == 0xE7:  # secp256k1-pub (compressed point, 33 bytes)
+        if len(raw) != 33:
+            raise ValueError(f"invalidPublicKeyLength: secp256k1 expected 33, got {len(raw)}")
+        jwk = _ec_point_to_jwk("secp256k1", raw)
+
+    # EBSI Natural Person did:key profile:
+    # multicodec public-key-type "jwk_jcs-pub" (0xEB51), raw bytes are a JCS-canonicalized public JWK JSON
+    elif multicodec_value == 0xEB51:
+        try:
+            jwk_json = raw.decode("utf-8")
+            parsed = json.loads(jwk_json)
+        except Exception as e:
+            raise ValueError("Invalid jwk_jcs-pub payload (expected UTF-8 JSON JWK).") from e
+
+        jwk = _validate_supported_jwk(parsed)
+
+    else:
+        raise ValueError(f"Unsupported multicodec: 0x{multicodec_value:x}")
     return jwk
+
 
 
 def base58_to_jwk(base58_key: str):
@@ -406,47 +541,35 @@ def base58_to_jwk(base58_key: str):
     }
     return jwk
 
-
 def base58_to_jwk_secp256k1(base58_key: str):
     key_bytes = base58.b58decode(base58_key)
-    if len(key_bytes) == 33 and key_bytes[0] in (2, 3):  # Format compressé
-        raise ValueError("Format compressé non supporté directement, il faut le décompresser.")
-    elif len(key_bytes) == 65 and key_bytes[0] == 4:  # Format non compressé
-        x_bytes = key_bytes[1:33]
-        y_bytes = key_bytes[33:65]
-    else:
-        raise ValueError("Format de clé non reconnu.")
-    x_b64url = base64.urlsafe_b64encode(x_bytes).decode().rstrip("=")
-    y_b64url = base64.urlsafe_b64encode(y_bytes).decode().rstrip("=")
-    jwk = {
+    pub = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256K1(), key_bytes)
+    nums = pub.public_numbers()
+    return {
         "kty": "EC",
         "crv": "secp256k1",
-        "x": x_b64url,
-        "y": y_b64url
+        "x": _b64url(nums.x.to_bytes(32, "big")),
+        "y": _b64url(nums.y.to_bytes(32, "big")),
     }
-    return jwk
 
 
 def resolve_did(vm) -> dict:
-    """Return public key in jwk format from DID"""
+    """Return public key in jwk format from Verification Method"""
     logging.info('vm = %s', vm)
+    jwk = None
+    did_document = None
     try:
-        if vm[:4] != "did:":
+        if not vm.startswith("did:"):
             logging.error("Not a verificationMethod  %s", vm)
             return
         did = vm.split('#')[0]
     except Exception as e:
         logging.error("This verification method is not supported  %s", vm + " " + str(e))
         return 
-    # try did for ebsi v3
-    try:
-        jwk = resolve_wallet_did_ebsi_v3(did)
-    except Exception:
-        jwk = None
-    if jwk:
-        logging.info('wallet jwk EBSI-V3= %s', jwk)
-        return json.loads(jwk)
-    elif did.split(':')[1] == "jwk":
+    if did.startswith("did:key"):
+        return resolve_did_key(vm)
+    
+    elif did.startswith("did:jwk"):
         key = did.split(':')[2]
         key += "=" * ((4 - len(key) % 4) % 4)
         try:
@@ -456,16 +579,23 @@ def resolve_did(vm) -> dict:
             return
     else:
         for res in RESOLVER_LIST:
+            url = res + did
             try:
-                r = requests.get(res + did, timeout=10)
-                logging.info("resolver used = %s", res)
-                break
+                r = requests.get(url, timeout=10)
+                if not r.ok:
+                    continue
+                body = r.json()
             except Exception:
-                pass
-        did_document = r.json().get('didDocument')
-        if not did_document:
-            logging.warning("DID Document not found")
-            return
+                continue
+            did_document = body.get("didDocument")
+            if not did_document:
+                logging.warning("DID Document not found for resolver = %s", res)
+            else:
+                break
+    if not did_document:
+        logging.warning("DID Document not found")
+        return
+    logging.info("resolver used = %s", res)
     try:
         vm_list = did_document['verificationMethod']
     except Exception:
@@ -552,21 +682,22 @@ def get_header_from_token(token):
         raise ValueError(f"Invalid token header: {e}")
 
 
-def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce, jwk=False):
+def build_proof_of_key_ownership(key, kid, aud, signer_did, nonce, jwk_include=False):
     key = json.loads(key) if isinstance(key, str) else key
     signer_key = jwk.JWK(**key)
     header = {
         'typ': 'openid4vci-proof+jwt',
         'alg': alg(key),
     }
-    if jwk:
+    if jwk_include:
         header['jwk'] = signer_key.export(private_key=False, as_dict=True)
     else:
         header['kid'] = kid
+    now = int(datetime.now(timezone.utc).timestamp())
     payload = {
         'iss': signer_did,  # client id of the clent making the credential request
         'nonce': nonce,
-        'iat': datetime.timestamp(datetime.now()),
+        'iat': now,
         'aud': aud  # Credential Issuer URL
     }
     token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
@@ -608,7 +739,7 @@ def did_resolve_lp(did):
         except Exception:
             logging.warning('fails to access to both universal resolver')
             return "{'error': 'cannot access to Universal Resolver'}"
-    logging.info("DID Document = %s", r.json())
+    logging.info("DID'did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9KbsEYvdrjxMjQ4tpnje9BDBTzuNDP3knn6qLZErzd4bJ5go2CChoPjd5GAH3zpFJP5fuwSk66U5Pq6EhF4nKnHzDnznEP8fX99nZGgwbAh1o7Gj1X52Tdhf7U4KTk66xsA5r#z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9KbsEYvdrjxMjQ4tpnje9BDBTzuNDP3knn6qLZErzd4bJ5go2CChoPjd5GAH3zpFJP5fuwSk66U5Pq6EhF4nKnHzDnznEP8fX99nZGgwbAh1o7Gj1X52Tdhf7U4KTk66xsA5r' Document = %s", r.json())
     return r.json().get('didDocument')
 
 
@@ -693,6 +824,7 @@ def verify_x5c_chain(x5c_list):
 
     now = datetime.now(timezone.utc)
 
+
     for i, cert in enumerate(certs):
         if now < cert.not_valid_before_utc or now > cert.not_valid_after_utc:
             return (
@@ -714,6 +846,10 @@ def verify_x5c_chain(x5c_list):
 
     return "Info: Certificate chain and validity periods are all OK."
 
+
+
+def _b64url(b: bytes) -> str:
+    return base64.urlsafe_b64encode(b).rstrip(b"=").decode("ascii")
 
 
 def base64url_decode(input_str):
@@ -744,3 +880,24 @@ def decode_sd_jwt(sd_jwt_str):
             print(e)
 
     return  revealed
+
+
+
+    
+
+# MAIN entry point for test
+if __name__ == '__main__':
+    # info release
+ 
+    did_list = [
+    "did:key:z2dmzD81cgPx8Vki7JbuuMmFYrWPgYoytykUZ3eyqht1j9KbsEYvdrjxMjQ4tpnje9BDBTzuNDP3knn6qLZErzd4bJ5go2CChoPjd5GAH3zpFJP5fuwSk66U5Pq6EhF4nKnHzDnznEP8fX99nZGgwbAh1o7Gj1X52Tdhf7U4KTk66xsA5r",
+    "did:key:z6Mkf5rGMoatrSj1f4CyvuHBeXJELe9RPdzo2PKGNCKVtZxP",
+    "did:key:zQ3shokFTS3brHcDQrn82RUDfCZESWL1ZdCEJwekUDPQiYBme",
+    "did:key:zQ3shtxV1FrJfhqE1dvxYRcCknWNjHc3c5X1y3ZSoPDi2aur2",
+    "did:key:zQ3shZc2QzApp2oymGvQbzP8eKheVshBHbU4ZYjeXqwSKEn6N",
+    "did:key:zDnaerx9CtbPJ1q36T5Ln5wYt3MQYeGRG5ehnPAmxcf5mDZpv"
+    ]
+  
+    for did in did_list:
+        print(resolve_did_key(did))
+   

@@ -1288,8 +1288,8 @@ async def issuer_credential(issuer_id, red, mode):
                     logging.info('proof %s is validated', str(i))
                 except ValueError as e:
                     logging.error(f"Proof verification failed: {e}")
-                    logging.warning("BUT ISSUANCE IS STILL ONGOING")
-                    #return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id, status=403))
+                    #logging.warning("BUT ISSUANCE IS STILL ONGOING")
+                    return Response(**manage_error('invalid_proof', 'Proof of key ownership, signature verification error: ' + str(e), red, mode, request=request, stream_id=stream_id, status=403))
                 if not red.get(proof_payload['nonce']):
                     logging.error('nonce does not exist')
                 else:
@@ -1346,7 +1346,7 @@ async def issuer_credential(issuer_id, red, mode):
         credential_type = credential_configuration_id
         try:
             vc_format = issuer_profile['credential_configurations_supported'][credential_type]["format"]
-        except Exception as e:
+        except Exception:
             return Response(**manage_error('unsupported_format', 'format not found in credential issuer metadata', red, mode, request=request, stream_id=stream_id))
             
     elif int(issuer_profile['oidc4vciDraft']) in [13, 14]:
