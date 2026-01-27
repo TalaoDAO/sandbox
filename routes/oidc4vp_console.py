@@ -132,7 +132,8 @@ def oidc4vc_verifier_console(mode):
         # presentation definition calculation
         if session['client_data'].get('vp_token'):
             presentation_definition = str()
-            
+        
+        presentation_definition = {}
         if session['client_data'].get('vp_token'):
             try:
                 presentation_definition = json.load(open(session['client_data'].get("predefined_presentation_definition") + '.json', 'r'))
