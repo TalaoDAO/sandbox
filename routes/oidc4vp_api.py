@@ -493,7 +493,13 @@ def build_verifier_metadata(client_id, redirect_uri) -> dict:
     except Exception as e:
         logging.warning("wallet metadata failed to build = %s", str(e))
         return {}
-    verifier_metadata = json.load(open('verifier_metadata.json', 'r'))        
+    verifier_profile = profile[verifier_data['profile']]
+    verifier_metadata = json.load(open('verifier_metadata.json', 'r'))
+    draft = int(verifier_profile['oidc4vpDraft'])
+    if draft >= 27:
+        verifier_metadata = json.load(open('verifier_metadata_above_27.json', 'r'))
+    else:
+        verifier_metadata = json.load(open('verifier_metadata.json', 'r'))
     #verifier_metadata['request_uri_parameter_supported'] = bool(verifier_data.get('request_uri_parameter_supported'))
     #verifier_metadata['request_parameter_supported'] = bool(verifier_data.get('request_parameter_supported'))
     #verifier_metadata['redirect_uris'] = [redirect_uri]

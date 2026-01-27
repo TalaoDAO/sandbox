@@ -575,7 +575,14 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[str, str, str, List[d
                     comments.append("Info: Request JWT is correctly signed with x5c public key")
                 except Exception as e:
                     comments.append(f"Error: Request JWT signature verification with x5c public key failed: {e}")
-
+        elif isinstance(header, dict) and header.get("kid"):
+            try:
+                oidc4vc.verif_token(request_jwt)
+                comments.append("Info: DID resolution is successful")
+                comments.append("Info: Request JWT is correctly signed with DID")
+            except Exception:
+                comments.append("Error: Request JWT is not correctly signed")
+                        
     # 2) request (inline) → parse JWT
     elif inline_req := query.get("request"):
         request_jwt = inline_req.strip()
@@ -665,13 +672,13 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[str, str, str, List[d
     else:
         comments.append("Error: No Presentation Definition / DCQL parameter found.")
         
-    
     # Optional sanity: ensure required OIDC params exist (response_type, client_id, redirect_uri, scope, nonce/state, etc.)
     # Keep it advisory; don’t fail here to let the analyzer produce a full report later.
     for k in ("client_id", "nonce", "response_mode"):
         if k not in request:
             comments.append(f"Error: '{k}' is missing in authorization request.")
-
+            
+    logging.info("comments = %s", "\n".join(comments))
     return request, presentation_obj, "\n".join(comments), transaction_data
 
 

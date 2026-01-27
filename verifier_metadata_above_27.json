@@ -1,36 +1,21 @@
 {
-    "vp_formats": {
+    "vp_formats_supported": {
+        "mso_mdoc": {
+            "issuerauth_alg_values": [-9, -50],
+            "deviceauth_alg_values": [-9, -50]
+        },
         "jwt_vc_json": {
-            "alg_values_supported": [
+            "alg_values": [
                 "ES256",
                 "ES256K",
                 "EdDSA"
-            ]
-        },
-        "ldp_vp": {
-            "proof_type": [
-                "Ed25519Signature2018",
-                "EcdsaSecp256k1Signature2019",
-                "RsaSignature2018"
             ]
         },
         "ldp_vc": {
-            "proof_type": [
+            "proof_type_values": [
                 "Ed25519Signature2018",
                 "EcdsaSecp256k1Signature2019",
                 "RsaSignature2018"
-            ]
-        },
-        "vc+sd-jwt": {
-            "sd-jwt_alg_values": [
-                "ES256",
-                "ES256K",
-                "EdDSA"
-            ],
-            "kb-jwt_alg_values": [
-                "ES256",
-                "ES256K",
-                "EdDSA"
             ]
         },
          "dc+sd-jwt": {
