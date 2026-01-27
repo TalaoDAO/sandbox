@@ -1,0 +1,11 @@
+{
+  "credentials": [
+    {
+      "id": "phone",
+      "format": "dc+sd-jwt",
+      "claims": [
+        {"path": ["mobile_phone_number"]}
+      ]
+    }
+  ]
+}

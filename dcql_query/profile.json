@@ -1,0 +1,13 @@
+{
+  "credentials": [
+    {
+      "id": "eid-limited",
+      "format": "dc+sd-jwt",
+      "claims": [
+        {"path": ["given_name"]},
+        {"path": ["family_name"]},
+        {"path": ["birth_date"]}
+      ]
+    }
+  ]
+}

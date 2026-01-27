@@ -1,0 +1,11 @@
+{
+  "credentials": [
+    {
+      "id": "email",
+      "format": "dc+sd-jwt",
+      "claims": [
+        {"path": ["email_address"]}
+      ]
+    }
+  ]
+}

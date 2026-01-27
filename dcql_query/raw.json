@@ -1,0 +1,9 @@
+{
+  "credentials": [
+    {
+      "id": "raw",
+      "format": "dc+sd-jwt",
+      "claims": []
+    }
+  ]
+}
