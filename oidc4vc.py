@@ -58,6 +58,7 @@ alg value https://www.rfc-editor.org/rfc/rfc7518#page-6
         raise Exception("Curve not supported")
     return json.loads(key.export(private_key=True))
 
+
 def alg(key) -> str:
     """
     Return the JOSE 'alg' for a given JWK.
@@ -247,7 +248,7 @@ def sd(data):
             pass
         # for undisclosed attribute
         elif isinstance(unsecured[claim], (str, bool, int)) or claim in ["status", "status_list"]:
-            if claim in disclosure_list or claim in disclosed_claims :
+            if claim in disclosure_list or claim in disclosed_claims:
                 payload[claim] = unsecured[claim]
             else:
                 contents = json.dumps([salt(), claim, unsecured[claim]])
@@ -734,7 +735,7 @@ def did_resolve_lp(did):
         logging.error('cannot access to Talao Universal Resolver API')
         url = 'https://dev.uniresolver.io/1.0/identifiers/' + did
         try:
-            r = requests.get(url, timeout=5)
+            r = requests.get(url, timeout=10)
             logging.info('Access to Public Universal Resolver')
         except Exception:
             logging.warning('fails to access to both universal resolver')
@@ -745,7 +746,7 @@ def did_resolve_lp(did):
 
 def get_issuer_registry_data(did):
     """
-    API v3
+    EBSI API v3
     https://api-pilot.ebsi.eu/docs/apis/trusted-issuers-registry/latest#/operations/get-trusted-issuers-registry-v3-issuers-issuer
     """
     try:
@@ -824,7 +825,6 @@ def verify_x5c_chain(x5c_list):
 
     now = datetime.now(timezone.utc)
 
-
     for i, cert in enumerate(certs):
         if now < cert.not_valid_before_utc or now > cert.not_valid_after_utc:
             return (
@@ -879,7 +879,7 @@ def decode_sd_jwt(sd_jwt_str):
             print("Invalid disclosure:", disclosure_b64)
             print(e)
 
-    return  revealed
+    return revealed
 
 
 

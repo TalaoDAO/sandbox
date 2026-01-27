@@ -14,7 +14,7 @@ import uuid
 from datetime import datetime, timedelta
 from profile import profile
 from random import randint
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 import urllib
 import db_api
 import oidc4vc  # type: ignore
@@ -45,9 +45,11 @@ def init_app(app, red, mode):
     app.add_url_rule('/sandbox/ebsi/issuer_stream', view_func=oidc_issuer_stream, methods=['GET', 'POST'], defaults={'red': red})
     app.add_url_rule('/sandbox/ebsi/issuer_followup/<stream_id>', view_func=oidc_issuer_followup, methods=['GET'], defaults={'red': red})
     
-    # OIDC4VCI protocol with wallet
+    # OIDC4VCI protocol with wallet, credential issuer metadata
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-credential-issuer', view_func=credential_issuer_openid_configuration_endpoint, methods=['GET'], defaults={'mode': mode})
-    
+    # draft 16 and above
+    app.add_url_rule('/.well-known/openid-credential-issuer/issuer/<issuer_id>', view_func=credential_issuer_openid_configuration_endpoint, methods=['GET'], defaults={'mode': mode})
+
     # AS endpoint when issuer = AS
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=openid_configuration, methods=['GET'], defaults={'mode': mode},)
     app.add_url_rule('/issuer/<issuer_id>/.well-known/oauth-authorization-server', view_func=oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
@@ -182,7 +184,7 @@ def build_signed_metadata(key, sub, metadata) -> str:
 
 # credential issuer openid configuration endpoint
 def credential_issuer_openid_configuration_endpoint(issuer_id, mode):
-    logging.info('Call credential issuer configuration endpoint')
+    logging.info('Call credential issuer configuration endpoint /issuer metadata : %s', request.url)
     metadata = credential_issuer_openid_configuration(issuer_id, mode)
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
@@ -190,9 +192,19 @@ def credential_issuer_openid_configuration_endpoint(issuer_id, mode):
     except Exception:
         logging.warning('issuer_id not found for %s', issuer_id)
         return {"error": "server_error"}
-    if int(issuer_profile.get('oidc4vciDraft')) >= 13:
+    draft = int(issuer_profile.get('oidc4vciDraft'))
+    if draft > 15:
+        parsed = urlparse(request.url)
+        path = parsed.path
+        if not request.url.endswith(path):
+            logging.warning("wrong issuer metadatat url")
+            headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
+            return Response(response=json.dumps({"error": "not found"}), headers=headers, status=404)
+        else:
+            logging.info("issuer metadata url is correct for this draft")
+    
+    if (12 < draft < 16):
         sub = mode.server + 'issuer/' + issuer_id
-        print("key = ",issuer_data['jwk'])
         metadata["signed_metadata"] = build_signed_metadata(issuer_data['jwk'], sub, metadata)
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(metadata), headers=headers)

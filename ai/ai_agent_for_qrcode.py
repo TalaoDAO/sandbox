@@ -692,7 +692,15 @@ def get_issuer_data(qrcode, draft):
     # generate VCT in registry
     trigger_generation(issuer)
     
-    issuer_metadata_url = f"{issuer}/.well-known/openid-credential-issuer"
+    if int(draft) >= 16:
+        parsed = urlparse(issuer)
+        scheme = parsed.scheme
+        domain = parsed.netloc   # example.com:8443
+        path = parsed.path
+        issuer_metadata_url = f"{scheme}://{domain}/.well-known/openid-credential-issuer{path}"
+    else:
+        issuer_metadata_url = f"{issuer}/.well-known/openid-credential-issuer"
+    print("issuer metadata url=", issuer_metadata_url)
     logging.info("AI Agent call for QR code diagnostic. issuer = %s", issuer)
     try:
         resp = requests.get(issuer_metadata_url, timeout=10)
