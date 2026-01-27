@@ -295,10 +295,14 @@ def style_instructions(style: ReportStyle, domain: str, draft: str, extra_urls: 
 # ---------- Attribution footer ----------
 def attribution(mode: str, spec_label: str, draft: str, provider: str) -> str:
     date = datetime.now().replace(microsecond=0).isoformat()
+    if spec_label == "OIDC4VCI" and draft == "18":
+        draft = "Final 1.0"
+    if spec_label == "OIDC4VP" and draft == "30":
+        draft = "Final 1.0"
     base = (
         f"\n\nThe model {engine(mode, provider)} is used with the Web3 Digital Wallet dataset.\n"
         f"This report is based on {spec_label} {draft}.\n"
-        f"Date of issuance: {date}. © Web3 Digital Wallet 2025."
+        f"Date of issuance: {date}. © Web3 Digital Wallet / Talao 2026."
     )
     if mode == "flash":
         return base + f"\nTip: 💡Switch to *Escalation* for deeper checks when results are uncertain."
