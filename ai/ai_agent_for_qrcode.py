@@ -688,10 +688,12 @@ def get_issuer_data(qrcode, draft):
             return credential_offer, None, None, comment
         
     issuer = credential_offer.get('credential_issuer')
+    logging.info("credential offer = %s", credential_offer)
     
     # generate VCT in registry
     trigger_generation(issuer)
     
+    # get issuer metadata
     if int(draft) >= 16:
         parsed = urlparse(issuer)
         scheme = parsed.scheme
@@ -700,7 +702,6 @@ def get_issuer_data(qrcode, draft):
         issuer_metadata_url = f"{scheme}://{domain}/.well-known/openid-credential-issuer{path}"
     else:
         issuer_metadata_url = f"{issuer}/.well-known/openid-credential-issuer"
-    print("issuer metadata url=", issuer_metadata_url)
     logging.info("AI Agent call for QR code diagnostic. issuer = %s", issuer)
     try:
         resp = requests.get(issuer_metadata_url, timeout=10)
@@ -726,20 +727,26 @@ def get_issuer_data(qrcode, draft):
         issuer_metadata = "Error: Issuer metadata are not available" + str(e)
     logging.info("Issuer metadata = %s", issuer_metadata)
     
-    # authorization server metadata
+    # get authorization server metadata
     try:
         authorization_server = issuer_metadata.get("authorization_servers", [issuer])[0]
     except Exception:
         try:
             authorization_server = credential_offer["grants"]["authorization_code"]["authorization_server"]
         except Exception:
-            authorization_server_metadata = "Error: The authorization server is not found not"
+            authorization_server_metadata = "Error: The authorization server is not found"
             return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata), comment
 
     logging.info("authorization server = %s", authorization_server)
 
     if int(draft) <= 11:
         authorization_server_url = f"{authorization_server}/.well-known/openid-configuration"
+    elif int(draft) >= 16:
+        parsed = urlparse(authorization_server)
+        scheme = parsed.scheme
+        domain = parsed.netloc   # example.com:8443
+        path = parsed.path
+        authorization_server_url = f"{scheme}://{domain}/.well-known/oauth-authorization-server{path}"
     else:
         authorization_server_url = f"{authorization_server}/.well-known/oauth-authorization-server"
 
@@ -747,6 +754,8 @@ def get_issuer_data(qrcode, draft):
         authorization_server_metadata = requests.get(authorization_server_url, timeout=10).json()
     except Exception:
         authorization_server_metadata = "Error: The authorization server metadata are not available or the draft " + draft + " is not correct ? "
+    
+    logging.info("authorization server metadata = %s", authorization_server_metadata)
     return json.dumps(credential_offer), json.dumps(issuer_metadata), json.dumps(authorization_server_metadata), comment
 
 

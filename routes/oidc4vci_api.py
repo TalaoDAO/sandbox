@@ -53,8 +53,10 @@ def init_app(app, red, mode):
     # AS endpoint when issuer = AS
     app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=openid_configuration, methods=['GET'], defaults={'mode': mode},)
     app.add_url_rule('/issuer/<issuer_id>/.well-known/oauth-authorization-server', view_func=oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
-        
+    app.add_url_rule('/.well-known/oauth-authorization-server/issuer/<issuer_id>', view_func=oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
+
     app.add_url_rule('/issuer/<issuer_id>/standalone/.well-known/oauth-authorization-server', view_func=standalone_oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
+    app.add_url_rule('/.well-known/oauth-authorization-server/issuer/<issuer_id>/standalone', view_func=standalone_oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
 
     app.add_url_rule('/issuer/<issuer_id>/authorize', view_func=issuer_authorize, methods=['GET'], defaults={'red': red, 'mode': mode})
     app.add_url_rule('/issuer/<issuer_id>/authorize/par', view_func=issuer_authorize_par, methods=['POST'], defaults={'red': red, 'mode':mode})
