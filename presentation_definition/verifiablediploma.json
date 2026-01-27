@@ -1,0 +1,43 @@
+{
+    "format": {
+        "jwt_vc": {
+            "alg": [
+                "ES256k",
+                "ES256",
+                "EdDSA"
+            ]
+        },
+        "jwt_vp": {
+            "alg": [
+                "ES256k",
+                "ES256",
+                "EdDSA"
+            ]
+        }
+    },
+    "id": "1262016d-fb74-11f0-b2cd-0a1628958560",
+    "input_descriptors": [
+        {
+            "constraints": {
+                "fields": [
+                    {
+                        "filter": {
+                            "contains": {
+                                "const": "VerifiableDiploma"
+                            },
+                            "type": "array"
+                        },
+                        "path": [
+                            "$.type"
+                        ]
+                    }
+                ]
+            },
+            "id": "verifiablediploma_1",
+            "name": "Input descriptor for credential 1",
+            "purpose": ""
+        }
+    ],
+    "name": "Test #1",
+    "purpose": "Altme"
+}

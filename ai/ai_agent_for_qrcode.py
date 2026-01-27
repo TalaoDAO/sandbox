@@ -2,6 +2,9 @@
 QR Code Analyzer for OIDC4VCI and OIDC4VP using OpenAI models
 This module processes QR code data, validates VC/VP tokens, interacts with OpenAI to generate reports,
 and stores results with Slack notifications and file logging.
+
+
+all specs are https://openid.net/specs/ 
 """
 
 import json

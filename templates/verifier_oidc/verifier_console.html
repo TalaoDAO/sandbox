@@ -405,7 +405,7 @@
                               
                               <div class="form-row mb-3">
                                 <div class="col-6">
-                                  <div class="form-group"><label><strong>Predefined presentation definition</strong></label><select name="predefined_presentation_definition" class="form-control">
+                                  <div class="form-group"><label><strong>Predefined presentation definition (PEX or DCQL)</strong></label><select name="predefined_presentation_definition" class="form-control">
                                     {{presentation_definition_uri_select|safe}}  
                                     </select></div>
                               </div>  
@@ -413,155 +413,13 @@
                               </div>
                           
                           <hr>
-                          <div class="form-row mb-3">
-                            <div class="col">
-                              <div class="form-check">
-                                <input class="form-check-input" type="checkbox" {{filter_type_array}} name="filter_type_array" id="flexCheckDefault_1">
-                                <label class="form-check-label" for="flexCheckDefault_1">Filter with type array</label>
-                              </div>
-                            </div> 
-
-                          </div>
-
-                          <div class="form-row">
-                            <div class="col-6">
-                                <div class="form-group"><label><strong>Credential 1</strong></label><select name="vc_1" class="form-control">
-                                  {{vc_select_1|safe}}  
-                                  </select></div>
-                            </div>  
-                        
-                            <div class="col">
-                              <div class="form-group"><label><strong>In wallet message credential 1</strong><br></label><textarea class="form-control" name="reason_1" >{{reason_1}}</textarea></div>
-                            </div>
-
-                            </div>
-
-
-                            <div class="form-row">
-                            <div class="col-6">
-                                <div class="form-group"><label><strong>AND Credential 2</strong></label><select name="vc_2" class="form-control">
-                                  {{vc_select_2|safe}}  
-                                  </select></div>
-                            </div>   
-
-                            <div class="col">
-                              <div class="form-group"><label><strong>In wallet message credential 2</strong><br></label><textarea class="form-control" name="reason_2" >{{reason_2}}</textarea></div>
-                            </div>
-
-                            </div>
-
-                            <div class="form-row">
-                              <div class="col-6">
-                                  <div class="form-group"><label><strong>AND Credential 3</strong></label><select name="vc_3" class="form-control">
-                                    {{vc_select_3|safe}}  
-                                    </select></div>
-                              </div>   
-  
-                              <div class="col">
-                                <div class="form-group"><label><strong>In wallet message credential 3</strong><br></label><textarea class="form-control" name="reason_3" >{{reason_3}}</textarea></div>
-                              </div>
-  
-                              </div>
-
-                              <div class="form-row">
-                                <div class="col-6">
-                                    <div class="form-group"><label><strong>AND Credential 4</strong></label><select name="vc_4" class="form-control">
-                                      {{vc_select_4|safe}}  
-                                      </select></div>
-                                </div>   
-    
-                                <div class="col">
-                                  <div class="form-group"><label><strong>In wallet message credential 4</strong><br></label><textarea class="form-control" name="reason_4" >{{reason_4}}</textarea></div>
-                                </div>
-    
-                                </div>
-<hr>
-
-<!-- Group A-->
-                            <div class="form-row">
-                            <div class="form-row mb-3">
-                              <div class="col">
-                                <div class="form-check">
-                                  <input class="form-check-input" type="checkbox" {{group}} name="group" id="flexCheckDefault_1">
-                                  <label class="form-check-label" for="flexCheckDefault_1">Group A : User picks exactly 1 among several</label>
-                                </div>
-                              </div> 
-                            </div>
-                          
-                          </div>
-
-                          <div class="form-row">
-                            <div class="col">
-                                <div class="form-group"><label><strong>Credential 5</strong></label><select name="vc_5" class="form-control">
-                                  {{vc_select_5|safe}}  
-                                  </select></div>
-                            </div>  
                       
-                           
-                            <div class="col">
-                                <div class="form-group"><label><strong>OR Credential 6</strong></label><select name="vc_6" class="form-control">
-                                  {{vc_select_6|safe}}  
-                                  </select></div>
-                            </div>   
-                            </div>
 
-                            <div class="form-row">
-                              <div class="col">
-                                  <div class="form-group"><label><strong>OR Credential 7</strong></label><select name="vc_7" class="form-control">
-                                    {{vc_select_7|safe}}  
-                                    </select></div>
-                              </div>  
-                        
-                             
-                              <div class="col">
-                                  <div class="form-group"><label><strong>OR Credential 8</strong></label><select name="vc_8" class="form-control">
-                                    {{vc_select_8|safe}}  
-                                    </select></div>
-                              </div>   
-                              </div>
-<!-- Group B -->
-<hr>
-                        <div class="form-row">
-                            <div class="form-row mb-3">
-                              <div class="col">
-                                <div class="form-check">
-                                  <input class="form-check-input" type="checkbox" {{group_B}} name="group_B" id="flexCheckDefault_1">
-                                  <label class="form-check-label" for="flexCheckDefault_1">Group B : User picks min 1 among several</label>
-                                </div>
-                              </div> 
-                            </div>
-                          
-                          </div>
+       
 
-                          <div class="form-row">
-                            <div class="col">
-                                <div class="form-group"><label><strong>Credential 9</strong></label><select name="vc_9" class="form-control">
-                                  {{vc_select_9|safe}}  
-                                  </select></div>
-                            </div>  
-                      
-                           
-                            <div class="col">
-                                <div class="form-group"><label><strong>Credential 10</strong></label><select name="vc_10" class="form-control">
-                                  {{vc_select_10|safe}}  
-                                  </select></div>
-                            </div>   
-                            </div>
 
-                            <div class="form-row">
-                              <div class="col">
-                                  <div class="form-group"><label><strong>Credential 11</strong></label><select name="vc_11" class="form-control">
-                                    {{vc_select_11|safe}}  
-                                    </select></div>
-                              </div>  
-                        
-                             
-                              <div class="col">
-                                  <div class="form-group"><label><strong>Credential 12</strong></label><select name="vc_12" class="form-control">
-                                    {{vc_select_12|safe}}  
-                                    </select></div>
-                              </div>   
-                              </div>
+
+                         
                               <div class="form-row">
                                   <div class="form-group"><label><strong>Presentation Definition (read only)</strong></label><textarea readonly rows="15" cols="150">{{presentation_definition}}</textarea>
                               </div>

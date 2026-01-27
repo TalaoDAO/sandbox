@@ -3,9 +3,7 @@ import json
 import copy
 import logging
 import db_api 
-from profile import profile
 import oidc4vc
-import pex
 from oidc4vc_constante import oidc4vc_verifier_credential_list, guest_oidc4vc_verifier_credential_list, predefined_presentation_uri_list
 from oidc4vc_constante import oidc4vc_verifier_landing_page_style_list, oidc4vc_profile_list, guest_oidc4vc_verifier_landing_page_style_list
 from oidc4vc_constante import client_id_scheme_list
@@ -129,216 +127,17 @@ def oidc4vc_verifier_console(mode):
             if key == session['client_data'].get('client_id_scheme', 'None'):
                 client_id_scheme_select +=  "<option selected value=" + key + ">" + value + "</option>"
             else:
-                client_id_scheme_select +=  "<option value=" + key + ">" + value + "</option>"
-
-        vc_select_1 = str()
-        for key, value in credential_list.items():
-            if key == session['client_data'].get('vc_1', 'DID'):
-                vc_select_1 +=  "<option selected value=" + key + ">" + value + "</option>"
-            else:
-                vc_select_1 +=  "<option value=" + key + ">" + value + "</option>"
-        vc_select_2 = str()
-        for key, value in credential_list.items():
-            if key == session['client_data'].get('vc_2', "DID"):
-                vc_select_2 +=  "<option selected value=" + key + ">" + value + "</option>"
-            else:
-                vc_select_2 +=  "<option value=" + key + ">" + value + "</option>"
-        vc_select_3 = str()
-        for key, value in credential_list.items():
-            if key == session['client_data'].get('vc_3', "DID"):
-                vc_select_3 +=  "<option selected value=" + key + ">" + value + "</option>"
-            else:
-                vc_select_3 +=  "<option value=" + key + ">" + value + "</option>"
-        vc_select_4 = str()
-        for key, value in credential_list.items():
-            if key == session['client_data'].get('vc_4', "DID"):
-                vc_select_4 += "<option selected value=" + key + ">" + value + "</option>"
-            else:
-                vc_select_4 += "<option value=" + key + ">" + value + "</option>"
-
-        # for group A
-        vc_select_5 = str()
-        for key, value in credential_list.items():
-            if key == session['client_data'].get('vc_5', 'DID'):
-                vc_select_5 += "<option selected value=" + key + ">" + value + "</option>"
-            else:
-                vc_select_5 += "<option value=" + key + ">" + value + "</option>"
-        
-        vc_select_6 = str()
-        for key, value in credential_list.items():
-            if key ==   session['client_data'].get('vc_6', "DID"):
-                vc_select_6 += "<option selected value=" + key + ">" + value + "</option>"
-            else:
-                vc_select_6 += "<option value=" + key + ">" + value + "</option>"
-        vc_select_7 = str()
-        for key, value in credential_list.items():
-            if key ==   session['client_data'].get('vc_7', "DID"):
-                vc_select_7 += "<option selected value=" + key + ">" + value + "</option>"
-            else:
-                vc_select_7 += "<option value=" + key + ">" + value + "</option>"
-        vc_select_8 = str()
-        for key, value in credential_list.items():
-            if key ==   session['client_data'].get('vc_8', "DID"):
-                vc_select_8 +=  "<option selected value=" + key + ">" + value + "</option>"
-            else:
-                vc_select_8 +=  "<option value=" + key + ">" + value + "</option>"
-        
-        # for group B
-        vc_select_9 = str()
-        for key, value in credential_list.items():
-            if key ==   session['client_data'].get('vc_9', 'DID'):
-                vc_select_9 +=  "<option selected value=" + key + ">" + value + "</option>"
-            else:
-                vc_select_9 +=  "<option value=" + key + ">" + value + "</option>"
-        
-        vc_select_10 = str()
-        for key, value in credential_list.items():
-            if key ==   session['client_data'].get('vc_10', "DID"):
-                vc_select_10 +=  "<option selected value=" + key + ">" + value + "</option>"
-            else:
-                vc_select_10 +=  "<option value=" + key + ">" + value + "</option>"
-        vc_select_11 = str()
-        for key, value in credential_list.items():
-            if key ==   session['client_data'].get('vc_11', "DID"):
-                vc_select_11 += "<option selected value=" + key + ">" + value + "</option>"
-            else:
-                vc_select_11 += "<option value=" + key + ">" + value + "</option>"
-        vc_select_12 = str()
-        for key, value in credential_list.items():
-            if key ==  session['client_data'].get('vc_12', "DID"):
-                vc_select_12 += "<option selected value=" + key + ">" + value + "</option>"
-            else:
-                vc_select_12 += "<option value=" + key + ">" + value + "</option>"
+                client_id_scheme_select +=  "<option value=" + key + ">" + value + "</option>"          
 
         # presentation definition calculation
         if session['client_data'].get('vp_token'):
             presentation_definition = str()
-            prez = {}
-        
-        if session['client_data'].get('vp_token') and not session['client_data'].get('group'): 
-            if session['client_data'].get('filter_type_array'):
-                if not prez:
-                    prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
-                for i in ["1", "2", "3", "4"]:
-                    vc = 'vc_' + i
-                    reason = 'reason_' + i
-                    if session['client_data'][vc] not in ['None', "$.nationalities"]:
-                        prez.add_constraint_with_type_array(
-                            "$.type",
-                            session['client_data'][vc],
-                            "Input descriptor for credential " + i,
-                            session['client_data'][reason],
-                            id=session['client_data'][vc].lower() + '_' + i
-                        )
-                    elif session['client_data'][vc] == "$.nationalities":
-                        prez.add_constraint_with_type_array(
-                            "$.nationalities",
-                            session['client_data'][vc],
-                            "Input descriptor for credential " + i,
-                            session['client_data'][reason],
-                            id=session['client_data'][vc].lower() + '_' + i
-                        ) 
-            elif profile[session['client_data']['profile']].get("verifier_vp_type") == 'vc+sd-jwt':
-                if not prez:
-                    prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
-                for i in ["1", "2", "3", "4"]:
-                    vc = 'vc_' + i
-                    reason = 'reason_' + i
-                    if session['client_data'][vc] != 'None'  :
-                        prez.add_constraint(
-                            "$.vct",
-                            session['client_data'][vc],
-                            "Input descriptor for credential " + i,
-                            session['client_data'][reason],
-                            id=session['client_data'][vc].lower() + '_' + i
-                        )
-                    elif session['client_data'][vc] == "$.age_equal_or_over.18":
-                        prez.add_constraint(
-                            "$.age_equal_or_over.18",
-                            session['client_data'][vc],
-                            "Input descriptor for credential " + i,
-                            session['client_data'][reason],
-                            id=session['client_data'][vc].lower() + '_' + i
-                        )
-                    else:
-                        break
-            else:
-                if not prez:
-                    prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
-                for i in ["1", "2", "3", "4"]:
-                    vc = 'vc_' + i
-                    reason = 'reason_' + i
-                    if session['client_data'][vc] != 'None'  :
-                        prez.add_constraint(
-                            "$.credentialSubject.type",
-                            session['client_data'][vc],
-                            "Input descriptor for credential " + i,
-                            session['client_data'][reason],
-                            id=session['client_data'][vc].lower() + '_' + i
-                        )
-        
-        if session['client_data'].get('vp_token') and session['client_data'].get('group'): 
-            if not prez:
-                prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
-            prez.add_group("Group A", "A", count=1)
-            for i in ["5", "6", "7", "8"]:
-                vc = 'vc_' + i
-                if session['client_data'][vc] != 'None'  :
-                    prez.add_constraint_with_group(
-                        "$.credentialSubject.type",
-                        session['client_data'][vc],
-                        "Input descriptor for credential " + i,
-                        "",
-                        "A",
-                        id=session['client_data'][vc].lower() + '_' + i
-                    )
-        
-        if session['client_data'].get('vp_token') and session['client_data'].get('group_B'): 
-            if not prez:
-                prez = pex.Presentation_Definition(session['client_data']['application_name'], "Altme presentation definition subset of PEX v2.0")  
-            prez.add_group("Group B", "B", min=1)
-            for i in ["9", "10", "11", "12"]:
-                vc = 'vc_' + i
-                if session['client_data'][vc] != 'None'  :
-                    prez.add_constraint_with_group(
-                        "$.credentialSubject.type",
-                        session['client_data'][vc],
-                        "Input descriptor for credential " + i,
-                        "",
-                        "B",
-                        id=session['client_data'][vc].lower() + '_' + i
-                    )
             
         if session['client_data'].get('vp_token'):
-            if profile[session['client_data']['profile']]["verifier_vp_type"] == 'ldp_vp':
-                prez.add_format_ldp_vp()
-                prez.add_format_ldp_vc()
-            
-            elif profile[session['client_data']['profile']]["verifier_vp_type"] == 'all_vp':
-                prez.add_format_all_vp()
-                prez.add_format_all_vc()
-        
-            elif profile[session['client_data']['profile']]["verifier_vp_type"] == 'jwt_vp':
-                prez.add_format_jwt_vp()
-                prez.add_format_jwt_vc()
-            
-            elif profile[session['client_data']['profile']].get("verifier_vp_type") == 'jwt_vp_json':
-                prez.add_format_jwt_vp_json()
-                prez.add_format_jwt_vc_json()
-        
-            elif profile[session['client_data']['profile']].get("verifier_vp_type") == 'vc+sd-jwt':
-                prez.add_format_sd_jwt()
-            else:
-                logging.error("vc format not supported")
-                return redirect('/sandbox/saas4ssi')
-            
-            logging.info('presentation definition is read from file  = %s', session['client_data'].get("predefined_presentation_definition"))
-            if session['client_data'].get("predefined_presentation_definition") in ['None', None]:
-                presentation_definition = prez.get()
-            else:
+            try:
                 presentation_definition = json.load(open(session['client_data'].get("predefined_presentation_definition") + '.json', 'r'))
-        else:
-            presentation_definition = ""
+            except Exception:  # fallback
+                presentation_definition = json.load(open('presentation_definition/pid.json', 'r'))
 
         authorization_request = mode.server + 'sandbox/verifier/app/authorize?client_id=' + session['client_data']['client_id'] + "&scope=openid&response_type=code&redirect_uri=" +  session['client_data']['callback'] 
         implicit_request = mode.server + 'sandbox/verifier/app/authorize?client_id=' + session['client_data']['client_id'] + "&scope=openid&response_type=id_token&redirect_uri=" +  session['client_data']['callback']
@@ -353,7 +152,7 @@ def oidc4vc_verifier_console(mode):
             vp_token="checked" if session['client_data'].get('vp_token') else "",
             group="checked" if session['client_data'].get('group') else "",
             group_B="checked" if session['client_data'].get('group_B') else "",
-            filter_type_array="checked" if session['client_data'].get('filter_type_array') else "" ,
+            #filter_type_array="checked" if session['client_data'].get('filter_type_array') else "" ,
             presentation_definition_uri="checked" if session['client_data'].get('presentation_definition_uri') else "" ,
             client_metadata_uri="checked" if session['client_data'].get('client_metadata_uri') else "",
             jarm="checked" if session['client_data'].get('jarm') else "",
@@ -370,23 +169,7 @@ def oidc4vc_verifier_console(mode):
             authorization=mode.server + 'sandbox/verifier/app/authorize',
             logout=mode.server + 'sandbox/verifier/app/logout',
             userinfo=mode.server + 'sandbox/verifier/app/userinfo',
-            reason_1=session['client_data'].get('reason_1', ""),
-            reason_2=session['client_data'].get('reason_2'),
-            reason_3=session['client_data'].get('reason_3', ""),
-            reason_4=session['client_data'].get('reason_4', ""),
             verifier_landing_page_style_select=verifier_landing_page_style_select,
-            vc_select_1=vc_select_1,
-            vc_select_2=vc_select_2,
-            vc_select_3=vc_select_3,
-            vc_select_4=vc_select_4,
-            vc_select_5=vc_select_5,
-            vc_select_6=vc_select_6,
-            vc_select_7=vc_select_7,
-            vc_select_8=vc_select_8,
-            vc_select_9=vc_select_9,
-            vc_select_10=vc_select_10,
-            vc_select_11=vc_select_11,
-            vc_select_12=vc_select_12,
             presentation_definition_uri_select=presentation_definition_uri_select,
             client_id_scheme_select=client_id_scheme_select,
             login_name=session['login_name']
@@ -417,9 +200,6 @@ def oidc4vc_verifier_console(mode):
             session['client_data']['pkce'] = request.form.get('pkce') 
             session['client_data']['id_token'] = request.form.get('id_token') 
             session['client_data']['vp_token'] = request.form.get('vp_token') 
-            session['client_data']['group'] = request.form.get('group') 
-            session['client_data']['group_B'] = request.form.get('group_B') 
-            session['client_data']['filter_type_array'] = request.form.get('filter_type_array') 
             session['client_data']['presentation_definition_uri'] = request.form.get('presentation_definition_uri') 
             session['client_data']['client_metadata_uri'] = request.form.get('client_metadata_uri')
             session['client_data']['jarm'] = request.form.get('jarm')
@@ -431,30 +211,9 @@ def oidc4vc_verifier_console(mode):
             session['client_data']['verifier_landing_page_style'] = request.form['verifier_landing_page_style']
             session['client_data']['client_id'] =  request.form['client_id']
             session['client_data']['client_secret'] = request.form['client_secret']
-            
-            session['client_data']['reason_1'] = request.form['reason_1']
-            session['client_data']['reason_2'] = request.form['reason_2']
-            session['client_data']['reason_3'] = request.form['reason_3']
-            session['client_data']['reason_4'] = request.form['reason_4']
-        
-            session['client_data']['vc_1'] = request.form['vc_1']
-            session['client_data']['vc_2'] = request.form['vc_2']
-            session['client_data']['vc_3'] = request.form['vc_3']
-            session['client_data']['vc_4'] = request.form['vc_4']
-            session['client_data']['vc_5'] = request.form['vc_5']
-            session['client_data']['vc_6'] = request.form['vc_6']
-            session['client_data']['vc_7'] = request.form['vc_7']
-            session['client_data']['vc_8'] = request.form['vc_8']
-            session['client_data']['vc_9'] = request.form['vc_9']
-            session['client_data']['vc_10'] = request.form['vc_10']
-            session['client_data']['vc_11'] = request.form['vc_11']
-            session['client_data']['vc_12'] = request.form['vc_12']
 
             session['client_data']['predefined_presentation_definition'] = request.form['predefined_presentation_definition']
             session['client_data']['client_id_scheme'] = request.form['client_id_scheme']
-            if not request.form.get('vp_token') and session['client_data']['group']:
-                flash("MUST select vp_token to use group !", "warning")
-                session['client_data']['group'] = None        
             
             db_api.update_oidc4vc_verifier(request.form['client_id'], json.dumps(session['client_data']))
             return redirect('/sandbox/verifier/console?client_id=' + request.form['client_id'])

@@ -61,6 +61,8 @@ predefined_presentation_uri_list = {
     'presentation_definition/crypto_and_pid_with_required_draft_23': 'Stable coin transfer with PID Draft 23',
     'presentation_definition/crypto_and_pid_with_required': 'Stable coin transfer with PID',
     'presentation_definition/pid_over18_with_required': 'Over18 proof in PID',
+     'presentation_definition/verifiablediploma': 'EBSI Verifiable Diploma',
+    'dcql_query/pid': "PID with DCQL"
 
 }
 

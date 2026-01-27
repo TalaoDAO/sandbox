@@ -21,7 +21,6 @@ from db_api import read_oidc4vc_verifier
 import pkce # https://github.com/xzava/pkce
 import oidc4vc
 from profile import profile
-import pex
 import didkit
 import requests
 import x509_attestation
@@ -548,109 +547,6 @@ def oidc4vc_login_qrcode(red, mode):
     # Manage presentation definition with a subset of PEX 2.0
     if 'vp_token' in response_type:
         presentation_definition = str()
-        prez = {}
-
-    if 'vp_token' in response_type and not verifier_data['group']:
-        if not prez:
-            prez = pex.Presentation_Definition(verifier_data['application_name'], "Altme presentation definition subset of PEX v2.0")  
-        for i in ["1", "2", "3", "4"]:
-            vc = 'vc_' + i
-            reason = 'reason_' + i
-            if verifier_data[vc] != 'None':
-                if verifier_data.get('filter_type_array') and verifier_data[vc] != "$.nationalities":
-                    prez.add_constraint_with_type_array(
-                        "$.type",
-                        verifier_data[vc],
-                        "Input descriptor for credential " + i,
-                        verifier_data[reason],
-                        id= verifier_data[vc].lower() + '_' + i
-                    )
-                elif verifier_data.get('filter_type_array') and verifier_data[vc] == "$.nationalities":
-                    prez.add_constraint_with_type_array(
-                        "$.nationalities",
-                        verifier_data[vc],
-                        "Input descriptor for credential " + i,
-                        verifier_data[reason],
-                        id= verifier_data[vc].lower() + '_' + i
-                    )
-                elif profile[verifier_data['profile']].get("verifier_vp_type") in ['vc+sd-jwt', "dc+sd-jwt"]:
-                    prez.add_constraint(
-                        "$.vct",
-                        verifier_data[vc],
-                        "Input descriptor for credential " + i,
-                        verifier_data[reason],
-                        id=verifier_data[vc].lower() + '_' + i
-                    )
-                elif profile[verifier_data['profile']].get("verifier_vp_type") in ['vc+sd-jwt', "dc+sd-jwt"] and verifier_data[vc] == "$.age_equal_or_over.18":
-                    prez.add_constraint(
-                        "$.age_equal_or_over.18",
-                        verifier_data[vc],
-                        "Input descriptor for credential " + i,
-                        verifier_data[reason],
-                        id=verifier_data[vc].lower() + '_' + i
-                    )
-                else:
-                    prez.add_constraint(
-                        "$.vc.credentialSubject.type",
-                        verifier_data[vc],
-                        "Input descriptor for credential " + i,
-                        verifier_data[reason],
-                        id=verifier_data[vc].lower() + '_' + i
-                    )
-    
-    if 'vp_token' in response_type and verifier_data['group']:
-        if not prez:
-            prez = pex.Presentation_Definition(verifier_data['application_name'], "Talao-Altme presentation definition with a subset of PEX v2.0 syntax")  
-        prez.add_group("Group A", "A", count=1)
-        for i in ["5", "6", "7", "8"]:
-            vc = 'vc_' + i
-            if verifier_data[vc] != 'None':
-                prez.add_constraint_with_group(
-                    "$.credentialSubject.type",
-                    verifier_data[vc],
-                    "Input descriptor for credential " + i,
-                    "",
-                    "A",
-                    id=verifier_data[vc].lower() + '_' + i
-                )
-
-    if 'vp_token' in response_type and verifier_data.get('group_B'):
-        if not prez:
-            prez = pex.Presentation_Definition(verifier_data['application_name'], "Altme presentation definition subset of PEX v2.0")  
-        prez.add_group("Group B", "B", min=1)
-        for i in ["9", "10", "11", "12"]:
-            vc = 'vc_' + i
-            if verifier_data[vc] != 'None':
-                prez.add_constraint_with_group(
-                    "$.credentialSubject.type",
-                    verifier_data[vc],
-                    "Input descriptor for credential " + i,
-                    "",
-                    "B",
-                    id=verifier_data[vc].lower() + '_' + i
-                )
-
-    # add format depending on profile
-    if 'vp_token' in response_type: 
-        if profile[verifier_data['profile']].get("verifier_vp_type") == 'ldp_vp':
-            prez.add_format_ldp_vp()
-            prez.add_format_ldp_vc()
-        elif profile[verifier_data['profile']].get("verifier_vp_type") == 'all_vp':
-            prez.add_format_all_vp()
-            prez.add_format_all_vc()
-        elif profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp':
-            prez.add_format_jwt_vp()
-            prez.add_format_jwt_vc()
-        elif profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp_json':
-            prez.add_format_jwt_vp_json()
-            prez.add_format_jwt_vc_json()
-        elif profile[verifier_data['profile']].get("verifier_vp_type") == 'jwt_vp_json-ld':
-            prez.add_format_jwt_vp_json()
-            prez.add_format_jwt_vc_json()
-        elif profile[verifier_data['profile']].get("verifier_vp_type") in ['vc+sd-jwt', "dc+sd-jwt"]:
-            prez.add_format_sd_jwt()
-        else:
-            return render_template("verifier_oidc/verifier_session_problem.html", message='VOP format not supported')
 
     nonce = nonce or str(uuid.uuid1())
     redirect_uri = mode.server + "verifier/wallet/endpoint/" + stream_id
@@ -658,7 +554,7 @@ def oidc4vc_login_qrcode(red, mode):
     # general authorization request
     authorization_request = { 
         "response_type": response_type,
-        "state": str(uuid.uuid1()),  # unused
+        #"state": str(uuid.uuid1()),  # unused
         "response_uri": redirect_uri,
     }
     if verifier_data.get('jarm'):
@@ -684,12 +580,10 @@ def oidc4vc_login_qrcode(red, mode):
 
     # OIDC4VP
     if 'vp_token' in response_type:
-        if verifier_data.get('predefined_presentation_definition') in [None, 'None']:
-            logging.info('no predefined presentation definition')
-            presentation_definition = prez.get()
-            logging.info("presentation_definition = %s", presentation_definition)
-        else:
-            presentation_definition = json.load( open(verifier_data.get('predefined_presentation_definition') +'.json', 'r'))
+        try:
+            presentation_definition = json.load(open(verifier_data.get('predefined_presentation_definition') +'.json', 'r'))
+        except Exception:
+            presentation_definition = json.load(open("presentation_definition/pid.json", 'r'))
         
         authorization_request['aud'] = 'https://self-issued.me/v2'
             
@@ -698,10 +592,11 @@ def oidc4vc_login_qrcode(red, mode):
             red.setex("client_metadata_" + verifier_id, QRCODE_LIFE, json.dumps(wallet_metadata))
             client_metadata_uri = mode.server + "verifier/wallet/client_metadata_uri/" + verifier_id
         
-        # client_id_scheme depending of OIDC4VP draft between 13 and 22 included
-        if int(verifier_profile['oidc4vpDraft']) > 13 and int(verifier_profile['oidc4vpDraft']) < 22: #TODO
+        draft = int(verifier_profile['oidc4vpDraft'])
+        # client_id_scheme depending of OIDC4VP draft between 13 and 30 included
+        if draft > 13 and draft < 22:
             authorization_request['client_id_scheme'] = verifier_data.get('client_id_scheme')
-        elif int(verifier_profile['oidc4vpDraft']) >= 22:
+        elif draft >= 22 and draft < 28:
             if verifier_data.get('client_id_scheme') == "x509_san_dns":
                 authorization_request['client_id'] = "x509_san_dns:talao.co"
             elif verifier_data.get('client_id_scheme') == "redirect_uri":
@@ -710,8 +605,16 @@ def oidc4vc_login_qrcode(red, mode):
                 authorization_request['client_id'] = "verifier_attestation:" + client_id
             else:
                 pass
+        elif draft >= 28:
+            if verifier_data.get('client_id_scheme') == "x509_san_dns":
+                authorization_request['client_id'] = "x509_san_dns:talao.co"
+            elif verifier_data.get('client_id_scheme') == "redirect_uri":
+                authorization_request['client_id'] = "redirect_uri:" + client_id
+            elif verifier_data.get('client_id_scheme') == "verifier_attestation":
+                authorization_request['client_id'] = "verifier_attestation:" + client_id
+            else:
+                authorization_request['client_id'] = "decentralized_identifier:" + client_id
         
-
         # presentation_definition_uri
         if verifier_data.get('presentation_definition_uri'):
             red.setex("presentation_definition_" + verifier_id, QRCODE_LIFE, json.dumps(presentation_definition))        
@@ -742,7 +645,10 @@ def oidc4vc_login_qrcode(red, mode):
         if verifier_data.get('presentation_definition_uri'):
             authorization_request['presentation_definition_uri'] = presentation_definition_uri
         else:
-            authorization_request['presentation_definition'] = presentation_definition
+            if "credentials" in presentation_definition:
+                authorization_request["dcql_query"] = presentation_definition
+            else:  
+                authorization_request['presentation_definition'] = presentation_definition
     
     if response_type == "id_token" and verifier_data.get('request_uri_parameter_supported'):
         authorization_request['client_metadata'] = wallet_metadata
