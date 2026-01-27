@@ -815,9 +815,10 @@ def verify_x5c_chain(x5c_list):
     Returns:
         str: Info or error message.
     """
-    if not x5c_list or len(x5c_list) < 2:
+    if not x5c_list:
         return "Error: Insufficient certificate chain."
-
+    if len(x5c_list) == 1:
+        return "Warning: Only one certificate in the x5c list."
     try:
         certs = [load_cert_from_b64(b64cert) for b64cert in x5c_list]
     except Exception as e:
