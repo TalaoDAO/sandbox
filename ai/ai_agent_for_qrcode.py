@@ -500,7 +500,7 @@ def b64url_no_pad_decode(s: str) -> bytes:
     return base64.urlsafe_b64decode(s)
 
 
-def get_verifier_request(qrcode: str, draft: str) -> Tuple[str, str, str, List[dict]]:
+def get_verifier_request(qrcode: str, draft: str, ts12: str) -> Tuple[str, str, str, List[dict]]:
     """Get and analyze the verifier request.
 
     Returns:
@@ -622,10 +622,11 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[str, str, str, List[d
         transaction_data = []
         for td in request.get("transaction_data"):
             td_decoded = json.loads(b64url_no_pad_decode(td))
-            if td_decoded.get("type") in ["urn:eudi:sca:payment:1" "urn:eudi:sca:login_risk_transaction:1", "urn:eudi:sca:account_access:1", "urn:eudi:sca:emandate:1"]:
-                comments.append("Info: It is an EUDIW payment request according to TS12")
-            else:
-                comments.append("Info: It is not an EUDIW payment request according to TS12")
+            if ts12:
+                if td_decoded.get("type") in ["urn:eudi:sca:payment:1" "urn:eudi:sca:login_risk_transaction:1", "urn:eudi:sca:account_access:1", "urn:eudi:sca:emandate:1"]:
+                    comments.append("Info: It is an EUDIW SCA request according to TS12")
+                else:
+                    comments.append("Error: 'transaction_data.type' is wrong, It does not comply with the EUDIW SCA request according to TS12")
             transaction_data.append(td_decoded)
     else:
         transaction_data = None
@@ -893,7 +894,7 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model, provider, ts1
     if not draft:
         draft = "18"
 
-    verifier_request, presentation_definition, comment, transaction_data = get_verifier_request(qrcode, draft)
+    verifier_request, presentation_definition, comment, transaction_data = get_verifier_request(qrcode, draft, ts12)
     if not verifier_request:
         return comment
     
