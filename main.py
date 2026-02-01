@@ -591,17 +591,21 @@ def qrcode():
         oidc4vp_draft = request.form.get("oidc4vp_draft")
         profile = request.form.get("profile")
         logging.info("qrcode = %s", qrcode)
+        ts12 = request.form.get("ts12")
+
         if not qrcode:
             return redirect('/qrcode')
         
-        if model == "flash": 
-            provider = "gemini"
-        elif model == "escalation":
-            provider = "openai"
-        else:
-            provider = "gemini"
-                
-        report = ai_agent_for_qrcode.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profile, 'Website Analyze QR code', model, provider)
+        #if model == "flash": 
+        #    provider = "gemini"
+        #elif model == "escalation":
+        #    provider = "openai"
+        #else:
+        #    provider = "gemini"
+        
+        provider = "openai"
+        
+        report = ai_agent_for_qrcode.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profile, 'Website Analyze QR code', model, provider,ts12=ts12)
         logging.info("report = %s", report)
         
         if outfmt == 'json':
@@ -651,13 +655,14 @@ async def vc():
         if not qrcode:
             return redirect('/ai/vc')
         
-        if model == "flash": 
-            provider = "gemini"
-        elif model == "escalation":
-            provider = "openai"
-        else:
-            provider = "gemini"
-            
+        #if model == "flash": 
+        #    provider = "gemini"
+        #elif model == "escalation":
+        #    provider = "openai"
+        #else:
+        #    provider = "gemini"
+        provider = "openai"
+        
         report = await ai_agent_for_vc.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "Website Analyze VC", model, provider)
         logging.info("report = %s", report)
         if outfmt == 'json':

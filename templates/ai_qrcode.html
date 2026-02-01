@@ -268,10 +268,7 @@
                 <option selected value="custom">Custom -> Choose your protocol drafts below</option>
               </select>
               <small class="muted">Choose a profile or use <em>Custom</em> to select the protocol drafts.</small>
-
-               
             </div>
-            
           </div>
         
           <div id="draftSelectors" class="row inline" style="display:none">
@@ -279,7 +276,7 @@
             <div class="row" style="grid-template-columns: 1fr 1fr; gap: .75rem;">
               <div>
                 <label for="oidc4vp_version" class="muted" style="font-weight:500;">OIDC4VP</label>
-               <select id="oidc4vp_version" name="oidc4vp_draft">
+                <select id="oidc4vp_version" name="oidc4vp_draft">
                 {% set draft_labels = {
                     18: "ID2 (Draft 18) EBSI",
                     20: "Draft 20 DIIP V3",
@@ -314,6 +311,18 @@
                 {% endfor %}
                 </select>
               </div>
+            </div>
+          </div>
+
+          <!--  EUDIDW Technical Specification -->
+          <div class="row inline">
+            <label for="profil">EUDIW TS</label>
+            <div>
+              <div>
+              <input type="checkbox" id="scales" name="ts12" />
+              <label for="scales">TS12</label>
+            </div>
+              <small class="muted">Choose the Technical Specifications you want to test.</small>
             </div>
           </div>
 
@@ -369,7 +378,7 @@ We reserve the right to collect and store submitted data in order to enhance our
 
       <p>Contact us at <a href="mailto:contact@talao.io">contact@talao.io</a> · <a href="https://www.linkedin.com/company/79104266">LinkedIn</a></p>
       <p><a href="https://altme.io/privacy">Privacy Policy</a> · <a href="https://altme.io/cgu">Terms</a></p>
-      <p>© 2025 Web3 Digital Wallet - All rights reserved</p>
+      <p>© 2026 Web3 Digital Wallet - All rights reserved</p>
 
     </footer>
   </main>

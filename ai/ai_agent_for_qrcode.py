@@ -424,7 +424,7 @@ def extract_SAN_DNS(pem_certificate):
         return "Error: no SAN extension found in the x509 certificate."
     
 
-def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model, provider):
+def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model, provider, ts12=None):
     
     # Analyze a QR code and delegate based on protocol type
     profile = ""
@@ -460,7 +460,7 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model, p
     if result.get('credential_offer_uri') or result.get('credential_offer'):
         return analyze_issuer_qrcode(qrcode, oidc4vciDraft, profile, device, model, provider)
     else:
-        return analyze_verifier_qrcode(qrcode, oidc4vpDraft, profile, device, model, provider)
+        return analyze_verifier_qrcode(qrcode, oidc4vpDraft, profile, device, model, provider, ts12=ts12)
 
 
 def _is_compact_jwt(value: str) -> bool:
@@ -621,7 +621,12 @@ def get_verifier_request(qrcode: str, draft: str) -> Tuple[str, str, str, List[d
     if request.get("transaction_data"):
         transaction_data = []
         for td in request.get("transaction_data"):
-            transaction_data.append(json.loads(b64url_no_pad_decode(td)))
+            td_decoded = json.loads(b64url_no_pad_decode(td))
+            if td_decoded.get("type") in ["urn:eudi:sca:payment:1" "urn:eudi:sca:login_risk_transaction:1", "urn:eudi:sca:account_access:1", "urn:eudi:sca:emandate:1"]:
+                comments.append("Info: It is an EUDIW payment request according to TS12")
+            else:
+                comments.append("Info: It is not an EUDIW payment request according to TS12")
+            transaction_data.append(td_decoded)
     else:
         transaction_data = None
 
@@ -700,8 +705,12 @@ def get_issuer_data(qrcode, draft):
         except Exception:
             credential_offer = "Error: The credential offer is not a correct JSON structure"
             return credential_offer, None, None, comment
-        
-    issuer = credential_offer.get('credential_issuer')
+    try:   
+        issuer = credential_offer.get('credential_issuer')
+    except Exception:
+        credential_offer = "Error: The credential offer has expired"
+        return credential_offer, None, None, comment
+    
     logging.info("credential offer = %s", credential_offer)
     
     # generate VCT in registry
@@ -878,7 +887,7 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model, provider):
     return result
 
 
-def analyze_verifier_qrcode(qrcode, draft, profile, device, model, provider):
+def analyze_verifier_qrcode(qrcode, draft, profile, device, model, provider, ts12=None):
 
     # Analyze verifier QR code and generate a structured report using OpenAI
     if not draft:
@@ -921,6 +930,17 @@ def analyze_verifier_qrcode(qrcode, draft, profile, device, model, provider):
         haip = clean_md(haip)
         context += "\n\n" + haip
         logging.info("merge with DIIP V4 specifications is processed")
+        
+    if ts12:
+        f = open("./dataset/ts/ts12.md", "r")
+        ts = f.read()
+        f.close()
+        ts = clean_md(ts)
+        context += "\n\n" + ts
+        logging.info("merge with TS12 is processed")
+    else:
+        logging.info("No ts12")
+        
 
     # Token count logging for diagnostics
     tokens = enc.encode(context)
