@@ -21,6 +21,8 @@ from device_detector import SoftwareDetector
 import hashlib
 import base64
 from ai import ai_agent_for_vc, ai_agent_for_qrcode
+#import warnings
+#warnings.simplefilter("error", RuntimeWarning)
 
 
 # Basic protocole
@@ -36,7 +38,7 @@ from routes import wallet, report_issue, crypto_transfer
 from routes import test_issuer_oidc4vc
 from routes import test_verifier_oidc4vc
 from routes import web_display_VP
-from routes import waltid_server
+#from routes import waltid_server
 from routes import mosip_issuer
 from routes import statuslist
 from routes import generate_attestation
@@ -59,18 +61,32 @@ if not myenv:
     myenv='local'
 mode = environment.currentMode(mychain, myenv)
 
-# Redis init red = redis.StrictRedis()
+ # Redis init red = redis.StrictRedis()
 red = redis.Redis(host='localhost', port=6379, db=0)
+
+
+# Tell Flask-Session which Redis client to use
+
 
 # Framework Flask and Session setup
 app = Flask(__name__,
             static_url_path='/static') 
 
+ # ---- Sessions (server-side via Redis) ----
+app.config.update(
+        SESSION_PERMANENT=True,
+        SESSION_COOKIE_NAME="sandbox",
+        SESSION_TYPE="redis",
+        PERMANENT_SESSION_LIFETIME=timedelta(minutes=int(os.getenv("SESSION_MINUTES", "30"))),
+        SESSION_FILE_THRESHOLD=100,  # unused with redis, but OK to leave
+    )
+
+app.config["SESSION_TYPE"] = "redis"
+app.config["SESSION_REDIS"] = red
 app.jinja_env.globals['Version'] = "0.6.0"
 app.jinja_env.globals['Created'] = time.ctime(os.path.getctime('main.py'))
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_COOKIE_NAME'] = 'altme_talao'
-app.config['SESSION_TYPE'] = 'redis' # Redis server side session
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30) # cookie lifetime
 app.config['SESSION_FILE_THRESHOLD'] = 100
 app.config['SECRET_KEY'] = "sandbox" + mode.password
@@ -95,12 +111,16 @@ web_display_VP.init_app(app, red, mode)
 test_issuer_oidc4vc.init_app(app, red, mode)
 test_verifier_oidc4vc.init_app(app, red, mode)
 statuslist.init_app(app, red, mode)
-waltid_server.init_app(app, red, mode)
+#waltid_server.init_app(app, red, mode)
 mosip_issuer.init_app(app, red, mode)
 crypto_transfer.init_app(app, red, mode)
 
 sess = Session()
 sess.init_app(app)
+#Session(app)
+
+
+
 qrcode = QRcode(app)
 Mobility(app)
 
