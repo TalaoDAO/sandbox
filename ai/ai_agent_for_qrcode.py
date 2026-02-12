@@ -726,6 +726,7 @@ def get_issuer_data(qrcode, draft):
         issuer_metadata_url = f"{scheme}://{domain}/.well-known/openid-credential-issuer{path}"
     else:
         issuer_metadata_url = f"{issuer}/.well-known/openid-credential-issuer"
+        print(issuer_metadata_url)
     logging.info("AI Agent call for QR code diagnostic. issuer = %s", issuer)
     try:
         resp = requests.get(issuer_metadata_url, timeout=10)
@@ -750,6 +751,7 @@ def get_issuer_data(qrcode, draft):
         logging.info("error : %s", str(e))
         issuer_metadata = "Error: Issuer metadata are not available" + str(e)
     logging.info("Issuer metadata = %s", issuer_metadata)
+    
     
     # get authorization server metadata
     try:
@@ -825,7 +827,6 @@ def analyze_issuer_qrcode(qrcode, draft, profile, device, model, provider):
     if int(draft) <= 11:
         context += "\n If EBSI tell to the user to add did:key:jwk_jcs-pub as subject_syntax_type_supported in the authorization server metadata"
     mention = attribution(model, "OIDC4VCI", draft, provider)
-
 
     st = style_for(model)
     instr = style_instructions(st, domain="oidc4vci", draft=draft)

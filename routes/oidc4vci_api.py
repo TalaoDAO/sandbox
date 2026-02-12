@@ -1266,19 +1266,20 @@ async def issuer_credential(issuer_id, red, mode):
     # check types fo deprecated draft
     if int(issuer_profile['oidc4vciDraft']) < 13 and not result.get('types'):
         return Response(**manage_error('unsupported_credential_format', 'Invalid VC format, types is missing', red, mode, request=request, stream_id=stream_id))
+    
+    # check proof if it exists depending on type of proof and draft
+    try:
+        if int(issuer_profile['oidc4vciDraft']) < 16:
+            proof = result.get('proof')
+            proof_type = proof.get('proof_type')
+        else:
+            proof = result.get('proofs')
+            proof_type = "jwt"
+        if not proof_type:
+            return Response(**manage_error('unsupported_credential_format', 'Invalid requestformat, proof_type is missing', red, mode, request=request, stream_id=stream_id))
+    except Exception:
+        return Response(**manage_error('unsupported_credential_format', 'Invalid requestformat, proof is missing', red, mode, request=request, stream_id=stream_id))
 
-    # check proof if it exists depending on type of proof
-    wallet_identifier = 'did'
-    if int(issuer_profile['oidc4vciDraft']) < 16:
-        proof = result.get('proof')
-        proof_type = proof.get('proof_type')
-    else:
-        proof = result.get('proofs')
-        proof_type = "jwt"
-    
-    if not proof_type:
-        return Response(**manage_error('unsupported_credential_format', 'Invalid requestformat, proof_type is missing', red, mode, request=request, stream_id=stream_id))
-    
     wallet_jwk = []
     wallet_identifier = []
     wallet_did = []

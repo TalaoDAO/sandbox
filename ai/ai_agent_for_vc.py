@@ -309,7 +309,7 @@ def attribution(mode: str, spec_label: str, draft: str, provider: str) -> str:
     base = (
         f"\n\nThe model {engine(mode, provider)} is used with the Web3 Digital Wallet dataset.\n"
         f"This report is based on {spec_label} {draft}.\n"
-        f"Date of issuance: {date}. © Web3 Digital Wallet 2025."
+        f"Date of issuance: {date}. © Web3 Digital Wallet 2026."
     )
     if mode == "flash":
         return base + f"\nTip: 💡Switch to *Escalation* for deeper checks when results are uncertain."
