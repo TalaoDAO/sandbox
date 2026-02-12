@@ -1278,7 +1278,7 @@ async def issuer_credential(issuer_id, red, mode):
         if not proof_type:
             return Response(**manage_error('unsupported_credential_format', 'Invalid requestformat, proof_type is missing', red, mode, request=request, stream_id=stream_id))
     except Exception:
-        return Response(**manage_error('unsupported_credential_format', 'Invalid requestformat, proof is missing', red, mode, request=request, stream_id=stream_id))
+        return Response(**manage_error('unsupported_credential_format', 'Invalid requestformat, proof(s) is missing', red, mode, request=request, stream_id=stream_id))
 
     wallet_jwk = []
     wallet_identifier = []

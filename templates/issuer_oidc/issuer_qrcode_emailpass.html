@@ -1,119 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{{ company_name }}</title>
+
   <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='./img/3D.ico') }}"/>
-  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='wallet-chooser.css') }}">
 </head>
-<body class="d-flex flex-column min-vh-100">
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg bg-white sticky-top border-bottom shadow-sm">
-  <div class="container">
-    <a class="navbar-brand" href="https://altme.io/">
-      <img src="/static/img/Talao + Altme wallets logo.png" alt="Altme Logo" height="40" />
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
-      aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header__inner">
+      <a class="brand" href="https://altme.io/">
+        <img class="brand__logo" src="/static/img/Talao + Altme wallets logo.png" alt="Altme Logo" />
+      </a>
+<!--
+      <nav class="header__actions">
+        <a class="btn btn--ghost" href="https://altme.io/">Back to home</a>
+        <a class="btn btn--primary" href="mailto:contact@altme.io?cc=hugo@altme.io&subject=Altme">Contact</a>
+      </nav>
+    </div> -->
+  </header>
 
-    <div class="collapse navbar-collapse" id="mainNavbar">
-      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <li class="nav-item me-2">
-          <a class="btn btn-outline-dark" href="https://altme.io/">Back to home</a>
-        </li>
-        <li class="nav-item">
-          <a class="btn btn-primary" href="mailto:contact@altme.io?cc=hugo@altme.io&subject=Altme">Contact</a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
+  <!-- Main -->
+  <main class="main" style="background: {{page_background_color}};">
+    <div class="container">
 
-<!-- Main Content -->
-<main class="container my-5 flex-grow-1">
+      <!-- Desktop QR -->
+      <section class="qr desktop-only" aria-label="QR code section">
+        <div class="card" style="background: {{qrcode_background_color}};">
+          <div class="card__header">
+            <h1 class="title">Scan with your wallet</h1>
+            <p class="subtitle">Open Altme or Talao and scan this QR code to continue.</p>
+          </div>
 
-  <!-- Desktop QR code -->
-  <div id="content_desktop" class="d-none d-sm-block mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-4">
-        <div class="card shadow border-dark text-center">
-          <img class="card-img-top p-3" src="{{ qrcode(url) }}" alt="QR Code" />
-          <div class="card-body">
-            <h6 class="card-title">Scan the QR Code with your wallet</h6>
+          <div class="qr__box" role="img" aria-label="QR code">
+            <img class="qr__img" src="{{ qrcode(url) }}" alt="QR Code" />
+          </div>
+
+          <div class="hint">
+            Tip: If you’re on mobile, you can open your wallet directly below.
           </div>
         </div>
-      </div>
-    </div>
-  </div>
+      </section>
 
-  <!-- Mobile wallet options -->
-  <div id="content_smartphone" class="d-block d-sm-none mt-5" style="background-color: {{page_background_color}}">
-    <div class="card shadow border-dark mx-3" style="border-radius: 10%; background-color: {{qrcode_background_color}}">
-      <div class="card-body text-center">
-        <h5 class="my-3">Choose your preferred wallet</h5>
-        <div class="my-3">
-          <a href="{{deeplink_altme}}" class="bg-transparent text-decoration-none d-block mb-2">
-            <img src="/static/img/AltMe.png" style="width: 50px;" alt="Altme">
-            <h6 class="mt-2">Altme wallet</h6>
-          </a>
-          <a href="{{deeplink_talao}}" class="bg-transparent text-decoration-none d-block mb-2">
-            <img src="/static/img/talao_icon.png" style="width: 100px;" alt="Talao">
-            <h6 class="mt-2">Talao wallet</h6>
-          </a>
-          <a href="{{deeplink_standard}}" class="bg-transparent text-decoration-none d-block mb-3">
-            <img src="/static/img/openid.jpeg" style="width: 120px;" alt="Other Wallets">
-            <h6 class="mt-2">Other wallets</h6>
-          </a>
+      <!-- Mobile Wallet Buttons -->
+      <section class="wallet mobile-only" aria-label="Wallet selection">
+        <div class="card card--compact" style="background: {{qrcode_background_color}};">
+          <div class="card__header">
+            <h1 class="title">Open your wallet</h1>
+            <p class="subtitle">Choose your wallet to continue securely.</p>
+          </div>
+
+          <div class="wallet__grid">
+            <a class="wallet__item" href="{{deeplink_altme}}">
+              <img class="wallet__icon wallet__icon--wide" src="/static/img/AltMe.png" alt="Altme wallet" />
+              <div class="wallet__text">
+                <div class="wallet__name">Altme</div>
+                <div class="wallet__desc">Identity, data and crypto</div>
+              </div>
+              <span class="wallet__chev" aria-hidden="true">›</span>
+            </a>
+
+            <a class="wallet__item" href="{{deeplink_talao}}">
+              <img class="wallet__icon wallet__icon--wide" src="/static/img/Talao logo - Self Sovereign Identity Wallet.png" alt="Talao wallet" />
+              <div class="wallet__text">
+                <div class="wallet__name">Talao</div>
+                <div class="wallet__desc">Identity and data</div>
+              </div>
+              <span class="wallet__chev" aria-hidden="true">›</span>
+            </a>
+          </div>
+
+          <p class="privacy">
+            By continuing, you’ll be redirected to your wallet to approve the request.
+          </p>
         </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p class="footer__text">
+        &copy; 2026 Web3 Digital Wallet — All rights reserved.
+        <a href="https://altme.io/cgu/" target="_blank" rel="noopener">CGU</a>,
+        <a href="https://altme.io/privacy/" target="_blank" rel="noopener">Privacy</a>
+      </p>
+
+      <div class="footer__social">
+        <a href="https://twitter.com/Altme_io" target="_blank" rel="noopener" aria-label="Twitter">
+          <img src="https://dvzvtsvyecfyp.cloudfront.net/static/img/icons/social/black/twitter.svg" alt="" width="22" height="22" />
+        </a>
+        <a href="https://www.linkedin.com/company/altme-web3/" target="_blank" rel="noopener" aria-label="LinkedIn">
+          <img src="https://dvzvtsvyecfyp.cloudfront.net/static/img/icons/social/black/linkedin.svg" alt="" width="22" height="22" />
+        </a>
       </div>
     </div>
-  </div>
-</main>
+  </footer>
 
-<!-- Footer -->
-<footer class="bg-white py-4 border-top mt-auto">
-  <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
-    <div class="text-center text-md-start mb-3 mb-md-0">
-      <p class="mb-0">
-        &copy; 2025 Web3 Digital Wallet — All rights reserved.
-        <a href="https://altme.io/cgu/" target="_blank">CGU</a>,
-        <a href="https://altme.io/privacy/" target="_blank">Privacy</a>
-      </p>
-    </div>
-    <div class="d-flex justify-content-center justify-content-md-end gap-3">
-      <a href="https://twitter.com/Altme_io" target="_blank" aria-label="Twitter">
-        <img src="https://dvzvtsvyecfyp.cloudfront.net/static/img/icons/social/black/twitter.svg" alt="Twitter" width="24" height="24" />
-      </a>
-      <a href="https://www.linkedin.com/company/altme-web3/" target="_blank" aria-label="LinkedIn">
-        <img src="https://dvzvtsvyecfyp.cloudfront.net/static/img/icons/social/black/linkedin.svg" alt="LinkedIn" width="24" height="24" />
-      </a>
-    </div>
-  </div>
-</footer>
-
-<!-- Script (preserved) -->
-<script>
-  var source = new EventSource('/sandbox/ebsi/issuer_stream');
-  source.onmessage = function (event) {
-    const data = JSON.parse(event.data);
-    if (data.stream_id == '{{stream_id}}') {
-      if (data.error) {
-        window.location.href = '/sandbox/ebsi/issuer_followup/{{stream_id}}?error=' + data.error + '&error_description=' + data.error_description;
-      } else {
-        window.location.href = '/sandbox/ebsi/issuer_followup/{{stream_id}}';
-      }
-    };
-  }
-</script>
-
-<!-- Bootstrap JS -->
-<script src="{{ url_for('static', filename='jquery-3.5.1.slim.min.js') }}"></script>
-<script src="{{ url_for('static', filename='bs-init.js') }}"></script>
-<script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
-
+  <!-- Script (preserved) -->
+  <script>
+    var source = new EventSource('/sandbox/ebsi/issuer_stream');
+    source.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+      if (data.stream_id == '{{stream_id}}') {
+        if (data.error) {
+          window.location.href = '/sandbox/ebsi/issuer_followup/{{stream_id}}?error=' + data.error + '&error_description=' + data.error_description;
+        } else {
+          window.location.href = '/sandbox/ebsi/issuer_followup/{{stream_id}}';
+        }
+      };
+    }
+  </script>
 </body>
 </html>
