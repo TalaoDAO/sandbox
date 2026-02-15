@@ -278,20 +278,6 @@ def credential_issuer_openid_configuration(issuer_id, mode):
             {'credentials_supported': issuer_profile.get('credentials_supported')}
         )
 
-    # setup credential manifest as optional 
-    if issuer_profile.get('credential_manifest_support'):
-        cm = []
-        for _vc in issuer_profile.get('credentials_types_supported'):
-            file_path = './credential_manifest/' + _vc + '_credential_manifest.json'
-            try:
-                cm_to_add = json.load(open(file_path))
-                cm_to_add['issuer']['id'] = issuer_data.get('did', 'Unknown')
-                cm_to_add['issuer']['name'] = issuer_data['application_name']
-                cm.append(cm_to_add)
-            except Exception:
-                logging.warning('credential manifest not found for %s', _vc)
-        credential_issuer_openid_configuration['credential_manifests'] = cm
-
     return credential_issuer_openid_configuration
 
 
