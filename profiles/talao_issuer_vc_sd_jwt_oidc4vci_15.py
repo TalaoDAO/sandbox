@@ -21,22 +21,18 @@ TALAO_ISSUER = {
         "CryptoAccountProof": {
             "format": "dc+sd-jwt",
             "scope": "CryptoAccountProof_scope",
-            "order": [
-                "blockchain_network",
-                "wallet_address"
-            ],
-            "claims": {
-                    "blockchain_network": {
-                        "value_type": "string",
-                        "display": [{"name": "Blockchain", "locale": "en-US"},
+            "claims": [
+                {
+                    "path": ["blockchain_network"],
+                    "display": [{"name": "Blockchain", "locale": "en-US"},
                                     {"name": "Blockchain", "locale": "fr-FR"}]
-                    },
-                    "wallet_address": {
-                        "value_type": "string",
-                        "display": [{"name": "Address", "locale": "en-US"},
-                                    {"name": "Adresse", "locale": "fr-FR"}]
-                    }
                 },
+                {
+                    "path": ["wallet_address"],
+                    "display": [{"name": "Address", "locale": "en-US"},
+                                    {"name": "Adresse", "locale": "fr-FR"}]
+                }
+            ],
             "cryptographic_binding_methods_supported": ["did", "jwk"],
             "credential_signing_alg_values_supported": [
                 "ES256K",

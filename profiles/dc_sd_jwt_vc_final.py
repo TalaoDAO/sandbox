@@ -15,10 +15,51 @@ FINAL = {
         "PhoneProof",
         "Pid",
         "AgeProof",
+        "SCA",
         "EmployeeBadge",
         "CryptoAccountProof",
     ],
     "credential_configurations_supported": {
+        "SCA": {
+            "format": "dc+sd-jwt",
+            "vct": "eudi:aptitude:crypto:1",
+            "scope": "SCA_scope",
+            "cryptographic_binding_methods_supported": ["jwk"],
+            "credential_signing_alg_values_supported": ["ES256"],
+            "proof_types_supported": {
+                "jwt": {
+                    "proof_signing_alg_values_supported": ["ES256"]
+                }
+            },
+            "credential_metadata": {
+                "display": [
+                    {
+                        "description": "Proof of Tezos crypto ownership for APTITUDE LSP use case",
+                        "locale": "en-GB",
+                        "background_color": "#1a73e8",
+                        "text_color": "#FFFFFF",
+                        "background_image": {
+                            "uri": "https://talao.co/image/server/tezos-proof.png",
+                            "alt_text": "Proof of Tezos crypto background image"
+                        }
+                    }
+                ],
+                "claims": [
+                    {
+                        "path": ["wallet_address"],
+                        "display": [
+                            {"name": "Address", "locale": "en-US"}
+                        ]
+                    },
+                    {
+                        "path": ["blockchain_network"],
+                        "display": [
+                            {"name": "Blockchain", "locale": "en-US"}
+                        ]
+                    }
+                ]
+            }
+        },
         "AgentOwnership": {
             "format": "dc+sd-jwt",
             "scope": "AgentOwnership_scope",
@@ -50,7 +91,7 @@ FINAL = {
                 ],
             },
             "cryptographic_binding_methods_supported": ["did", "jwk"],
-            "credential_signing_alg_values_supported": ["ES256K", "ES256", "EdDSA"],
+            "credential_signing_alg_values_supported": ["ES256", "EdDSA"],
             "proof_types_supported": {
                 "jwt": {
                     "proof_signing_alg_values_supported": ["ES256", "EdDSA"]
@@ -180,7 +221,7 @@ FINAL = {
                 ],
             },
             "cryptographic_binding_methods_supported": ["did", "jwk"],
-            "credential_signing_alg_values_supported": ["ES256K", "ES256", "EdDSA"],
+            "credential_signing_alg_values_supported": ["ES256", "EdDSA"],
             "proof_types_supported": {
                 "jwt": {
                     "proof_signing_alg_values_supported": ["ES256", "EdDSA"]
@@ -309,10 +350,8 @@ FINAL = {
             },
             "cryptographic_binding_methods_supported": ["did", "jwk"],
             "credential_signing_alg_values_supported": [
-                "ES256K",
                 "ES256",
-                "EdDSA",
-                "RS256",
+                "EdDSA"
             ],
             "proof_types_supported": {
                 "jwt": {
@@ -362,7 +401,7 @@ FINAL = {
                 ],
             },
             "cryptographic_binding_methods_supported": ["did", "jwk"],
-            "credential_signing_alg_values_supported": ["ES256K", "ES256", "EdDSA"],
+            "credential_signing_alg_values_supported": ["ES256", "EdDSA"],
             "proof_types_supported": {
                 "jwt": {
                     "proof_signing_alg_values_supported": ["ES256", "EdDSA"]
@@ -487,10 +526,8 @@ FINAL = {
             },
             "cryptographic_binding_methods_supported": ["did", "jwk"],
             "credential_signing_alg_values_supported": [
-                "ES256K",
                 "ES256",
-                "EdDSA",
-                "RS256",
+                "EdDSA"
             ],
             "proof_types_supported": {
                 "jwt": {
