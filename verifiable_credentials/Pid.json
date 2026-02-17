@@ -14,8 +14,6 @@
   "postal_code": "00100",
   "country_address": "IT",
   "nationalities": ["FR"],
-  "age_over_12": true,
-  "age_over_14": true,
   "age_over_16": true,
   "age_over_18": true,
   "age_over_21": true,
