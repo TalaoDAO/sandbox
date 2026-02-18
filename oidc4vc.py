@@ -237,6 +237,12 @@ def b64url_no_pad_str(s: str) -> str:
     return b64url_no_pad(s.encode("utf-8"))
 
 
+def hash(text):
+    m = hashlib.sha256()
+    m.update(text.encode())
+    return base64.urlsafe_b64encode(m.digest()).decode().replace("=", "")
+
+
 def salt(n: int = 16) -> str:
     # spec allows any sufficiently random salt; keep it simple
     return b64url_no_pad("".join(random.choice(string.ascii_letters + string.digits) for _ in range(n)).encode("ascii"))
