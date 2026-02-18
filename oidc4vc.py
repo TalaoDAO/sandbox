@@ -14,6 +14,8 @@ from cryptography import x509
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric import rsa, ec, ed25519, padding
 from typing import Any, Dict
+import random
+import string
 
 """
 https://ec.europa.eu/digital-building-blocks/wikis/display/EBSIDOC/EBSI+DID+Method
@@ -227,149 +229,202 @@ def sign_jwt_vp(vc, audience, holder_vm, holder_did, nonce, vp_id, holder_key):
     return token.serialize()
 
 
-def salt():
-    return base64.urlsafe_b64encode(randbytes(16)).decode().replace("=", "")
+def b64url_no_pad(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).decode("ascii").rstrip("=")
 
 
-def hash(text):
-    m = hashlib.sha256()
-    m.update(text.encode())
-    return base64.urlsafe_b64encode(m.digest()).decode().replace("=", "")
+def b64url_no_pad_str(s: str) -> str:
+    return b64url_no_pad(s.encode("utf-8"))
 
 
-def sd(data):
+def salt(n: int = 16) -> str:
+    # spec allows any sufficiently random salt; keep it simple
+    return b64url_no_pad("".join(random.choice(string.ascii_letters + string.digits) for _ in range(n)).encode("ascii"))
+
+
+def sd_digest(disclosure_b64url: str, alg: str = "sha-256") -> str:
+    """
+    RFC 9901 digest:
+    digest = base64url( HASH( ASCII(disclosure_b64url) ) )
+    """
+    if alg != "sha-256":
+        raise ValueError("Unsupported _sd_alg")
+    h = hashlib.sha256(disclosure_b64url.encode("ascii")).digest()
+    return b64url_no_pad(h)
+
+def encode_disclosure(disclosure_array) -> str:
+    """
+    Disclosure is base64url-encoding of the UTF-8 JSON serialization of the disclosure array.
+    No canonicalization is required, but compact encoding is a good practice.
+    """
+    j = json.dumps(disclosure_array, separators=(",", ":"), ensure_ascii=False)
+    return b64url_no_pad(j.encode("utf-8"))
+
+def _append_disclosure(acc: str, disclosure_b64url: str) -> str:
+    return acc + ("~" + disclosure_b64url if disclosure_b64url else "")
+
+
+def sd(data: dict, sd_alg: str = "sha-256"):
+    """
+    Returns (payload_fragment, disclosures_string_without_trailing_tilde)
+    """
     unsecured = copy.deepcopy(data)
-    payload = {'_sd': []}
-    disclosed_claims = ['status', 'status_list', 'idx', 'uri', 'vct', 'iat', 'nbf', 'aud', 'iss', 'exp', '_sd_alg', 'cnf', 'vct#integrity']
+    payload = {"_sd": []}
+    disclosed_claims = [
+        "status", "status_list", "idx", "uri", "vct", "iat", "nbf", "aud", "iss",
+        "exp", "_sd_alg", "cnf", "vct#integrity"
+    ]
+
     _disclosure = ""
     disclosure_list = unsecured.get("disclosure", [])
-    for claim in [attribute for attribute in unsecured.keys()]:
+
+    for claim in list(unsecured.keys()):
         if claim == "disclosure":
-            pass
-        # for undisclosed attribute
-        elif isinstance(unsecured[claim], (str, bool, int)) or claim in ["status", "status_list"]:
+            continue
+
+        value = unsecured[claim]
+
+        # Scalars (and special fields always treated as scalars)
+        if isinstance(value, (str, bool, int, float)) or claim in ["status", "status_list"]:
             if claim in disclosure_list or claim in disclosed_claims:
-                payload[claim] = unsecured[claim]
+                payload[claim] = value
             else:
-                contents = json.dumps([salt(), claim, unsecured[claim]])
-                disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
-                if disclosure:
-                    _disclosure += "~" + disclosure
-                payload['_sd'].append(hash(disclosure))
-        # for nested json
-        elif isinstance(unsecured[claim], dict):
+                disclosure_b64 = encode_disclosure([salt(), claim, value])
+                _disclosure = _append_disclosure(_disclosure, disclosure_b64)
+                payload["_sd"].append(sd_digest(disclosure_b64, sd_alg))
+
+        # Nested object
+        elif isinstance(value, dict):
             if claim in disclosure_list or claim in disclosed_claims:
-                payload[claim], disclosure = sd(unsecured[claim])
-                if disclosure:
-                    _disclosure += "~" + disclosure
+                nested_payload, nested_disclosures = sd(value, sd_alg=sd_alg)
+                payload[claim] = nested_payload
+                if nested_disclosures:
+                    _disclosure = _append_disclosure(_disclosure, nested_disclosures.lstrip("~"))
             else:
-                nested_content, nested_disclosure = sd(unsecured[claim])
-                contents = json.dumps([salt(), claim, nested_content])
-                if nested_disclosure:
-                    _disclosure += "~" + nested_disclosure
-                disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
-                if disclosure:
-                    _disclosure += "~" + disclosure
-                payload['_sd'].append(hash(disclosure))
-        # for list
-        elif isinstance(unsecured[claim], list):  # list
+                nested_payload, nested_disclosures = sd(value, sd_alg=sd_alg)
+                if nested_disclosures:
+                    _disclosure = _append_disclosure(_disclosure, nested_disclosures.lstrip("~"))
+
+                disclosure_b64 = encode_disclosure([salt(), claim, nested_payload])
+                _disclosure = _append_disclosure(_disclosure, disclosure_b64)
+                payload["_sd"].append(sd_digest(disclosure_b64, sd_alg))
+
+        # Array / list
+        elif isinstance(value, list):
             if claim in disclosure_list or claim in disclosed_claims:
-                payload[claim] = unsecured[claim]
+                payload[claim] = value
             else:
-                nb = len(unsecured[claim])
-                payload.update({claim: []})
-                for index in range(0, nb):
-                    if isinstance(unsecured[claim][index], dict):
-                        nested_disclosure_list = unsecured[claim][index].get("disclosure", [])
-                        if not nested_disclosure_list:
-                            logging.warning("disclosure is missing for %s", claim)
+                # RFC 9901 array element selective disclosure:
+                # each element becomes {"...": <digest>} and the disclosure is ["salt", <elem_value>]
+                payload[claim] = []
+                for elem in value:
+                    if isinstance(elem, dict):
+                        # Option: allow selective disclosure inside the object before hiding whole element
+                        nested_payload, nested_disclosures = sd(elem, sd_alg=sd_alg)
+                        if nested_disclosures:
+                            _disclosure = _append_disclosure(_disclosure, nested_disclosures.lstrip("~"))
+                        disclosure_b64 = encode_disclosure([salt(), nested_payload])
+                    elif isinstance(elem, list):
+                        disclosure_b64 = encode_disclosure([salt(), elem])
                     else:
-                        nested_disclosure_list = []
-                for index in range(0, nb):
-                    if isinstance(unsecured[claim][index], dict):
-                        pass  # TODO
-                    elif unsecured[claim][index] in nested_disclosure_list:
-                        payload[claim].append(unsecured[claim][index])
-                    else:
-                        contents = json.dumps([salt(), unsecured[claim][index]])
-                        nested_disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
-                        if nested_disclosure:
-                            _disclosure += "~" + nested_disclosure
-                        payload[claim].append({"...": hash(nested_disclosure)})
+                        disclosure_b64 = encode_disclosure([salt(), elem])
+
+                    _disclosure = _append_disclosure(_disclosure, disclosure_b64)
+                    payload[claim].append({"...": sd_digest(disclosure_b64, sd_alg)})
+
         else:
-            logging.warning("type not supported")
-    if payload.get('_sd'):
-        # add 1 fake digest
-        contents = json.dumps([salt(), "decoy", "decoy"])
-        disclosure = base64.urlsafe_b64encode(contents.encode()).decode().replace("=", "")
-        payload['_sd'].append(hash(disclosure))
+            logging.warning("type not supported for claim=%s type=%s", claim, type(value).__name__)
+
+    # add a decoy digest
+    if payload.get("_sd"):
+        decoy_b64 = encode_disclosure([salt(), "decoy", "decoy"])
+        payload["_sd"].append(sd_digest(decoy_b64, sd_alg))
     else:
         payload.pop("_sd", None)
-    _disclosure = _disclosure.replace("~~", "~")
+
+    # normalize separators (avoid accidental "~~")
+    _disclosure = _disclosure.replace("~~", "~").strip("~")
     return payload, _disclosure
 
 
-def sign_sd_jwt(unsecured, issuer_key, issuer, subject_key, wallet_did, wallet_identifier, kid, duration=365*24*60*60, x5c=False, draft=13):
+def sign_sd_jwt(
+    unsecured,
+    issuer_key,
+    issuer,
+    subject_key,
+    wallet_did,
+    wallet_identifier,
+    kid,
+    duration=365 * 24 * 60 * 60,
+    x5c=False,
+    draft=13
+):
     issuer_key = json.loads(issuer_key) if isinstance(issuer_key, str) else issuer_key
     if x5c:
-        with open('keys.json') as f:
+        with open("keys.json") as f:
             keys = json.load(f)
-        issuer_key = keys['issuer_key']
-        issuer = "https://talao.co" 
+        issuer_key = keys["issuer_key"]
+        issuer = "https://talao.co"
 
     subject_key = json.loads(subject_key) if isinstance(subject_key, str) else subject_key
     now = int(datetime.now(timezone.utc).timestamp())
+
     payload = {
-        'iss': issuer,
-        'iat': now,
-        'exp': now + duration,
+        "iss": issuer,
+        "iat": now,
+        "exp": now + duration,
         "_sd_alg": "sha-256",
     }
-    
+
     if wallet_identifier == "jwk_thumbprint" or "jwk_thumbprint" in wallet_identifier:
-        payload['cnf'] = {"jwk": subject_key}
+        payload["cnf"] = {"jwk": subject_key}
     else:
-        payload['cnf'] = {"kid": wallet_did}
-    
-    # Calculate selective disclosure 
+        payload["cnf"] = {"kid": wallet_did}
+
+    # Calculate selective disclosure
     if unsecured and "all" in unsecured.get("disclosure", []):
-        _payload = unsecured
-        _payload.pop("disclosure")
+        _payload = copy.deepcopy(unsecured)
+        _payload.pop("disclosure", None)
         _disclosure = ""
     else:
-        _payload, _disclosure = sd(unsecured)
-    
+        _payload, _disclosure = sd(unsecured, sd_alg=payload["_sd_alg"])
+
     # update payload with selective disclosure
     payload.update(_payload)
+
+    # if no _sd exists, remove _sd_alg as well
     if not payload.get("_sd"):
-        logging.info("no _sd present")
         payload.pop("_sd_alg", None)
-    logging.info("sd-jwt payload = %s", json.dumps(payload, indent=4))
-    
+
     signer_key = jwk.JWK(**issuer_key)
-    
+
     # build header
-    header = { 'alg': alg(issuer_key)}
-    if draft >= 15:
-        header['typ'] = "dc+sd-jwt"
-    else:
-        header['typ'] = "vc+sd-jwt"
+    header = {"alg": alg(issuer_key)}
+    header["typ"] = "dc+sd-jwt" if draft >= 15 else "vc+sd-jwt"
+
     if x5c:
         logging.info("x509 certificates are added")
-        header['x5c'] = x509_attestation.build_x509_san_dns()
+        header["x5c"] = x509_attestation.build_x509_san_dns()
     else:
-        header['kid'] = kid
-    
+        header["kid"] = kid
+
     # clean subject key jwk
     if subject_key:
-        subject_key.pop('use', None)
-        subject_key.pop('alg', None)
-    
-    if unsecured.get('status'): 
-        payload['status'] = unsecured['status']
+        subject_key.pop("use", None)
+        subject_key.pop("alg", None)
+
+    if unsecured.get("status"):
+        payload["status"] = unsecured["status"]
+
     token = jwt.JWT(header=header, claims=payload, algs=[alg(issuer_key)])
     token.make_signed_token(signer_key)
-    sd_token = token.serialize() + _disclosure + "~"
+
+    # SD-JWT serialization: <JWT>~<disclosure>~<disclosure>~  (trailing "~" when no KB-JWT)
+    disclosures_part = ""
+    if _disclosure:
+        # _disclosure returned without leading/trailing "~"
+        disclosures_part = "~" + _disclosure
+    sd_token = token.serialize() + disclosures_part + "~"
     return sd_token
 
 
@@ -394,8 +449,6 @@ def build_pre_authorized_code(key, wallet_did, issuer_did, issuer_vm, nonce):
     token = jwt.JWT(header=header, claims=payload, algs=[alg(key)])
     token.make_signed_token(key)
     return token.serialize()
-
-
 
 
 def _multibase_base58btc_decode(mb: str) -> bytes:
