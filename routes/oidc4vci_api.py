@@ -550,18 +550,8 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     resp = requests.get(mode.server + 'issuer/' + issuer_id + '/.well-known/openid-configuration', timeout=10)
     openid_configuration = resp.json()
     
-    # https://app.talao.co/app/download?uri=openid-credential-offer://?key1=val1&key2=val2 
-    # openid-credential-offer://?key1=val1&key2=val2
-    
-    # https://app.talao.co/app/download/offer?key1=val1
-
-    #if issuer_id in [
-    #    "raamxepqex", # test local
-    #    "tdiwmpyhzc" # test aws
-    #]:
     deeplink_talao = 'talao-openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
     deeplink_altme = 'altme-openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
-    #else:
     #deeplink_altme = mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display})
     #deeplink_talao = mode.deeplink_talao + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display})
     
@@ -631,9 +621,6 @@ def issuer_web_wallet_redirect(issuer_id, red, mode):
     arg_for_web_wallet = request.args['arg_for_web_wallet']
     web_wallet_url = request.args['web_wallet_url'].rstrip("/")
     
-    print("arg for web wallet = ", arg_for_web_wallet)
-    print("web wallet url = ", web_wallet_url)
-
     try:
         wallet_config_url = web_wallet_url + '/.well-known/openid-configuration'
         wallet_config = requests.get(wallet_config_url).json()
@@ -1020,9 +1007,12 @@ def issuer_token(issuer_id, red, mode):
     issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
     issuer_profile = profile[issuer_data['profile']]
     
+    draft = int(issuer_profile['oidc4vciDraft'])
+    logging.info("OIDC4VCI Drft = %s", draft)
+    
     
     # test if standalone AS is used
-    if issuer_profile.get('authorization_server_support') and int(issuer_profile['oidc4vciDraft']) >= 13:
+    if issuer_profile.get('authorization_server_support') and draft >= 13:
         return Response(**manage_error('invalid_request', 'invalid token endpoint', red, mode, request=request))
     
     # display DPoP
@@ -1047,7 +1037,7 @@ def issuer_token(issuer_id, red, mode):
 
     if grant_type == 'urn:ietf:params:oauth:grant-type:pre-authorized_code':
         code = request.form.get('pre-authorized_code')
-        if int(issuer_profile['oidc4vciDraft']) >= 13:
+        if draft >= 13:
             user_pin = request.form.get('tx_code')
         else:
             user_pin = request.form.get('user_pin')
@@ -1073,19 +1063,6 @@ def issuer_token(issuer_id, red, mode):
     else:
         client_authentication_method = 'none'
     logging.info('client authentication method = %s', client_authentication_method)
-
-    # Profile check
-    if issuer_profile in ['EBSI-V3', 'DIIP']:
-        if not request.form.get('client_id'):
-            return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
-        if not request.form.get('client_id')[:3] != 'did':
-            return Response(**manage_error('invalid_request', 'Client incorrect authentication method', red, mode, request=request))
-    
-    elif issuer_data['profile'] in ['HAIP', 'POTENTIAL']:
-        if not request.form.get('client_assertion_type') and not request.headers.get('Oauth-Client-Attestation'):
-            logging.warning('HAIP requests client assertion authentication')
-    else:
-        pass
     
     # Check content of client assertion and proof of possession (PoP)
     if client_authentication_method == 'client_attestation':
@@ -1112,7 +1089,7 @@ def issuer_token(issuer_id, red, mode):
     stream_id = data['stream_id']
         
     # check PKCE
-    if grant_type == 'authorization_code' and int(issuer_profile['oidc4vciDraft']) >= 10:
+    if grant_type == 'authorization_code' and draft >= 10:
         code_verifier = request.form.get('code_verifier')
         code_challenge_calculated = pkce.get_code_challenge(code_verifier)
         if code_challenge_calculated != data['code_challenge']:
@@ -1137,14 +1114,14 @@ def issuer_token(issuer_id, red, mode):
     }
     
     # add nonce in token endpoint response
-    if int(issuer_profile['oidc4vciDraft']) <= 13:
+    if draft <= 13:
         endpoint_response['c_nonce'] = str(uuid.uuid1())
         endpoint_response['c_nonce_expires_in'] = 1704466725
         red.setex(endpoint_response['c_nonce'], 600, 'nonce')
         
     # authorization_details in case of multiple VC of the same type
     authorization_details = []
-    if int(issuer_profile['oidc4vciDraft']) >= 13 and isinstance(vc, list):
+    if draft >= 13 and isinstance(vc, list):
         for vc_type in vc:
             types = vc_type['types']
             vc_list = vc_type['list']
