@@ -299,15 +299,14 @@ TALAO_ISSUER = {
                     "display": [
                         {"name": "Phone", "locale": "en-US"},
                         {"name": "Numérol de téléphone", "locale": "fr-FR"}
-                    ],
-                },
+                    ]
+                }
             ],
             "cryptographic_binding_methods_supported": ["did", "jwk"],
             "credential_signing_alg_values_supported": [
                 "ES256K",
                 "ES256",
                 "EdDSA",
-                "RS256"
             ],
             "display": [
                 {

@@ -440,6 +440,10 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model, p
         oidc4vciDraft = "15"
         oidc4vpDraft = "28"
         profile = profil
+    elif profil == "DIIP_V5":
+        oidc4vciDraft = "18"
+        oidc4vpDraft = "30"
+        profile = profil
     elif profil == "INJI":
         oidc4vciDraft = "13"
         oidc4vpDraft = "21"
@@ -447,6 +451,10 @@ def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model, p
     elif profil == "EWC":
         oidc4vciDraft = "13"
         oidc4vpDraft = "18"
+        profile = "Use only sd-jwt vc format and mdoc format"
+    elif profil == "APTITUDE":
+        oidc4vciDraft = "18"
+        oidc4vpDraft = "30"
         profile = "Use only sd-jwt vc format and mdoc format"
     elif profil == "HAIP":
         oidc4vciDraft = "18"

@@ -205,9 +205,9 @@ def credential_issuer_openid_configuration_endpoint(issuer_id, mode):
         else:
             logging.info("issuer metadata url is correct for this draft")
     
-    if (12 < draft < 16):
-        sub = mode.server + 'issuer/' + issuer_id
-        metadata["signed_metadata"] = build_signed_metadata(issuer_data['jwk'], sub, metadata)
+    #if (12 < draft < 16):
+    #    sub = mode.server + 'issuer/' + issuer_id
+    #    metadata["signed_metadata"] = build_signed_metadata(issuer_data['jwk'], sub, metadata)
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(metadata), headers=headers)
 
@@ -271,8 +271,7 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         )
         if int(issuer_profile.get('oidc4vciDraft')) >= 15:
             for VC in credential_issuer_openid_configuration['credential_configurations_supported']:
-                if credential_issuer_openid_configuration['credential_configurations_supported'][VC]["format"] == "vc+sd-jwt":
-                    credential_issuer_openid_configuration['credential_configurations_supported'][VC]["format"] = "dc+sd-jwt"
+                credential_issuer_openid_configuration['credential_configurations_supported'][VC]["format"] = "dc+sd-jwt"
     else:
         credential_issuer_openid_configuration.update(
             {'credentials_supported': issuer_profile.get('credentials_supported')}
