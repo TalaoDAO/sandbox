@@ -1008,7 +1008,7 @@ def issuer_token(issuer_id, red, mode):
     issuer_profile = profile[issuer_data['profile']]
     
     draft = int(issuer_profile['oidc4vciDraft'])
-    logging.info("OIDC4VCI Drft = %s", draft)
+    logging.info("OIDC4VCI Draft = %s", draft)
     
     
     # test if standalone AS is used
