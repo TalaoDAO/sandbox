@@ -490,7 +490,7 @@ def issuer_credential_offer_uri(id, red):
     except Exception:
         logging.warning('session expired')
         return jsonify('Session expired'), 404
-    return jsonify(offer), 201
+    return jsonify(offer), 200
 
 
 # Display QRcode page for credential offer
