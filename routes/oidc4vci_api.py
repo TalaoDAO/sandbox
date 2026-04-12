@@ -1471,6 +1471,7 @@ async def issuer_credential(issuer_id, red, mode):
     if webhook := access_token_data['webhook']:
         data = {
                 'event': 'CREDENTIAL_SENT',
+                'issuer_state': access_token_data.get("issuer_state")
         }
         requests.post(webhook, json=data, timeout=10)
     

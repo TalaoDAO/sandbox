@@ -734,6 +734,7 @@ def get_issuer_data(qrcode, draft):
         issuer_metadata_url = f"{scheme}://{domain}/.well-known/openid-credential-issuer{path}"
     else:
         issuer_metadata_url = f"{issuer}/.well-known/openid-credential-issuer"
+        
     logging.info("AI Agent call for QR code diagnostic. issuer = %s", issuer)
     try:
         resp = requests.get(issuer_metadata_url, timeout=10)
