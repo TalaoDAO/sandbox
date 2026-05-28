@@ -378,7 +378,7 @@ FINAL = {
                 "display": [
                     {
                         "name": "Proof of Email",
-                        "description": "Proof of " "email",
+                        "description": "Proof of email",
                         "locale": "en-GB",
                         "background_color": "#1a73e8",
                         "text_color": "#FFFFFF",
@@ -388,8 +388,8 @@ FINAL = {
                         },
                     },
                     {
-                        "name": "Preuve d'adresse " "email",
-                        "description": "Preuve " "d'adresse " "email",
+                        "name": "Preuve d'adresse email",
+                        "description": "Preuve d'adresse email",
                         "locale": "fr-FR",
                         "background_color": "#1a73e8",
                         "text_color": "#FFFFFF",

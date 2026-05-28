@@ -325,14 +325,22 @@ def base64url_decode(input_str):
 
 def get_payload_from_token(token):
     # Extract payload section from JWT
-    payload = token.split('.')[1]
-    return json.loads(base64url_decode(payload).decode())
+    try:
+        payload = token.split('.')[1]
+        payload_json = json.loads(base64url_decode(payload).decode())
+    except Exception:
+        return
+    return payload_json
 
 
 def get_header_from_token(token):
     # Extract header section from JWT
-    header = token.split('.')[0]
-    return json.loads(base64url_decode(header).decode())
+    try:
+        header = token.split('.')[0]
+        header_json = json.loads(base64url_decode(header).decode())
+    except Exception:
+        return
+    return header_json
 
 def _b64decode_any(s: str) -> bytes:
     import base64
@@ -446,6 +454,11 @@ def extract_SAN_DNS(pem_certificate):
         return "Error: no SAN extension found in the x509 certificate."
 
 
+def _is_compact_jwt(value: str) -> bool:
+    # quick check for "header.payload.signature" shape
+    return isinstance(value, str) and value.count(".") == 2 and all(p.strip() for p in value.split("."))
+
+
 async def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str, model: str, provider: str):
     logging.info("VC received = %s", vc)
     if not vc:
@@ -457,15 +470,15 @@ async def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device
         return analyze_mdoc(vc, "18013-5", device, model, provider)
 
     # 1. SD-JWT
-    if "~" in vc and "." in vc.split("~")[0] and "@context" not in vc:
+    if "~" in vc and "@context" not in vc:
         logging.info("SD-JWT VC format")
         return analyze_sd_jwt_vc(vc, sdjwtvc_draft, device, model, provider)
 
     # 2. JWT VC
-    if vc.count(".") == 2 and all(len(part.strip()) > 0 for part in vc.split(".")):
+    if _is_compact_jwt(vc):
         logging.info("JWT VC format")
         return analyze_jwt_vc(vc, vcdm_draft, device, model, provider)
-
+    
     # 3. JSON-LD
     try:
         vc_json = json.loads(vc)
@@ -477,10 +490,6 @@ async def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device
 
     return "Unknown VC format. Supported formats: SD-JWT VC, JWT VC (compact), JSON-LD VC."
 
-
-def _is_compact_jwt(value: str) -> bool:
-    # quick check for "header.payload.signature" shape
-    return isinstance(value, str) and value.count(".") == 2 and all(p.strip() for p in value.split("."))
 
 
 def _safe_get_json(url: str, timeout: int = 10) -> Dict[str, Any]:
@@ -836,10 +845,16 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
     # Decode SD-JWT header and payload
     jwt_header = get_header_from_token(sd_jwt)
     jwt_payload = get_payload_from_token(sd_jwt)
-    iss = jwt_payload.get("iss")
-    kid = jwt_header.get("kid")
-    vct = jwt_payload.get("vct")    
-    integrity = jwt_payload.get("vct#integrity")
+    if not jwt_header or not jwt_payload:
+        comment_1 = "Error: JWT malformed"
+        iss = None
+        kid = None
+        vct = None
+    else:
+        iss = jwt_payload.get("iss")
+        kid = jwt_header.get("kid")
+        vct = jwt_payload.get("vct")    
+        integrity = jwt_payload.get("vct#integrity")
     
     if not iss:
         comment_1 = "Info: no iss"
@@ -847,7 +862,8 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
         trigger_generation(iss)  # call VCT registry
 
     # check signature of the sd-jwt
-    if x5c_list := jwt_header.get('x5c'):
+    if jwt_header:
+        x5c_list = jwt_header.get('x5c')
         if not iss:
             comment_1 = "Info: no iss but iss is not mandatory with X509"
         else:
@@ -868,7 +884,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
         except Exception as e:
             comment_2 = f"Error: VC signature verification with x5c public key failed: {e}"
 
-    elif jwt_header.get('jwk'):
+    elif jwt_header and jwt_header.get('jwk'):
         try:
             jwk_data = jwt_header['jwk']
             if isinstance(jwk_data, str):

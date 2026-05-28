@@ -293,8 +293,9 @@ class Issuer(Resource):
             "pre-authorized_code": TRUE (authorized code flow not supported by swagger UI)
             "user_pin_required": OPTIONAL bool, default is false
             "user_pin": CONDITIONAL, string, REQUIRED if user_pin_required is True
-            "callback": REQUIRED, string, this the user redirect route at the end of the flow
-            }
+            "callback": REQUIRED (i no webhook), string, this the user redirect route at the end of the flow
+            "webhook": REQUIRED if no callback
+:             }
         
         """
         # check API format
@@ -330,8 +331,9 @@ class Issuer(Resource):
 
         # Check vc and vc_deferred
         vc = request.json.get("vc")
-        if vc and not request.json.get("callback"):
-            return Response(**api_manage_error("invalid_request", "callback missing"))
+        if vc:
+            if not request.json.get("callback") and not request.json.get("webhook") :
+                return Response(**api_manage_error("invalid_request", "callback or webhook missing"))
     
         # Check deferred vc
         if issuer_data.get("deferred_flow"):
