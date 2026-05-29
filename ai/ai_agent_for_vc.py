@@ -862,7 +862,7 @@ def analyze_sd_jwt_vc(token: str, draft: str, device: str, model: str, provider:
         trigger_generation(iss)  # call VCT registry
 
     # check signature of the sd-jwt
-    if jwt_header:
+    if jwt_header and jwt_header.get("x5c"):
         x5c_list = jwt_header.get('x5c')
         if not iss:
             comment_1 = "Info: no iss but iss is not mandatory with X509"
