@@ -31,69 +31,56 @@ payload = {
     "issuerKey": {
         "type": "jwk",
         "jwk": {
-            "kty": "EC",
-            "d": "uTIT47GfSlRa0Da4CsyoIZpjjwQLFxmL2qmBuzZpEy0",
-            "crv": "P-256",
-            "kid": "FsHUZY4_tDJDvxdp5B6moS1kwpP7PBekw4KfK7m0LCU",
-            "x": "keR9l4u1SaZKMZ7wHvj_3z44vP0sa3nlzrnc8UjpQV0",
-            "y": "pmcaedg5dtc2R6ZPZfWCBY56_M_5fUZgsz4LWD0mG8U"
-        } 
+        "kty": "OKP",
+        "d": "JvJIpga2GD8LJeRu4Sv-mL4thE31DuFlr9PA04CIoZY",
+        "crv": "Ed25519",
+        "kid": "iJMS5bkZVIlncfq_Lf_SuxJ2JtQ5Hvaz7tWPnAjUUds",
+        "x": "FZdvwC8aGhRwqzWptej0NZgtwYAI1SyFg1mKDETOfqE"
+        }
     },
-    "issuerDid": "https://issuer.didaas.org",
-    "credentialConfigurationId": "CustomEmployeeCredential_vc+sd-jwt",
+    "issuerDid": "did:jwk:eyJrdHkiOiJPS1AiLCJjcnYiOiJFZDI1NTE5Iiwia2lkIjoiaUpNUzVia1pWSWxuY2ZxX0xmX1N1eEoySnRRNUh2YXo3dFdQbkFqVVVkcyIsIngiOiJGWmR2d0M4YUdoUndxeldwdGVqME5aZ3R3WUFJMVN5RmcxbUtERVRPZnFFIn0",
+    "credentialConfigurationId": "UniversityDegree_jwt_vc_json",
     "credentialData": {
-        "identifier": "0000",
-        "employee": {
-            "name": "Dentsu Taro",
-            "employeeId": "12346",
-            "jobTitle": "Software Engineer",
-            "department": "Engineering",
-            "employmentStartDate": "2022-01-01",
-            "employer": {
-                "name": "TechCorp Ltd.",
-                "id": "did:web:techcorp.com"
-            }
+        "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://www.w3.org/2018/credentials/examples/v1"
+        ],
+        "id": "http://example.gov/credentials/3732",
+        "type": [
+        "VerifiableCredential",
+        "UniversityDegree"
+        ],
+        "issuer": {
+        "id": "did:web:vc.transmute.world"
+        },
+        "issuanceDate": "2020-03-10T04:24:12.164Z",
+        "credentialSubject": {
+        "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
+        "degree": {
+            "type": "BachelorDegree",
+            "name": "Bachelor of Science and Arts"
+        }
         }
     },
-    "selectiveDisclosure": {
-        "fields": {
-            "identifier": {
-                "sd": True
-            },
-            "employee": {
-                "sd": True,
-                "children": {
-                    "fields": {
-                        "name": {
-                            "sd": False
-                        },
-                        "employeeId": {
-                            "sd": True
-                        },
-                        "jobTitle": {
-                            "sd": False
-                        },
-                        "department": {
-                            "sd": True
-                        },
-                        "employmentStartDate": {
-                            "sd": False
-                        },
-                        "employer": {
-                            "sd": False
-                        }
-                    }
-                }
-            }
-        }
+    "mapping": {
+        "id": "<uuid>",
+        "issuer": {
+        "id": "<issuerDid>"
+        },
+        "credentialSubject": {
+        "id": "<subjectDid>"
+        },
+        "issuanceDate": "<timestamp>",
+        "expirationDate": "<timestamp-in:365d>"
     },
-    "authenticationMethod": "PRE_AUTHORIZED"
-}
+    "authenticationMethod": "PRE_AUTHORIZED",
+    "standardVersion": "DRAFT13"
+    }
 
 
 
 def waltid():
-    url = "https://issuer.didaas.org/openid4vc/jwt/issue"
+    url = 'https://issuer.demo.walt.id/openid4vc/jwt/issue'
     headers = {
         'Content-Type': 'application/json'
     }
