@@ -1,0 +1,50 @@
+{
+    "id": "5188cgfe-5678-11ef-9c7e-31a372359459",
+    "input_descriptors": [
+        {
+            "id": "data_space_1",
+            "name": "Input descriptor 1",
+            "purpose": "This is purpose 1 ",
+            "constraints": {
+                "fields": [
+                    {
+                        "filter": {
+                            "contains": {
+                                "const": "VerifiableId"
+                            },
+                            "type": "array"
+                        },
+                        "path": [
+                            "$.type"
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "name": "Test #6",
+    "purpose": "Talao presentation definition subset of PEX v2.0",
+    "format": {
+        "ldp_vp": {
+            "proof_type": [
+                "Ed25519Signature2018",
+                "Ed25519Signature2020",
+                "EcdsaSecp256k1Signature2019",
+                "RsaSignature2018"
+            ]
+        },
+        "ldp_vc": {
+            "proof_type": [
+                "Ed25519Signature2018",
+                "Ed25519Signature2020",
+                "EcdsaSecp256k1Signature2019",
+                "RsaSignature2018"
+            ]
+        },
+        "jwt_vc_json": {
+            "proof_type": [
+                "ES256"
+            ]
+        }
+    }
+}

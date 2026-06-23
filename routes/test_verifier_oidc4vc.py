@@ -4,6 +4,9 @@ import db_api
 import oidc4vc
 import base64
 import urllib.parse
+from flask import request
+from jwcrypto import jws
+import html
 
 def init_app(app,red, mode):
     app.add_url_rule('/sandbox/verifier/test_1',  view_func=verifier_test_1, methods=['GET'], defaults={'mode': mode})
@@ -31,7 +34,7 @@ def init_app(app,red, mode):
     app.add_url_rule('/sandbox/verifier/callback2',  view_func=verifier_callback2, methods=['GET'], defaults={'mode': mode})   
     app.add_url_rule('/sandbox/verifier/callback2_1',  view_func=verifier_callback2_1, methods=['GET'])
     app.add_url_rule('/sandbox/verifier/callback3',  view_func=verifier_callback3, methods=['GET'], defaults={'red': red})
-
+    app.add_url_rule('/sandbox/verifier/callback4',  view_func=verifier_callback4, methods=['GET'])
     
     # Test
     app.add_url_rule('/sandbox/verifier/oidc/test',  view_func=verifier_oidc_test, methods=['GET', 'POST'], defaults={'mode': mode})
@@ -251,7 +254,7 @@ def verifier_test_10(mode):
         client_id = "qixvcqlwbq"
     else:
         client_id = "ifdpawlhsw"
-    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
+    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback4"
     print(url)
     return redirect(url)
 
@@ -304,6 +307,25 @@ def verifier_test_14(mode):
 
 def verifier_callback():
     return jsonify(request.args)
+
+
+def verifier_callback4():
+    id_token = request.args.get("id_token")
+
+    if not id_token:
+        return "Missing id_token", 400
+
+    token = jws.JWS()
+    token.deserialize(id_token)
+
+    raw_payload = token.objects["payload"]
+
+    if isinstance(raw_payload, bytes):
+        raw_payload = raw_payload.decode("utf-8")
+
+    payload = json.loads(raw_payload)
+
+    return f"<pre>{html.escape(json.dumps(payload, indent=4))}</pre>"
 
 
 def verifier_callback3(red):
@@ -428,3 +450,4 @@ def verifier_callback2(mode):
 
 def verifier_callback2_1():
     return render_template('face2face.html')
+

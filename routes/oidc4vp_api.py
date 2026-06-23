@@ -16,7 +16,7 @@ from urllib.parse import urlencode, quote, unquote
 import logging
 import base64
 from datetime import datetime
-from jwcrypto import jwk, jwt
+from jwcrypto import jwk, jwt, jws
 from db_api import read_oidc4vc_verifier
 import pkce # https://github.com/xzava/pkce
 import oidc4vc
@@ -127,6 +127,25 @@ def oidc4vc_openid_configuration(mode):
     }
 
 
+
+def extract_verifiable_credentials(vp_token):
+    # vp_token peut être une liste ou une string JWT
+    if isinstance(vp_token, list):
+        vp_token = vp_token[0]
+
+    token = jws.JWS()
+    token.deserialize(vp_token)
+
+    raw_payload = token.objects["payload"]
+
+    if isinstance(raw_payload, bytes):
+        raw_payload = raw_payload.decode("utf-8")
+
+    payload = json.loads(raw_payload)
+
+    return payload["vp"]["verifiableCredential"]
+
+
 # authorization server for customer application
 """
 response_type supported = code or id_token or vp_token
@@ -179,6 +198,7 @@ def oidc4vc_authorize(red, mode):
                 redirect_uri = code_data['redirect_uri']
                 session.clear()
                 return redirect(redirect_uri + sep + urlencode(resp)) 
+            print("formt = ", code_wallet_data['vp_format'])
             urn = None
             if code_wallet_data['vp_format'] == 'ldp_vp':
                 id_token_for_app = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], mode)
@@ -186,6 +206,11 @@ def oidc4vc_authorize(red, mode):
                 id_token_for_app = None
                 urn = str(uuid.uuid1())
                 red.setex(urn, 1000, json.dumps(code_wallet_data['vp_token']))
+            elif code_wallet_data["vp_format"] in ["jwt_vp_json"]:
+                verifiable_credentials = extract_verifiable_credentials(
+                    code_wallet_data["vp_token"]
+                )
+                id_token_for_app = verifiable_credentials[0]
             else:
                 logging.info(" code_wallet_data['vp_token'] = %s", code_wallet_data['vp_token'])
                 id_token_for_app = oidc4vc_build_id_token(code_data['client_id'], code_wallet_data['sub'], code_data['nonce'], mode)
