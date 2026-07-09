@@ -63,7 +63,9 @@ predefined_presentation_uri_list = {
     'presentation_definition/pid_over18_with_required': 'Over18 proof in PID',
     'presentation_definition/verifiablediploma': 'EBSI Verifiable Diploma',
     'dcql_query/pid': "PID with DCQL",
-    'presentation_definition/verifiable_id_jwt_vc_json': 'VerifiableID jwt_vc_json'
+    'presentation_definition/verifiable_id_jwt_vc_json': 'VerifiableID jwt_vc_json',
+    'presentation_definition/email_dcsd_jwt': 'Text Signature with email as VC'
+
 
 }
 

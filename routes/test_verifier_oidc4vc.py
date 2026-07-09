@@ -1,4 +1,4 @@
-from flask import jsonify,  redirect, request, render_template, redirect, session
+from flask import jsonify,  redirect, request, render_template, redirect, session, Response
 import json
 import db_api
 import oidc4vc
@@ -7,6 +7,9 @@ import urllib.parse
 from flask import request
 from jwcrypto import jws
 import html
+from urllib.parse import quote
+import hashlib
+
 
 def init_app(app,red, mode):
     app.add_url_rule('/sandbox/verifier/test_1',  view_func=verifier_test_1, methods=['GET'], defaults={'mode': mode})
@@ -38,6 +41,8 @@ def init_app(app,red, mode):
     
     # Test
     app.add_url_rule('/sandbox/verifier/oidc/test',  view_func=verifier_oidc_test, methods=['GET', 'POST'], defaults={'mode': mode})
+    
+    app.add_url_rule("/sandbox/verifier/oidc/txt", view_func=txt_func, methods=["GET"])
 
 
 def verifier_oidc_test(mode):
@@ -200,16 +205,49 @@ def verifier_test_5(mode):
         return jsonify("Unauthorized"), 400
 
 
+DOCUMENT_TEXT = "This is a text demo content for Talao wallet signature"
+
+def txt_func():
+    return Response(DOCUMENT_TEXT, mimetype="text/plain")
+
+
 def verifier_test_6(mode):
-    if request.method == 'GET':
-        if mode.myenv == 'aws':
-            client_id = "zkzkwshdns"
-        else:
-            client_id = "ejqwxtjdlu"
-        url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id +"&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback"
-        return redirect(url)
+    digest = hashlib.sha256(DOCUMENT_TEXT.encode()).digest()
+    document_digest = (
+        "sha256-"
+        + base64.urlsafe_b64encode(digest).decode().rstrip("=")
+    )
+    
+    tx_obj = {
+        "type": "urn:wallet:local:signature",
+        "credential_ids": [
+            "proof_of_email"
+        ],
+        "signatureRequests": [
+            {
+            "label": "Terms abd Conditions",
+            "access": { 
+                "type": "public" 
+            },
+            "href": mode.server + "sandbdox/verifier/oidc/text",
+            "documentDigest": document_digest,
+            "signature_format": "jws-detached",
+            "signAlgo": "1.2.840.10045.4.3.2"
+            }
+        ]
+        }
+    authorization_details = quote(json.dumps(tx_obj, separators=(",", ":")).encode("utf-8"))
+    
+    # signature
+    session['verified'] = False
+    if mode.myenv == 'aws':
+        client_id = "zkzkwshdns"
     else:
-        return jsonify("Unauthorized"), 400
+        client_id = "ejqwxtjdlu"
+    url = mode.server + "sandbox/verifier/app/authorize?client_id=" + client_id + "&authorization_details=" + authorization_details + "&scope=openid&response_type=id_token&response_mode=query&redirect_uri=" + mode.server + "sandbox/verifier/callback3"
+    return redirect(url)
+
+
 
 
 def verifier_test_7(mode):

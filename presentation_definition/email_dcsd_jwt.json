@@ -1,0 +1,28 @@
+{
+    "id": "proof_of_email",
+    "input_descriptors": [
+        {
+            "id": "proof_of_email_request",
+            "format": {
+                "dc+sd-jwt": {
+                    "dc-jwt_alg_values": [
+                        "ES256"
+                    ],
+                    "kb-jwt_alg_values": [
+                        "ES256"
+                    ]
+                }
+            },
+            "constraints": {
+                "limit_disclosure": "required",
+                "fields": [
+                    {
+                        "path": [
+                            "$.email"
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}
