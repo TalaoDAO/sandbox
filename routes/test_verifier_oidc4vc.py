@@ -42,7 +42,7 @@ def init_app(app,red, mode):
     # Test
     app.add_url_rule('/sandbox/verifier/oidc/test',  view_func=verifier_oidc_test, methods=['GET', 'POST'], defaults={'mode': mode})
     
-    app.add_url_rule("/sandbox/verifier/oidc/txt", view_func=txt_func, methods=["GET"])
+    app.add_url_rule("/sandbox/verifier/oidc/text", view_func=txt_func, methods=["GET"])
 
 
 def verifier_oidc_test(mode):
@@ -225,11 +225,11 @@ def verifier_test_6(mode):
         ],
         "signatureRequests": [
             {
-            "label": "Terms abd Conditions",
+            "label": "Text for demo",
             "access": { 
                 "type": "public" 
             },
-            "href": mode.server + "sandbdox/verifier/oidc/text",
+            "href": mode.server + "sandbox/verifier/oidc/text",
             "documentDigest": document_digest,
             "signature_format": "jws-detached",
             "signAlgo": "1.2.840.10045.4.3.2"
