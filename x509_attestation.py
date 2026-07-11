@@ -298,7 +298,7 @@ def generate_x509_san_dns() -> List[str]:
     root_cert = x509.load_pem_x509_certificate(ROOT_CERT_FILE.read_bytes())
     return [
         base64.b64encode(signer_cert.public_bytes(serialization.Encoding.DER)).decode("ascii"),
-       # base64.b64encode(root_cert.public_bytes(serialization.Encoding.DER)).decode("ascii"),
+        base64.b64encode(root_cert.public_bytes(serialization.Encoding.DER)).decode("ascii"),
     ]
 
 
