@@ -2,9 +2,12 @@
   "scopes_supported": [
     "openid"
   ],
+  "scopes_supported": [
+    "eu.europa.ec.eudi.pid.1",
+    "pid"
+  ],
   "response_types_supported": [
-    "vp_token",
-    "id_token"
+    "code"
   ],
   "response_modes_supported": [
     "query"
@@ -13,15 +16,11 @@
     "authorization_code",
     "urn:ietf:params:oauth:grant-type:pre-authorized_code"
   ],
-  "subject_types_supported": [
-    "public",
-    "pairwise"
+  "authorization_details_types_supported": [
+    "openid_credential"
   ],
-  "id_token_signing_alg_values_supported": [
-    "ES256",
-    "ES256K",
-    "EdDSA",
-    "RS256"
+  "code_challenge_methods_supported": [
+    "S256"
   ],
   "request_object_signing_alg_values_supported": [
     "ES256",

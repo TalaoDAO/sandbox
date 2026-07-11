@@ -263,7 +263,7 @@ FINAL = {
                         ],
                     },
                     {
-                        "path": ["sex"],
+                        "path": ["gender"],
                         "display": [
                             {"name": "Gender", "locale": "en-US"},
                             {"name": "Sexe", "locale": "fr-FR"},

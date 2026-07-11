@@ -17,6 +17,7 @@ import requests
 from flask import (Response, flash, jsonify, redirect, render_template, request, session)
 import didkit
 import x509_attestation
+import mdoc
 
 logging.basicConfig(level=logging.INFO)
 
@@ -243,12 +244,13 @@ def credential_issuer_openid_configuration(issuer_id, mode):
 
     # Credentials supported section
     if int(issuer_profile.get('oidc4vciDraft', '11')) >= 13:
-        credential_issuer_configuration.update(
-            {'credential_configurations_supported':  issuer_profile.get('credential_configurations_supported')}
+        credential_configurations = copy.deepcopy(
+            issuer_profile.get('credential_configurations_supported', {})
         )
-        if int(issuer_profile.get('oidc4vciDraft')) >= 15:
-            for VC in credential_issuer_configuration['credential_configurations_supported']:
-                credential_issuer_configuration['credential_configurations_supported'][VC]["format"] = "dc+sd-jwt"
+
+        credential_issuer_configuration[
+            'credential_configurations_supported'
+        ] = credential_configurations
     else:
         credential_issuer_configuration.update(
             {'credentials_supported': issuer_profile.get('credentials_supported')}
@@ -357,13 +359,47 @@ def thumbprint(key):
 
 # jwks endpoint
 def issuer_jwks(issuer_id):
-    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-    pub_key = copy.copy(json.loads(issuer_data['jwk']))
-    del pub_key['d']
-    pub_key['kid'] = pub_key.get('kid') if pub_key.get('kid') else thumbprint(pub_key)
-    jwks = {'keys': [pub_key]}
-    logging.info('issuer jwks = %s', jwks)
+    issuer_data = json.loads(
+        db_api.read_oidc4vc_issuer(issuer_id)
+    )
+
+    issuer_public_key = copy.copy(
+        json.loads(issuer_data["jwk"])
+    )
+
+    issuer_public_key.pop("d", None)
+
+    issuer_public_key["kid"] = (
+        issuer_public_key.get("kid")
+        or thumbprint(issuer_public_key)
+    )
+
+    mdoc_public_key = jwk.JWK(
+        **x509_attestation.SIGNER_KEY
+    ).export(
+        private_key=False,
+        as_dict=True
+    )
+
+    mdoc_public_key.pop("d", None)
+
+    mdoc_public_key["kid"] = (
+        mdoc_public_key.get("kid")
+        or thumbprint(mdoc_public_key)
+    )
+    jwks = {
+        "keys": [
+            issuer_public_key,
+            mdoc_public_key
+        ]
+    }
+    logging.info(
+        "issuer jwks = %s",
+        jwks
+    )
     return jsonify(jwks)
+
+
 
 
 def build_credential_offer(issuer_id, credential_type, pre_authorized_code, issuer_state, user_pin_required, tx_code_input_mode, tx_code_length, tx_code_description, mode):
@@ -662,33 +698,119 @@ def issuer_authorize_par(issuer_id, red, mode):
         return Response(**manage_error('invalid_request', 'invalid authorization server', red))
     
     # Check content of client assertion and proof of possession (DPoP)
-    if request.form.get('client_assertion'):
-        client_assertion = request.form.get('client_assertion').split('~')[0]
-        logging.info('client _assertion = %s', client_assertion)
-        if request.form.get('client_id') != oidc4vc.get_payload_from_token(client_assertion).get('sub'):
-            return Response(**manage_error('invalid_request', 'client_id does not match client assertion sub', red))
+    client_assertion = None
+    client_assertion_pop = None
+    effective_client_id = request.form.get("client_id")
+    # Legacy format:
+    # client_assertion=<attestation>~<proof_of_possession>
+    if request.form.get("client_assertion"):
+        combined_assertion = request.form.get("client_assertion")
+
         try:
-            DPoP = request.form.get('client_assertion').split('~')[1]
-        except Exception:
-            return Response(**manage_error('invalid_request', 'PoP is missing', red,  ))
-        logging.info('proof of possession = %s', DPoP)
-        if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(DPoP).get('iss'):
-            return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red,  ))
-    
-    elif request.headers.get('Oauth-Client-Attestation'):
-        client_assertion = request.headers.get('Oauth-Client-Attestation')
-        logging.info('OAuth-Client-Attestation = %s', client_assertion)
-        if request.form.get('client_id') != oidc4vc.get_payload_from_token(client_assertion).get('sub'):
-            return Response(**manage_error('invalid_request', 'client_id does not match client assertion sub', red,  ))
-        try:
-            DPoP = request.headers.get('Oauth-Client-Attestation-Pop')
-        except Exception:
-            return Response(**manage_error('invalid_request', 'PoP is missing', red,  ))
-        logging.info('OAuth-Client-Attestation-PoP = %s', DPoP)
-        if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(DPoP).get('iss'):
-            return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red,  ))
+            client_assertion, client_assertion_pop = combined_assertion.split("~", 1)
+        except ValueError:
+            return Response(**manage_error(
+                "invalid_client",
+                "Client assertion proof of possession is missing",
+                red
+            ))
+
+        logging.info(
+            "Client assertion received in form parameter = %s",
+            client_assertion
+        )
+        logging.info(
+            "Client assertion proof of possession = %s",
+            client_assertion_pop
+        )
+
+    # OAuth Client Attestation headers
+    elif request.headers.get("Oauth-Client-Attestation"):
+        client_assertion = request.headers.get(
+            "Oauth-Client-Attestation"
+        )
+        client_assertion_pop = request.headers.get(
+            "Oauth-Client-Attestation-Pop"
+        )
+
+        logging.info(
+            "OAuth-Client-Attestation = %s",
+            client_assertion
+        )
+        logging.info(
+            "OAuth-Client-Attestation-PoP = %s",
+            client_assertion_pop
+        )
+
+        if not client_assertion_pop:
+            return Response(**manage_error(
+                "invalid_client",
+                "OAuth-Client-Attestation-PoP header is missing",
+                red
+            ))
+
     else:
-        logging.warning('No client assertion / wallet attestation')
+        logging.warning(
+            "No client assertion or OAuth Client Attestation"
+        )
+
+    if client_assertion:
+        try:
+            client_assertion_payload = (
+                oidc4vc.get_payload_from_token(client_assertion)
+            )
+            client_assertion_pop_payload = (
+                oidc4vc.get_payload_from_token(client_assertion_pop)
+            )
+        except ValueError as error:
+            return Response(**manage_error(
+                "invalid_client",
+                "Invalid Client Attestation: " + str(error),
+                red
+            ))
+
+        attestation_subject = client_assertion_payload.get("sub")
+
+        if not attestation_subject:
+            return Response(**manage_error(
+                "invalid_client",
+                "Client Attestation subject is missing",
+                red
+            ))
+
+        # client_id is optional in an anonymous pre-authorized flow.
+        # When it is present, it must match the attestation subject.
+        if (
+            effective_client_id is not None
+            and effective_client_id != attestation_subject
+        ):
+            return Response(**manage_error(
+                "invalid_client",
+                "client_id does not match Client Attestation subject",
+                red
+            ))
+
+        pop_issuer = client_assertion_pop_payload.get("iss")
+
+        if pop_issuer != attestation_subject:
+            return Response(**manage_error(
+                "invalid_client",
+                "Client Attestation subject does not match "
+                "proof of possession issuer",
+                red
+            ))
+
+        # When client_id is absent, use the attested subject as the
+        # effective client identifier.
+        effective_client_id = (
+            effective_client_id or attestation_subject
+        )
+
+        logging.info(
+            "Effective client_id = %s",
+            effective_client_id
+        )
+        
     try:
         request_uri_data = {
             'redirect_uri': request.form['redirect_uri'],
@@ -1042,19 +1164,119 @@ def issuer_token(issuer_id, red, mode):
     logging.info('client authentication method = %s', client_authentication_method)
     
     # Check content of client assertion and proof of possession (PoP)
-    if client_authentication_method == 'client_attestation':
+   # Effective client identifier used later in the access token context.
+    effective_client_id = request.form.get("client_id")
+
+    # Check Client Attestation and its proof of possession.
+    if client_authentication_method == "client_attestation":
         try:
-            # https://www.ietf.org/archive/id/draft-ietf-oauth-attestation-based-client-auth-04.html
-            client_assertion = request.headers['Oauth-Client-Attestation']
-            PoP = request.headers['Oauth-Client-Attestation-Pop']
-            logging.info('OAuth-Client-Attestation = %s', client_assertion)
-            logging.info('OAuth-Client-Attestation-PoP = %s', PoP)
-            if request.form.get('client_id') != oidc4vc.get_payload_from_token(client_assertion).get('sub'):
-                return Response(**manage_error('invalid_request', 'client_id does not match client assertion subject', red,  ))
-            if oidc4vc.get_payload_from_token(client_assertion).get('sub') != oidc4vc.get_payload_from_token(PoP).get('iss'):
-                return Response(**manage_error('invalid_request', 'sub of client assertion does not match proof of possession iss', red,  ))
-        except Exception:
-            return Response(**manage_error('invalid_request', 'Headres is notr correct for client attestation', red,  ))
+            client_assertion = request.headers.get(
+                "Oauth-Client-Attestation"
+            )
+            client_assertion_pop = request.headers.get(
+                "Oauth-Client-Attestation-Pop"
+            )
+
+            if not client_assertion:
+                return Response(**manage_error(
+                    "invalid_client",
+                    "OAuth-Client-Attestation header is missing",
+                    red
+                ))
+
+            if not client_assertion_pop:
+                return Response(**manage_error(
+                    "invalid_client",
+                    "OAuth-Client-Attestation-PoP header is missing",
+                    red
+                ))
+
+            logging.info(
+                "OAuth-Client-Attestation = %s",
+                client_assertion
+            )
+            logging.info(
+                "OAuth-Client-Attestation-PoP = %s",
+                client_assertion_pop
+            )
+
+            client_assertion_payload = (
+                oidc4vc.get_payload_from_token(client_assertion)
+            )
+            client_assertion_pop_payload = (
+                oidc4vc.get_payload_from_token(
+                    client_assertion_pop
+                )
+            )
+
+            attestation_subject = client_assertion_payload.get(
+                "sub"
+            )
+            pop_issuer = client_assertion_pop_payload.get(
+                "iss"
+            )
+
+            if not attestation_subject:
+                return Response(**manage_error(
+                    "invalid_client",
+                    "Client Attestation subject is missing",
+                    red
+                ))
+
+            # client_id is optional in an anonymous
+            # Pre-Authorized Code flow.
+            # If provided, it must match the attestation subject.
+            if (
+                effective_client_id is not None
+                and effective_client_id != attestation_subject
+            ):
+                return Response(**manage_error(
+                    "invalid_client",
+                    "client_id does not match "
+                    "Client Attestation subject",
+                    red
+                ))
+
+            if pop_issuer != attestation_subject:
+                return Response(**manage_error(
+                    "invalid_client",
+                    "Client Attestation subject does not match "
+                    "Client Attestation PoP issuer",
+                    red
+                ))
+
+            # Since client_id was omitted by the wallet,
+            # use the attested subject as effective client_id.
+            effective_client_id = (
+                effective_client_id or attestation_subject
+            )
+
+            logging.info(
+                "Effective client_id = %s",
+                effective_client_id
+            )
+
+        except ValueError as error:
+            logging.exception(
+                "Invalid OAuth Client Attestation"
+            )
+            return Response(**manage_error(
+                "invalid_client",
+                "Invalid OAuth Client Attestation: "
+                + str(error),
+                red
+            ))
+
+        except Exception as error:
+            logging.exception(
+                "OAuth Client Attestation processing failed"
+            )
+            return Response(**manage_error(
+                "invalid_client",
+                "OAuth Client Attestation processing failed: "
+                + str(error),
+                red
+            ))
 
     # check code validity
     try:
@@ -1124,7 +1346,10 @@ def issuer_token(issuer_id, red, mode):
         endpoint_response['authorization_details'] = authorization_details
 
     access_token_data = {
-        'expires_at': datetime.timestamp(datetime.now()) + ACCESS_TOKEN_LIFE,
+        'expires_at': (
+            datetime.timestamp(datetime.now())
+            + ACCESS_TOKEN_LIFE
+        ),
         'c_nonce': endpoint_response.get('c_nonce'),
         'credential_type': data.get('credential_type'),
         'vc': data.get('vc'),
@@ -1132,9 +1357,10 @@ def issuer_token(issuer_id, red, mode):
         'authorization_details': authorization_details,
         'stream_id': data.get('stream_id'),
         'issuer_state': data.get('issuer_state'),
-        'client_id': request.form.get('client_id'),
+        'client_id': effective_client_id,
         'scope': request.form.get('scope')
     }
+   
     logging.info('token endpoint response = %s', json.dumps(endpoint_response, indent=4))
     red.setex(access_token, ACCESS_TOKEN_LIFE, json.dumps(access_token_data))
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
@@ -1192,7 +1418,7 @@ async def issuer_credential(issuer_id, red, mode):
     vc_format = result.get('format')
     credential_configuration_id = None
     logging.info('format in credential request = %s', vc_format)
-    if vc_format and vc_format not in ['ldp_vc', 'dc+sd-jwt', 'vc+sd-jwt', 'jwt_vc_json', 'jwt_vc_json-ld', 'jwt_vc']:
+    if vc_format and vc_format not in ['ldp_vc', 'dc+sd-jwt', 'vc+sd-jwt', 'jwt_vc_json', 'jwt_vc_json-ld', 'jwt_vc', 'mso_mdoc']:
         return Response(**manage_error('unsupported_credential_format', 'Invalid VC format: ' + vc_format, red,  stream_id=stream_id, webhook_data=webhook_data))
     
     if int(issuer_profile['oidc4vciDraft']) in [13, 14]:
@@ -1212,7 +1438,7 @@ async def issuer_credential(issuer_id, red, mode):
     
     # check proof if it exists depending on type of proof and draft
     try:
-        if int(issuer_profile['oidc4vciDraft']) < 16:
+        if result.get('proof'):
             proof = result.get('proof')
             proof_type = proof.get('proof_type')
         else:
@@ -1263,11 +1489,6 @@ async def issuer_credential(issuer_id, red, mode):
                     wallet_identifier.append('did')
                     wallet_jwk.append(oidc4vc.resolve_did(proof_header.get('kid')))
                     wallet_did.append(proof_header.get('kid').split("#")[0])
-
-                if access_token_data['client_id'] and proof_payload.get("iss"):
-                    if proof_payload.get("iss") != access_token_data['client_id']:
-                        logging.error('iss %s of proof of key is different from client_id %s', proof_payload.get("iss") ,access_token_data['client_id'] )
-                        return Response(**manage_error('invalid_proof', 'iss of proof of key is different from client_id', red,   stream_id=stream_id, webhook_data=webhook_data))
                 
         elif proof_type in ['ldp_vp', 'di_vp']:
             nb_proof = 1
@@ -1306,6 +1527,7 @@ async def issuer_credential(issuer_id, red, mode):
     # Get credential type requested
     credential_identifier = None
     credential_type = None
+
     if int(issuer_profile['oidc4vciDraft']) >= 15:
         credential_type = credential_configuration_id
         try:
@@ -1367,6 +1589,34 @@ async def issuer_credential(issuer_id, red, mode):
         return Response(**manage_error('invalid_request', 'Invalid request format', red,  stream_id=stream_id, webhook_data=webhook_data))
     logging.info('credential type = %s', credential_type)
     
+    # check wallet key type for mso_doc
+    if vc_format == 'mso_mdoc':
+        for device_key in wallet_jwk:
+            if not device_key:
+                return Response(**manage_error(
+                    'invalid_proof',
+                    'mso_mdoc requires a device public key',
+                    red,
+                    stream_id=stream_id,
+                    status=403,
+                    webhook_data=webhook_data
+                ))
+
+            if (
+                device_key.get('kty') != 'EC'
+                or device_key.get('crv') != 'P-256'
+                or not device_key.get('x')
+                or not device_key.get('y')
+            ):
+                return Response(**manage_error(
+                    'invalid_proof',
+                    'mso_mdoc currently requires an EC P-256 device key',
+                    red,
+                    stream_id=stream_id,
+                    status=403,
+                    webhook_data=webhook_data
+                ))
+    
     # deferred use case
     if issuer_data.get('deferred_flow'):  # draft 13 only
         logging.info('Deferred flow')
@@ -1422,7 +1672,11 @@ async def issuer_credential(issuer_id, red, mode):
             mode.server + 'issuer/' + issuer_id,  # issuer
             mode,
             wallet_jwk=wallet_jwk[i],
-            wallet_identifier=wallet_identifier,
+            wallet_identifier=(
+                wallet_identifier[i]
+                if i < len(wallet_identifier)
+                else None
+            ),
             draft=int(issuer_profile['oidc4vciDraft'])
         ))
         logging.info('credential signed sent to wallet = %s', credential_signed)
@@ -1603,11 +1857,40 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
             kid = issuer_vm
         else:
             kid = thumbprint(issuer_key)
-        print("wallet identifier = ", wallet_identifier)
-        print("wallet_did = ", wallet_did)
-        print('wallet jwk =', wallet_jwk)
 
         return oidc4vc.sign_sd_jwt(credential, issuer_key, issuer, wallet_jwk, wallet_did, wallet_identifier, kid, x5c=x5c, draft=draft)
+    elif format == 'mso_mdoc':
+        if not isinstance(credential, dict):
+            raise ValueError('The mdoc payload must be a JSON object')
+
+        print("credentila =", credential)
+
+        if not credential.get('docType'):
+            raise ValueError('The mdoc payload is missing doctype')
+
+        if not credential.get('nameSpaces'):
+            raise ValueError(
+                'The mdoc payload must contain namespaces'
+            )
+
+        if not wallet_jwk:
+            raise ValueError(
+                'mso_mdoc requires a wallet public key obtained '
+                'from the validated proof'
+            )
+
+        return mdoc.sign_mdoc(
+            credential,
+            issuer_key,
+            wallet_jwk,
+            validity_days=duration,
+            x5chain=issuer_data.get('mdoc_x5chain'),
+            kid=None,
+            require_x5chain=issuer_data.get(
+                'mdoc_require_x5chain',
+                False
+            )
+        )
     elif format in ['ldp_vc', 'jwt_vc_json-ld']:
         logging.info('wallet did = %s', wallet_did)
         if wallet_did:
@@ -1643,6 +1926,7 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
             'statusSize': 1,
             'statusListCredential':  mode.server + 'sandbox/issuer/bitstringstatuslist/1'
         }
+    
     else:
         logging.error('credential format not supported %s', format)
         return

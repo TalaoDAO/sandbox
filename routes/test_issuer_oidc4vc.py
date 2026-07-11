@@ -733,13 +733,11 @@ def test_18(mode):
     api_endpoint = mode.server + "sandbox/oidc4vc/issuer/api"
     issuer_id = issuer_test(18, mode)
     client_secret = issuer_test(18, mode, secret = True)
-    offer = ["EmployeeBadge", "Pid"]
+    offer = ["eu.europa.ec.eudi.pid.1"]
     
-    with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
-        EmployeeBadge = json.loads(f.read())
+    with open('./verifiable_credentials/Pid_mdoc.json', 'r') as f:
+        Pid_mdoc = json.loads(f.read())
     
-    with open('./verifiable_credentials/Pid.json', 'r') as f:
-        Pid = json.loads(f.read())
         
     headers = {
         'Content-Type': 'application/json',
@@ -748,8 +746,7 @@ def test_18(mode):
     data = { 
         "issuer_id": issuer_id,
         "vc": {
-            "EmployeeBadge": EmployeeBadge,
-            "Pid": Pid
+            "eu.europa.ec.eudi.pid.1": Pid_mdoc
         },
         "issuer_state": "test18",
         "credential_type": offer,
