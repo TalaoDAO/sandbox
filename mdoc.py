@@ -271,32 +271,39 @@ def _cose_sign1(
     kid: Optional[str]
 ) -> cbor2.CBORTag:
 
-    signer = _private_key_from_jwk(private_jwk)
+    signer = _private_key_from_jwk(
+        private_jwk
+    )
 
-    protected_headers = {
-        COSE_ALG: COSE_ES256
-    }
-
-    if kid:
-        protected_headers[COSE_KID] = kid.encode("utf-8")
-
+    # For mdoc IssuerAuth, keep the protected header minimal.
     protected = cbor2.dumps(
-        protected_headers,
+        {
+            COSE_ALG: COSE_ES256
+        },
         canonical=True
     )
 
-    unprotected: Dict[int, Any] = {}
+    chain = _decode_x5chain(
+        x5chain
+    )
 
-    chain = _decode_x5chain(x5chain)
-
-    if chain:
-        _check_leaf_matches_key(
-            chain[0],
-            signer
+    if not chain:
+        raise ValueError(
+            "Document Signer certificate chain is missing"
         )
 
-        # Only embed the Document Signer certificate.
-        unprotected[COSE_X5CHAIN] = chain[0]
+    _check_leaf_matches_key(
+        chain[0],
+        signer
+    )
+
+    unprotected: Dict[int, Any] = {
+        COSE_X5CHAIN: (
+            chain[0]
+            if len(chain) == 1
+            else chain
+        )
+    }
 
     sig_structure = [
         "Signature1",
@@ -312,16 +319,33 @@ def _cose_sign1(
 
     der_signature = signer.sign(
         to_sign,
-        ec.ECDSA(hashes.SHA256())
+        ec.ECDSA(
+            hashes.SHA256()
+        )
     )
 
     r, s = decode_dss_signature(
         der_signature
     )
 
+    # Normalize the ECDSA signature.
+    if s > P256_ORDER // 2:
+        s = P256_ORDER - s
+
     signature = (
         r.to_bytes(32, "big")
         + s.to_bytes(32, "big")
+    )
+
+    logging.info(
+        "mdoc protected header = %s",
+        protected.hex()
+    )
+
+    logging.info(
+        "mdoc signature length=%d low_s=%s",
+        len(signature),
+        s <= P256_ORDER // 2
     )
 
     return cbor2.CBORTag(
@@ -417,6 +441,97 @@ def _verify_cose_sign1(
             "Generated mdoc COSE signature is invalid"
         ) from exc
 
+
+def _verify_issuer_signed_digests(
+    issuer_signed_cbor: bytes
+) -> None:
+
+    issuer_signed = cbor2.loads(
+        issuer_signed_cbor
+    )
+
+    issuer_auth = issuer_signed["issuerAuth"]
+
+    _verify_cose_sign1(
+        issuer_auth
+    )
+
+    protected, unprotected, payload, signature = (
+        issuer_auth.value
+    )
+
+    if not isinstance(payload, bytes):
+        raise ValueError(
+            "issuerAuth payload is not a byte string"
+        )
+
+    tagged_mso = cbor2.loads(
+        payload
+    )
+
+    if (
+        not isinstance(tagged_mso, cbor2.CBORTag)
+        or tagged_mso.tag != 24
+        or not isinstance(tagged_mso.value, bytes)
+    ):
+        raise ValueError(
+            "issuerAuth payload is not MobileSecurityObjectBytes"
+        )
+
+    mso = cbor2.loads(
+        tagged_mso.value
+    )
+
+    value_digests = mso["valueDigests"]
+
+    for namespace, tagged_items in issuer_signed[
+        "nameSpaces"
+    ].items():
+
+        for tagged_item in tagged_items:
+
+            if (
+                not isinstance(tagged_item, cbor2.CBORTag)
+                or tagged_item.tag != 24
+                or not isinstance(tagged_item.value, bytes)
+            ):
+                raise ValueError(
+                    "invalid IssuerSignedItemBytes"
+                )
+
+            item = cbor2.loads(
+                tagged_item.value
+            )
+
+            digest_id = item["digestID"]
+
+            calculated_digest = hashlib.sha256(
+                cbor2.dumps(
+                    tagged_item,
+                    canonical=True
+                )
+            ).digest()
+
+            expected_digest = value_digests[
+                namespace
+            ][digest_id]
+
+            if calculated_digest != expected_digest:
+                raise ValueError(
+                    f"digest mismatch for "
+                    f"{namespace}/{digest_id}"
+                )
+
+            logging.info(
+                "Verified mdoc item namespace=%s "
+                "digestID=%s identifier=%s value=%r",
+                namespace,
+                digest_id,
+                item["elementIdentifier"],
+                item["elementValue"]
+            )
+            
+            
 def sign_mdoc(
     credential: Mapping[str, Any],
     issuer_private_jwk: Any,
@@ -516,5 +631,10 @@ def sign_mdoc(
         issuer_signed,
         canonical=True
     )
+    
+    _verify_issuer_signed_digests(
+        issuer_signed_cbor
+    )
+
 
     return _b64url_encode(issuer_signed_cbor)
