@@ -18,7 +18,7 @@
             "age_over_18": true,
             "age_over_21": true,
             "age_over_65": false,
-            "gender": 1,
+            "sex": 1,
             "issuing_country": "DE",
             "issuing_authority": "DE"
         }

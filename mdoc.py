@@ -44,6 +44,62 @@ P256_ORDER = int(
     16
 )
 
+MDOC_FULL_DATE_ELEMENTS = {
+    "birth_date",
+    "issuance_date",
+    "expiry_date",
+    "portrait_capture_date",
+}
+
+MDOC_DATE_TIME_ELEMENTS = {
+    "source_timestamp",
+}
+
+
+def _normalize_mdoc_element_value(
+    element_identifier: str,
+    element_value: Any
+) -> Any:
+    """
+    Convert JSON values to the CBOR semantic types expected
+    by ISO mdoc and the EUDI PID namespace.
+    """
+
+    if element_identifier in MDOC_FULL_DATE_ELEMENTS:
+        if not isinstance(element_value, str):
+            raise ValueError(
+                f"{element_identifier} must be a YYYY-MM-DD string"
+            )
+
+        try:
+            datetime.strptime(
+                element_value,
+                "%Y-%m-%d"
+            )
+        except ValueError as exc:
+            raise ValueError(
+                f"{element_identifier} must use YYYY-MM-DD"
+            ) from exc
+
+        # RFC 8943 full-date.
+        return cbor2.CBORTag(
+            1004,
+            element_value
+        )
+
+    if element_identifier in MDOC_DATE_TIME_ELEMENTS:
+        if not isinstance(element_value, str):
+            raise ValueError(
+                f"{element_identifier} must be a date-time string"
+            )
+
+        # RFC 8943 date-time.
+        return cbor2.CBORTag(
+            0,
+            element_value
+        )
+
+    return element_value
 
 def _b64url_decode(value: str) -> bytes:
     return base64.urlsafe_b64decode(value + "=" * ((4 - len(value) % 4) % 4))
@@ -149,7 +205,10 @@ def _issuer_signed_items(namespaces: Mapping[str, Mapping[str, Any]]) -> tuple[D
                 "digestID": digest_id,
                 "random": os.urandom(32),
                 "elementIdentifier": element_identifier,
-                "elementValue": element_value,
+                "elementValue": _normalize_mdoc_element_value(
+                    element_identifier,
+                    element_value
+                ),
             }
             item_bytes = cbor2.dumps(item, canonical=True)
             tagged_item = cbor2.CBORTag(24, item_bytes)
