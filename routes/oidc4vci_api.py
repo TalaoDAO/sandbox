@@ -208,52 +208,52 @@ def build_signed_metadata(key, sub, metadata) -> str:
 
 def _credential_metadata_response_type() -> str:
     """
-    Select the Credential Issuer Metadata representation from
-    the HTTP Accept header.
+    Return application/jwt only when the client explicitly
+    requests application/jwt.
 
-    Returns:
-        "application/jwt" when explicitly preferred by the wallet.
-        "application/json" otherwise.
+    Accept: */* and missing Accept headers return JSON.
     """
 
     accept_header = request.headers.get(
         "Accept",
         ""
-    )
+    ).strip()
 
     logging.info(
         "Credential Issuer Metadata Accept header = %s",
         accept_header or "<missing>"
     )
 
-    # No Accept header: application/json remains the mandatory
-    # and interoperable default representation.
     if not accept_header:
         return "application/json"
 
-    best_match = request.accept_mimetypes.best_match(
-        [
-            "application/jwt",
-            "application/json",
-        ],
-        default="application/json",
-    )
+    accepted_types = [
+        item.strip().split(";", 1)[0].strip().lower()
+        for item in accept_header.split(",")
+    ]
 
-    if best_match == "application/jwt":
-        jwt_quality = request.accept_mimetypes[
-            "application/jwt"
-        ]
-        json_quality = request.accept_mimetypes[
-            "application/json"
-        ]
+    # A wildcard does not constitute an explicit request
+    # for the signed JWT representation.
+    if "application/jwt" not in accepted_types:
+        return "application/json"
 
-        # Prefer JWT only when it is explicitly accepted and has
-        # at least the same priority as JSON.
-        if jwt_quality > 0 and jwt_quality >= json_quality:
-            return "application/jwt"
+    jwt_quality = request.accept_mimetypes[
+        "application/jwt"
+    ]
+
+    json_quality = request.accept_mimetypes[
+        "application/json"
+    ]
+
+    if jwt_quality <= 0:
+        return "application/json"
+
+    # Return JWT when it is explicitly requested and is not
+    # less preferred than JSON.
+    if jwt_quality >= json_quality:
+        return "application/jwt"
 
     return "application/json"
-
 
 # credential issuer openid configuration endpoint
 def credential_issuer_openid_configuration_endpoint(
@@ -846,11 +846,8 @@ def oidc_issuer_landing_page(issuer_id, stream_id, red, mode):
     
     deeplink_talao = 'talao-openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
     deeplink_altme = 'altme-openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
-    #deeplink_altme = mode.deeplink_altme + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display})
-    #deeplink_talao = mode.deeplink_talao + 'app/download/oidc4vc?' + urlencode({'uri': url_to_display})
     
     deeplink_standard = 'openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
-    #deeplink_altme = 'openid-credential-offer://?' + urlencode({'credential_offer': json.dumps(offer)})
     
     qrcode_page = issuer_data.get('issuer_landing_page')
     logging.info('QR code page file = %s', qrcode_page)
