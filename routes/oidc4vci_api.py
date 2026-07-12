@@ -2159,8 +2159,6 @@ async def sign_credential(credential, wallet_did, issuer_id, c_nonce, format, is
         if not isinstance(credential, dict):
             raise ValueError('The mdoc payload must be a JSON object')
 
-        print("credentila =", credential)
-
         if not credential.get('docType'):
             raise ValueError('The mdoc payload is missing doctype')
 
