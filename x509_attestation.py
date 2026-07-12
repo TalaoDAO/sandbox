@@ -292,14 +292,19 @@ def verify_stored_material() -> None:
 
 
 def generate_x509_san_dns() -> List[str]:
-    """Load the existing x5chain as base64(DER): signer first, then root."""
+    """Return only the Document Signer certificate."""
     _require_stored_material()
-    signer_cert = x509.load_pem_x509_certificate(SIGNER_CERT_FILE.read_bytes())
-    root_cert = x509.load_pem_x509_certificate(ROOT_CERT_FILE.read_bytes())
+
+    signer_cert = x509.load_pem_x509_certificate(
+        SIGNER_CERT_FILE.read_bytes()
+    )
+
     return [
-        base64.b64encode(signer_cert.public_bytes(serialization.Encoding.DER)).decode("ascii"),
-        base64.b64encode(root_cert.public_bytes(serialization.Encoding.DER)).decode("ascii"),
+        base64.b64encode(
+            signer_cert.public_bytes(serialization.Encoding.DER)
+        ).decode("ascii")
     ]
+
 
 
 def build_x509_san_dns() -> List[str]:
@@ -308,31 +313,30 @@ def build_x509_san_dns() -> List[str]:
 
 
 def verify_trust_chain(base64_chain: List[str]) -> None:
-    if len(base64_chain) < 2:
-        raise ValueError("The certificate chain must contain signer and root certificates")
+    if len(base64_chain) != 1:
+        raise ValueError("Expected only the Document Signer certificate")
 
-    leaf_cert = x509.load_der_x509_certificate(base64.b64decode(base64_chain[0]))
-    issuer_cert = x509.load_der_x509_certificate(base64.b64decode(base64_chain[1]))
-    issuer_public_key = issuer_cert.public_key()
+    leaf_cert = x509.load_der_x509_certificate(
+        base64.b64decode(base64_chain[0])
+    )
 
-    try:
-        if isinstance(issuer_public_key, rsa.RSAPublicKey):
-            issuer_public_key.verify(
-                leaf_cert.signature,
-                leaf_cert.tbs_certificate_bytes,
-                padding.PKCS1v15(),
-                leaf_cert.signature_hash_algorithm,
-            )
-        elif isinstance(issuer_public_key, ec.EllipticCurvePublicKey):
-            issuer_public_key.verify(
-                leaf_cert.signature,
-                leaf_cert.tbs_certificate_bytes,
-                ec.ECDSA(leaf_cert.signature_hash_algorithm),
-            )
-        else:
-            raise ValueError("Unsupported issuer public key type")
-    except InvalidSignature as exc:
-        raise ValueError("Invalid signer/root certificate chain") from exc
+    issuer_public_key = ROOT_CERTIFICATE.public_key()
+
+    if isinstance(issuer_public_key, rsa.RSAPublicKey):
+        issuer_public_key.verify(
+            leaf_cert.signature,
+            leaf_cert.tbs_certificate_bytes,
+            padding.PKCS1v15(),
+            leaf_cert.signature_hash_algorithm,
+        )
+    else:
+        issuer_public_key.verify(
+            leaf_cert.signature,
+            leaf_cert.tbs_certificate_bytes,
+            ec.ECDSA(leaf_cert.signature_hash_algorithm),
+        )
+        
+
 
 
 def build_verifier_attestation(client_id: str) -> str:
