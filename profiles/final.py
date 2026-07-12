@@ -614,14 +614,14 @@ FINAL = {
             },
             "display": [
                     {
-                    "name": "Identité Digitale",
-                    "locale": "fr",
-                    "logo": {
-                        "uri": "https://edwin-weakhanded-bryan.ngrok-free.dev/marianne.svg",
-                        "alt_text": "Identité Digitale"
-                    },
-                    "background_color": "#1b1d22",
-                    "text_color": "#ffffff"
+                        "name": "Identité Digitale",
+                        "locale": "fr",
+                        "logo": {
+                            "uri": "https://edwin-weakhanded-bryan.ngrok-free.dev/marianne.svg",
+                            "alt_text": "Identité Digitale"
+                        },
+                        "background_color": "#1b1d22",
+                        "text_color": "#ffffff"
                     }
                 ],
             "claims": [
