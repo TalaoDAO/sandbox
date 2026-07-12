@@ -26,13 +26,13 @@ FINAL = {
                 "cose_key"
             ],
             "credential_signing_alg_values_supported": [
-                -7
+                -7, -9
             ],
             "proof_types_supported": {
                 "jwt": {
-                "proof_signing_alg_values_supported": [
-                    "ES256",
-                ]
+                    "proof_signing_alg_values_supported": [
+                        "ES256",
+                    ]
                 }
             },
             "credential_metadata": {
