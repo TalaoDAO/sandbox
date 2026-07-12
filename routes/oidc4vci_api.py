@@ -372,17 +372,6 @@ def credential_issuer_openid_configuration_endpoint(
                 expected_path,
             )
 
-            return Response(
-                response=json.dumps({
-                    "error": "not_found"
-                }),
-                status=404,
-                headers={
-                    "Cache-Control": "no-store",
-                    "Content-Type": "application/json",
-                },
-            )
-
     response_type = (
         _credential_metadata_response_type()
     )
