@@ -520,6 +520,11 @@ def credential_issuer_openid_configuration(issuer_id, mode):
         'authorization_servers': [mode.server + 'issuer/' + issuer_id ],
         'credential_endpoint': mode.server + 'issuer/' + issuer_id + '/credential',
         'deferred_credential_endpoint': mode.server + 'issuer/' + issuer_id + '/deferred',
+        "dpop_signing_alg_values_supported": [
+            "ES256",
+            "ES384",
+            "ES512"
+        ],
     }
     
     # nonce endpoint to add for draft >= 14
