@@ -1984,7 +1984,7 @@ async def issuer_credential(issuer_id, red, mode):
 
     # Transfer VC
     c_nonce = str(uuid.uuid1())
-    if int(issuer_profile['oidc4vciDraft']) >= 20:
+    if int(issuer_profile['oidc4vciDraft']) >= 15:
         payload = {"credentials": []}
         for i in range(nb_proof):
             payload["credentials"].append({
@@ -2013,8 +2013,14 @@ async def issuer_credential(issuer_id, red, mode):
         requests.post(webhook, json=data, timeout=10)
 
     # send VC to wallet
-    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
-    return Response(response=json.dumps(payload), headers=headers)
+    return Response(
+        response=json.dumps(payload),
+        status=200,
+        content_type="application/json",
+        headers={
+            "Cache-Control": "no-store"
+        }
+    )
 
 
 async def issuer_deferred(issuer_id, red, mode):
