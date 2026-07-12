@@ -498,304 +498,348 @@ def _safe_get_json(url: str, timeout: int = 10) -> Dict[str, Any]:
     return r.json()
 
 
+
 def analyze_mdoc(mdoc_token: str, draft: str, device: str, model: str, provider: str) -> str:
     """
-    Analyze an ISO/IEC 18013-5 mdoc (CBOR + COSE) and return a structured markdown report.
+    Analyze an ISO/IEC 18013-5 mdoc encoded as base64url(CBOR).
 
-    Input expectations:
-      - mdoc_token is typically base64 or base64url of CBOR bytes.
-      - CBOR may contain either:
-          * {"documents":[ ... ]} (common container)
-          * a single document map
-          * other wrappers depending on transport (OIDC4VP, NFC, etc.)
+    Supported inputs:
+      - IssuerSigned returned by OIDC4VCI:
+          {"nameSpaces": ..., "issuerAuth": COSE_Sign1}
+      - Document:
+          {"docType": ..., "issuerSigned": ..., "deviceSigned": ...}
+      - DeviceResponse:
+          {"version": ..., "documents": [...]}
     """
 
-    # ---------- helpers ----------
-    def _b64_any_decode(s: str) -> bytes:
-        s = (s or "").strip()
-        # try urlsafe first (common in QR / OIDC transports)
+    def _b64_any_decode(value: str) -> bytes:
+        value = (value or "").strip()
+        if not value:
+            raise ValueError("empty input")
+        padding = "=" * ((4 - len(value) % 4) % 4)
+        errors = []
+        for decoder in (base64.urlsafe_b64decode, base64.b64decode):
+            try:
+                return decoder(value + padding)
+            except Exception as exc:
+                errors.append(str(exc))
+        raise ValueError("Cannot base64/base64url decode input: " + "; ".join(errors))
+
+    def _cbor_loads(value: bytes) -> Any:
         try:
-            padding = "=" * ((4 - len(s) % 4) % 4)
-            return base64.urlsafe_b64decode(s + padding)
+            return cbor2.loads(value)
+        except Exception as exc:
+            raise ValueError(f"Cannot CBOR-decode bytes: {exc}") from exc
+
+    def _unwrap_tag(value: Any, expected_tag: Optional[int] = None) -> Any:
+        if isinstance(value, cbor2.CBORTag):
+            if expected_tag is not None and value.tag != expected_tag:
+                raise ValueError(f"unexpected CBOR tag {value.tag}, expected {expected_tag}")
+            return value.value
+        return value
+
+    def _decode_embedded_cbor(value: Any, expected_tag: Optional[int] = None) -> Any:
+        """Unwrap CBOR tag and decode its byte-string payload when applicable."""
+        value = _unwrap_tag(value, expected_tag)
+        if isinstance(value, (bytes, bytearray)):
+            return _cbor_loads(bytes(value))
+        return value
+
+    def _as_cose_sign1(value: Any) -> Optional[list]:
+        """Return the four-element COSE_Sign1 array from tag 18 or a bare array."""
+        if isinstance(value, cbor2.CBORTag):
+            if value.tag != 18:
+                return None
+            value = value.value
+        if isinstance(value, list) and len(value) == 4:
+            return value
+        return None
+
+    def _extract_document(root: Any) -> Tuple[dict, Optional[dict]]:
+        """Return (document-like object, IssuerSigned object if directly supplied)."""
+        if not isinstance(root, dict):
+            return {}, None
+
+        documents = root.get("documents")
+        if isinstance(documents, list) and documents and isinstance(documents[0], dict):
+            return documents[0], None
+
+        # OIDC4VCI returns IssuerSigned directly, not a Document wrapper.
+        if "issuerAuth" in root and "nameSpaces" in root:
+            return root, root
+
+        return root, None
+
+    def _jsonable(value: Any) -> Any:
+        if isinstance(value, cbor2.CBORTag):
+            return {"tag": value.tag, "value": _jsonable(value.value)}
+        if isinstance(value, bytes):
+            return {"bytes_hex": value.hex(), "length": len(value)}
+        if isinstance(value, bytearray):
+            return {"bytes_hex": bytes(value).hex(), "length": len(value)}
+        if isinstance(value, dict):
+            return {str(k): _jsonable(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [_jsonable(v) for v in value]
+        if isinstance(value, tuple):
+            return [_jsonable(v) for v in value]
+        return value
+
+    def _brief(value: Any, max_len: int = 5000) -> str:
+        try:
+            rendered = json.dumps(_jsonable(value), ensure_ascii=False, indent=2, default=str)
         except Exception:
-            pass
-        # try standard base64
-        try:
-            padding = "=" * ((4 - len(s) % 4) % 4)
-            return base64.b64decode(s + padding)
-        except Exception as e:
-            raise ValueError(f"Cannot base64/base64url decode input: {e}")
+            rendered = str(value)
+        return rendered if len(rendered) <= max_len else rendered[:max_len] + "\n... (truncated)"
 
-    def _cbor_loads(b: bytes):
-        try:
-            return cbor2.loads(b)
-        except Exception as e:
-            raise ValueError(f"Cannot CBOR-decode bytes: {e}")
+    def _decode_issuer_namespaces(value: Any) -> Dict[str, list]:
+        decoded: Dict[str, list] = {}
+        if not isinstance(value, dict):
+            return decoded
+        for namespace, items in value.items():
+            decoded_items = []
+            if not isinstance(items, list):
+                continue
+            for wrapped_item in items:
+                try:
+                    item = _decode_embedded_cbor(wrapped_item, expected_tag=24)
+                    decoded_items.append(item)
+                except Exception as exc:
+                    decoded_items.append({"decode_error": str(exc), "raw": _jsonable(wrapped_item)})
+            decoded[str(namespace)] = decoded_items
+        return decoded
 
-    def _get_first_document(obj) -> dict:
-        if isinstance(obj, dict):
-            if "documents" in obj and isinstance(obj["documents"], list) and obj["documents"]:
-                if isinstance(obj["documents"][0], dict):
-                    return obj["documents"][0]
-            # sometimes it's already a document-like structure
-            return obj
-        if isinstance(obj, list) and obj and isinstance(obj[0], dict):
-            return obj[0]
-        return {}
+    def _verify_cose_sign1(sign1_value: Any) -> Tuple[str, Dict[str, Any], Optional[Any]]:
+        details: Dict[str, Any] = {
+            "alg": None,
+            "has_x5chain": False,
+            "protected": None,
+            "unprotected": None,
+        }
 
-    def _brief(obj, max_len=3000) -> str:
-        # safe-ish preview for logs/prompts
-        try:
-            s = json.dumps(obj, ensure_ascii=False, indent=2, default=str)
-        except Exception:
-            s = str(obj)
-        return s if len(s) <= max_len else s[:max_len] + "\n... (truncated)"
+        sign1 = _as_cose_sign1(sign1_value)
+        if sign1 is None:
+            return "Warning: value is not a COSE_Sign1 (tag 18 / four-item array).", details, None
 
-    # Minimal COSE_Sign1 verification (best effort)
-    # COSE_Sign1 structure: [ protected : bstr, unprotected : map, payload : bstr / nil, signature : bstr ]
-    # We verify only when:
-    #   - protected header can be decoded
-    #   - alg is supported
-    #   - x5chain (header label 33 / "x5chain") is present in protected or unprotected
-    def _verify_cose_sign1(sign1_obj) -> Tuple[str, Dict[str, Any]]:
-    
-        details: Dict[str, Any] = {"alg": None, "has_x5chain": False}
-        if not (isinstance(sign1_obj, list) and len(sign1_obj) == 4):
-            return "Info: issuerAuth/deviceAuth is not a COSE_Sign1 array.", details
-
-        protected_bstr, unprotected_map, payload, signature = sign1_obj
+        protected_bstr, unprotected_map, payload, signature = sign1
         if not isinstance(protected_bstr, (bytes, bytearray)):
-            return "Warning: COSE protected header is not bytes.", details
+            return "Warning: COSE protected header is not a byte string.", details, None
         if not isinstance(unprotected_map, dict):
-            unprotected_map = {}
+            return "Warning: COSE unprotected header is not a map.", details, None
+        if not isinstance(signature, (bytes, bytearray)):
+            return "Warning: COSE signature is not a byte string.", details, None
 
-        # decode protected header map
         try:
             protected_map = _cbor_loads(bytes(protected_bstr)) if protected_bstr else {}
-            if not isinstance(protected_map, dict):
-                protected_map = {}
-        except Exception as e:
-            return f"Warning: cannot decode COSE protected header: {e}", details
+        except Exception as exc:
+            return f"Warning: cannot decode COSE protected header: {exc}", details, None
+        if not isinstance(protected_map, dict):
+            return "Warning: decoded COSE protected header is not a map.", details, None
 
-        # COSE header parameters:
-        # alg label = 1, x5chain label = 33 (RFC 9360)
-        alg = protected_map.get(1) or unprotected_map.get(1)
-        x5chain = protected_map.get(33) or unprotected_map.get(33) or protected_map.get("x5chain") or unprotected_map.get("x5chain")
+        alg = protected_map.get(1)
+        if alg is None:
+            alg = unprotected_map.get(1)
+        x5chain = protected_map.get(33)
+        if x5chain is None:
+            x5chain = unprotected_map.get(33)
+        if x5chain is None:
+            x5chain = protected_map.get("x5chain") or unprotected_map.get("x5chain")
 
-        details["alg"] = alg
-        details["has_x5chain"] = bool(x5chain)
+        details.update({
+            "alg": alg,
+            "has_x5chain": x5chain is not None,
+            "protected": protected_map,
+            "unprotected": unprotected_map,
+        })
 
-        # if no signature verification material, stop here
-        if not x5chain:
-            return "Info: No x5chain found in COSE headers; signature not verified.", details
+        decoded_payload = None
+        if isinstance(payload, (bytes, bytearray)):
+            try:
+                decoded_payload = _cbor_loads(bytes(payload))
+            except Exception:
+                decoded_payload = None
 
-        # x5chain can be a single bstr or array of bstr
+        if x5chain is None:
+            return "Info: no x5chain found; COSE signature not verified.", details, decoded_payload
+
         if isinstance(x5chain, (bytes, bytearray)):
             certs = [bytes(x5chain)]
         elif isinstance(x5chain, list) and x5chain and all(isinstance(c, (bytes, bytearray)) for c in x5chain):
             certs = [bytes(c) for c in x5chain]
         else:
-            return "Warning: x5chain present but has an unexpected format; signature not verified.", details
+            return "Warning: x5chain has an unexpected format; signature not verified.", details, decoded_payload
 
-        # leaf cert
         try:
             cert = x509.load_der_x509_certificate(certs[0], backend=default_backend())
             public_key = cert.public_key()
-        except Exception as e:
-            return f"Warning: cannot parse leaf cert from x5chain; signature not verified: {e}", details
+        except Exception as exc:
+            return f"Warning: cannot parse x5chain leaf certificate: {exc}", details, decoded_payload
 
-        # Build Sig_structure per COSE:
-        # Sig_structure = ["Signature1", protected, external_aad, payload]
-        # external_aad is empty bstr.
-        external_aad = b""
         if payload is None:
-            # Some Sign1 structures use nil payload and rely on detached content.
-            # For issuerAuth in mdoc, payload is typically present as MSO bytes.
-            return "Warning: COSE payload is detached (nil); cannot verify without detached content.", details
+            return "Warning: detached COSE payload cannot be verified without external content.", details, decoded_payload
         if not isinstance(payload, (bytes, bytearray)):
-            return "Warning: COSE payload is not bytes; cannot verify.", details
+            return "Warning: COSE payload is not a byte string.", details, decoded_payload
 
-        sig_structure = ["Signature1", bytes(protected_bstr), external_aad, bytes(payload)]
-        try:
-            to_be_signed = cbor2.dumps(sig_structure)
-        except Exception as e:
-            return f"Warning: cannot build Sig_structure for verification: {e}", details
+        sig_structure = ["Signature1", bytes(protected_bstr), b"", bytes(payload)]
+        to_be_signed = cbor2.dumps(sig_structure)
+        signature_bytes = bytes(signature)
 
-        # Verify based on COSE alg
-        # Common alg values:
-        #  -7  => ES256
-        # -35  => ES384
-        # -36  => ES512
-        #  -8  => EdDSA
         try:
-            if alg == -7:  # ES256
-                public_key.verify(bytes(signature), to_be_signed, ec.ECDSA(hashes.SHA256()))
-            elif alg == -35:  # ES384
-                public_key.verify(bytes(signature), to_be_signed, ec.ECDSA(hashes.SHA384()))
-            elif alg == -36:  # ES512
-                public_key.verify(bytes(signature), to_be_signed, ec.ECDSA(hashes.SHA512()))
+            if alg in (-7, -35, -36):
+                coordinate_size = {-7: 32, -35: 48, -36: 66}[alg]
+                hash_alg = {-7: hashes.SHA256(), -35: hashes.SHA384(), -36: hashes.SHA512()}[alg]
+                if len(signature_bytes) != coordinate_size * 2:
+                    return (
+                        f"Error: invalid raw ECDSA COSE signature length {len(signature_bytes)} "
+                        f"for alg={alg}; expected {coordinate_size * 2}.",
+                        details,
+                        decoded_payload,
+                    )
+                r = int.from_bytes(signature_bytes[:coordinate_size], "big")
+                s = int.from_bytes(signature_bytes[coordinate_size:], "big")
+                der_signature = asym_utils.encode_dss_signature(r, s)
+                public_key.verify(der_signature, to_be_signed, ec.ECDSA(hash_alg))
             elif alg == -8:
-                # EdDSA – typically Ed25519
-                if isinstance(public_key, ed25519.Ed25519PublicKey):
-                    public_key.verify(bytes(signature), to_be_signed)
-                else:
-                    return "Warning: alg=EdDSA but public key is not Ed25519; signature not verified.", details
+                if not isinstance(public_key, ed25519.Ed25519PublicKey):
+                    return "Warning: alg=EdDSA but certificate key is not Ed25519.", details, decoded_payload
+                public_key.verify(signature_bytes, to_be_signed)
             else:
-                return f"Info: COSE alg={alg} not supported by this verifier; signature not verified.", details
-        except Exception as e:
-            return f"Error: COSE signature verification failed: {e}", details
+                return f"Info: COSE alg={alg} is not supported by this verifier.", details, decoded_payload
+        except Exception as exc:
+            return f"Error: COSE signature verification failed: {exc}", details, decoded_payload
 
-        return "Info: COSE signature verified successfully using x5chain leaf certificate.", details
+        return "Info: COSE signature verified successfully using x5chain leaf certificate.", details, decoded_payload
 
-    # ---------- decode input ----------
-    comment_1 = ""
-    comment_2 = ""
-    comment_3 = ""
-    comment_4 = ""
-    comment_5 = ""
-    comment_6 = ""
+    comments = []
 
     try:
         raw = _b64_any_decode(mdoc_token)
-    except Exception as e:
-        return f"Invalid mdoc input: {e}"
-
-    try:
         cbor_obj = _cbor_loads(raw)
-    except Exception as e:
-        return f"Invalid mdoc: cannot decode CBOR: {e}"
+    except Exception as exc:
+        return f"Invalid mdoc: {exc}"
 
-    doc = _get_first_document(cbor_obj)
+    doc, direct_issuer_signed = _extract_document(cbor_obj)
     if not doc:
-        comment_1 = "Error: Could not locate a document object (expected 'documents[0]' or a document map)."
+        comments.append("Error: could not locate a DeviceResponse document, Document, or IssuerSigned object.")
     else:
-        comment_1 = "Info: mdoc CBOR decoded successfully."
+        comments.append("Info: mdoc CBOR decoded successfully.")
 
-    # ---------- extract key fields ----------
     doc_type = None
-    issuer_signed = None
+    issuer_signed = direct_issuer_signed
     device_signed = None
-    issuer_auth = None
-    device_auth = None
-    validity_info = None
-    namespaces = None
-    
 
     if isinstance(doc, dict):
         doc_type = doc.get("docType") or doc.get("doc_type") or doc.get("doctype")
-        issuer_signed = doc.get("issuerSigned") or doc.get("issuer_signed")
+        if issuer_signed is None:
+            issuer_signed = doc.get("issuerSigned") or doc.get("issuer_signed")
         device_signed = doc.get("deviceSigned") or doc.get("device_signed")
 
+    namespaces = None
+    issuer_auth = None
     if isinstance(issuer_signed, dict):
-        namespaces = issuer_signed.get("nameSpaces") or issuer_signed.get("namespaces")
-        issuer_auth = issuer_signed.get("issuerAuth") or issuer_signed.get("issuer_auth")
+        namespaces = issuer_signed.get("nameSpaces")
+        if namespaces is None:
+            namespaces = issuer_signed.get("namespaces")
+        issuer_auth = issuer_signed.get("issuerAuth")
+        if issuer_auth is None:
+            issuer_auth = issuer_signed.get("issuer_auth")
 
+    decoded_namespaces = _decode_issuer_namespaces(namespaces)
+
+    issuer_auth_message = "Warning: issuerAuth is missing."
+    issuer_auth_details: Dict[str, Any] = {}
+    mso_outer = None
+    mso = None
+    validity_info = None
+
+    if issuer_auth is not None:
+        issuer_auth_message, issuer_auth_details, mso_outer = _verify_cose_sign1(issuer_auth)
+        try:
+            # issuerAuth payload is MobileSecurityObjectBytes = tag 24(bstr .cbor MSO)
+            if isinstance(mso_outer, cbor2.CBORTag):
+                mso = _decode_embedded_cbor(mso_outer, expected_tag=24)
+            elif isinstance(mso_outer, (bytes, bytearray)):
+                mso = _cbor_loads(bytes(mso_outer))
+            else:
+                mso = mso_outer
+        except Exception as exc:
+            comments.append(f"Warning: cannot decode MobileSecurityObjectBytes: {exc}")
+
+    if isinstance(mso, dict):
+        doc_type = doc_type or mso.get("docType")
+        validity_info = mso.get("validityInfo") or mso.get("validity_info")
+
+    device_auth = None
     if isinstance(device_signed, dict):
         device_auth = device_signed.get("deviceAuth") or device_signed.get("device_auth")
 
-    # Try to locate validityInfo (common inside the MSO / MobileSecurityObject)
-    # We won't parse full MSO here, but if issuerAuth payload is present (MSO bytes),
-    # we can decode it as CBOR and look for validityInfo keys.
-    mso_preview = None
-    if isinstance(issuer_auth, list) and len(issuer_auth) == 4:
-        payload = issuer_auth[2]
-        if isinstance(payload, (bytes, bytearray)):
-            try:
-                mso = _cbor_loads(bytes(payload))
-                mso_preview = mso
-                if isinstance(mso, dict):
-                    validity_info = mso.get("validityInfo") or mso.get("validity_info")
-            except Exception:
-                pass
+    device_auth_message = "Info: deviceAuth not present (normal for an OIDC4VCI IssuerSigned credential)."
+    if isinstance(device_auth, dict):
+        candidate = device_auth.get("deviceSignature") or device_auth.get("deviceMac")
+        if candidate is not None:
+            device_auth_message, _, _ = _verify_cose_sign1(candidate)
+    elif device_auth is not None:
+        device_auth_message, _, _ = _verify_cose_sign1(device_auth)
 
-    if not doc_type:
-        comment_2 = "Warning: docType is missing or could not be extracted."
-    else:
-        comment_2 = f"Info: docType extracted: {doc_type}"
+    comments.append(f"Info: docType extracted: {doc_type}" if doc_type else "Warning: docType could not be extracted.")
+    comments.append(issuer_auth_message)
+    comments.append(device_auth_message)
+    comments.append(
+        f"Info: decoded {sum(len(items) for items in decoded_namespaces.values())} IssuerSignedItem entries "
+        f"across {len(decoded_namespaces)} namespace(s)."
+        if decoded_namespaces else
+        "Warning: no IssuerSignedItem could be decoded from nameSpaces."
+    )
+    comments.append("Info: validityInfo extracted from the MSO." if validity_info else "Warning: validityInfo was not extracted.")
 
-    if issuer_auth:
-        msg, details = _verify_cose_sign1(issuer_auth)
-        comment_3 = msg + (f" (alg={details.get('alg')}, x5chain={details.get('has_x5chain')})" if details else "")
-    else:
-        comment_3 = "Warning: issuerAuth is missing; issuer authentication cannot be verified."
-
-    if device_auth:
-        msg, details = _verify_cose_sign1(device_auth if isinstance(device_auth, list) else device_auth.get("deviceSignature") if isinstance(device_auth, dict) else device_auth)
-        comment_4 = msg
-    else:
-        comment_4 = "Info: deviceAuth not present (this may be normal depending on the flow / transport)."
-
-    if namespaces is None:
-        comment_5 = "Warning: issuerSigned.nameSpaces not found; cannot list disclosed data elements."
-    else:
-        # just a shallow count
-        try:
-            ns_count = len(namespaces.keys()) if isinstance(namespaces, dict) else 0
-            comment_5 = f"Info: nameSpaces present (count={ns_count})."
-        except Exception:
-            comment_5 = "Info: nameSpaces present."
-
-    if validity_info is None:
-        comment_6 = "Info: validityInfo not extracted (may require deeper MSO parsing)."
-    else:
-        comment_6 = "Info: validityInfo extracted from MSO payload."
-
-    # ---------- load spec text ----------
     try:
         with open("dataset/mdoc/18013-5.txt", "r", encoding="utf-8") as fb:
             content = fb.read()
         draft = "18013-5"
     except FileNotFoundError:
-        content = "ISO/IEC 18013-5 mdoc specification text not found in ./dataset/mdoc/. Provide it to improve analysis."
+        content = "ISO/IEC 18013-5 specification text not found in ./dataset/mdoc/."
 
-    # Token count logging for diagnostics (same pattern as your other analyzers)
     try:
-        tokens = enc.encode(content)
-        logging.info("Token count: %s", len(tokens))
+        logging.info("Token count: %s", len(enc.encode(content)))
     except Exception:
         pass
 
-    # ---------- prompt + LLM ----------
     mention = attribution(model, "ISO mdoc", draft, provider)
     st = style_for(model)
-    # domain is new: "mdoc" (no spec_url helper needed unless you add one)
-    instr = style_instructions(st, domain="general", draft=draft, extra_urls={"ISO 18013-5": "https://www.iso.org/standard/69084.html"})
+    instr = style_instructions(
+        st,
+        domain="general",
+        draft=draft,
+        extra_urls={"ISO 18013-5": "https://www.iso.org/standard/69084.html"},
+    )
 
     prompt = f"""
 --- Specifications ---
 {content}
 
 --- mdoc Data for Analysis ---
-Top-level decoded CBOR (preview):
+Top-level decoded CBOR:
 {_brief(cbor_obj)}
 
-Document extracted (preview):
+Document / IssuerSigned object:
 {_brief(doc)}
 
 docType: {doc_type}
 
-issuerSigned.nameSpaces (preview):
-{_brief(namespaces) if namespaces is not None else "None"}
+Decoded issuerSigned.nameSpaces:
+{_brief(decoded_namespaces)}
 
-issuerAuth (COSE_Sign1 preview):
-{_brief(issuer_auth) if issuer_auth is not None else "None"}
+issuerAuth COSE details:
+{_brief(issuer_auth_details)}
 
-deviceAuth (preview):
-{_brief(device_auth) if device_auth is not None else "None"}
+MobileSecurityObject:
+{_brief(mso)}
 
-MSO decoded from issuerAuth payload (preview):
-{_brief(mso_preview) if mso_preview is not None else "None"}
+validityInfo:
+{_brief(validity_info)}
 
-validityInfo (preview):
-{_brief(validity_info) if validity_info is not None else "None"}
-
---- Comments / Checks ---
-{comment_1}
-{comment_2}
-{comment_3}
-{comment_4}
-{comment_5}
-{comment_6}
+--- Deterministic Checks ---
+{chr(10).join(comments)}
 
 ### Output style
 {instr}
@@ -810,7 +854,7 @@ validityInfo (preview):
 
     llm = get_llm_client(model, provider)
     response = llm.invoke([
-        {"role": "system", "content": "You are an expert in ISO/IEC 18013-5 mdoc (CBOR/COSE) compliance and developer troubleshooting."},
+        {"role": "system", "content": "You are an expert in ISO/IEC 18013-5 mdoc, CBOR and COSE compliance."},
         {"role": "user", "content": prompt},
     ]).content
 
