@@ -359,12 +359,9 @@ def looks_like_mdoc(value: str) -> bool:
         obj = cbor2.loads(raw)
     except Exception:
         return False
-
     # mdoc / DeviceResponse heuristics
     if isinstance(obj, dict):
-        if "docType" in obj and ("issuerSigned" in obj or "deviceSigned" in obj):
-            return True
-        if "documents" in obj:
+        if "issuerAuth" in obj and "nameSpaces" in obj:
             return True
     return False
 
@@ -682,6 +679,7 @@ def analyze_mdoc(mdoc_token: str, draft: str, device: str, model: str, provider:
     device_auth = None
     validity_info = None
     namespaces = None
+    
 
     if isinstance(doc, dict):
         doc_type = doc.get("docType") or doc.get("doc_type") or doc.get("doctype")

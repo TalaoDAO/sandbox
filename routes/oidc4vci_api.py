@@ -141,31 +141,73 @@ def manage_error(error, error_description, red,  stream_id=None, status=400, web
 
 
 def build_signed_metadata(key, sub, metadata) -> str:
-    key = json.loads(key) if isinstance(key, str) else key
-    signer_key = jwk.JWK(**key) 
-    alg = oidc4vc.alg(key)
-    header = {
-        'typ': "openidvci-issuer-metadata+jwt",
-        'alg': alg,
-    }
-    header['x5c'] = x509_attestation.build_x509_san_dns()
-    #header['kid'] = kid
-    
-    payload = {
-        'iss': 'https://talao.co',
-        'sub': sub,
-        'iat': datetime.timestamp(datetime.now())
-    }
-    payload |= metadata
-    token = jwt.JWT(header=header, claims=payload, algs=[alg])
-    token.make_signed_token(signer_key)
-    return token.serialize()
+    """
+    Sign OpenID4VCI signed metadata with the same private key
+    as the mdoc Document Signer certificate.
 
+    The `key` argument is kept for backward compatibility but
+    is intentionally not used.
+    """
+    logging.info("Signed metadata are requested by the wallet")
+    signer_key_dict = x509_attestation.SIGNER_KEY
+    signer_key = jwk.JWK(**signer_key_dict)
+    algorithm = x509_attestation.alg(
+        signer_key_dict
+    )
+
+    public_key = signer_key.export(
+        private_key=False,
+        as_dict=True
+    )
+
+    public_key.pop("d", None)
+
+    signer_kid = (
+        public_key.get("kid")
+        or thumbprint(public_key)
+    )
+
+    header = {
+        "typ": "openidvci-issuer-metadata+jwt",
+        "alg": algorithm,
+        "kid": signer_kid,
+        "x5c": x509_attestation.build_x509_san_dns(),
+    }
+
+    now = int(
+        datetime.timestamp(datetime.now())
+    )
+
+    payload = {
+        "iss": sub,
+        "sub": sub,
+        "iat": now,
+    }
+
+    payload.update(metadata)
+
+    token = jwt.JWT(
+        header=header,
+        claims=payload,
+        algs=[algorithm]
+    )
+
+    token.make_signed_token(
+        signer_key
+    )
+
+    logging.info(
+        "Signed metadata signed with mdoc signer kid = %s",
+        signer_kid
+    )
+
+    return token.serialize()
 
 
 # credential issuer openid configuration endpoint
 def credential_issuer_openid_configuration_endpoint(issuer_id, mode):
     logging.info('Call credential issuer configuration endpoint /issuer metadata : %s', request.url)
+    logging.info(request.headers)
     metadata = credential_issuer_openid_configuration(issuer_id, mode)
     try:
         issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
@@ -184,9 +226,6 @@ def credential_issuer_openid_configuration_endpoint(issuer_id, mode):
         else:
             logging.info("issuer metadata url is correct for this draft")
     
-    #if (12 < draft < 16):
-    #    sub = mode.server + 'issuer/' + issuer_id
-    #    metadata["signed_metadata"] = build_signed_metadata(issuer_data['jwk'], sub, metadata)
     headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
     return Response(response=json.dumps(metadata), headers=headers)
 
