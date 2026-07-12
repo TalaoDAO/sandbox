@@ -11,6 +11,8 @@ import hashlib
 import logging
 import json
 import os
+from jwcrypto import jwk, jwt
+
 import uuid
 import x509_attestation
 from datetime import datetime, timedelta, timezone
@@ -60,6 +62,13 @@ def _require_p256(jwk: Mapping[str, Any], role: str) -> None:
         raise ValueError(f"{role} key must be an EC P-256 JWK for ES256")
     if not jwk.get("x") or not jwk.get("y"):
         raise ValueError(f"{role} JWK is missing x/y")
+
+
+def thumbprint(key):
+    if isinstance(key, str):
+        key = json.loads(key)
+    signer_key = jwk.JWK(**key)
+    return signer_key.thumbprint()
 
 
 def jwk_to_cose_key(public_jwk: Any) -> Dict[int, Any]:
@@ -323,11 +332,26 @@ def sign_mdoc(
 
     # The mdoc must be signed with the private key corresponding
     # to the Document Signer certificate.
+    
     mdoc_signer_key = x509_attestation.SIGNER_KEY
+
+    # Use the kid already present in the signer JWK.
+    # Otherwise compute the RFC 7638 JWK thumbprint.
+    if kid is None:
+        signer_jwk = _load_jwk(mdoc_signer_key)
+
+        kid = (
+            signer_jwk.get("kid")
+            or thumbprint(signer_jwk)
+        )
+
+    logging.info(
+        "mdoc COSE signer kid = %s",
+        kid
+    )
 
     if x5chain is None:
         x5chain = x509_attestation.build_x509_san_dns()
-    
 
     if not x5chain:
         raise ValueError(
@@ -370,6 +394,7 @@ def sign_mdoc(
         cbor2.CBORTag(24, mso_bytes),
         canonical=True
     )
+    
 
     issuer_auth = _cose_sign1(
         mobile_security_object_bytes,
