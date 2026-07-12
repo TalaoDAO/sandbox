@@ -32,10 +32,16 @@ FINAL = {
                 "jwt": {
                     "proof_signing_alg_values_supported": [
                         "ES256",
+                        "ES384",
+                        "ES512",
+                        "ESB256",
+                        "ESB320",
+                        "ESB384",
+                        "ESB512",
+                        "ED25519"
                     ]
                 }
             },
-            
             "display": [
                     {
                         "name": "Digital Identity",
