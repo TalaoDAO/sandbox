@@ -206,30 +206,279 @@ def build_signed_metadata(key, sub, metadata) -> str:
     return token.serialize()
 
 
+def _credential_metadata_response_type() -> str:
+    """
+    Select the Credential Issuer Metadata representation from
+    the HTTP Accept header.
+
+    Returns:
+        "application/jwt" when explicitly preferred by the wallet.
+        "application/json" otherwise.
+    """
+
+    accept_header = request.headers.get(
+        "Accept",
+        ""
+    )
+
+    logging.info(
+        "Credential Issuer Metadata Accept header = %s",
+        accept_header or "<missing>"
+    )
+
+    # No Accept header: application/json remains the mandatory
+    # and interoperable default representation.
+    if not accept_header:
+        return "application/json"
+
+    best_match = request.accept_mimetypes.best_match(
+        [
+            "application/jwt",
+            "application/json",
+        ],
+        default="application/json",
+    )
+
+    if best_match == "application/jwt":
+        jwt_quality = request.accept_mimetypes[
+            "application/jwt"
+        ]
+        json_quality = request.accept_mimetypes[
+            "application/json"
+        ]
+
+        # Prefer JWT only when it is explicitly accepted and has
+        # at least the same priority as JSON.
+        if jwt_quality > 0 and jwt_quality >= json_quality:
+            return "application/jwt"
+
+    return "application/json"
+
+
 # credential issuer openid configuration endpoint
-def credential_issuer_openid_configuration_endpoint(issuer_id, mode):
-    logging.info('Call credential issuer configuration endpoint /issuer metadata : %s', request.url)
-    logging.info(request.headers)
-    metadata = credential_issuer_openid_configuration(issuer_id, mode)
+def credential_issuer_openid_configuration_endpoint(
+    issuer_id,
+    mode
+):
+    """
+    Return Credential Issuer Metadata as:
+
+    - application/json: unsigned JSON metadata;
+    - application/jwt: signed metadata JWT.
+
+    The representation is selected using the wallet's Accept
+    header.
+    """
+
+    logging.info(
+        "Call Credential Issuer Metadata endpoint: %s",
+        request.url
+    )
+
+    logging.info(
+        "Credential Issuer Metadata request headers: %s",
+        dict(request.headers)
+    )
+
     try:
-        issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-        issuer_profile = profile[issuer_data['profile']]
+        issuer_data = json.loads(
+            db_api.read_oidc4vc_issuer(
+                issuer_id
+            )
+        )
+
+        issuer_profile = profile[
+            issuer_data["profile"]
+        ]
+
     except Exception:
-        logging.warning('issuer_id not found for %s', issuer_id)
-        return {"error": "server_error"}
-    draft = int(issuer_profile.get('oidc4vciDraft'))
+        logging.exception(
+            "Issuer configuration not found: %s",
+            issuer_id
+        )
+
+        return Response(
+            response=json.dumps({
+                "error": "server_error",
+                "error_description": (
+                    "Credential Issuer configuration "
+                    "was not found"
+                ),
+            }),
+            status=500,
+            headers={
+                "Cache-Control": "no-store",
+                "Content-Type": "application/json",
+            },
+        )
+
+    metadata = (
+        credential_issuer_openid_configuration(
+            issuer_id,
+            mode
+        )
+    )
+
+    if not isinstance(metadata, dict):
+        logging.error(
+            "Credential Issuer Metadata is not "
+            "a JSON object"
+        )
+
+        return Response(
+            response=json.dumps({
+                "error": "server_error",
+                "error_description": (
+                    "Credential Issuer Metadata "
+                    "could not be generated"
+                ),
+            }),
+            status=500,
+            headers={
+                "Cache-Control": "no-store",
+                "Content-Type": "application/json",
+            },
+        )
+
+    draft = int(
+        issuer_profile.get(
+            "oidc4vciDraft",
+            13
+        )
+    )
+
+    #
+    # Validate the well-known URL for draft 16+.
+    #
     if draft > 15:
-        parsed = urlparse(request.url)
-        path = parsed.path
-        if not request.url.endswith(path):
-            logging.warning("wrong issuer metadatat url")
-            headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
-            return Response(response=json.dumps({"error": "not found"}), headers=headers, status=404)
-        else:
-            logging.info("issuer metadata url is correct for this draft")
-    
-    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
-    return Response(response=json.dumps(metadata), headers=headers)
+        parsed_request_url = urlparse(
+            request.url
+        )
+
+        expected_path = (
+            "/.well-known/"
+            "openid-credential-issuer/"
+            "issuer/"
+            + issuer_id
+        )
+
+        if parsed_request_url.path != expected_path:
+            logging.warning(
+                "Invalid Credential Issuer Metadata "
+                "URL for draft %s: received=%s, "
+                "expected=%s",
+                draft,
+                parsed_request_url.path,
+                expected_path,
+            )
+
+            return Response(
+                response=json.dumps({
+                    "error": "not_found"
+                }),
+                status=404,
+                headers={
+                    "Cache-Control": "no-store",
+                    "Content-Type": "application/json",
+                },
+            )
+
+    response_type = (
+        _credential_metadata_response_type()
+    )
+
+    #
+    # Signed representation.
+    #
+    if response_type == "application/jwt":
+        credential_issuer_identifier = (
+            metadata.get("credential_issuer")
+        )
+
+        if not credential_issuer_identifier:
+            logging.error(
+                "credential_issuer is missing "
+                "from generated metadata"
+            )
+
+            return Response(
+                response=json.dumps({
+                    "error": "server_error",
+                    "error_description": (
+                        "credential_issuer is missing "
+                        "from metadata"
+                    ),
+                }),
+                status=500,
+                headers={
+                    "Cache-Control": "no-store",
+                    "Content-Type": "application/json",
+                },
+            )
+
+        try:
+            signed_metadata = build_signed_metadata(
+                issuer_data.get("jwk"),
+                credential_issuer_identifier,
+                metadata,
+            )
+
+        except Exception:
+            logging.exception(
+                "Signed Credential Issuer Metadata "
+                "generation failed"
+            )
+
+            return Response(
+                response=json.dumps({
+                    "error": "server_error",
+                    "error_description": (
+                        "Signed Credential Issuer "
+                        "Metadata generation failed"
+                    ),
+                }),
+                status=500,
+                headers={
+                    "Cache-Control": "no-store",
+                    "Content-Type": "application/json",
+                },
+            )
+
+        logging.info(
+            "Returning signed Credential Issuer "
+            "Metadata as application/jwt"
+        )
+
+        return Response(
+            response=signed_metadata,
+            status=200,
+            headers={
+                "Cache-Control": "no-store",
+                "Content-Type": "application/jwt",
+                "Vary": "Accept",
+            },
+        )
+
+    #
+    # Mandatory unsigned JSON representation.
+    #
+    logging.info(
+        "Returning unsigned Credential Issuer "
+        "Metadata as application/json"
+    )
+
+    return Response(
+        response=json.dumps(
+            metadata,
+            separators=(",", ":"),
+        ),
+        status=200,
+        headers={
+            "Cache-Control": "no-store",
+            "Content-Type": "application/json",
+            "Vary": "Accept",
+        },
+    )
 
 
 # Credential issuer metadata
