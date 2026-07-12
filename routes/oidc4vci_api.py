@@ -1984,7 +1984,7 @@ async def issuer_credential(issuer_id, red, mode):
 
     # Transfer VC
     c_nonce = str(uuid.uuid1())
-    if int(issuer_profile['oidc4vciDraft']) >= 15:
+    if int(issuer_profile['oidc4vciDraft']) >= 20:
         payload = {"credentials": []}
         for i in range(nb_proof):
             payload["credentials"].append({
