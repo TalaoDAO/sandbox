@@ -39,9 +39,23 @@ def init_app(app, red, mode):
     app.add_url_rule('/sandbox/ebsi/issuer_followup/<stream_id>', view_func=oidc_issuer_followup, methods=['GET'], defaults={'red': red})
     
     # OIDC4VCI protocol credential issuer metadata
-    app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-credential-issuer', view_func=credential_issuer_openid_configuration_endpoint, methods=['GET'], defaults={'mode': mode})
-    # draft 16 and above
-    app.add_url_rule('/.well-known/openid-credential-issuer/issuer/<issuer_id>', view_func=credential_issuer_openid_configuration_endpoint, methods=['GET'], defaults={'mode': mode})
+    # Legacy route for wallets using the old discovery URL
+    app.add_url_rule(
+        "/issuer/<issuer_id>/.well-known/openid-credential-issuer",
+        endpoint="credential_issuer_metadata_legacy",
+        view_func=credential_issuer_openid_configuration_endpoint,
+        methods=["GET"],
+        defaults={"mode": mode},
+    )
+
+    # OIDC4VCI draft 16+ route
+    app.add_url_rule(
+        "/.well-known/openid-credential-issuer/issuer/<issuer_id>",
+        endpoint="credential_issuer_metadata_current",
+        view_func=credential_issuer_openid_configuration_endpoint,
+        methods=["GET"],
+        defaults={"mode": mode},
+    )
 
     # AS endpoint when issuer = AS
     #app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=openid_configuration, methods=['GET'], defaults={'mode': mode},)
