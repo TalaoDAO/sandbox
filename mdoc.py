@@ -205,32 +205,75 @@ def _check_leaf_matches_key(
             "does not match issuer JWK"
         )
 
+def _cose_sign1(
+    payload: bytes,
+    private_jwk: Any,
+    x5chain: Optional[Iterable[str]],
+    kid: Optional[str]
+) -> cbor2.CBORTag:
 
-
-def _cose_sign1(payload: bytes, private_jwk: Any, x5chain: Optional[Iterable[str]], kid: Optional[str]) -> cbor2.CBORTag:
     signer = _private_key_from_jwk(private_jwk)
-    protected = cbor2.dumps({COSE_ALG: COSE_ES256}, canonical=True)
-    unprotected: Dict[int, Any] = {}
-    chain = _decode_x5chain(x5chain)
-    if chain:
-        _check_leaf_matches_key(chain[0], signer)
-        unprotected[COSE_X5CHAIN] = chain[0] if len(chain) == 1 else chain
-    if kid:
-        unprotected[COSE_KID] = kid.encode("utf-8")
 
-    sig_structure = ["Signature1", protected, b"", payload]
-    to_sign = cbor2.dumps(sig_structure, canonical=True)
+    protected_headers = {
+        COSE_ALG: COSE_ES256
+    }
+
+    if kid:
+        protected_headers[COSE_KID] = kid.encode("utf-8")
+
+    protected = cbor2.dumps(
+        protected_headers,
+        canonical=True
+    )
+
+    unprotected: Dict[int, Any] = {}
+
+    chain = _decode_x5chain(x5chain)
+
+    if chain:
+        _check_leaf_matches_key(
+            chain[0],
+            signer
+        )
+
+        # Only embed the Document Signer certificate.
+        unprotected[COSE_X5CHAIN] = chain[0]
+
+    sig_structure = [
+        "Signature1",
+        protected,
+        b"",
+        payload
+    ]
+
+    to_sign = cbor2.dumps(
+        sig_structure,
+        canonical=True
+    )
+
     der_signature = signer.sign(
         to_sign,
         ec.ECDSA(hashes.SHA256())
     )
 
-    r, s = decode_dss_signature(der_signature)
+    r, s = decode_dss_signature(
+        der_signature
+    )
+
     signature = (
         r.to_bytes(32, "big")
         + s.to_bytes(32, "big")
     )
-    return cbor2.CBORTag(18, [protected, unprotected, payload, signature])
+
+    return cbor2.CBORTag(
+        18,
+        [
+            protected,
+            unprotected,
+            payload,
+            signature
+        ]
+    )
 
 
 def _verify_cose_sign1(
