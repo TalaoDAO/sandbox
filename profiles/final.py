@@ -26,35 +26,29 @@ FINAL = {
                 "cose_key"
             ],
             "credential_signing_alg_values_supported": [
-                "ES256"
+                -9
             ],
             "proof_types_supported": {
                 "jwt": {
                     "proof_signing_alg_values_supported": [
                         "ES256",
-                        "ES384",
-                        "ES512",
-                        "ESB256",
-                        "ESB320",
-                        "ESB384",
-                        "ESB512",
-                        "ED25519"
                     ]
                 }
             },
-            "display": [
-                    {
-                        "name": "Digital Identity",
-                        "locale": "en",
-                        "logo": {
-                            "uri": "https://edwin-weakhanded-bryan.ngrok-free.dev/marianne.svg",
-                            "alt_text": "Identity Digitale"
-                        },
-                        "background_color": "#81df6e",
-                        "text_color": "#ffffff"
-                    }
-                ],
-            "claims": [
+            "credential_metadata": {
+                "display": [
+                        {
+                            "name": "Digital Identity",
+                            "locale": "en",
+                            "logo": {
+                                "uri": "https://edwin-weakhanded-bryan.ngrok-free.dev/marianne.svg",
+                                "alt_text": "Identity Digitale"
+                            },
+                            "background_color": "#81df6e",
+                            "text_color": "#ffffff"
+                        }
+                    ],
+                "claims": [
                 {
                 "path": [
                     "eu.europa.ec.eudi.pid.1",
@@ -617,7 +611,7 @@ FINAL = {
                 "mandatory": False
                 }
             ],
-            
+            },
             "doctype": "eu.europa.ec.eudi.pid.1"
         },
     },
