@@ -24,7 +24,7 @@ FINAL = {
             "format": "dc+sd-jwt",
             "vct": "eudi:aptitude:crypto:1",
             "scope": "SCA_scope",
-            "cryptographic_binding_methods_supported": ["jwk"],
+            "cryptographic_binding_methods_supported": ["jwk", "did:key", "did:jwk"],
             "credential_signing_alg_values_supported": ["ES256"],
             "proof_types_supported": {
                 "jwt": {
@@ -90,7 +90,7 @@ FINAL = {
                     }
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did", "jwk"],
+            "cryptographic_binding_methods_supported": ["did:key", "did:jwk", "jwk"],
             "credential_signing_alg_values_supported": ["ES256", "EdDSA"],
             "proof_types_supported": {
                 "jwt": {
@@ -137,7 +137,7 @@ FINAL = {
                     }
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did", "jwk"],
+            "cryptographic_binding_methods_supported": ["did:key", "did:jwk", "jwk"],
             "credential_signing_alg_values_supported": [
                 "ES256K",
                 "ES256",
@@ -220,7 +220,7 @@ FINAL = {
                     },
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did", "jwk"],
+            "cryptographic_binding_methods_supported": ["did:key", "did:jwk", "jwk"],
             "credential_signing_alg_values_supported": ["ES256", "EdDSA"],
             "proof_types_supported": {
                 "jwt": {
@@ -348,7 +348,7 @@ FINAL = {
                     },
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did", "jwk"],
+            "cryptographic_binding_methods_supported": ["did:key", "did:jwk", "jwk"],
             "credential_signing_alg_values_supported": [
                 "ES256",
                 "EdDSA"
@@ -358,7 +358,7 @@ FINAL = {
                     "proof_signing_alg_values_supported": ["ES256", "EdDSA"]
                 }
             },
-            "vct": "eu.europa.ec.eudi.pcd.1",
+            "vct": "eu.europa.ec.eudi.pid.1",
         },
         "EmailPass": {
             "format": "dc+sd-jwt",
@@ -400,7 +400,7 @@ FINAL = {
                     },
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did", "jwk"],
+            "cryptographic_binding_methods_supported": ["did:key", "did:jwk", "jwk"],
             "credential_signing_alg_values_supported": ["ES256", "EdDSA"],
             "proof_types_supported": {
                 "jwt": {
@@ -446,7 +446,7 @@ FINAL = {
                     },
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did", "jwk"],
+            "cryptographic_binding_methods_supported": ["did:key", "did:jwk", "jwk"],
             "credential_signing_alg_values_supported": [
                 "ES256K",
                 "ES256",
@@ -524,7 +524,7 @@ FINAL = {
                     },
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did", "jwk"],
+            "cryptographic_binding_methods_supported": ["did:key", "did:jwk", "jwk"],
             "credential_signing_alg_values_supported": [
                 "ES256",
                 "EdDSA"
