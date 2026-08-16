@@ -558,13 +558,15 @@ def test_13(mode):
         "issuer_id": issuer_id,
         "vc": {
             "Pid": pid,
-            "CryptoAccountProof": crypto_account
+          #  "CryptoAccountProof": crypto_account
         },
         "issuer_state": str(uuid.uuid1()),
         "pre-authorized_code": True,
         "credential_type": [
             'Pid',
-            'CryptoAccountProof'],
+     #       'CryptoAccountProof'
+        ],
+        
         "user_pin_required": False,
         "user_pin": "ABCD",
         "input_mode": "text",
