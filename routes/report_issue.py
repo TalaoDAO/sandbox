@@ -4,8 +4,8 @@ from components import message
 import json
 
 def init_app(app,red, mode):
-    app.add_url_rule('/report/report-issue/<report_hash>',  view_func=report_issue, methods = ['GET', 'POST'], defaults={"red": red, "mode": mode})
-
+    #app.add_url_rule('/report/report-issue/<report_hash>',  view_func=report_issue, methods = ['GET', 'POST'], defaults={"red": red, "mode": mode})
+    return
 
 
 def report_issue(report_hash, red,mode):
