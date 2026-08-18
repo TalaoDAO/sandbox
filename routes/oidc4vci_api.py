@@ -59,9 +59,9 @@ def init_app(app, red, mode):
 
     # AS endpoint when issuer = AS
     #app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=openid_configuration, methods=['GET'], defaults={'mode': mode},)
-    app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
+    #app.add_url_rule('/issuer/<issuer_id>/.well-known/openid-configuration', view_func=oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
 
-    app.add_url_rule('/issuer/<issuer_id>/.well-known/oauth-authorization-server', view_func=oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
+    app.add_url_rule('/issuer/<issuer_id>/.well-known/oauth-authorization-server', view_func=oauth_authorization_server_new, methods=['GET'], defaults={'mode': mode},)
     app.add_url_rule('/.well-known/oauth-authorization-server/issuer/<issuer_id>', view_func=oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
 
     app.add_url_rule('/issuer/<issuer_id>/standalone/.well-known/oauth-authorization-server', view_func=standalone_oauth_authorization_server, methods=['GET'], defaults={'mode': mode},)
@@ -601,6 +601,18 @@ def oauth_authorization_server(issuer_id, mode):
     logging.info('Call to oauth-authorization-server endpoint')
     return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
 
+
+# /.well-known/oauth-authorization-server endpoint
+def oauth_authorization_server_new(issuer_id, mode):
+    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
+    issuer_profile = profile[issuer_data['profile']]
+    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
+    if issuer_profile.get('authorization_server_support') and int(issuer_profile['oidc4vciDraft']) >= 13:
+        logging.error('CALL TO WRONG AUTHORIZATION SERVER')
+        message = {'error': 'access_denied', 'error_description': 'invalid authorization server'}
+        return jsonify(message), 404
+    logging.info('Call to oauth-authorization-server endpoint')
+    return Response(response=json.dumps(as_openid_configuration(issuer_id, mode)), headers=headers)    #return jsonify(as_openid_configuration(issuer_id, mode))
 
 # /standalone/.well-known/oauth-authorization-server endpoint
 def standalone_oauth_authorization_server(issuer_id, mode):
