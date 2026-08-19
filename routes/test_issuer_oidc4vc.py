@@ -513,17 +513,15 @@ def test_12(mode):
     
     with open('./verifiable_credentials/Pid.json', 'r') as f:
         credential_1 = json.loads(f.read())
-    with open('./verifiable_credentials/EmployeeBadge.json', 'r') as f:
-        credential_2 = json.loads(f.read())
+   
     data = { 
         "issuer_id": issuer_id,
         "vc": {
             "Pid": credential_1,
-            "EmployeeBadge": credential_2
         }, 
         "issuer_state": "test12",
         "pre-authorized_code": True,
-        "credential_type": ['Pid', 'EmployeeBadge'],
+        "credential_type": ['Pid'],
         "callback": mode.server + 'sandbox/issuer/callback',
     }
     resp = requests.post(api_endpoint, headers=headers, json=data)
