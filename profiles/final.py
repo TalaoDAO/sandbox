@@ -25,6 +25,11 @@ FINAL = {
             "cryptographic_binding_methods_supported": [
                 "cose_key"
             ],
+            "proof_types_supported": {
+                            "jwt": {
+                                "proof_signing_alg_values_supported": ["ES256", "EdDSA"]
+                            }
+                        },
             "credential_signing_alg_values_supported": [-7, -9],
             "display": [
                     {
