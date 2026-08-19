@@ -25,12 +25,17 @@ FINAL = {
             "cryptographic_binding_methods_supported": [
                 "cose_key"
             ],
+            "credential_signing_alg_values_supported": [
+                "ES256"
+            ],
             "proof_types_supported": {
-                            "jwt": {
-                                "proof_signing_alg_values_supported": ["ES256", "EdDSA"]
-                            }
-                        },
-            "credential_signing_alg_values_supported": [-7, -9],
+                "jwt": {
+                    "proof_signing_alg_values_supported": [
+                        "ES256",
+                    ]
+                }
+            },
+            
             "display": [
                     {
                         "name": "Digital Identity",
@@ -612,7 +617,7 @@ FINAL = {
             "format": "dc+sd-jwt",
             "vct": "eudi:aptitude:crypto:1",
             "scope": "SCA_scope",
-            "cryptographic_binding_methods_supported": ["did:jwk", "jwk"],
+            "cryptographic_binding_methods_supported": ["jwk"],
             "credential_signing_alg_values_supported": ["ES256"],
             "proof_types_supported": {
                 "jwt": {
@@ -623,7 +628,6 @@ FINAL = {
                 "display": [
                     {
                         "description": "Proof of Tezos crypto ownership for APTITUDE LSP use case",
-                        "name": "Proof of account",
                         "locale": "en-GB",
                         "background_color": "#1a73e8",
                         "text_color": "#FFFFFF",
@@ -652,6 +656,7 @@ FINAL = {
         "AgentOwnership": {
             "format": "dc+sd-jwt",
             "scope": "AgentOwnership_scope",
+            "order": ["owner_name", "owner_website"],
             "credential_metadata": {
                 "claims": [
                     {
@@ -678,7 +683,7 @@ FINAL = {
                     }
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did;jwk", "jwk"],
+            "cryptographic_binding_methods_supported": ["did", "jwk"],
             "credential_signing_alg_values_supported": ["ES256", "EdDSA"],
             "proof_types_supported": {
                 "jwt": {
@@ -690,6 +695,7 @@ FINAL = {
         "CryptoAccountProof": {
             "format": "dc+sd-jwt",
             "scope": "CryptoAccountProof_scope",
+            "order": ["blockchain_network", "wallet_address"],
             "credential_metadata": {
                 "claims": [
                     {
@@ -724,7 +730,7 @@ FINAL = {
                     }
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did:jwk", "jwk"],
+            "cryptographic_binding_methods_supported": ["did", "jwk"],
             "credential_signing_alg_values_supported": [
                 "ES256K",
                 "ES256",
@@ -807,7 +813,7 @@ FINAL = {
                     },
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did:jwk", "jwk"],
+            "cryptographic_binding_methods_supported": ["did", "jwk"],
             "credential_signing_alg_values_supported": ["ES256", "EdDSA"],
             "proof_types_supported": {
                 "jwt": {
@@ -935,7 +941,7 @@ FINAL = {
                     },
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did:jwk", "jwk"],
+            "cryptographic_binding_methods_supported": ["did", "jwk"],
             "credential_signing_alg_values_supported": [
                 "ES256",
                 "EdDSA"
@@ -987,7 +993,7 @@ FINAL = {
                     },
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did:jwk", "jwk"],
+            "cryptographic_binding_methods_supported": ["did", "jwk"],
             "credential_signing_alg_values_supported": ["ES256", "EdDSA"],
             "proof_types_supported": {
                 "jwt": {
@@ -1033,7 +1039,7 @@ FINAL = {
                     },
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did:jwk", "jwk"],
+            "cryptographic_binding_methods_supported": ["did", "jwk"],
             "credential_signing_alg_values_supported": [
                 "ES256K",
                 "ES256",
@@ -1111,7 +1117,7 @@ FINAL = {
                     },
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did:jwk", "jwk"],
+            "cryptographic_binding_methods_supported": ["did", "jwk"],
             "credential_signing_alg_values_supported": [
                 "ES256",
                 "EdDSA"
