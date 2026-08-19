@@ -25,17 +25,7 @@ FINAL = {
             "cryptographic_binding_methods_supported": [
                 "cose_key"
             ],
-            "credential_signing_alg_values_supported": [
-                "ES256"
-            ],
-            "proof_types_supported": {
-                "jwt": {
-                    "proof_signing_alg_values_supported": [
-                        "ES256",
-                    ]
-                }
-            },
-            
+            "credential_signing_alg_values_supported": [-7, -9],
             "display": [
                     {
                         "name": "Digital Identity",
