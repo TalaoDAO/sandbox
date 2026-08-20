@@ -1,6 +1,7 @@
 {
   "scopes_supported": [
     "SCA_scope",
+    "eu.europa.ec.eudi.pid.1_scope",
     "AgentOwnership_scope",
     "CryptoAccountProof_scope",
     "AgeProof_scope",

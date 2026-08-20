@@ -21,7 +21,7 @@ FINAL = {
     "credential_configurations_supported": {
         "eu.europa.ec.eudi.pid.1": {
             "format": "mso_mdoc",
-            "scope": "eu.europa.ec.eudi.pid.1",
+            "scope": "eu.europa.ec.eudi.pid.1_scope",
             "cryptographic_binding_methods_supported": [
                 "cose_key"
             ],
@@ -680,7 +680,7 @@ FINAL = {
                     }
                 ],
             },
-            "cryptographic_binding_methods_supported": ["did;jwk", "jwk"],
+            "cryptographic_binding_methods_supported": ["did:jwk", "jwk"],
             "credential_signing_alg_values_supported": ["ES256", "EdDSA"],
             "proof_types_supported": {
                 "jwt": {
