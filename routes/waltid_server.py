@@ -28,67 +28,29 @@ def init_app(app, red, mode):
     return
 
 payload = {
-    "issuerKey": {
-        "type": "jwk",
-        "jwk": {
-        "kty": "OKP",
-        "d": "JvJIpga2GD8LJeRu4Sv-mL4thE31DuFlr9PA04CIoZY",
-        "crv": "Ed25519",
-        "kid": "iJMS5bkZVIlncfq_Lf_SuxJ2JtQ5Hvaz7tWPnAjUUds",
-        "x": "FZdvwC8aGhRwqzWptej0NZgtwYAI1SyFg1mKDETOfqE"
-        }
-    },
-    "issuerDid": "did:jwk:eyJrdHkiOiJPS1AiLCJjcnYiOiJFZDI1NTE5Iiwia2lkIjoiaUpNUzVia1pWSWxuY2ZxX0xmX1N1eEoySnRRNUh2YXo3dFdQbkFqVVVkcyIsIngiOiJGWmR2d0M4YUdoUndxeldwdGVqME5aZ3R3WUFJMVN5RmcxbUtERVRPZnFFIn0",
-    "credentialConfigurationId": "UniversityDegree_jwt_vc_json",
-    "credentialData": {
-        "@context": [
-        "https://www.w3.org/2018/credentials/v1",
-        "https://www.w3.org/2018/credentials/examples/v1"
-        ],
-        "id": "http://example.gov/credentials/3732",
-        "type": [
-        "VerifiableCredential",
-        "UniversityDegree"
-        ],
-        "issuer": {
-        "id": "did:web:vc.transmute.world"
-        },
-        "issuanceDate": "2020-03-10T04:24:12.164Z",
-        "credentialSubject": {
-        "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
-        "degree": {
-            "type": "BachelorDegree",
-            "name": "Bachelor of Science and Arts"
-        }
-        }
-    },
-    "mapping": {
-        "id": "<uuid>",
-        "issuer": {
-        "id": "<issuerDid>"
-        },
-        "credentialSubject": {
-        "id": "<subjectDid>"
-        },
-        "issuanceDate": "<timestamp>",
-        "expirationDate": "<timestamp-in:365d>"
-    },
-    "authenticationMethod": "PRE_AUTHORIZED",
-    "standardVersion": "DRAFT13"
-    }
+  "profileId": "identityCredentialSdJwt",
+  "authMethod": "PRE_AUTHORIZED",
+  "txCode": {
+    "input_mode": "numeric",
+    "length": 6,
+    "description": "Enter the PIN shown by the issuer"
+  },
+  "txCodeValue": "123456"
+}
 
 
 
 def waltid():
-    url = 'https://issuer.demo.walt.id/openid4vc/jwt/issue'
+    url = 'https://issuer2.demo.walt.id/issuer2/credential-offers'
     headers = {
         'Content-Type': 'application/json'
     }
     resp = requests.post(url, headers=headers, data=json.dumps(payload), timeout=10)
     if resp.status_code > 399 :
         print("status code = ", resp.content)
-    code = resp.text
+    code = resp.json().get("credentialOffer")
     html_string = """<html><head></head>
+    <h1> TX code 123456 </h1>
                         <body><div>     
                         <img src="{{ qrcode('""" + code + """') }}">
                         </div>
