@@ -48,14 +48,17 @@ def waltid():
     resp = requests.post(url, headers=headers, data=json.dumps(payload), timeout=10)
     if resp.status_code > 399 :
         print("status code = ", resp.content)
+        
     code = resp.json().get("credentialOffer")
+    print("qrcode = ", code)
     html_string = """<html><head></head>
     <h1> TX code 123456 </h1>
+    <h3>{{code}}</h3>
                         <body><div>     
                         <img src="{{ qrcode('""" + code + """') }}">
                         </div>
                         </body></html>"""
-    return render_template_string(html_string) 
+    return render_template_string(html_string, code=code) 
 
 
 
