@@ -604,9 +604,26 @@ def oauth_authorization_server(issuer_id, mode):
 
 # /.well-known/oauth-authorization-server endpoint
 def oauth_authorization_server_new(issuer_id, mode):
-    issuer_data = json.loads(db_api.read_oidc4vc_issuer(issuer_id))
-    issuer_profile = profile[issuer_data['profile']]
-    headers = {'Cache-Control': 'no-store', 'Content-Type': 'application/json'}
+    raw_issuer_data = db_api.read_oidc4vc_issuer(issuer_id)
+
+    if raw_issuer_data is None:
+        logging.warning(
+            "Unknown issuer requested for OAuth metadata: %s",
+            issuer_id,
+        )
+        return jsonify({
+            "error": "invalid_request",
+            "error_description": "Unknown issuer",
+        }), 404
+
+    issuer_data = json.loads(raw_issuer_data)
+    issuer_profile = profile[issuer_data["profile"]]
+
+    headers = {
+        "Cache-Control": "no-store",
+        "Content-Type": "application/json",
+    }
+
     if issuer_profile.get('authorization_server_support') and int(issuer_profile['oidc4vciDraft']) >= 13:
         logging.error('CALL TO WRONG AUTHORIZATION SERVER')
         message = {'error': 'access_denied', 'error_description': 'invalid authorization server'}
