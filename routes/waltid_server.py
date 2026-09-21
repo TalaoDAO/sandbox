@@ -27,7 +27,7 @@ def init_app(app, red, mode):
     app.add_url_rule('/sandbox/issuer/waltid/test',  view_func=waltid, methods=['GET', 'POST'])
     return
 
-payload = {
+payload_preauthorized = {
   "profileId": "identityCredentialSdJwt",
   "authMethod": "PRE_AUTHORIZED",
   "txCode": {
@@ -38,6 +38,11 @@ payload = {
   "txCodeValue": "123456"
 }
 
+payload = {
+    "profileId": "identityCredentialSdJwt",
+    "authMethod": "AUTHORIZED",
+    "issuerStateMode": "INCLUDE"
+}
 
 
 def waltid():
