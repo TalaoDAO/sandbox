@@ -355,3 +355,83 @@ def test_mdoc_prompt_uses_2021_layout(mdoc):
 def test_correct_sdjwt_spec_reference(draft):
     for agent in (vc_agent,qr_agent):
         assert agent.spec_url_sdjwtvc(draft).endswith(f'-{draft}.html')
+
+@pytest.mark.parametrize('transport',['direct-base64','direct-base64url','wrapped-base64','wrapped-base64url'])
+def test_wallet_mdoc_transport(client,mdoc,transport):
+    raw=cbor2.dumps(mdoc[2]())
+    credential=base64.b64encode(raw).decode() if transport=='direct-base64' else encode(raw)
+    if transport.startswith('wrapped'):
+        credential=base64.b64encode(credential.encode()).decode() if transport=='wrapped-base64' else encode(credential.encode())
+    response=client.post('/ai/wallet/vc',data={'vc':credential},headers={'Api-Key':'test'})
+    assert response.status_code==200, response.get_data(as_text=True)
+    report=base64.b64decode(response.data).decode('ascii')
+    assert 'COSE signature verified successfully' in report
+
+
+def test_mdoc_decoder_compatible_with_older_cbor2(monkeypatch,mdoc):
+    original=val.cbor2.CBORDecoder
+    calls=[]
+    def older_decoder(stream,**kwargs):
+        calls.append(kwargs)
+        if kwargs:
+            raise TypeError("'read_size' is an invalid keyword argument")
+        return original(stream)
+    monkeypatch.setattr(val.cbor2,'CBORDecoder',older_decoder)
+    assert val.detect_format(mdoc_token(mdoc[2]()))=='mdoc'
+    assert calls==[{'read_size':1},{}]
+
+
+@pytest.mark.parametrize('raw',[b'\xff\xfe',cbor2.dumps({'not_a_credential':True})])
+def test_binary_non_mdoc_not_accepted(client,raw):
+    response=client.post('/ai/wallet/vc',data={'vc':base64.b64encode(raw).decode()},headers={'Api-Key':'test'})
+    assert response.status_code==400
+
+
+@pytest.mark.parametrize('route,field',[('vc','vc'),('qrcode','qrcode')])
+def test_legacy_wallet_report_characters(client,monkeypatch,route,field):
+    text='Observed — issuer: §§3.2–3.4; clés vérifiées; ≤ 42; → accepted ✓. Test 字.'
+    if route=='vc':
+        async def analyze(*a): return text
+        monkeypatch.setattr(vc_agent,'process_vc_format',analyze)
+    else:
+        monkeypatch.setattr(qr_agent,'analyze_qrcode',lambda *a:text)
+    response=client.post('/ai/wallet/'+route,data={field:base64.b64encode(b'test').decode()},headers={'Api-Key':'test'})
+    assert response.status_code==200
+    raw=base64.b64decode(response.data)
+    # Both the existing Latin-1 client and a correct UTF-8 client read identical text.
+    assert raw.decode('latin-1')==raw.decode('utf-8')==raw.decode('ascii')
+    report=raw.decode('ascii')
+    assert 'Observed - issuer: sections 3.2-3.4' in report
+    assert 'cles verifiees' in report
+    assert '<= 42; -> accepted PASS' in report
+    assert r'\u5b57' in report
+    assert '&#' not in report
+
+
+def test_altme_mdoc_json_envelope(client,mdoc):
+    # Mirrors getMdocCredentialData + AiCredentialAnalysisButton in TalaoDAO/AltMe.
+    data={'id':'urn:uuid:test','type':['mDL'],'docType':'org.iso.18013.5.1.mDL',
+          'issuerSigned':mdoc_token(mdoc[2]()),
+          'credentialSubject':{'org.iso.18013.5.1':{'given_name':'DISPLAY VALUE, NOT SIGNED INPUT'}}}
+    encoded=base64.b64encode(json.dumps(data).encode('utf-8')).decode()
+    response=client.post('/ai/wallet/vc',data={'vc':encoded},headers={'Api-Key':'test'})
+    assert response.status_code==200, response.get_data(as_text=True)
+    report=base64.b64decode(response.data).decode('ascii')
+    assert 'COSE signature verified successfully' in report
+    prompt=vc_agent.get_llm_client.return_value.invoke.call_args.args[0][1]['content']
+    assert 'DISPLAY VALUE, NOT SIGNED INPUT' not in prompt
+    assert 'Alice' in prompt
+
+
+def test_altme_mdoc_envelope_doctype_mismatch_is_reported(client,mdoc):
+    data={'issuerSigned':mdoc_token(mdoc[2]()),'docType':'wrong.type'}
+    response=client.post('/ai/wallet/vc',data={'vc':base64.b64encode(json.dumps(data).encode()).decode()},headers={'Api-Key':'test'})
+    assert response.status_code==200
+    assert 'docType does not match MSO' in base64.b64decode(response.data).decode()
+
+
+@pytest.mark.parametrize('signed',['not-base64','a.b.c',encode(cbor2.dumps({'not_mdoc':True}))])
+def test_altme_mdoc_envelope_invalid_signed_data_rejected(client,signed):
+    data={'issuerSigned':signed,'docType':'org.iso.18013.5.1.mDL'}
+    response=client.post('/ai/wallet/vc',data={'vc':base64.b64encode(json.dumps(data).encode()).decode()},headers={'Api-Key':'test'})
+    assert response.status_code==400

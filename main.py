@@ -741,7 +741,7 @@ def qrcode_wallet():
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
     logging.info("Wallet AI report generated")
-    report_base64 = base64.b64encode(report.encode()).decode()
+    report_base64 = ai_validation.encode_wallet_report(report)
     return report_base64
 
 
@@ -755,9 +755,10 @@ async def vc_wallet():
     if not vc_base64:
         return jsonify({"error": "missing vc"}), 400
     try:
-        vc_str = ai_validation.decode_wallet_input(vc_base64)
-    except Exception:
-        return jsonify({"error": "invalid base64 format"}), 400
+        vc_str = ai_validation.decode_wallet_vc_input(vc_base64)
+    except ai_validation.InputError as e:
+        logging.warning("Wallet VC input rejected: %s", e)
+        return jsonify({"error": str(e)}), 400
     try:
         sdjwt_draft = request.form.get("sdjwtvcDraft", "13")
         vcdm = request.form.get("vcdmDraft", "1.1")
@@ -772,7 +773,7 @@ async def vc_wallet():
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
     logging.info("Wallet AI report generated")
-    report_base64 = base64.b64encode(report.encode()).decode()
+    report_base64 = ai_validation.encode_wallet_report(report)
     return report_base64
 
 

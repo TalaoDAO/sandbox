@@ -9,6 +9,7 @@ import json
 import re
 import socket
 import time
+import unicodedata
 from datetime import datetime, timezone
 from urllib.parse import parse_qs, urlparse, urljoin
 
@@ -41,12 +42,67 @@ def decode_b64(value, urlsafe=False):
 
 def decode_wallet_input(value):
     try:
-        result = decode_b64(value).decode('utf-8').strip()
+        result = decode_b64(value, urlsafe=isinstance(value, str) and ('-' in value or '_' in value)).decode('utf-8').strip()
     except UnicodeDecodeError as exc:
         raise InputError('Input is not UTF-8') from exc
     if not result or len(result.encode()) > MAX_INPUT_BYTES:
         raise InputError('Empty or oversized input')
     return result
+
+
+def decode_wallet_vc_input(value):
+    """Accept base64(UTF-8 credential) and a directly base64-encoded mdoc CBOR.
+
+    A wallet may send the OIDC4VCI mdoc credential itself, whereas text formats
+    and some wallet versions use a second base64 envelope around that string.
+    Only a recognized CBOR document can bypass the UTF-8 text envelope.
+    """
+    try:
+        text = decode_wallet_input(value)
+    except InputError as text_error:
+        try:
+            if detect_format(value) == 'mdoc':
+                return value
+        except InputError:
+            pass
+        raise text_error
+    if text.startswith('{'):
+        data = json_object(text)
+        if isinstance(data.get('issuerSigned'), str):
+            # AltMe sends jsonEncode(CredentialModel.data): its signed mdoc is
+            # nested in issuerSigned alongside display-only claims. Analyze the
+            # actual CBOR, never the copied credentialSubject display values.
+            signed = cbor_document(data['issuerSigned'])
+            if 'issuerAuth' not in signed or 'nameSpaces' not in signed:
+                raise InputError('Wallet issuerSigned must contain an IssuerSigned mdoc')
+            document = {'issuerSigned': signed}
+            if 'docType' in data:
+                if not isinstance(data['docType'], str) or not data['docType']:
+                    raise InputError('Wallet mdoc docType must be a nonempty string')
+                document['docType'] = data['docType']
+            return base64.urlsafe_b64encode(cbor2.dumps(document)).decode('ascii')
+    return text
+
+
+def encode_wallet_report(report):
+    """ASCII-compatible Markdown for wallets decoding base64 bytes as Latin-1.
+
+    ASCII has the same representation in UTF-8 and Latin-1. Typographic symbols
+    become explicit text and accents are transliterated. Remaining non-ASCII
+    characters use explicit Unicode escapes; no HTML entity support is required.
+    """
+    replacements = {'\u2014': '-', '\u2013': '-', '\u2011': '-', '\u2010': '-',
+                    '\u2018': "'", '\u2019': "'", '\u201c': '"', '\u201d': '"',
+                    '\u00a0': ' ', '\u202f': ' ', '\u2026': '...', '\u00a7\u00a7': 'sections ',
+                    '\u00a7': 'section ', '\u2192': '->', '\u2190': '<-', '\u2264': '<=',
+                    '\u2265': '>=', '\u2260': '!=', '\u2713': 'PASS', '\u2714': 'PASS',
+                    '\u2717': 'FAIL', '\u2718': 'FAIL', '\u26a0': 'WARNING', '\ufe0f': '',
+                    '\u0153': 'oe', '\u0152': 'OE', '\u00e6': 'ae', '\u00c6': 'AE',
+                    '\u00df': 'ss', '\u00f8': 'o', '\u00d8': 'O', '\u0142': 'l', '\u0141': 'L'}
+    for before, after in replacements.items():
+        report = report.replace(before, after)
+    report = ''.join(c for c in unicodedata.normalize('NFKD', report) if not unicodedata.combining(c))
+    return base64.b64encode(report.encode('ascii', errors='backslashreplace')).decode('ascii')
 
 def json_object(raw):
     def pairs(items):
@@ -83,7 +139,12 @@ def cbor_document(value):
     raw = decode_b64(value, urlsafe=('-' in value or '_' in value))
     try:
         stream = io.BytesIO(raw)
-        obj = cbor2.CBORDecoder(stream, read_size=1).decode()
+        try:
+            decoder = cbor2.CBORDecoder(stream, read_size=1)
+        except TypeError:
+            # cbor2 5.6.x has no read_size argument and does not buffer ahead.
+            decoder = cbor2.CBORDecoder(stream)
+        obj = decoder.decode()
         if stream.read(1) or not isinstance(obj, dict):
             raise ValueError('trailing bytes or invalid root')
         return obj
