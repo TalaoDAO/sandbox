@@ -21,6 +21,7 @@ from device_detector import SoftwareDetector
 import hashlib
 import base64
 from ai import ai_agent_for_vc, ai_agent_for_qrcode
+from ai import wallet_validation as ai_validation
 #import warnings
 #warnings.simplefilter("error", RuntimeWarning)
 
@@ -723,19 +724,23 @@ def qrcode_wallet():
     qrcode_base64 = request.form.get("qrcode")
     if not qrcode_base64:
         return jsonify({"error": "missing qrcode"}), 400
-    oidc4vciDraft = request.form.get('oidc4vciDraft')
+    oidc4vciDraft = request.form.get('oidc4vciDraft', '1.0')
     oidc4vpDraft = request.form.get('oidc4vpDraft')
     profil = request.form.get('profil', 'custom')
     try:
-        qrcode_str = base64.b64decode(qrcode_base64.encode()).decode()
+        qrcode_str = ai_validation.decode_wallet_input(qrcode_base64)
     except Exception:
         return jsonify({"error": "invalid base64 format"}), 400
     try:
-        report = ai_agent_for_qrcode.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft, profil, 'wallet QR code', "pro", "gemini")
+        report = ai_agent_for_qrcode.analyze_qrcode(qrcode_str, oidc4vciDraft, oidc4vpDraft, profil, 'wallet QR code', "pro", "openai")
+    except ai_validation.InputError as e:
+        return jsonify({"error": str(e)}), 400
+    except ai_validation.FetchError as e:
+        return jsonify({"error": str(e)}), 502
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
-    logging.info("report = %s", report)
+    logging.info("Wallet AI report generated")
     report_base64 = base64.b64encode(report.encode()).decode()
     return report_base64
 
@@ -748,17 +753,25 @@ async def vc_wallet():
         return jsonify({"error": "access denied"}), 403
     vc_base64 = request.form.get("vc")
     if not vc_base64:
-        return jsonify({"error": "missing qrcode"}), 400
+        return jsonify({"error": "missing vc"}), 400
     try:
-        vc_str = base64.b64decode(vc_base64.encode()).decode()
+        vc_str = ai_validation.decode_wallet_input(vc_base64)
     except Exception:
         return jsonify({"error": "invalid base64 format"}), 400
     try:
-        report = await ai_agent_for_vc.process_vc_format(vc_str, "12", "1.1", "wallet VC", "pro", "gemini")
+        sdjwt_draft = request.form.get("sdjwtvcDraft", "13")
+        vcdm = request.form.get("vcdmDraft", "1.1")
+        if sdjwt_draft not in {str(i) for i in range(1, 14)} or vcdm not in {"1.1", "2.0"}:
+            raise ai_validation.InputError("Unsupported credential specification version")
+        report = await ai_agent_for_vc.process_vc_format(vc_str, sdjwt_draft, vcdm, "wallet VC", "pro", "openai")
+    except ai_validation.InputError as e:
+        return jsonify({"error": str(e)}), 400
+    except ai_validation.FetchError as e:
+        return jsonify({"error": str(e)}), 502
     except Exception as e:
         logging.error("Error in analyze_qrcode: %s", e)
         return jsonify({"error": "internal processing error"}), 500
-    logging.info("report = %s", report)
+    logging.info("Wallet AI report generated")
     report_base64 = base64.b64encode(report.encode()).decode()
     return report_base64
 

@@ -1,0 +1,40 @@
+ISO/IEC 18013-5:2021 — diagnostic implementation notes
+
+Scope: these are implementation notes for deterministic diagnostics, not a
+replacement for the licensed ISO standard. The nearby file 18013-5.txt contains
+ISO/IEC DIS 18013-5:2020(E); it MUST NOT be used to diagnose the 2021 MSO layout.
+Do not invent normative clause numbers or infer a complete ISO certification.
+
+Use the 2021 MSO layout: version, digestAlgorithm, valueDigests,
+deviceKeyInfo, docType and validityInfo. The version for this diagnostic profile
+is "1.0". The holder's public COSE_Key is inside deviceKeyInfo.deviceKey.
+valueDigests maps namespace strings directly to maps of digestID to digest bytes.
+It does not have an additional "nameSpaces" wrapper. The structure is carried
+as encoded CBOR under tag 24 inside the issuerAuth COSE_Sign1 payload.
+Issuer namespaces contain tag-24 encoded IssuerSignedItem byte strings; compare
+their digests to the corresponding namespace/digestID entries in the MSO.
+Undisclosed items may remain in the MSO digest table.
+
+IssuerSigned, Document and DeviceResponse inputs are distinct wrappers.
+A credential issued through OIDC4VCI normally contains IssuerSigned; the absence
+of deviceAuth at issuance is not an error. Device authentication at presentation
+requires the actual SessionTranscript and the MSO-bound device public key.
+A verified COSE signature proves possession of the signing key, not authorization
+of the issuer, a trusted IACA path, certificate profile compliance or revocation.
+Report those aspects as NOT_VERIFIED unless independent evidence is available.
+
+Diagnostic checks supplied with the request are authoritative for the supported
+layout, item digests, signature and validity interval. Do not recommend removing
+version, moving deviceKey to the MSO root, or wrapping valueDigests in nameSpaces.
+Identify optional policy recommendations separately from format errors.
+For HAIP, do not recommend including a trust anchor/root in x5chain. A lone
+certificate is not automatically a format error; chain requirements depend on
+the supplied chain, trust policy and applicable certificate profile.
+
+Primary implementation references:
+https://authlete.github.io/cbor/com/authlete/mdoc/MobileSecurityObject.html
+https://developer.multipaz.org/kdocs/multipaz/org.multipaz.mdoc.mso/-mobile-security-object/index.html
+Official standard:
+https://www.iso.org/standard/69084.html
+OIDC4VCI mdoc format profile:
+https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#appendix-A.2
