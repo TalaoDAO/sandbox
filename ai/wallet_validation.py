@@ -20,6 +20,11 @@ from cryptography.hazmat.primitives.asymmetric import ec, ed25519
 from jwcrypto import jwk, jws
 
 MAX_INPUT_BYTES = 1024 * 1024
+REPORT_LANGUAGE_INSTRUCTION = (
+    'Write the entire report in English, including headings, verdicts, findings, '
+    'explanations and fixes, regardless of the language of supplied data. '
+    'Keep protocol identifiers and JSON field names unchanged. '
+)
 HASHES = {'sha-256': 'sha256', 'sha-384': 'sha384', 'sha-512': 'sha512'}
 ALGORITHMS = ['ES256', 'ES384', 'ES512', 'EdDSA', 'RS256', 'RS384', 'RS512', 'PS256', 'PS384', 'PS512']
 
@@ -604,18 +609,24 @@ def configuration_assessment(offer, metadata, authorization_servers, comments=()
     if not auth: base_as.append('No AS was inspected')
     def verdict(issuer_errors, as_errors):
         failures=list(dict.fromkeys(issuer_errors+as_errors))
-        return {'status':'NON_COMPATIBLE' if failures else ('INDETERMINE' if unknown else 'COMPATIBLE_METADATA'), 'issuer':'NON_COMPATIBLE' if issuer_errors else 'AUCUNE_INCOMPATIBILITE_DETECTEE', 'authorization_server':'NON_COMPATIBLE' if as_errors else 'AUCUNE_INCOMPATIBILITE_DETECTEE', 'reasons':failures, 'not_verified':list(dict.fromkeys(unknown)), 'scope':'Configuration statique uniquement; les flux réels ne sont pas certifiés.'}
+        return {'status':'NON_COMPATIBLE' if failures else ('INDETERMINE' if unknown else 'COMPATIBLE_METADATA'), 'issuer':'NON_COMPATIBLE' if issuer_errors else 'AUCUNE_INCOMPATIBILITE_DETECTEE', 'authorization_server':'NON_COMPATIBLE' if as_errors else 'AUCUNE_INCOMPATIBILITE_DETECTEE', 'reasons':failures, 'not_verified':list(dict.fromkeys(unknown)), 'scope':'Static configuration only; actual protocol flows have not been certified.'}
     return {'OIDC4VCI_1_0':verdict(base_issuer,base_as), 'HAIP_1_0':verdict(base_issuer+haip_issuer,base_as+haip_as)}
 
 
 def assessment_markdown(assessment):
-    lines=['## Avis de compatibilité de la configuration']
+    lines=['## Configuration Compatibility Assessment']
+    names = {'OIDC4VCI_1_0': 'OIDC4VCI 1.0', 'HAIP_1_0': 'HAIP 1.0'}
+    labels = {'NON_COMPATIBLE': 'Incompatible',
+              'COMPATIBLE_METADATA': 'Compatible based on metadata',
+              'INDETERMINE': 'Undetermined',
+              'AUCUNE_INCOMPATIBILITE_DETECTEE': 'No incompatibility detected'}
     for name,item in assessment.items():
-        lines += [f"### {name.replace('_',' ')} : {item['status']}", f"Issuer : {item['issuer']}. AS : {item['authorization_server']}."]
+        lines += [f"### {names.get(name, name)} : {labels.get(item['status'], item['status'])}",
+                  f"Issuer: {labels.get(item['issuer'], item['issuer'])}. Authorization Server: {labels.get(item['authorization_server'], item['authorization_server'])}."]
         lines += ['- '+r for r in item['reasons']]
-        lines += ['- Non vérifié : '+r for r in item['not_verified']]
+        lines += ['- Not verified: '+r for r in item['not_verified']]
         lines.append(item['scope'])
-    lines.append('COMPATIBLE_METADATA signifie que les contrôles statiques implémentés ne détectent pas de blocage; cela ne certifie pas une conformité complète.')
+    lines.append('Compatible based on metadata means the implemented static checks found no blocking issue; it does not certify full conformance.')
     return '\n'.join(lines)+'\n\n'
 
 

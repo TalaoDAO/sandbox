@@ -245,8 +245,8 @@ def test_signed_metadata_does_not_infer_trust(metadata):
 def test_issuer_report_contains_verdicts(monkeypatch,metadata):
     offer,meta,auth=metadata; mock_discovery(monkeypatch,*metadata)
     report=qr_agent.analyze_issuer_qrcode('openid-credential-offer://?'+urlencode({'credential_offer':json.dumps(offer)}),'1.0','','test','pro','openai')
-    assert 'OIDC4VCI 1 0 : COMPATIBLE_METADATA' in report
-    assert 'HAIP 1 0 : COMPATIBLE_METADATA' in report
+    assert 'OIDC4VCI 1.0 : Compatible based on metadata' in report
+    assert 'HAIP 1.0 : Compatible based on metadata' in report
     assert 'GPT report' in report
     prompt=qr_agent.get_llm_client.return_value.invoke.call_args.args[0]
     assert 'Final when version is 1.0' in prompt[0]['content']
@@ -302,7 +302,7 @@ def test_wallet_qrcode_real_discovery(client,monkeypatch,metadata):
     uri='openid-credential-offer://?'+urlencode({'credential_offer':json.dumps(metadata[0])})
     response=client.post('/ai/wallet/qrcode',data={'qrcode':base64.b64encode(uri.encode()).decode()},headers={'Api-Key':'test'})
     assert response.status_code==200
-    assert 'HAIP 1 0' in base64.b64decode(response.data).decode()
+    assert 'HAIP 1.0' in base64.b64decode(response.data).decode()
     assert qr_agent.get_llm_client.call_args.args==('pro','openai')
 
 @pytest.mark.parametrize('field,value',[
@@ -435,3 +435,49 @@ def test_altme_mdoc_envelope_invalid_signed_data_rejected(client,signed):
     data={'issuerSigned':signed,'docType':'org.iso.18013.5.1.mDL'}
     response=client.post('/ai/wallet/vc',data={'vc':base64.b64encode(json.dumps(data).encode()).decode()},headers={'Api-Key':'test'})
     assert response.status_code==400
+
+
+def test_oidc4vci_draft18_displayed_as_1_0(monkeypatch,metadata):
+    offer,meta,auth=metadata
+    mock_discovery(monkeypatch,*metadata)
+    uri='openid-credential-offer://?'+urlencode({'credential_offer':json.dumps(offer)})
+    report=qr_agent.analyze_issuer_qrcode(uri,'18','','test','pro','openai')
+    assert 'This report is based on OIDC4VCI 1.0.' in report
+    assert 'based on OIDC4VCI 18' not in report
+    messages=qr_agent.get_llm_client.return_value.invoke.call_args.args[0]
+    assert 'specializing in OIDC4VCI 1.0' in messages[0]['content']
+    assert 'Context (OIDC4VCI 1.0)' in messages[1]['content']
+    assert 'OIDC4VCI Draft 18' not in messages[1]['content']
+    assert 'Source: dataset/oidc4vci/18.md' in messages[1]['content']
+    assert 'based on OIDC4VCI 13.' in qr_agent.attribution('pro','OIDC4VCI','13','openai')
+
+
+def test_report_verdicts_are_human_readable(metadata):
+    offer,meta,auth=metadata
+    auth['dpop_signing_alg_values_supported']=[]
+    result=val.configuration_assessment(offer,meta,auth)
+    assert result['HAIP_1_0']['status']=='NON_COMPATIBLE'
+    rendered=val.assessment_markdown(result)
+    assert 'HAIP 1.0 : Incompatible' in rendered
+    assert 'OIDC4VCI 1.0 : Compatible based on metadata' in rendered
+    for code in ('NON_COMPATIBLE','COMPATIBLE_METADATA','AUCUNE_INCOMPATIBILITE_DETECTEE'):
+        assert code not in rendered
+    result=val.configuration_assessment(offer,meta,auth,comments=['NOT_VERIFIED: signer trust'])
+    assert 'OIDC4VCI 1.0 : Undetermined' in val.assessment_markdown(result)
+
+
+def test_report_language_is_english(monkeypatch,metadata,mdoc):
+    offer,meta,auth=metadata
+    mock_discovery(monkeypatch,*metadata)
+    uri='openid-credential-offer://?'+urlencode({'credential_offer':json.dumps(offer)})
+    report=qr_agent.analyze_issuer_qrcode(uri,'18','','test','pro','openai')
+    assert 'Configuration Compatibility Assessment' in report
+    assert 'Static configuration only' in report
+    assert 'Compatible based on metadata' in report
+    messages=qr_agent.get_llm_client.return_value.invoke.call_args.args[0]
+    assert val.REPORT_LANGUAGE_INSTRUCTION in messages[0]['content']
+    vc_agent.analyze_mdoc(mdoc_token(mdoc[2]()),'18013-5','test','pro','openai')
+    messages=vc_agent.get_llm_client.return_value.invoke.call_args.args[0]
+    assert val.REPORT_LANGUAGE_INSTRUCTION in messages[0]['content']
+    for agent in (vc_agent,qr_agent):
+        assert val.REPORT_LANGUAGE_INSTRUCTION in agent.style_instructions(agent.style_for('pro'),'general','1.0')
