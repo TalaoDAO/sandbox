@@ -14,6 +14,10 @@ Paste a VC/VP payload into the page and receive a **structured compliance report
 
 Reports are format‑aware and check headers, payloads/claims, disclosures, cryptographic hints, and structural correctness according to the draft you select.
 
+Malformed or empty input returns HTTP 400 with a readable error page, or an
+`{"error": "..."}` response when `outfmt=json`. Unrecognized credential formats
+are rejected before calling the model.
+
 ---
 
 ## 2) How to Use the Page

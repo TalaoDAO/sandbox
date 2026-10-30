@@ -40,6 +40,8 @@ def init_app(app,red, mode):
 
 
 def saas_home():
+    if request.path == '/':
+        return redirect('https://sandbox.openid4vc-hub.com/', code=302)
     if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
         logging.info('remote IP = %s', request.environ['REMOTE_ADDR'])
     else:

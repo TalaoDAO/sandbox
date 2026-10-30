@@ -176,6 +176,24 @@ def detect_format(value):
         return 'mdoc'
     raise InputError('Unknown credential format')
 
+def validate_qrcode_input(value):
+    """Reject non-protocol input before network requests or LLM conversion."""
+    if not isinstance(value, str) or not value.strip():
+        raise InputError('Empty QR code')
+    value = value.strip()
+    if len(value.encode('utf-8')) > MAX_INPUT_BYTES:
+        raise InputError('Oversized QR code')
+    try:
+        parsed = urlparse(value)
+        params = parse_qs(parsed.query)
+    except ValueError as exc:
+        raise InputError('Invalid QR code URI') from exc
+    if not parsed.scheme or not any(params.get(key) for key in (
+        'credential_offer', 'credential_offer_uri', 'request', 'request_uri', 'response_mode'
+    )):
+        raise InputError('QR code must contain a credential offer or an authorization request')
+    return value
+
 def version(value):
     value = str(value or '1.0').strip().lower()
     if value in ('1.0', 'final', '1_0'):

@@ -284,6 +284,55 @@ def client():
     app.add_url_rule('/ai/wallet/vc',view_func=lambda:asyncio.run(env['vc_wallet']()),methods=['POST'])
     return app.test_client()
 
+@pytest.fixture
+def website_client():
+    from flask import render_template
+    tree = ast.parse((ROOT / 'main.py').read_text())
+    names = ('qrcode', 'vc', '_ai_input_error_response')
+    funcs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.name in names]
+    for node in funcs:
+        node.decorator_list = []
+    env = dict(request=request, jsonify=jsonify, render_template=render_template,
+               ai_validation=val, ai_agent_for_qrcode=qr_agent,
+               ai_agent_for_vc=vc_agent, logging=logging)
+    exec(compile(ast.Module(body=funcs, type_ignores=[]), 'main.py', 'exec'), env)
+    app = Flask('test-ai-website', template_folder=str(ROOT / 'templates'))
+    app.add_url_rule('/ai/qrcode', view_func=env['qrcode'], methods=['POST'])
+    app.add_url_rule('/ai/vc', view_func=lambda: asyncio.run(env['vc']()), methods=['POST'])
+    return app.test_client()
+
+@pytest.mark.parametrize('route,field', [('vc', 'vc'), ('qrcode', 'qrcode')])
+@pytest.mark.parametrize('value', [None, '', '   ', '1', "1'", '%%%!!!'])
+@pytest.mark.parametrize('outfmt', ['text', 'json'])
+def test_website_invalid_input_no_llm(website_client, route, field, value, outfmt):
+    data = {'outfmt': outfmt}
+    if value is not None:
+        data[field] = value
+    response = website_client.post('/ai/' + route, data=data)
+    assert response.status_code == 400
+    if outfmt == 'json':
+        assert response.json['error']
+    else:
+        assert b'Error:' in response.data
+    for agent in (qr_agent, vc_agent):
+        agent.get_llm_client.assert_not_called()
+        agent.counter_update.assert_not_called()
+        agent.store_report.assert_not_called()
+
+@pytest.mark.parametrize('parameter', ['credential_offer_uri', 'credential_offer', 'request_uri', 'request', 'response_mode'])
+def test_qrcode_protocol_input_preserved(parameter):
+    value = 'openid://?' + urlencode({parameter: 'test'})
+    assert val.validate_qrcode_input(value) == value
+
+def test_website_vc_error_is_escaped(website_client, monkeypatch):
+    async def invalid(*args):
+        raise val.InputError('Invalid claim: <script>')
+    monkeypatch.setattr(vc_agent, 'process_vc_format', invalid)
+    response = website_client.post('/ai/vc', data={'vc': '{"<script>":1,"<script>":2}'})
+    assert response.status_code == 400
+    assert b'&lt;script&gt;' in response.data
+    assert b'Invalid claim: <script>' not in response.data
+
 @pytest.mark.parametrize('route,field',[('vc','vc'),('qrcode','qrcode')])
 @pytest.mark.parametrize('scenario',['auth','missing','base64','empty','utf8'])
 def test_wallet_transport(client,route,field,scenario):

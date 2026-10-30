@@ -19,6 +19,11 @@ etc.).
 The output is a **Markdown-formatted report**, structured into sections
 with checks, errors, and developer-oriented improvement suggestions.
 
+Empty input or a URI without a nonempty `credential_offer`,
+`credential_offer_uri`, `request`, `request_uri`, or `response_mode` parameter
+returns HTTP 400 before any model call, including JSON report conversion.
+The website displays an error page; `outfmt=json` returns `{"error": "..."}`.
+
 ------------------------------------------------------------------------
 
 ## 2. How to Use the Page

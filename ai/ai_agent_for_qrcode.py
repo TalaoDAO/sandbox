@@ -342,7 +342,7 @@ def extract_SAN_DNS(pem_certificate):
     
 
 def analyze_qrcode(qrcode, oidc4vciDraft, oidc4vpDraft, profil, device, model, provider, ts12=None):
-    
+    qrcode = validation.validate_qrcode_input(qrcode)
     # Analyze a QR code and delegate based on protocol type
     profile = ""
     if profil == "EBSI":

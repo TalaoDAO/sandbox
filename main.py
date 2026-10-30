@@ -598,6 +598,17 @@ def oidc_ai():
 
 
 # OpenAI tools for website
+def _ai_input_error_response(error, outfmt, back, model):
+    from markupsafe import escape
+
+    if outfmt == 'json':
+        return jsonify({'error': str(error)}), 400
+    return render_template(
+        'ai_report.html', back=back, report='Error: ' + escape(str(error)),
+        model=model.capitalize(), report_hash=None
+    ), 400
+
+
 @app.route('/qrcode', methods=['GET', 'POST'])
 @app.route('/ai/qrcode', methods=['GET', 'POST'])
 def qrcode():
@@ -616,9 +627,6 @@ def qrcode():
         logging.info("qrcode = %s", qrcode)
         ts12 = request.form.get("ts12")
 
-        if not qrcode:
-            return redirect('/qrcode')
-        
         #if model == "flash": 
         #    provider = "gemini"
         #elif model == "escalation":
@@ -628,7 +636,10 @@ def qrcode():
         
         provider = "openai"
         
-        report = ai_agent_for_qrcode.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profile, 'Website Analyze QR code', model, provider,ts12=ts12)
+        try:
+            report = ai_agent_for_qrcode.analyze_qrcode(qrcode, oidc4vci_draft, oidc4vp_draft, profile, 'Website Analyze QR code', model, provider,ts12=ts12)
+        except ai_validation.InputError as exc:
+            return _ai_input_error_response(exc, outfmt, '/ai/qrcode', model)
         logging.info("report = %s", report)
         
         if outfmt == 'json':
@@ -674,10 +685,6 @@ async def vc():
         sdjwtvc_draft = request.form.get("sdjwtvc_draft")
         vcdm_draft = request.form.get("vcdm_draft")
         
-        # taking into account of limited token for flash versus open ai
-        if not qrcode:
-            return redirect('/ai/vc')
-        
         #if model == "flash": 
         #    provider = "gemini"
         #elif model == "escalation":
@@ -686,7 +693,10 @@ async def vc():
         #    provider = "gemini"
         provider = "openai"
         
-        report = await ai_agent_for_vc.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "Website Analyze VC", model, provider)
+        try:
+            report = await ai_agent_for_vc.process_vc_format(vc, sdjwtvc_draft, vcdm_draft, "Website Analyze VC", model, provider)
+        except ai_validation.InputError as exc:
+            return _ai_input_error_response(exc, outfmt, '/ai/vc', model)
         logging.info("report = %s", report)
         if outfmt == 'json':
             input = {

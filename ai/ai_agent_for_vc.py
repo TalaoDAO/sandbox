@@ -369,8 +369,8 @@ def _is_compact_jwt(value: str) -> bool:
 
 
 async def process_vc_format(vc: str, sdjwtvc_draft: str, vcdm_draft: str, device: str, model: str, provider: str):
-    vc = vc.strip()
     fmt = validation.detect_format(vc)
+    vc = vc.strip()
     if fmt == "mdoc":
         return analyze_mdoc(vc, "18013-5", device, model, provider)
     if fmt == "sd-jwt":
